@@ -772,6 +772,23 @@ server.listen(PORT, () => {
 
 async function startBot() {
     console.log('[BOT] Avvio in corso...');
+
+    const AUTH_DIR_PATH = path.join(__dirname, 'auth_info_baileys');
+    if (!fs.existsSync(AUTH_DIR_PATH) && (process.env.AUTH_BASE64 || await gistBackup.downloadAuth())) {
+        let authData = await gistBackup.downloadAuth();
+        if (!authData && process.env.AUTH_BASE64) {
+            const raw = Buffer.from(process.env.AUTH_BASE64, 'base64').toString('utf-8');
+            authData = JSON.parse(raw);
+        }
+        if (authData) {
+            fs.mkdirSync(AUTH_DIR_PATH, { recursive: true });
+            for (const [name, content] of Object.entries(authData)) {
+                fs.writeFileSync(path.join(AUTH_DIR_PATH, name), content, 'utf-8');
+            }
+            console.log('[AUTH] Sessione ripristinata da backup.');
+        }
+    }
+
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
     const sock = makeWASocket({
@@ -797,6 +814,18 @@ async function startBot() {
         } else if (connection === 'open') {
             botStartTime = Math.floor(Date.now() / 1000);
             console.log('[BOT] Connesso e operativo.');
+            // Backup auth al Gist ogni 5 minuti
+            setInterval(async () => {
+                if (!fs.existsSync(AUTH_DIR_PATH)) return;
+                const authFiles = {};
+                const entries = fs.readdirSync(AUTH_DIR_PATH, { withFileTypes: true });
+                for (const entry of entries) {
+                    if (entry.isFile()) {
+                        authFiles[entry.name] = fs.readFileSync(path.join(AUTH_DIR_PATH, entry.name), 'utf-8');
+                    }
+                }
+                await gistBackup.uploadAuth(authFiles);
+            }, 300000);
         }
     });
 
