@@ -50,7 +50,8 @@ ${alLines}
 ║  🢒 🦹 .ruba
 ║  🢒 🏧 .deposita / 💳 .preleva
 ║  🢒 📅 .daily
-║  🢒 🚫 .mute @u 5m
+║  🢒 🚫 .mute @u [durata]
+║  🢒 🎁 .dona @u [€]
 ║  🢒 🔇 anti-flood + 🤬 bestemmiometro + 💰 taglie
 ╠══════════════════════════════════════╣
 ║ 💝 *FAMIGLIA*
@@ -159,9 +160,12 @@ ${alLines}
 ║  🢒 🔗 .link
 ║  🢒 🗑️ .del
 ║  🢒 🔇 .mute / 🔊 .unmute
-║  🢒 ⚠️ .warn
+║  🢒 ⚠️ .warn / ✅ .unwarn
 ║  🢒 👑 .promote / .demote (.p / .d)
 ║  🢒 ✅ .accettarichieste
+║  🢒 🗣️ .say [testo]
+║  🢒 🔗 .invito
+║  🢒 ⏸️ .pausa / ▶️ .riprendi
 ${antilinkSection}`;
 
             if (isOwner) {
@@ -177,7 +181,13 @@ ${antilinkSection}`;
 
             menuTxt +=
 `┃
-╚══════════════════════════════════════╝`;
+╠══════════════════════════════════════╣
+║   🌟 *SPONSOR* 🌟                  ║
+║  .sponsor per vedere il gruppo      ║
+║  ufficiale del mio creatore! 🫶     ║
+║                                      ║
+║  👇 *ENTRA NEL GRUPPO* 👇          ║
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
 
             if (pfpUrl) {
                 await sock.sendMessage(from,

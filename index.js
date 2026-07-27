@@ -368,7 +368,7 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'p', 'd', 'accettarichieste', 'approva', 'accetta']);
+const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi']);
 
 const extractBody = (msg) => {
     const m = msg.message;
@@ -1059,6 +1059,7 @@ async function startBot() {
         const contextInfo = getContextInfo(msg.message);
         const mentioned = contextInfo.mentionedJid || [];
         const isReply   = !!contextInfo.quotedMessage;
+        if (isGroup && db[from]?._muted && !isOwner) return;
         if (!isBotActive && !isOwner && command !== 'accendi') return;
         const targetJid = mentioned[0] || contextInfo.participant || null;
 
