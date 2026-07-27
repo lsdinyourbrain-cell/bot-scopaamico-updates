@@ -179,15 +179,14 @@ ${antilinkSection}`;
 ┃  🢒 👋 .goodbye on/off`;
             }
 
+            const SP = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
             menuTxt +=
 `┃
 ╠══════════════════════════════════════╣
 ║   🌟 *SPONSOR* 🌟                  ║
-║  .sponsor per vedere il gruppo      ║
-║  ufficiale del mio creatore! 🫶     ║
-║                                      ║
-║  👇 *ENTRA NEL GRUPPO* 👇          ║
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
+║  Entra nel gruppo ufficiale! 🫶    ║
+║  ${SP}
+╚══════════════════════════════════════╝`;
 
             if (pfpUrl) {
                 await sock.sendMessage(from,
