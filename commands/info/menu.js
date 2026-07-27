@@ -175,11 +175,17 @@ ${alLines}
         if (isOwner) {
             menuTxt +=
 `├── 🛡 ${MS('OWNER')} ───────────────────┤
-│ ⏻.spegni  ⏼.accendi  🔄.riavvia
-│ 👋.welcome on/off  👋.goodbye on/off`;
+│ ⏻ .spegni
+│ ⏼ .accendi
+│ 🔄 .riavvia
+│ 👋 .welcome on
+│ 👋 .welcome off
+│ 👋 .goodbye on
+│ 👋 .goodbye off
+│ 🔗 .setlink <url>`;
         }
 
-        const SP = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo?s=cl&p=a&ilr=0';
+        const SP = db._config?.sponsorLink || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo?s=cl&p=a&ilr=0';
         menuTxt +=
 `├── 🌟 ${BF('SPONSOR')} ────────────────┤
 │ Unisciti al gruppo ufficiale! 🫶
