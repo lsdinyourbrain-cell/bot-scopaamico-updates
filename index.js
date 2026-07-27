@@ -807,7 +807,9 @@ async function startBot() {
         if (connection === 'close') {
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             if (statusCode === DisconnectReason.loggedOut) {
-                console.log('[BOT] Sessione scaduta. Elimina la cartella auth_info_baileys e riavvia.');
+                console.log('[BOT] Sessione scaduta. Pulisco auth e riavvio per nuovo QR...');
+                fs.rmSync(AUTH_DIR_PATH, { recursive: true, force: true });
+                startBot();
             } else {
                 startBot();
             }
