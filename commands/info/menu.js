@@ -41,55 +41,126 @@ module.exports = {
 `╭── ✦ ${SB('SCOPAAMICO BOT')} v10.0 ✦ ──╮
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
 ├── 🆕 ${MS('NOVITÀ')} ─────────────────┤
-│ ⚔️.duello  🎟️.lotteria  👤.profilo
-│ 🏁.bandiera  ❓.quiz  💞.compatibilita
-│ 🦹.ruba  🏧.deposita  💳.preleva
-│ 📅.daily  🚫.mute @u  🎁.dona @u
+│ ⚔️ .duello
+│ 🎟️ .lotteria
+│ 👤 .profilo
+│ 🏁 .bandiera
+│ ❓ .quiz
+│ 💞 .compatibilita
+│ 🦹 .ruba
+│ 🏧 .deposita
+│ 💳 .preleva
+│ 📅 .daily
+│ 🚫 .mute @utente
+│ 🎁 .dona @utente
 ├── 💝 ${BF('FAMIGLIA')} ────────────────┤
-│ .famiglia [sposa/adotta/caccia/divorzia/abbandona]
+│ .famiglia sposa|adotta|caccia|divorzia|abbandona
 ├── 🪙 ${SB('ECONOMIA')} ────────────────┤
-│ 💰.cassaforte  ⛏️.scava  🎰.casino
-│ 🎲.dadi  🎰.slot  🔴.roulette
-│ 🪨.sasso  📅.daily  🏧.deposita
-│ 💳.preleva  🦹.ruba  ⚔️.colpisci
-│ 🎟️.lotteria  🏆.top  🤑.ricchi
+│ 💰 .cassaforte
+│ ⛏️ .scava
+│ 🎰 .casino
+│ 🎲 .dadi
+│ 🎰 .slot
+│ 🔴 .roulette
+│ 🪨 .sasso
+│ 📅 .daily
+│ 🏧 .deposita
+│ 💳 .preleva
+│ 🦹 .ruba
+│ ⚔️ .colpisci
+│ 🎟️ .lotteria
+│ 🏆 .top
+│ 🤑 .ricchi
 ├── 🎲 ${MS('SOCIAL')} ─────────────────┤
-│ 💞.ship  🏳️‍🌈.gay  💖.simpatometro
-│ 📊.percentuale  🤔.scelta  🌸.fiore
-│ 🦸.personaggio  📺.anime  🖥️.assemblapc
-│ 🤫.verita  🫣.obbligo  🔮.oroscopo
-│ 🐺.maranza
+│ 💞 .ship
+│ 🏳️‍🌈 .gay
+│ 💖 .simpatometro
+│ 📊 .percentuale
+│ 🤔 .scelta
+│ 🌸 .fiore
+│ 🦸 .personaggio
+│ 📺 .anime
+│ 🖥️ .assemblapc
+│ 🤫 .verita
+│ 🫣 .obbligo
+│ 🔮 .oroscopo
+│ 🐺 .maranza
 ├── 🔥 ${BF('INTERAZIONI')} ─────────────┤
-│ 🖐️.schiaffo  😘.bacia  🫂.abbraccia
-│ 💍.sposa  🍑.paccasulculo  🔪.uccidi
-│ 🤬.insulta  🔞.scopa  💦.sborra
-│ 👉👌.ditalino  🍆.sega  🤰.incinta
-│ 🍒.tette  😂.meme  🥊.rissa
-│ 🍆.cazzo  🤪.sclero  🍹.drink
-│ 🙏.scusa  🪵.palo  🗣️.gossip
+│ 🖐️ .schiaffo
+│ 😘 .bacia
+│ 🫂 .abbraccia
+│ 💍 .sposa
+│ 🍑 .paccasulculo
+│ 🔪 .uccidi
+│ 🤬 .insulta
+│ 🔞 .scopa
+│ 💦 .sborra
+│ 👉👌 .ditalino
+│ 🍆 .sega
+│ 🤰 .incinta
+│ 🍒 .tette
+│ 😂 .meme
+│ 🥊 .rissa
+│ 🍆 .cazzo
+│ 🤪 .sclero
+│ 🍹 .drink
+│ 🙏 .scusa
+│ 🪵 .palo
+│ 🗣️ .gossip
 ├── 🛠️ ${SB('UTILITY')} ────────────────┤
-│ 👤.profilo  👑.admin  📡.ping
-│ ℹ️.groupinfo  🌤️.weather  🎨.sticker
-│ 📹.vv  💻.hack  👥.clona
-│ 🔊.tts  🐿️.chipmunk  🏃.rubato
-│ 🎵.lyrics
+│ 👤 .profilo
+│ 👑 .admin
+│ 📡 .ping
+│ ℹ️ .groupinfo
+│ 🌤️ .weather
+│ 🎨 .sticker
+│ 📹 .vv
+│ 💻 .hack
+│ 👥 .clona
+│ 🔊 .tts
+│ 🐿️ .chipmunk
+│ 🏃 .rubato
+│ 🎵 .lyrics
 ├── 🎤 ${MS('AUDIO')} ───────────────────┤
-│ 🎙️.deep  🔄.reverse  🗣️.echo
-│ 🤖.robot  🥴.drunk  🔊.bass
-│ 🌙.nightcore  🔮.8d
+│ 🎙️ .deep
+│ 🔄 .reverse
+│ 🗣️ .echo
+│ 🤖 .robot
+│ 🥴 .drunk
+│ 🔊 .bass
+│ 🌙 .nightcore
+│ 🔮 .8d
 ├── 📥 ${BF('MEDIA')} ───────────────────┤
-│ 📸.ig  💀.wasted  📖.pokedex  🤡.clown
+│ 📸 .ig
+│ 💀 .wasted
+│ 📖 .pokedex
+│ 🤡 .clown
 ├── 🤖 ${SB('AI')} ──────────────────────┤
-│ 🧠.ai [domanda]
+│ 🧠 .ai [domanda]
 ├── 🎮 ${MS('GIOCHI')} ─────────────────┤
-│ ❓.quiz  🏁.bandiera  💞.compatibilita
-│ ⚔️.duello @u [puntata]
+│ ❓ .quiz
+│ 🏁 .bandiera
+│ 💞 .compatibilita
+│ ⚔️ .duello @utente [puntata]
 ├── ⚙️ ${BF('ADMIN')} ───────────────────┤
-│ 📢.tag  📣.tagall  🔒.chiudi/🔓.apri
-│ 🚫.ban  🔗.link  🗑️.del
-│ 🔇.mute/🔊.unmute  ⚠️.warn/✅.unwarn
-│ 👑.promote/.demote  ✅.accettarichieste
-│ 🗣️.say  🔗.invito  ⏸️.pausa/▶️.riprendi`;
+│ 📢 .tag
+│ 📣 .tagall
+│ 🔒 .chiudi
+│ 🔓 .apri
+│ 🚫 .ban
+│ 🔗 .link
+│ 🗑️ .del
+│ 🔇 .mute
+│ 🔊 .unmute
+│ ⚠️ .warn
+│ ✅ .unwarn
+│ 👑 .promote
+│ 👑 .demote
+│ ✅ .accettarichieste
+│ 🗣️ .say
+│ 🔗 .invito
+│ ⏸️ .pausa
+│ ▶️ .riprendi`;
 
         if (isGroup) {
             const alCfg = getAntilinkGroup(from);
@@ -108,7 +179,7 @@ ${alLines}
 │ 👋.welcome on/off  👋.goodbye on/off`;
         }
 
-        const SP = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
+        const SP = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo?s=cl&p=a&ilr=0';
         menuTxt +=
 `├── 🌟 ${BF('SPONSOR')} ────────────────┤
 │ Unisciti al gruppo ufficiale! 🫶
