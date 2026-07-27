@@ -5,6 +5,16 @@ module.exports = {
     aliases: [],
     description: "Esegue il comando .menu.",
 
+    // Converte testo in Sans-Serif Bold (Mathematical Bold Sans-Serif)
+    // Usato per i titoli delle sezioni nel menu
+    const SB = (s) => s.split('').map(c => {
+        const cc = c.charCodeAt(0);
+        if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
+        if (cc >= 97 && cc <= 122) return String.fromCodePoint(0x1D5EE + cc - 97);
+        if (cc >= 48 && cc <= 57) return String.fromCodePoint(0x1D7E2 + cc - 48);
+        return c;
+    }).join('');
+
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
@@ -17,28 +27,28 @@ module.exports = {
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
 
         let menuTxt =
-`╭── ✦ *SCOPAAMICO BOT* v9.0 ✦ ──╮
+`╭── ✦ ${SB('SCOPAAMICO BOT')} v9.0 ✦ ──╮
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
-├── 🆕 *NOVITÀ* ───────────────────┤
+├── 🆕 ${SB('NOVITÀ')} ─────────────────┤
 │ ⚔️.duello  🎟️.lotteria  👤.profilo
 │ 🏁.bandiera  ❓.quiz  💞.compatibilita
 │ 🦹.ruba  🏧.deposita  💳.preleva
 │ 📅.daily  🚫.mute @u  🎁.dona @u
-├── 💝 *FAMIGLIA* ─────────────────┤
+├── 💝 ${SB('FAMIGLIA')} ────────────────┤
 │ .famiglia [sposa/adotta/caccia/divorzia/abbandona]
-├── 🪙 *ECONOMIA* ─────────────────┤
+├── 🪙 ${SB('ECONOMIA')} ────────────────┤
 │ 💰.cassaforte  ⛏️.scava  🎰.casino
 │ 🎲.dadi  🎰.slot  🔴.roulette
 │ 🪨.sasso  📅.daily  🏧.deposita
 │ 💳.preleva  🦹.ruba  ⚔️.colpisci
 │ 🎟️.lotteria  🏆.top  🤑.ricchi
-├── 🎲 *SOCIAL* ───────────────────┤
+├── 🎲 ${SB('SOCIAL')} ─────────────────┤
 │ 💞.ship  🏳️‍🌈.gay  💖.simpatometro
 │ 📊.percentuale  🤔.scelta  🌸.fiore
 │ 🦸.personaggio  📺.anime  🖥️.assemblapc
 │ 🤫.verita  🫣.obbligo  🔮.oroscopo
 │ 🐺.maranza
-├── 🔥 *INTERAZIONI* ──────────────┤
+├── 🔥 ${SB('INTERAZIONI')} ─────────────┤
 │ 🖐️.schiaffo  😘.bacia  🫂.abbraccia
 │ 💍.sposa  🍑.paccasulculo  🔪.uccidi
 │ 🤬.insulta  🔞.scopa  💦.sborra
@@ -46,24 +56,24 @@ module.exports = {
 │ 🍒.tette  😂.meme  🥊.rissa
 │ 🍆.cazzo  🤪.sclero  🍹.drink
 │ 🙏.scusa  🪵.palo  🗣️.gossip
-├── 🛠️ *UTILITY* ─────────────────┤
+├── 🛠️ ${SB('UTILITY')} ────────────────┤
 │ 👤.profilo  👑.admin  📡.ping
 │ ℹ️.groupinfo  🌤️.weather  🎨.sticker
 │ 📹.vv  💻.hack  👥.clona
 │ 🔊.tts  🐿️.chipmunk  🏃.rubato
 │ 🎵.lyrics
-├── 🎤 *AUDIO* ────────────────────┤
+├── 🎤 ${SB('AUDIO')} ───────────────────┤
 │ 🎙️.deep  🔄.reverse  🗣️.echo
 │ 🤖.robot  🥴.drunk  🔊.bass
 │ 🌙.nightcore  🔮.8d
-├── 📥 *MEDIA* ────────────────────┤
+├── 📥 ${SB('MEDIA')} ───────────────────┤
 │ 📸.ig  💀.wasted  📖.pokedex  🤡.clown
-├── 🤖 *AI* ───────────────────────┤
+├── 🤖 ${SB('AI')} ──────────────────────┤
 │ 🧠.ai [domanda]
-├── 🎮 *GIOCHI* ───────────────────┤
+├── 🎮 ${SB('GIOCHI')} ─────────────────┤
 │ ❓.quiz  🏁.bandiera  💞.compatibilita
 │ ⚔️.duello @u [puntata]
-├── ⚙️ *ADMIN* ────────────────────┤
+├── ⚙️ ${SB('ADMIN')} ───────────────────┤
 │ 📢.tag  📣.tagall  🔒.chiudi/🔓.apri
 │ 🚫.ban  🔗.link  🗑️.del
 │ 🔇.mute/🔊.unmute  ⚠️.warn/✅.unwarn
@@ -75,21 +85,21 @@ module.exports = {
             const keys = Object.keys(ANTILINK_PLATFORMS);
             const alLines = keys.map(p => `│ ${alCfg[p] ? '🟢' : '🔴'} .antilink ${p}`).join('\n');
             menuTxt +=
-`├── 🔗 *ANTILINK* ─────────────────┤
+`├── 🔗 ${SB('ANTILINK')} ────────────────┤
 ${alLines}
 │ 🟢.antilink tutti on/off`;
         }
 
         if (isOwner) {
             menuTxt +=
-`├── 🛡 *OWNER* ────────────────────┤
+`├── 🛡 ${SB('OWNER')} ───────────────────┤
 │ ⏻.spegni  ⏼.accendi  🔄.riavvia
 │ 👋.welcome on/off  👋.goodbye on/off`;
         }
 
         const SP = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
         menuTxt +=
-`├── 🌟 *SPONSOR* ─────────────────┤
+`├── 🌟 ${SB('SPONSOR')} ────────────────┤
 │ Unisciti al gruppo ufficiale! 🫶
 │ ${SP}
 ╰───────────────────────────────────╯`;

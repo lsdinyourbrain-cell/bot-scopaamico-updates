@@ -5,6 +5,14 @@ module.exports = {
     aliases: [],
     description: "Mostra lo sponsor del bot con un messaggio stupendo.",
 
+    // Converte testo in Sans-Serif Bold
+    const SB = (s) => s.split('').map(c => {
+        const cc = c.charCodeAt(0);
+        if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
+        if (cc >= 97 && cc <= 122) return String.fromCodePoint(0x1D5EE + cc - 97);
+        return c;
+    }).join('');
+
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
@@ -12,7 +20,7 @@ module.exports = {
         const link = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
         await sock.sendMessage(from, {
             text:
-`╭────── ✦ *SPONSOR* ✦ ──────╮
+`╭───── ✦ ${SB('SPONSOR')} ✦ ─────╮
 │                           │
 │  Ciao, sono il            │
 │  *ScopaAmico Bot* 🤖      │
