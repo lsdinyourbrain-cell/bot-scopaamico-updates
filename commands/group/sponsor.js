@@ -1,17 +1,16 @@
 'use strict';
 
+const SB = (s) => s.split('').map(c => {
+    const cc = c.charCodeAt(0);
+    if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
+    if (cc >= 97 && cc <= 122) return String.fromCodePoint(0x1D5EE + cc - 97);
+    return c;
+}).join('');
+
 module.exports = {
     name: 'sponsor',
     aliases: [],
     description: "Mostra lo sponsor del bot con un messaggio stupendo.",
-
-    // Converte testo in Sans-Serif Bold
-    const SB = (s) => s.split('').map(c => {
-        const cc = c.charCodeAt(0);
-        if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
-        if (cc >= 97 && cc <= 122) return String.fromCodePoint(0x1D5EE + cc - 97);
-        return c;
-    }).join('');
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
