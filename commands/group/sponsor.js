@@ -12,19 +12,18 @@ module.exports = {
         const link = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
         await sock.sendMessage(from, {
             text:
-`╔════════════════════════════════╗
-║   🌟 *SPONSOR* 🌟             ║
-╠════════════════════════════════╣
-║  Ciao! Sono il *ScopaAmico*   ║
-║  Bot* 🤖                      ║
-║  Unisciti al gruppo           ║
-║  ufficiale! 🫶                ║
-║                                ║
-║  👇 *CLICCA QUI* 👇           ║
-║  ${link}
-║                                ║
-║  🔗 Gruppo ufficiale           ║
-╚════════════════════════════════╝`,
+`╭────── ✦ *SPONSOR* ✦ ──────╮
+│                           │
+│  Ciao, sono il            │
+│  *ScopaAmico Bot* 🤖      │
+│                           │
+│  Unisciti al gruppo       │
+│  ufficiale! 🫶            │
+│                           │
+│  👇 *CLICCA QUI* 👇      │
+│  ${link}
+│                           │
+╰───────────────────────────╯`,
         }, { quoted: msg });
     },
 };
