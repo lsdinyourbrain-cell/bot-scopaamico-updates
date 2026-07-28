@@ -1,6 +1,5 @@
 'use strict';
 
-// Font Unicode per titoli sezioni
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -38,9 +37,9 @@ module.exports = {
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
 
         let menuTxt =
-`╭── ✦ ${SB('SCOPAAMICO BOT')} v10.0 ✦ ──╮
+`╭── ✦ ${SB('SCOPAMICO BOT')} v11.0 ✦ ──╮
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
-├── 🆕 ${MS('NOVITÀ')} ─────────────────┤
+├── 🆕 ${MS('NOVITÀ')} ───────────┤
 │ ⚔️ .duello
 │ 🎟️ .lotteria
 │ 👤 .profilo
@@ -53,9 +52,10 @@ module.exports = {
 │ 📅 .daily
 │ 🚫 .mute @utente
 │ 🎁 .dona @utente
-├── 💝 ${BF('FAMIGLIA')} ────────────────┤
-│ .famiglia sposa|adotta|caccia|divorzia|abbandona
-├── 🪙 ${SB('ECONOMIA')} ────────────────┤
+├── 💝 ${BF('FAMIGLIA')} ─────────┤
+│ .famiglia sposa|adotta|caccia
+| |divorzia|abbandona
+├── 🪙 ${SB('ECONOMIA')} ─────────┤
 │ 💰 .cassaforte
 │ ⛏️ .scava
 │ 🎰 .casino
@@ -71,7 +71,7 @@ module.exports = {
 │ 🎟️ .lotteria
 │ 🏆 .top
 │ 🤑 .ricchi
-├── 🎲 ${MS('SOCIAL')} ─────────────────┤
+├── 🎲 ${MS('SOCIAL')} ───────────┤
 │ 💞 .ship
 │ 🏳️‍🌈 .gay
 │ 💖 .simpatometro
@@ -85,7 +85,7 @@ module.exports = {
 │ 🫣 .obbligo
 │ 🔮 .oroscopo
 │ 🐺 .maranza
-├── 🔥 ${BF('INTERAZIONI')} ─────────────┤
+├── 🔥 ${BF('INTERAZIONI')} ──────┤
 │ 🖐️ .schiaffo
 │ 😘 .bacia
 │ 🫂 .abbraccia
@@ -107,7 +107,7 @@ module.exports = {
 │ 🙏 .scusa
 │ 🪵 .palo
 │ 🗣️ .gossip
-├── 🛠️ ${SB('UTILITY')} ────────────────┤
+├── 🛠️ ${SB('UTILITY')} ──────────┤
 │ 👤 .profilo
 │ 👑 .admin
 │ 📡 .ping
@@ -121,7 +121,7 @@ module.exports = {
 │ 🐿️ .chipmunk
 │ 🏃 .rubato
 │ 🎵 .lyrics
-├── 🎤 ${MS('AUDIO')} ───────────────────┤
+├── 🎤 ${MS('AUDIO')} ─────────────┤
 │ 🎙️ .deep
 │ 🔄 .reverse
 │ 🗣️ .echo
@@ -130,19 +130,26 @@ module.exports = {
 │ 🔊 .bass
 │ 🌙 .nightcore
 │ 🔮 .8d
-├── 📥 ${BF('MEDIA')} ───────────────────┤
+├── 📥 ${BF('MEDIA')} ─────────────┤
 │ 📸 .ig
 │ 💀 .wasted
 │ 📖 .pokedex
 │ 🤡 .clown
-├── 🤖 ${SB('AI')} ──────────────────────┤
+├── 🤖 ${SB('AI')} ────────────────┤
 │ 🧠 .ai [domanda]
-├── 🎮 ${MS('GIOCHI')} ─────────────────┤
+├── 🎮 ${MS('GIOCHI')} ────────────┤
 │ ❓ .quiz
 │ 🏁 .bandiera
 │ 💞 .compatibilita
 │ ⚔️ .duello @utente [puntata]
-├── ⚙️ ${BF('ADMIN')} ───────────────────┤
+├── 🛡️ ${BF('SICUREZZA')} ─────────┤
+│ 🛡️ .antivoip on/off
+│ 💼 .antiwzbusiness on/off
+│ 🔥 .antiflame on/off
+│ 🤖 .antibot on/off
+│ 📋 .antilink on/off
+│ 🤬 .bestemmiometro on/off
+├── ⚙️ ${BF('ADMIN')} ─────────────┤
 │ 📢 .tag
 │ 📣 .tagall
 │ 🔒 .chiudi
@@ -153,41 +160,46 @@ module.exports = {
 │ 🔇 .mute
 │ 🔊 .unmute
 │ ⚠️ .warn
-│ ✅ .unwarn
 │ 👑 .promote
 │ 👑 .demote
 │ ✅ .accettarichieste
 │ 🗣️ .say
 │ 🔗 .invito
 │ ⏸️ .pausa
-│ ▶️ .riprendi`;
+│ ▶️ .riprendi
+│ 🛡️ .antivoip
+│ 💼 .antiwzbusiness
+│ 🔥 .antiflame
+│ 🤖 .antibot
+│ 📋 .antilink
+│ 🤬 .bestemmiometro`;
 
         if (isGroup) {
             const alCfg = getAntilinkGroup(from);
             const keys = Object.keys(ANTILINK_PLATFORMS);
             const alLines = keys.map(p => `│ ${alCfg[p] ? '🟢' : '🔴'} .antilink ${p}`).join('\n');
             menuTxt +=
-`├── 🔗 ${SB('ANTILINK')} ────────────────┤
+`├── 🔗 ${SB('ANTILINK')} ──────────┤
 ${alLines}
-│ 🟢.antilink tutti on/off`;
+│ 🟢 .antilink tutti on/off`;
         }
 
         if (isOwner) {
             menuTxt +=
-`├── 🛡 ${MS('OWNER')} ───────────────────┤
+`├── 🛡 ${MS('OWNER')} ──────────────┤
 │ ⏻ .spegni
 │ ⏼ .accendi
 │ 🔄 .riavvia
-│ 👋 .welcome on
-│ 👋 .welcome off
-│ 👋 .goodbye on
-│ 👋 .goodbye off
-│ 🔗 .setlink <url>`;
+│ 👋 .welcome on/off
+│ 👋 .goodbye on/off
+│ 🔗 .setlink <url>
+│ 🤝 .cowner @utente
+│ 📋 .infobot`;
         }
 
         const SP = db._config?.sponsorLink || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo?s=cl&p=a&ilr=0';
         menuTxt +=
-`├── 🌟 ${BF('SPONSOR')} ────────────────┤
+`├── 🌟 ${BF('SPONSOR')} ───────────┤
 │ Unisciti al gruppo ufficiale! 🫶
 │ ${SP}
 ╰───────────────────────────────────╯`;

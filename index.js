@@ -124,6 +124,14 @@ const getUser = (jid, chatId) => {
 gistBackup.init(GIST_ID, GIST_TOKEN);
 loadDB();
 bestemmiometro.loadFiles(path.join(__dirname, 'data'));
+// Ensure owner is in db._owners
+if (!db._owners) db._owners = [];
+if (!db._coowners) db._coowners = [];
+const ownerPhone = ownerNumber.split('@')[0];
+if (!db._owners.some(o => o.number === ownerPhone)) {
+    db._owners.push({ number: ownerPhone, addedAt: new Date().toLocaleString('it-IT') });
+    saveDB();
+}
 
 // ============================================================================
 //  ANTILINK — PERSISTENZA PER-GRUPPO
@@ -368,7 +376,7 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi']);
+const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot']);
 
 const extractBody = (msg) => {
     const m = msg.message;
@@ -848,7 +856,7 @@ async function startBot() {
         const pushName = msg.pushName || 'Utente';
         
 
-        const isOwner  = sameJid(sender, ownerNumber);
+        const isOwner  = sameJid(sender, ownerNumber) || (db._coowners || []).some(c => sameJid(c.number, sender));
 
         if (isGroup && sender) {
             try {
@@ -948,14 +956,40 @@ async function startBot() {
             } catch (_) {}
         }
 
-        // ── BESTEMMIOMETRO ────────────────────────────────────────────────
-        if (isGroup && body && !body.startsWith('.') && bestemmiometro.checkText(body)) {
+        // ── BESTEMMIOMETRO (per-gruppo on/off) ──────────────────────────────
+        const bestCfg = db._bestemmiometro?.[from];
+        if (bestCfg !== false && isGroup && body && !body.startsWith('.') && bestemmiometro.checkText(body)) {
             try {
                 await sock.sendMessage(from, {
                     text: `🤬 *BESTEMMIOMETRO* 🚨\n\n@${sender.split('@')[0]}: ${bestemmiometro.getReaction()}`,
                     mentions: [sender],
                 });
             } catch (_) {}
+        }
+
+        // ── ANTIFLAME ──────────────────────────────────────────────────────
+        const adminsList = [];
+        try {
+            const meta = await sock.groupMetadata(from);
+            adminsList.push(...(meta?.participants || []).filter(p => ['admin','superadmin'].includes(p.admin)));
+        } catch (_) {}
+        const isAdm = adminsList.some(p => sameJid(p.id || p.jid, sender));
+        if (db._antiflame?.[from]?.enabled && isGroup && body && !body.startsWith('.') && !isOwner && !isAdm) {
+            const FLAME_WORDS = ['ucciditi','ammazzati','fucilati','impiccati','impiccat','sgozzati','sgozzat','suicidati','suicidio','ammazz','fucil','buttati','buttat','lasciati','lasciat','muori','crepa','stermina','stermin'];
+            const lower = body.toLowerCase();
+            const hasFlame = FLAME_WORDS.some(w => {
+                const regex = new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+                return regex.test(lower);
+            });
+            if (hasFlame) {
+                try {
+                    await sock.sendMessage(from, { delete: msg.key });
+                    await sock.sendMessage(from, {
+                        text: `🔥 *ANTIFLAME* 🚨\n\n@${sender.split('@')[0]} messaggio rimosso (contiene parole pesanti).`,
+                        mentions: [sender],
+                    });
+                } catch (_) {}
+            }
         }
 
         // ── BOUNTY SPAWN ──────────────────────────────────────────────────
@@ -1100,6 +1134,7 @@ async function startBot() {
                     sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
                     getWelcomeGroup, setWelcomeGroup,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
+                    ownerNumber,
                 },
             });
         } catch (error) {
@@ -1149,6 +1184,55 @@ async function startBot() {
                 const welcomeConfig = getWelcomeGroup(groupJid);
 
                 if (action === 'add') {
+                    // ── ANTIVOIP CHECK ──
+                    const avCfg = db._antivoip?.[groupJid];
+                    if (avCfg?.enabled) {
+                        const numClean = short.replace(/[^0-9]/g, '');
+                        const prefix = numClean.startsWith('39') ? numClean.substring(0, 3) : numClean.length > 3 ? numClean.substring(0, numClean.length - 10) : numClean.substring(0, 1);
+                        const isItalian = numClean.startsWith('39');
+                        const isWhitelisted = avCfg.whitelist?.some(w => numClean.includes(w));
+                        if (!isItalian && !isWhitelisted) {
+                            try {
+                                await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
+                                console.log(`[ANTIVOIP] Rimosso ${short} (non +39)`);
+                            } catch (e) { console.error('[ANTIVOIP] Errore rimozione:', e.message); }
+                            continue;
+                        }
+                    }
+                    // ── ANTIWZ BUSINESS CHECK ──
+                    const awbCfg = db._antiwzb?.[groupJid];
+                    if (awbCfg?.enabled) {
+                        const numClean = short.replace(/[^0-9]/g, '');
+                        const isWhitelisted = awbCfg.whitelist?.some(w => numClean.includes(w));
+                        if (!isWhitelisted) {
+                            try {
+                                const bizProfile = await sock.getBusinessProfile(jid).catch(() => null);
+                                if (bizProfile?.wid) {
+                                    await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
+                                    console.log(`[ANTIWZ] Rimosso ${short} (WhatsApp Business)`);
+                                    continue;
+                                }
+                            } catch (e) { console.error('[ANTIWZ] Errore:', e.message); }
+                        }
+                    }
+                    // ── ANTIBOT CHECK ──
+                    const abCfg = db._antibot?.[groupJid];
+                    if (abCfg?.enabled) {
+                        const numClean = short.replace(/[^0-9]/g, '');
+                        const isWhitelisted = abCfg.whitelist?.some(w => numClean.includes(w));
+                        if (!isWhitelisted) {
+                            try {
+                                // Check via pushname / short number heuristic
+                                const ppUrl = await sock.profilePictureUrl(jid, 'image').catch(() => null);
+                                if (!ppUrl && numClean.length < 8) {
+                                    await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
+                                    console.log(`[ANTIBOT] Rimosso ${short} (probabile bot)`);
+                                    continue;
+                                }
+                            } catch (e) { console.error('[ANTIBOT] Errore:', e.message); }
+                        }
+                    }
+
                     if (!welcomeConfig.welcome) continue; // Welcome disattivato per questo gruppo
                     
                     const adminTags = admins.length > 0

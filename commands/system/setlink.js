@@ -16,17 +16,17 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
-        if (!isOwner) return reply("╭────〔 ⛔ ACCESSO NEGATO 〕────╮\n│ Comando riservato all'Owner del bot.\n╰──────────────────────────────╯");
+        if (!isOwner) return reply("╭──〔 ⛔ ACCESSO NEGATO 〕──╮\n│ Comando riservato all'Owner del bot.\n╰──────────╯");
 
         const link = textArgs?.trim();
         if (!link) {
             const current = db._config?.sponsorLink || 'nessuno';
             return reply(
-`╭─── ✦ ${SB('SETLINK')} ✦ ───╮
+`╭─ ✦ ${SB('SETLINK')} ✦ ─╮
 │                          │
-│ Link attuale: ${current}
+│ Link attuale: ${current} |
 │                          │
-│ Usa: .setlink <url>     │
+│ Usa: .setlink <url>      │
 │ per cambiarlo.           │
 ╰──────────────────────────╯`);
         }
@@ -36,14 +36,14 @@ module.exports = {
         saveDB();
 
         await reply(
-`╭─── ✦ ${SB('SETLINK')} ✦ ───╮
+`╭─ ✦ ${SB('SETLINK')} ✦ ─╮
 │                          │
-│ ✅ Link aggiornato!      │
+│ ✅ Link aggiornato!     |
 │                          │
-│ ${link}
+│ ${link}                  |
 │                          │
-│ Sarà visibile nel menu  │
-│ e in .sponsor su tutti  │
+│ Sarà visibile nel menu   │
+│ e in .sponsor su tutti   │
 │ i gruppi. 🚀             │
 ╰──────────────────────────╯`);
     },
