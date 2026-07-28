@@ -41,7 +41,6 @@ module.exports = {
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
 ├── 🆕 ${MS('NOVITÀ v11.0')} ─────┤
 │ 🆔 .id
-│ 🖼️ .toimg
 │ 🎯 .pick
 │ 🧮 .calc
 │ 😂 .joke
@@ -130,7 +129,6 @@ module.exports = {
 │ 📊 .count
 │ 🔐 .password
 │ 🎨 .sticker
-│ 🖼️ .toimg
 │ 📹 .vv
 │ 💻 .hack
 │ 👥 .clona
@@ -189,7 +187,13 @@ module.exports = {
 │ 🔥 .antiflame
 │ 🤖 .antibot
 │ 📋 .antilink
-│ 🤬 .bestemmiometro`;
+│ 🤬 .bestemmiometro
+├── 📋 ${BF('GESTIONE')} ──────────┤
+│ 📛 .setname <nome>
+│ 📝 .setdesc <testo>
+│ 🔄 .revoke
+│ 👑 .tagadmin
+│ 📋 .list`;
 
         if (isGroup) {
             const alCfg = getAntilinkGroup(from);
