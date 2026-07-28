@@ -39,19 +39,26 @@ module.exports = {
         let menuTxt =
 `╭── ✦ ${SB('SCOPAMICO BOT')} v11.0 ✦ ──╮
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
-├── 🆕 ${MS('NOVITÀ')} ───────────┤
-│ ⚔️ .duello
-│ 🎟️ .lotteria
-│ 👤 .profilo
-│ 🏁 .bandiera
-│ ❓ .quiz
-│ 💞 .compatibilita
-│ 🦹 .ruba
-│ 🏧 .deposita
-│ 💳 .preleva
-│ 📅 .daily
-│ 🚫 .mute @utente
-│ 🎁 .dona @utente
+├── 🆕 ${MS('NOVITÀ v11.0')} ─────┤
+│ 🆔 .id
+│ 🖼️ .toimg
+│ 🎯 .pick
+│ 🧮 .calc
+│ 😂 .joke
+│ 🧠 .fact
+│ 🔐 .password
+│ 🔢 .base64
+│ 🔣 .hex
+│ 📊 .count
+│ 👑 .admin [rivisto]
+│ 🛡️ .antivoip
+│ 💼 .antiwzbusiness
+│ 🔥 .antiflame
+│ 🤖 .antibot
+│ 🤬 .bestemmiometro
+│ 🤝 .cowner
+│ 📋 .infobot
+│ 🔗 .setlink
 ├── 💝 ${BF('FAMIGLIA')} ─────────┤
 │ .famiglia sposa|adotta|caccia
 | |divorzia|abbandona
@@ -88,6 +95,9 @@ module.exports = {
 ├── 🔥 ${BF('INTERAZIONI')} ──────┤
 │ 🖐️ .schiaffo
 │ 😘 .bacia
+│ 😂 .joke
+│ 🧠 .fact
+│ 🎯 .pick
 │ 🫂 .abbraccia
 │ 💍 .sposa
 │ 🍑 .paccasulculo
@@ -113,7 +123,14 @@ module.exports = {
 │ 📡 .ping
 │ ℹ️ .groupinfo
 │ 🌤️ .weather
+│ 🆔 .id
+│ 🧮 .calc
+│ 🔢 .base64
+│ 🔣 .hex
+│ 📊 .count
+│ 🔐 .password
 │ 🎨 .sticker
+│ 🖼️ .toimg
 │ 📹 .vv
 │ 💻 .hack
 │ 👥 .clona
