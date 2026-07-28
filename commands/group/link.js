@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'link',
-    aliases: ['grouplink', 'linkgruppo'],
+    aliases: [],
     description: "Mostra il link del gruppo e tagga tutti.",
 
     async run(sock, msg, args, context) {
