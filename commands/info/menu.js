@@ -97,6 +97,11 @@ module.exports = {
 │ 😂 .joke
 │ 🧠 .fact
 │ 🎯 .pick
+│ 🪙 .flip
+│ 🎱 .8ball
+│ 📊 .rate
+│ 🤔 .wyr
+│ 💭 .quote
 │ 🫂 .abbraccia
 │ 💍 .sposa
 │ 🍑 .paccasulculo
@@ -193,7 +198,19 @@ module.exports = {
 │ 📝 .setdesc <testo>
 │ 🔄 .revoke
 │ 👑 .tagadmin
-│ 📋 .list`;
+│ 📋 .list
+│ 🖼️ .seticon (reply a img)
+│ 🏞️ .grouppic
+│ ➕ .add <numero>
+│ 🚪 .kick @utente
+│ 👋 .leave
+│ 👑 .admincount
+│ ⏳ .ephemeral on/off
+│ ⚠️ .warnlist
+│ ✅ .resetwarns @utente
+├── 🗂️ ${MS('STATO')} ─────────────┤
+│ 📊 .status
+│ 📦 .groups`;
 
         if (isGroup) {
             const alCfg = getAntilinkGroup(from);
@@ -215,7 +232,9 @@ ${alLines}
 │ 👋 .goodbye on/off
 │ 🔗 .setlink <url>
 │ 🤝 .cowner @utente
-│ 📋 .infobot`;
+│ 📋 .infobot
+│ 📊 .status
+│ 📦 .groups`;
         }
 
         const SP = db._config?.sponsorLink || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo?s=cl&p=a&ilr=0';
