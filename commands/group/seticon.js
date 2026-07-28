@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'seticon',
-    aliases: ['setfoto', 'fotogruppo', 'setpp'],
+    aliases: ['setfoto', 'setimg', 'setpp'],
     description: "Cambia la foto del gruppo (admin).",
 
     async run(sock, msg, args, context) {

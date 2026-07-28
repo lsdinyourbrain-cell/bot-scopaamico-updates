@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'grouppic',
-    aliases: ['fotogruppo', 'pfpgruppo', 'groupprofile'],
+    aliases: ['gpfoto', 'pfpgruppo', 'groupprofile'],
     description: "Mostra la foto del gruppo.",
 
     async run(sock, msg, args, context) {

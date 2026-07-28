@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'admincount',
-    aliases: ['contadm', 'admins', 'admingroup'],
+    aliases: ['contadm', 'admingroup', 'admincnt'],
     description: "Mostra il numero di admin nel gruppo.",
 
     async run(sock, msg, args, context) {
