@@ -6,6 +6,7 @@ const {
     DisconnectReason,
     downloadMediaMessage,
     downloadContentFromMessage,
+    fetchLatestBaileysVersion,
 } = require('@whiskeysockets/baileys');
 
 const sharp = require('sharp');
@@ -841,6 +842,9 @@ server.listen(PORT, () => {
     console.log(`[HTTP] Health check server in ascolto sulla porta ${PORT}`);
 });
 
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 10;
+
 async function startBot() {
     console.log('[BOT] Avvio in corso...');
 
@@ -862,16 +866,29 @@ async function startBot() {
 
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
+    let waVersion;
+    try {
+        const ver = await fetchLatestBaileysVersion();
+        waVersion = ver.version;
+        console.log(`[BOT] Versione WhatsApp Web: ${waVersion.join('.')}`);
+    } catch (_) {
+        waVersion = [2, 2412, 51];
+    }
+
     const sock = makeWASocket({
-        auth            : state,
-        printQRInTerminal: true,
-        logger          : pino({ level: 'silent' }),
+        auth                : state,
+        printQRInTerminal   : true,
+        logger              : pino({ level: 'silent' }),
+        version             : waVersion,
+        connectTimeoutMs    : 120000,
+        keepAliveIntervalMs : 30000,
+        markOnlineOnConnect : false,
+        syncFullHistory     : false,
+        generateHighQualityLinkPreview: false,
+        browser             : ['ScopaAmico Bot', 'Chrome', '120.0.0'],
     });
 
     sock.ev.on('creds.update', saveCreds);
-
-    let reconnectAttempts = 0;
-    const MAX_RECONNECT_ATTEMPTS = 10;
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
