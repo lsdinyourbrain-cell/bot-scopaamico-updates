@@ -85,13 +85,20 @@ const loadDB = async () => {
     }
 };
 
+let _lastGistUpload = 0;
+const GIST_UPLOAD_INTERVAL = 60000; // max 1 volta al minuto
+
 const saveDB = () => {
     if (_saveTimer) clearTimeout(_saveTimer);
     _saveTimer = setTimeout(() => {
         fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), 'utf-8', (err) => {
             if (err) console.error('[DB] Errore salvataggio:', err.message);
         });
-        gistBackup.upload(db);
+        const now = Date.now();
+        if (now - _lastGistUpload >= GIST_UPLOAD_INTERVAL) {
+            _lastGistUpload = now;
+            gistBackup.upload(db).catch(() => {});
+        }
     }, 500);
 };
 
@@ -364,8 +371,19 @@ const isAdminParticipant = (participant, jid) => {
         .some(participantJid => sameJid(participantJid, jid));
 };
 
+// Cache per groupMetadata (evita rate-limit di WhatsApp)
+const groupMetaCache = new Map();
+const GROUP_META_CACHE_TTL = 15000; // 15 secondi
+
 const getGroupAdminState = async (sock, groupJid, senderJids) => {
-    const metadata = await sock.groupMetadata(groupJid);
+    const cached = groupMetaCache.get(groupJid);
+    let metadata;
+    if (cached && Date.now() - cached.ts < GROUP_META_CACHE_TTL) {
+        metadata = cached.data;
+    } else {
+        metadata = await sock.groupMetadata(groupJid);
+        groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
+    }
     const participants = Array.isArray(metadata?.participants) ? metadata.participants : [];
     const isAdmin = (jids) => jids
         .filter(Boolean)
@@ -1259,9 +1277,11 @@ async function startBot() {
             }
         } catch (error) {
             console.error('[handler] Errore critico:', error.message);
+            // rate-overlimit: ignora silenziosamente per non spammare
+            if (error.data === 429 || error.message === 'rate-overlimit') return;
             await sock.sendMessage(from, { 
                 text: `╭────〔 ⚠️ ERRORE DI SISTEMA 〕────╮\n│ Si è verificato un problema:\n│ _${error.message}_\n╰──────────────────────────────────╯`
-            }, { quoted: msg });
+            }, { quoted: msg }).catch(() => {});
         }
     });
 
