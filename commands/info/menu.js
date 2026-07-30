@@ -208,6 +208,7 @@ module.exports = {
 │ ⏳ .ephemeral on/off
 │ ⚠️ .warnlist
 │ ✅ .resetwarns @utente
+│ 📌 .pin (reply msg)
 ├── 🗂️ ${MS('STATO')} ─────────────┤
 │ 📊 .status
 │ 📦 .groups`;
