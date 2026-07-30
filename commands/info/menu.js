@@ -232,7 +232,7 @@ ${alLines}
 │ 👋 .welcome on/off
 │ 👋 .goodbye on/off
 │ 🔗 .setlink <url>
-│ 🤝 .cowner @utente
+│ 👑 .addowner @utente
 │ 📋 .infobot
 │ 📊 .status
 │ 📦 .groups`;

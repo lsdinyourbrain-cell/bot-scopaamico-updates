@@ -376,7 +376,7 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa']);
+const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner']);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -404,7 +404,7 @@ const COMMAND_EMOJIS = {
     antilink: '🔗', bestemmiometro: '🤬',
     // Owner
     spegni: '⏻', accendi: '⏼', riavvia: '🔄', welcome: '👋', goodbye: '👋',
-    setlink: '🔗', cowner: '🤝',
+    setlink: '🔗', addowner: '👑', setowner: '👑',
     // Media/Utility
     sticker: '🎨', vv: '📹', hack: '💻', clona: '👥', tts: '🔊',
     rubato: '🏃', lyrics: '🎵', weather: '🌤️', ig: '📸',
@@ -919,7 +919,7 @@ async function startBot() {
         const pushName = msg.pushName || 'Utente';
         
 
-        const isOwner  = sameJid(sender, ownerNumber) || (db._coowners || []).some(c => sameJid(c.number, sender));
+        const isOwner  = sameJid(sender, ownerNumber) || (db._owners || []).some(o => sameJid(o.number, sender));
 
         if (isGroup && sender) {
             try {
@@ -964,7 +964,7 @@ async function startBot() {
                         if (!regex.test(body)) continue;         // nessun match: salta
 
                         // Trovato un link vietato — controlla se il mittente è esente
-                        const isOwnerCheck = sameJid(sender, ownerNumber);
+                        const isOwnerCheck = sameJid(sender, ownerNumber) || (db._owners || []).some(o => sameJid(o.number, sender));
                         if (isOwnerCheck) break; // owner: lascia passare tutto
 
                         // Recupera lo stato admin del mittente per questo gruppo

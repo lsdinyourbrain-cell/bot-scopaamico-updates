@@ -23,14 +23,13 @@ const MS = (s) => s.split('').map(c => {
 module.exports = {
     name: 'infobot',
     aliases: ['botinfo', 'about'],
-    description: "Mostra informazioni sul bot, owner e co-owner.",
+    description: "Mostra informazioni sul bot, owner e owner aggiuntivi.",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, ownerNumber } = services;
 
         const owners = db._owners || [];
-        const coowners = db._coowners || [];
 
         // Estrai il numero owner dal source
         const ownerPhone = ownerNumber ? ownerNumber.split('@')[0] : 'Sconosciuto';
@@ -64,13 +63,17 @@ module.exports = {
 ┃
 ┣━━━━━━ ${BF('CONTATTI')} ━━━━━━┫
 ┃
-┃  👑 ${SB('OWNER')}
+┃  👑 ${SB('OWNER PRINCIPALE')}
 ┃     📱 ${ownerPhone}
 ┃`;
 
-        if (coowners.length > 0) {
-            txt += `┃\n┃  🤝 ${MS('CO-OWNERS')}\n`;
-            txt += coowners.map(c => `┃     📱 ${c.number}`).join('\n') + '\n';
+        if (owners.length > 0) {
+            txt += `┃\n┃  👑 ${MS('ALTRI OWNER')}\n`;
+            txt += owners.map(o => {
+                const num = o.number.split('@')[0];
+                const date = o.addedAt || 'sconosciuta';
+                return `┃     📱 ${num} (dal ${date})`;
+            }).join('\n') + '\n';
         }
 
         const totalUsers = Object.keys(db).filter(k => k.endsWith('@g.us') || k.endsWith('@s.whatsapp.net')).length;
