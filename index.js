@@ -849,7 +849,13 @@ async function startBot() {
     console.log('[BOT] Avvio in corso...');
 
     const AUTH_DIR_PATH = path.join(__dirname, 'auth_info_baileys');
-    if (!fs.existsSync(AUTH_DIR_PATH) && (process.env.AUTH_BASE64 || await gistBackup.downloadAuth())) {
+    const AUTH_INVALIDATED_FLAG = path.join(__dirname, '.auth_invalidated');
+
+    // Se la sessione precedente è stata invalidata (loggedOut), salta il ripristino da Gist
+    if (fs.existsSync(AUTH_INVALIDATED_FLAG)) {
+        fs.rmSync(AUTH_INVALIDATED_FLAG, { force: true });
+        console.log('[AUTH] Sessione precedente scaduta. Avvio fresco per nuovo QR...');
+    } else if (!fs.existsSync(AUTH_DIR_PATH) && (process.env.AUTH_BASE64 || await gistBackup.downloadAuth())) {
         let authData = await gistBackup.downloadAuth();
         if (!authData && process.env.AUTH_BASE64) {
             const raw = Buffer.from(process.env.AUTH_BASE64, 'base64').toString('utf-8');
@@ -906,8 +912,9 @@ async function startBot() {
 
             if (statusCode === DisconnectReason.loggedOut) {
                 console.log('[BOT] Sessione scaduta. Pulisco auth (locale + Gist) e riavvio per nuovo QR...');
+                fs.writeFileSync(AUTH_INVALIDATED_FLAG, 'true', 'utf-8');
                 fs.rmSync(AUTH_DIR_PATH, { recursive: true, force: true });
-                await gistBackup.clearAuth();
+                await gistBackup.clearAuth().catch(() => {});
                 reconnectAttempts = 0;
                 setTimeout(startBot, 3000);
                 return;
