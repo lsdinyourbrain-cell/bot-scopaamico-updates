@@ -890,7 +890,7 @@ async function startBot() {
 
     sock.ev.on('creds.update', saveCreds);
 
-    sock.ev.on('connection.update', (update) => {
+    sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
@@ -905,10 +905,12 @@ async function startBot() {
             console.log(`[BOT] Disconnesso (${statusCode || '?'}): ${errorMsg}`);
 
             if (statusCode === DisconnectReason.loggedOut) {
-                console.log('[BOT] Sessione scaduta. Pulisco auth e riavvio per nuovo QR...');
+                console.log('[BOT] Sessione scaduta. Pulisco auth (locale + Gist) e riavvio per nuovo QR...');
                 fs.rmSync(AUTH_DIR_PATH, { recursive: true, force: true });
+                await gistBackup.clearAuth();
                 reconnectAttempts = 0;
-                startBot();
+                setTimeout(startBot, 3000);
+                return;
             } else if (statusCode === DisconnectReason.restartRequired) {
                 console.log('[BOT] Riavvio richiesto da WhatsApp.');
                 startBot();
