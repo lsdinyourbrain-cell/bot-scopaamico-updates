@@ -378,6 +378,68 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
 
 const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi']);
 
+const COMMAND_EMOJIS = {
+    // Info/System
+    menu: '📋', ping: '⏳', id: '🆔', admin: '👑', infobot: 'ℹ️',
+    groupinfo: 'ℹ️', status: '📊', groups: '📦', profile: '👤', profilo: '👤',
+    // Admin - moderation
+    tag: '📢', tagall: '📢', tagadmin: '👑', ban: '🚫', kick: '🚫', caccia: '🚫',
+    del: '🗑️', mute: '🔇', unmute: '🔊', warn: '⚠️', unwarn: '✅',
+    promote: '📈', demote: '📉', chiudi: '🔒', apri: '🔓',
+    pausa: '⏸️', riprendi: '▶️',
+    // Admin - management
+    add: '➕', aggiungi: '➕', invite: '➕',
+    setname: '📛', setdesc: '📝', seticon: '🖼️', setfoto: '🖼️', setimg: '🖼️', setpp: '🖼️',
+    revoke: '🔄', link: '🔗', invito: '🔗', linkgruppo: '🔗', grouplink: '🔗',
+    grouppic: '🖼️', gpfoto: '🖼️', pfp: '🖼️',
+    leave: '👋', esci: '👋',
+    warnlist: '📋', warns: '📋', resetwarns: '✅', clearwarn: '✅',
+    ephemeral: '⏳', scomparsa: '⏳', tempomsg: '⏳',
+    admincount: '📊', contadm: '📊', admincnt: '📊', admingroup: '📊',
+    list: '📋', say: '🗣️', parla: '🗣️', dì: '🗣️',
+    // Security
+    antivoip: '📞', antiwzbusiness: '💼', antiwb: '💼', awb: '💼',
+    antiflame: '🔥', flame: '🔥', antibot: '🤖',
+    antilink: '🔗', bestemmiometro: '🤬',
+    // Owner
+    spegni: '⏻', accendi: '⏼', riavvia: '🔄', welcome: '👋', goodbye: '👋',
+    setlink: '🔗', cowner: '🤝',
+    // Media/Utility
+    sticker: '🎨', vv: '📹', hack: '💻', clona: '👥', tts: '🔊',
+    rubato: '🏃', lyrics: '🎵', weather: '🌤️', ig: '📸',
+    wasted: '💀', pokedex: '📖', clown: '🤡',
+    deep: '🎙️', reverse: '🔄', echo: '🗣️', robot: '🤖', drunk: '🥴',
+    bass: '🔊', nightcore: '🌙', '8d': '🔮', chipmunk: '🐿️',
+    // Interactions
+    schiaffo: '🖐️', bacia: '😘', joke: '😂', fact: '🧠', pick: '🎯',
+    flip: '🪙', moneta: '🪙', coin: '🪙',
+    '8ball': '🎱', magicball: '🎱', pallamagica: '🎱', domanda: '🎱',
+    rate: '📊', valuta: '📊', wyr: '🤔', preferisci: '🤔', wouldyourather: '🤔',
+    quote: '💭', citazione: '💭', filosofia: '💭',
+    calc: '🧮', base64: '🔢', hex: '🔣', count: '📊', password: '🔐',
+    abbraccia: '🫂', sposa: '💍', paccasulculo: '🍑', uccidi: '🔪',
+    insulta: '🤬', scopa: '🔞', sborra: '💦', ditalino: '👉👌',
+    sega: '🍆', incinta: '🤰', tette: '🍒', meme: '😂',
+    rissa: '🥊', cazzo: '🍆', sclero: '🤪', drink: '🍹', scusa: '🙏',
+    palo: '🪵', gossip: '🗣️',
+    // Family
+    famiglia: '💝', sposa: '💍', adotta: '👨‍👧', divorzia: '💔', abbandona: '💔',
+    // Economy
+    cassaforte: '💰', scava: '⛏️', casino: '🎰', dadi: '🎲', slot: '🎰',
+    roulette: '🔴', sasso: '🪨', daily: '📅', deposita: '🏧', preleva: '💳',
+    ruba: '🦹', colpisci: '⚔️', lotteria: '🎟️', top: '🏆', ricchi: '🤑',
+    // Social
+    ship: '💞', gay: '🏳️‍🌈', simpatometro: '💖', percentuale: '📊',
+    scelta: '🤔', fiore: '🌸', personaggio: '🦸', anime: '📺',
+    assemblapc: '🖥️', verita: '🤫', obbligo: '🫣', oroscopo: '🔮', maranza: '🐺',
+    // Games
+    quiz: '❓', bandiera: '🏁', compatibilita: '💞', duello: '⚔️',
+    // Accept requests
+    accettarichieste: '✅', approva: '✅', accetta: '✅',
+    // p / d
+    p: '🖼️', d: '🗑️',
+};
+
 const extractBody = (msg) => {
     const m = msg.message;
     if (!m) return '';
@@ -1137,6 +1199,13 @@ async function startBot() {
                     ownerNumber,
                 },
             });
+
+            // Reazione emoji sul comando
+            const cmdFirst = command.split(/[\s_]/)[0].toLowerCase();
+            const emoji = COMMAND_EMOJIS[command] || COMMAND_EMOJIS[cmdFirst];
+            if (emoji) {
+                sock.sendMessage(from, { react: { key: msg.key, text: emoji } }).catch(() => {});
+            }
         } catch (error) {
             console.error('[handler] Errore critico:', error.message);
             await sock.sendMessage(from, { 
