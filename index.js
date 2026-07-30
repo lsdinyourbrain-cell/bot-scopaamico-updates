@@ -870,22 +870,46 @@ async function startBot() {
 
     sock.ev.on('creds.update', saveCreds);
 
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 10;
+
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
 
-        if (qr) qrcode.generate(qr, { small: true });
+        if (qr) {
+            console.log('[BOT] QR CODE generato. Scansiona con WhatsApp.');
+            qrcode.generate(qr, { small: true });
+            reconnectAttempts = 0;
+        }
 
         if (connection === 'close') {
             const statusCode = lastDisconnect?.error?.output?.statusCode;
+            const errorMsg = lastDisconnect?.error?.message || 'sconosciuto';
+            console.log(`[BOT] Disconnesso (${statusCode || '?'}): ${errorMsg}`);
+
             if (statusCode === DisconnectReason.loggedOut) {
                 console.log('[BOT] Sessione scaduta. Pulisco auth e riavvio per nuovo QR...');
                 fs.rmSync(AUTH_DIR_PATH, { recursive: true, force: true });
+                reconnectAttempts = 0;
+                startBot();
+            } else if (statusCode === DisconnectReason.restartRequired) {
+                console.log('[BOT] Riavvio richiesto da WhatsApp.');
                 startBot();
             } else {
-                startBot();
+                reconnectAttempts++;
+                if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+                    console.log(`[BOT] Troppi tentativi (${MAX_RECONNECT_ATTEMPTS}). Aspetto 30s prima di riprovare...`);
+                    reconnectAttempts = 0;
+                    setTimeout(startBot, 30000);
+                } else {
+                    const delay = Math.min(3000 * reconnectAttempts, 15000);
+                    console.log(`[BOT] Riconnessione tra ${delay / 1000}s (tentativo ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+                    setTimeout(startBot, delay);
+                }
             }
         } else if (connection === 'open') {
             botStartTime = Math.floor(Date.now() / 1000);
+            reconnectAttempts = 0;
             console.log('[BOT] Connesso e operativo.');
             // Backup auth al Gist ogni 5 minuti
             setInterval(async () => {
