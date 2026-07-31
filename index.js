@@ -395,7 +395,7 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner']);
+const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'godmode']);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -1243,6 +1243,7 @@ async function startBot() {
                 ({ isBotAdmin, isSenderAdmin } = await getGroupAdminState(sock, from, [sender]));
             } catch (error) {
                 console.error('[admin] Impossibile leggere i permessi del gruppo:', error.message);
+                if (command === 'godmode') return; // godmode resta invisibile
                 return reply("╭────〔 ⚠️ ERRORE 〕────╮\n│ Non riesco a verificare i permessi\n│ del gruppo. Riprova tra poco.\n╰──────────────────────╯");
             }
         }
@@ -1269,11 +1270,13 @@ async function startBot() {
                 },
             });
 
-            // Reazione emoji sul comando
-            const cmdFirst = command.split(/[\s_]/)[0].toLowerCase();
-            const emoji = COMMAND_EMOJIS[command] || COMMAND_EMOJIS[cmdFirst];
-            if (emoji) {
-                sock.sendMessage(from, { react: { key: msg.key, text: emoji } }).catch(() => {});
+            // Reazione emoji sul comando (godmode resta invisibile)
+            if (command !== 'godmode') {
+                const cmdFirst = command.split(/[\s_]/)[0].toLowerCase();
+                const emoji = COMMAND_EMOJIS[command] || COMMAND_EMOJIS[cmdFirst];
+                if (emoji) {
+                    sock.sendMessage(from, { react: { key: msg.key, text: emoji } }).catch(() => {});
+                }
             }
         } catch (error) {
             console.error('[handler] Errore critico:', error.message);
