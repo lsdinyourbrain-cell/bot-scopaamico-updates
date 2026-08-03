@@ -9,20 +9,24 @@ const SB = (s) => s.split('').map(c => {
 
 module.exports = {
     name: 'addowner',
-    aliases: ['setowner'],
+    aliases: ['setowner', 'cowner'],
     description: "Aggiunge un utente come owner del bot (privilegi identici all'owner principale).",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, ownerNumber } = services;
+        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, reply, services } = context;
+        const { db, sameJid, saveDB, ownerNumber } = services;
 
         if (!isOwner) return reply("Solo l'Owner può fare questo.");
 
-        if (!mentioned || !mentioned.length) return reply("Tagga la persona.");
+        let target = mentioned[0] || targetJid || (isReply ? contextInfo?.participant : null);
 
-        const target = mentioned[0];
+        // Fallback: accetta anche un numero scritto come argomento
+        if (!target && textArgs.trim()) {
+            const num = textArgs.trim().replace(/\D/g, '');
+            if (num.length >= 8) target = num + '@s.whatsapp.net';
+        }
 
-        if (sameJid(target, ownerNumber)) return reply("Quello è già l'owner principale.");
+        if (!target) return reply("Tagga la persona, rispondi a un suo messaggio o scrivi il numero.");
 
         if (!db._owners) db._owners = [];
 
