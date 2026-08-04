@@ -30,28 +30,29 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, ownerNumber } = services;
 
         const owners = db._owners || [];
+        const mentions = [];
 
         // Numero REALE dell'owner principale: il bot gira sull'account dell'owner,
         // quindi sock.user.id è il numero di telefono vero (PN). Se manca, ripiega
         // sull'ID salvato in ownerNumber.
         const botPn = sock?.user?.id ? sock.user.id.split(':')[0].split('@')[0] : '';
-        const ownerPhone = botPn || (ownerNumber ? ownerNumber.split('@')[0] : 'Sconosciuto');
-        const ownerPhoneLabel = ownerNumber && ownerNumber.includes('@lid') && botPn
-            ? `${ownerPhone} (ID interno: ${ownerNumber.split('@')[0]})`
-            : ownerPhone;
+        const ownerNumberPn = ownerNumber && !ownerNumber.includes('@lid') ? ownerNumber.split('@')[0] : '';
+        const ownerDisplay = botPn || ownerNumberPn || (ownerNumber ? ownerNumber.split('@')[0] : 'Sconosciuto');
+        if (botPn) mentions.push(`${botPn}@s.whatsapp.net`);
         const totalOwners = owners.length + 1;
 
-        // Converte un jid (@lid o @s.whatsapp.net) nel numero di telefono reale.
-        // getPNForLID interroga WhatsApp (USync) e può fallire: in tal caso mostra l'ID.
+        // Converte un jid (@lid o @s.whatsapp.net) nel numero di telefono reale
+        // e fornisce il jid da taggare (se risolvibile). getPNForLID interroga
+        // WhatsApp (USync) e può fallire: in tal caso mostra l'ID senza tag.
         const displayOwnerNumber = async (jid) => {
-            if (!jid) return 'Sconosciuto';
+            if (!jid) return { display: 'Sconosciuto', mention: null };
             const num = jid.split('@')[0];
-            if (!jid.includes('@lid')) return num;
+            if (!jid.includes('@lid')) return { display: num, mention: jid };
             try {
                 const pn = await sock?.signalRepository?.lidMapping?.getPNForLID(jid);
-                if (pn) return pn.split('@')[0];
+                if (pn) return { display: pn.split('@')[0], mention: pn };
             } catch (_) {}
-            return num;
+            return { display: num, mention: null };
         };
 
         // Genera frasi casuali
@@ -84,17 +85,18 @@ module.exports = {
 ┣━━━━━━ ${BF('CONTATTI')} ━━━━━━┫
 ┃
 ┃  👑 ${SB('OWNER PRINCIPALE')}
-┃     📱 ${ownerPhoneLabel}
+┃     📱 @${ownerDisplay}
 ┃`;
 
         if (owners.length > 0) {
             txt += `┃\n┃  👑 ${MS('ALTRI OWNER')} (${owners.length})\n`;
             const resolved = await Promise.all(owners.map(async o => ({
-                real: await displayOwnerNumber(o.number || o.lid),
+                ...(await displayOwnerNumber(o.number || o.lid)),
                 date: o.addedAt || 'sconosciuta',
             })));
             for (const r of resolved) {
-                txt += `┃     📱 ${r.real} — dal ${r.date}\n`;
+                if (r.mention) mentions.push(r.mention);
+                txt += `┃     📱 @${r.display} — dal ${r.date}\n`;
             }
             txt += '┃';
         }
@@ -110,11 +112,11 @@ module.exports = {
 ┃
 ┣━━━━━━ ${BF('COMANDI')} ━━━━━━━┫
 ┃
-┃  Premi il pulsante per aprire
-┃  il menu completo! 🚀
+┃  Digita .menu per vedere
+┃  tutti i comandi! 🚀
 ┃
 ╰━━━━━━━━━━━━━━━━━━━━━━━━╯`;
 
-        await reply(txt);
+        await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });
     },
 };
