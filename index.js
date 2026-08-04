@@ -11,8 +11,8 @@ const {
 
 const sharp = require('sharp');
 const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('ffmpeg-static');
-ffmpeg.setFfmpegPath(ffmpegPath);
+const { getFfmpegPath } = require('./lib/ffmpeg-path');
+ffmpeg.setFfmpegPath(getFfmpegPath());
 const webpmux = require('node-webpmux');
 const qrcode  = require('qrcode-terminal');
 const pino    = require('pino');
@@ -395,7 +395,7 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode']);
+const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento']);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -424,6 +424,7 @@ const COMMAND_EMOJIS = {
     // Owner
     spegni: '⏻', accendi: '⏼', riavvia: '🔄', welcome: '👋', goodbye: '👋',
     setlink: '🔗', addowner: '👑', setowner: '👑', cowner: '👑',
+    aggiorna: '📦', update: '📦', aggiornamento: '📦',
     // Media/Utility
     sticker: '🎨', vv: '📹', hack: '💻', clona: '👥', tts: '🔊',
     rubato: '🏃', lyrics: '🎵', weather: '🌤️', ig: '📸',
@@ -844,21 +845,9 @@ const getQuotedKey = (chatId, contextInfo) => ({
     participant: contextInfo.participant,
 });
 
-// ── HTTP HEALTH CHECK SERVER ──────────────────────────────────────────
-const http = require('http');
-const server = http.createServer((req, res) => {
-    if (req.url === '/') {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('OK - Bot WhatsApp attivo');
-    } else {
-        res.writeHead(404);
-        res.end();
-    }
-});
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`[HTTP] Health check server in ascolto sulla porta ${PORT}`);
-});
+// ── RIAVVIO AUTOMATICO ─────────────────────────────────────────────────────
+// Se start.sh ha segnato una conferma di riavvio, la si invia all'avvio
+const RESTART_MSG_FILE = path.join(__dirname, '.restart-msg.json');
 
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 10;
@@ -873,12 +862,8 @@ async function startBot() {
     if (fs.existsSync(AUTH_INVALIDATED_FLAG)) {
         fs.rmSync(AUTH_INVALIDATED_FLAG, { force: true });
         console.log('[AUTH] Sessione precedente scaduta. Avvio fresco per nuovo QR...');
-    } else if (!fs.existsSync(AUTH_DIR_PATH) && (process.env.AUTH_BASE64 || await gistBackup.downloadAuth())) {
-        let authData = await gistBackup.downloadAuth();
-        if (!authData && process.env.AUTH_BASE64) {
-            const raw = Buffer.from(process.env.AUTH_BASE64, 'base64').toString('utf-8');
-            authData = JSON.parse(raw);
-        }
+    } else if (!fs.existsSync(AUTH_DIR_PATH)) {
+        const authData = await gistBackup.downloadAuth();
         if (authData) {
             fs.mkdirSync(AUTH_DIR_PATH, { recursive: true });
             for (const [name, content] of Object.entries(authData)) {
@@ -955,6 +940,19 @@ async function startBot() {
             botStartTime = Math.floor(Date.now() / 1000);
             reconnectAttempts = 0;
             console.log('[BOT] Connesso e operativo.');
+
+            // Conferma di riavvio dopo un aggiornamento
+            try {
+                if (fs.existsSync(RESTART_MSG_FILE)) {
+                    const restartData = JSON.parse(fs.readFileSync(RESTART_MSG_FILE, 'utf-8'));
+                    fs.rmSync(RESTART_MSG_FILE, { force: true });
+                    if (restartData?.from) {
+                        const text = restartData.message || '🔄 Bot aggiornato e riavviato correttamente.';
+                        await sock.sendMessage(restartData.from, { text }).catch(() => {});
+                    }
+                }
+            } catch (_) {}
+
             // Backup auth al Gist ogni 5 minuti
             setInterval(async () => {
                 if (!fs.existsSync(AUTH_DIR_PATH)) return;

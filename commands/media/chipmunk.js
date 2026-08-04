@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('ffmpeg-static');
+const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const path = require('path');
 ffmpeg.setFfmpegPath(ffmpegPath);
 const { promisify } = require('util');

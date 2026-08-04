@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('ffmpeg-static');
+const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const googleTTS = require('google-tts-api');
 const { Readable, Writable } = require('stream');
 
