@@ -28,7 +28,7 @@ module.exports = {
                         key: { id: contextInfo.stanzaId, remoteJid: from, fromMe: contextInfo.participant === (sock.user?.id || ''), participant: contextInfo.participant },
                         message: { audioMessage: audioMsg }
                     };
-                    audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reissueRequest: sock.updateMediaMessage });
+                    audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
                 }
             }
             if (!audioBuffer) return reply('🎤 Rispondi a un vocale con *.drunk* per effetto ubriaco.');

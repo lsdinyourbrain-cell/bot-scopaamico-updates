@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const sharp = require('sharp');
 
@@ -37,7 +37,7 @@ module.exports = {
                 }
             };
 
-            const buffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reissueRequest: sock.updateMediaMessage });
+            const buffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
             const imageBuffer = await sharp(buffer).png().toBuffer();
 
             await sock.sendMessage(from, {

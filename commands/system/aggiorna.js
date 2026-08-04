@@ -60,7 +60,19 @@ module.exports = {
         }
 
         if (localHead === remoteHead) {
-            return reply(`✅ *Sei già aggiornato!*\n\nVersione attuale:\n\`${localHead.slice(0, 7)}\``);
+            return reply(
+`╭────〔 ✨ *TUTTO AGGIORNATO* 〕────╮
+│                              │
+│ ✅ Il bot è già alla         │
+│    versione più recente!     │
+│                              │
+│ 🔖 Build attuale:            │
+│    \`${localHead.slice(0, 7)}\`             │
+│                              │
+│ 🚀 Non c'è nulla di nuovo,   │
+│    ma la qualità è sempre    │
+│    al massimo. 💎            │
+╰──────────────────────────────╯`);
         }
 
         // 4) Changelog dei nuovi commit

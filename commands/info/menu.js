@@ -20,10 +20,18 @@ const MS = (s) => s.split('').map(c => {
     return c;
 }).join('');
 
+// Formatta una riga: emoji + comando stilizzato in unicode
+const L = (emoji, cmd, extra = '') => `│ ${emoji} ${SB(cmd)}${extra ? ' ' + extra : ''}`;
+const H = (emoji, title, width = 26) => {
+    const t = `${emoji} ${title} `;
+    const filler = '─'.repeat(Math.max(1, width - t.length));
+    return `├──${t}${filler}┤`;
+};
+
 module.exports = {
     name: 'menu',
     aliases: [],
-    description: "Esegue il comando .menu.",
+    description: "Mostra l'elenco dei comandi disponibili.",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
@@ -37,205 +45,199 @@ module.exports = {
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
 
         let menuTxt =
-`╭── ✦ ${SB('SCOPAMICO BOT')} v11.0 ✦ ──╮
+`╭── ✦ ${SB('SCOPAMICO BOT')} v11.1 ✦ ──╮
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
-├── 🆕 ${MS('NOVITÀ v11.0')} ─────┤
-│ 🆔 .id
-│ 🎯 .pick
-│ 🧮 .calc
-│ 😂 .joke
-│ 🧠 .fact
-│ 🔐 .password
-│ 🔢 .base64
-│ 🔣 .hex
-│ 📊 .count
-│ 👑 .admin [rivisto]
-│ 🛡️ .antivoip
-│ 💼 .antiwzbusiness
-│ 🔥 .antiflame
-│ 🤖 .antibot
-│ 🤬 .bestemmiometro
-│ 🤝 .cowner
-│ 📋 .infobot
-│ 🔗 .setlink
+├── 🆕 ${MS('NOVITÀ v11.1')} ─────┤
+${L('🆔', '.id')}
+${L('🎯', '.pick')}
+${L('🧮', '.calc')}
+${L('😂', '.joke')}
+${L('🧠', '.fact')}
+${L('🔐', '.password')}
+${L('🔢', '.base64')}
+${L('🔣', '.hex')}
+${L('📊', '.count')}
+${L('👑', '.admin', '[rivisto]')}
+${L('🛡️', '.antivoip')}
+${L('💼', '.antiwzbusiness')}
+${L('🔥', '.antiflame')}
+${L('🤖', '.antibot')}
+${L('🤬', '.bestemmiometro')}
+${L('🤝', '.cowner')}
+${L('📋', '.infobot')}
+${L('🔗', '.setlink')}
 ├── 💝 ${BF('FAMIGLIA')} ─────────┤
 │ .famiglia sposa|adotta|caccia
-| |divorzia|abbandona
+│ |divorzia|abbandona
 ├── 🪙 ${SB('ECONOMIA')} ─────────┤
-│ 💰 .cassaforte
-│ ⛏️ .scava
-│ 🎰 .casino
-│ 🎲 .dadi
-│ 🎰 .slot
-│ 🔴 .roulette
-│ 🪨 .sasso
-│ 📅 .daily
-│ 🏧 .deposita
-│ 💳 .preleva
-│ 🦹 .ruba
-│ ⚔️ .colpisci
-│ 🎟️ .lotteria
-│ 🏆 .top
-│ 🤑 .ricchi
+${L('💰', '.cassaforte')}
+${L('⛏️', '.scava')}
+${L('🎰', '.casino')}
+${L('🎲', '.dadi')}
+${L('🎰', '.slot')}
+${L('🔴', '.roulette')}
+${L('🪨', '.sasso')}
+${L('📅', '.daily')}
+${L('🏧', '.deposita')}
+${L('💳', '.preleva')}
+${L('🦹', '.ruba')}
+${L('⚔️', '.colpisci')}
+${L('🎟️', '.lotteria')}
+${L('🏆', '.top')}
+${L('🤑', '.ricchi')}
 ├── 🎲 ${MS('SOCIAL')} ───────────┤
-│ 💞 .ship
-│ 🏳️‍🌈 .gay
-│ 💖 .simpatometro
-│ 📊 .percentuale
-│ 🤔 .scelta
-│ 🌸 .fiore
-│ 🦸 .personaggio
-│ 📺 .anime
-│ 🖥️ .assemblapc
-│ 🤫 .verita
-│ 🫣 .obbligo
-│ 🔮 .oroscopo
-│ 🐺 .maranza
+${L('💞', '.ship')}
+${L('🏳️‍🌈', '.gay')}
+${L('💖', '.simpatometro')}
+${L('📊', '.percentuale')}
+${L('🤔', '.scelta')}
+${L('🌸', '.fiore')}
+${L('🦸', '.personaggio')}
+${L('📺', '.anime')}
+${L('🖥️', '.assemblapc')}
+${L('🤫', '.verita')}
+${L('🫣', '.obbligo')}
+${L('🔮', '.oroscopo')}
+${L('🐺', '.maranza')}
 ├── 🔥 ${BF('INTERAZIONI')} ──────┤
-│ 🖐️ .schiaffo
-│ 😘 .bacia
-│ 😂 .joke
-│ 🧠 .fact
-│ 🎯 .pick
-│ 🪙 .flip
-│ 🎱 .8ball
-│ 📊 .rate
-│ 🤔 .wyr
-│ 💭 .quote
-│ 🫂 .abbraccia
-│ 💍 .sposa
-│ 🍑 .paccasulculo
-│ 🔪 .uccidi
-│ 🤬 .insulta
-│ 🔞 .scopa
-│ 💦 .sborra
-│ 👉👌 .ditalino
-│ 🍆 .sega
-│ 🤰 .incinta
-│ 🍒 .tette
-│ 😂 .meme
-│ 🥊 .rissa
-│ 🍆 .cazzo
-│ 🤪 .sclero
-│ 🍹 .drink
-│ 🙏 .scusa
-│ 🪵 .palo
-│ 🗣️ .gossip
+${L('🖐️', '.schiaffo')}
+${L('😘', '.bacia')}
+${L('🎯', '.pick')}
+${L('🪙', '.flip')}
+${L('🎱', '.8ball')}
+${L('📊', '.rate')}
+${L('🤔', '.wyr')}
+${L('💭', '.quote')}
+${L('🫂', '.abbraccia')}
+${L('💍', '.sposa')}
+${L('🍑', '.paccasulculo')}
+${L('🔪', '.uccidi')}
+${L('🤬', '.insulta')}
+${L('🔞', '.scopa')}
+${L('💦', '.sborra')}
+${L('👉👌', '.ditalino')}
+${L('🍆', '.sega')}
+${L('🤰', '.incinta')}
+${L('🍒', '.tette')}
+${L('😂', '.meme')}
+${L('🥊', '.rissa')}
+${L('🍆', '.cazzo')}
+${L('🤪', '.sclero')}
+${L('🍹', '.drink')}
+${L('🙏', '.scusa')}
+${L('🪵', '.palo')}
+${L('🗣️', '.gossip')}
 ├── 🛠️ ${SB('UTILITY')} ──────────┤
-│ 👤 .profilo
-│ 👑 .admin
-│ 📡 .ping
-│ ℹ️ .groupinfo
-│ 🌤️ .weather
-│ 🆔 .id
-│ 🧮 .calc
-│ 🔢 .base64
-│ 🔣 .hex
-│ 📊 .count
-│ 🔐 .password
-│ 🎨 .sticker
-│ 📹 .vv
-│ 💻 .hack
-│ 👥 .clona
-│ 🔊 .tts
-│ 🐿️ .chipmunk
-│ 🏃 .rubato
-│ 🎵 .lyrics
+${L('👤', '.profilo')}
+${L('👑', '.admin')}
+${L('📡', '.ping')}
+${L('ℹ️', '.groupinfo')}
+${L('🌤️', '.weather')}
+${L('🆔', '.id')}
+${L('🧮', '.calc')}
+${L('🔢', '.base64')}
+${L('🔣', '.hex')}
+${L('📊', '.count')}
+${L('🔐', '.password')}
+${L('🎨', '.sticker')}
+${L('📹', '.vv')}
+${L('💻', '.hack')}
+${L('👥', '.clona')}
+${L('🔊', '.tts')}
+${L('🐿️', '.chipmunk')}
+${L('🏃', '.rubato')}
+${L('🎵', '.lyrics')}
 ├── 🎤 ${MS('AUDIO')} ─────────────┤
-│ 🎙️ .deep
-│ 🔄 .reverse
-│ 🗣️ .echo
-│ 🤖 .robot
-│ 🥴 .drunk
-│ 🔊 .bass
-│ 🌙 .nightcore
-│ 🔮 .8d
+${L('🎙️', '.deep')}
+${L('🔄', '.reverse')}
+${L('🗣️', '.echo')}
+${L('🤖', '.robot')}
+${L('🥴', '.drunk')}
+${L('🔊', '.bass')}
+${L('🌙', '.nightcore')}
+${L('🔮', '.8d')}
 ├── 📥 ${BF('MEDIA')} ─────────────┤
-│ 📸 .ig
-│ 💀 .wasted
-│ 📖 .pokedex
-│ 🤡 .clown
+${L('📸', '.ig')}
+${L('💀', '.wasted')}
+${L('📖', '.pokedex')}
+${L('🤡', '.clown')}
 ├── 🤖 ${SB('AI')} ────────────────┤
-│ 🧠 .ai [domanda]
+${L('🧠', '.ai', '[domanda]')}
 ├── 🎮 ${MS('GIOCHI')} ────────────┤
-│ ❓ .quiz
-│ 🏁 .bandiera
-│ 💞 .compatibilita
-│ ⚔️ .duello @utente [puntata]
+${L('❓', '.quiz')}
+${L('🏁', '.bandiera')}
+${L('💞', '.compatibilita')}
+${L('⚔️', '.duello', '@utente [puntata]')}
 ├── 🛡️ ${BF('SICUREZZA')} ─────────┤
-│ 🛡️ .antivoip on/off
-│ 💼 .antiwzbusiness on/off
-│ 🔥 .antiflame on/off
-│ 🤖 .antibot on/off
-│ 📋 .antilink on/off
-│ 🤬 .bestemmiometro on/off
+${L('🛡️', '.antivoip', 'on/off')}
+${L('💼', '.antiwzbusiness', 'on/off')}
+${L('🔥', '.antiflame', 'on/off')}
+${L('🤖', '.antibot', 'on/off')}
+${L('📋', '.antilink', 'on/off')}
+${L('🤬', '.bestemmiometro', 'on/off')}
 ├── ⚙️ ${BF('ADMIN')} ─────────────┤
-│ 📢 .tag
-│ 📣 .tagall
-│ 🔒 .chiudi
-│ 🔓 .apri
-│ 🚫 .ban
-│ 🔗 .link
-│ 🗑️ .del
-│ 🔇 .mute
-│ 🔊 .unmute
-│ ⚠️ .warn
-│ 👑 .promote
-│ 👑 .demote
-│ ✅ .accettarichieste
-│ 🗣️ .say
-│ 🔗 .invito
-│ ⏸️ .pausa
-│ ▶️ .riprendi
-│ 🛡️ .antivoip
-│ 💼 .antiwzbusiness
-│ 🔥 .antiflame
-│ 🤖 .antibot
-│ 📋 .antilink
-│ 🤬 .bestemmiometro
+${L('📢', '.tag')}
+${L('📣', '.tagall')}
+${L('🔒', '.chiudi')}
+${L('🔓', '.apri')}
+${L('🚫', '.ban')}
+${L('🔗', '.link')}
+${L('🗑️', '.del')}
+${L('🔇', '.mute')}
+${L('🔊', '.unmute')}
+${L('⚠️', '.warn')}
+${L('👑', '.promote')}
+${L('👑', '.demote')}
+${L('✅', '.accettarichieste')}
+${L('🗣️', '.say')}
+${L('🔗', '.invito')}
+${L('⏸️', '.pausa')}
+${L('▶️', '.riprendi')}
 ├── 📋 ${BF('GESTIONE')} ──────────┤
-│ 📛 .setname <nome>
-│ 📝 .setdesc <testo>
-│ 🔄 .revoke
-│ 👑 .tagadmin
-│ 📋 .list
-│ 🖼️ .seticon (reply a img)
-│ 🏞️ .grouppic
-│ ➕ .add <numero>
-│ 🚪 .kick @utente
-│ 👋 .leave
-│ 👑 .admincount
-│ ⏳ .ephemeral on/off
-│ ⚠️ .warnlist
-│ ✅ .resetwarns @utente
-│ 📌 .pin (reply msg)
+${L('📛', '.setname', '<nome>')}
+${L('📝', '.setdesc', '<testo>')}
+${L('🔄', '.revoke')}
+${L('👑', '.tagadmin')}
+${L('📋', '.list')}
+${L('🖼️', '.seticon', '(reply a img)')}
+${L('🏞️', '.grouppic')}
+${L('➕', '.add', '<numero>')}
+${L('🚪', '.kick', '@utente')}
+${L('👋', '.leave')}
+${L('👑', '.admincount')}
+${L('⏳', '.ephemeral', 'on/off')}
+${L('⚠️', '.warnlist')}
+${L('✅', '.resetwarns', '@utente')}
+${L('📌', '.pin', '(reply msg)')}
 ├── 🗂️ ${MS('STATO')} ─────────────┤
-│ 📊 .status
-│ 📦 .groups`;
+${L('📊', '.status')}
+${L('📦', '.groups')}`;
 
         if (isGroup) {
             const alCfg = getAntilinkGroup(from);
             const keys = Object.keys(ANTILINK_PLATFORMS);
-            const alLines = keys.map(p => `│ ${alCfg[p] ? '🟢' : '🔴'} .antilink ${p}`).join('\n');
+            const alLines = keys.map(p => `│ ${alCfg[p] ? '🟢' : '🔴'} ${SB('.antilink')} ${p}`).join('\n');
             menuTxt +=
 `├── 🔗 ${SB('ANTILINK')} ──────────┤
 ${alLines}
-│ 🟢 .antilink tutti on/off`;
+│ 🟢 ${SB('.antilink')} tutti on/off`;
         }
 
         if (isOwner) {
             menuTxt +=
 `├── 🛡 ${MS('OWNER')} ──────────────┤
-│ ⏻ .spegni
-│ ⏼ .accendi
-│ 🔄 .riavvia
-│ 👋 .welcome on/off
-│ 👋 .goodbye on/off
-│ 🔗 .setlink <url>
-│ 👑 .addowner @utente
-│ 📋 .infobot
-│ 📊 .status
-│ 📦 .groups`;
+${L('⏻', '.spegni')}
+${L('⏼', '.accendi')}
+${L('🔄', '.riavvia')}
+${L('👋', '.welcome', 'on/off')}
+${L('👋', '.goodbye', 'on/off')}
+${L('🔗', '.setlink', '<url>')}
+${L('👑', '.addowner', '@utente')}
+${L('📦', '.aggiorna')}
+${L('🧹', '.clear')}
+${L('📋', '.infobot')}
+${L('📊', '.status')}
+${L('📦', '.groups')}`;
         }
 
         const SP = db._config?.sponsorLink || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo?s=cl&p=a&ilr=0';

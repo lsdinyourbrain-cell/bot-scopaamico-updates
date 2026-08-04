@@ -29,6 +29,7 @@ const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
 const { trySpawnBounty, claimBounty, getBounty, removeBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
+const { sendButtons } = require('./lib/buttons');
 
 const execFileAsync = promisify(execFile);
 const ownerNumber = "269956662956146@lid";
@@ -88,18 +89,26 @@ const loadDB = async () => {
 let _lastGistUpload = 0;
 const GIST_UPLOAD_INTERVAL = 60000; // max 1 volta al minuto
 
+let _dbDirty = false; // true se ci sono modifiche non ancora scritte su disco
+
+const writeDBFile = () => {
+    fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), 'utf-8', (err) => {
+        if (err) console.error('[DB] Errore salvataggio:', err.message);
+    });
+};
+
 const saveDB = () => {
+    _dbDirty = true;
     if (_saveTimer) clearTimeout(_saveTimer);
     _saveTimer = setTimeout(() => {
-        fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), 'utf-8', (err) => {
-            if (err) console.error('[DB] Errore salvataggio:', err.message);
-        });
+        _dbDirty = false;
+        writeDBFile();
         const now = Date.now();
         if (now - _lastGistUpload >= GIST_UPLOAD_INTERVAL) {
             _lastGistUpload = now;
             gistBackup.upload(db).catch(() => {});
         }
-    }, 500);
+    }, 2000);
 };
 
 const getUser = (jid, chatId) => {
@@ -395,6 +404,32 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
     };
 };
 
+// Pulizia cache: azzera la cache groupMetadata e svuota la cartella temp/
+const clearBotCache = () => {
+    const groupEntries = groupMetaCache.size;
+    groupMetaCache.clear();
+
+    const tempDir = path.join(__dirname, 'temp');
+    let freedBytes = 0;
+    let deletedFiles = 0;
+    if (fs.existsSync(tempDir)) {
+        const entries = fs.readdirSync(tempDir);
+        for (const entry of entries) {
+            const filePath = path.join(tempDir, entry);
+            try {
+                const stat = fs.statSync(filePath);
+                if (stat.isFile()) {
+                    freedBytes += stat.size;
+                    deletedFiles++;
+                    fs.unlinkSync(filePath);
+                }
+            } catch (_) {}
+        }
+    }
+
+    return { groupEntries, deletedFiles, freedBytes };
+};
+
 const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento']);
 
 const COMMAND_EMOJIS = {
@@ -425,6 +460,7 @@ const COMMAND_EMOJIS = {
     spegni: '⏻', accendi: '⏼', riavvia: '🔄', welcome: '👋', goodbye: '👋',
     setlink: '🔗', addowner: '👑', setowner: '👑', cowner: '👑',
     aggiorna: '📦', update: '📦', aggiornamento: '📦',
+    clear: '🧹', pulizia: '🧹', cache: '🧹', svuota: '🧹',
     // Media/Utility
     sticker: '🎨', vv: '📹', hack: '💻', clona: '👥', tts: '🔊',
     rubato: '🏃', lyrics: '🎵', weather: '🌤️', ig: '📸',
@@ -965,6 +1001,14 @@ async function startBot() {
                 }
                 await gistBackup.uploadAuth(authFiles);
             }, 300000);
+
+            // Scrittura periodica del database se ci sono modifiche pendenti
+            setInterval(() => {
+                if (_dbDirty) {
+                    _dbDirty = false;
+                    writeDBFile();
+                }
+            }, 30000);
         }
     });
 
@@ -991,11 +1035,24 @@ async function startBot() {
             try {
                 const userData = getUser(sender, from);
                 userData.msgCount = (userData.msgCount || 0) + 1;
-                saveDB();
+                _dbDirty = true; // scrittura ritardata: si salva ogni 30s max
             } catch (_) {}
         }
 
-        const body = extractBody(msg);
+        let body = extractBody(msg);
+
+        // ── RISPOSTA PULSANTI (native flow) ──────────────────────────────
+        // Quando l'utente preme un pulsante con un comando, WhatsApp manda
+        // una interactiveResponseMessage con l'id del pulsante: lo trattiamo
+        // come se avesse scritto il comando.
+        try {
+            const btnResp = msg.message?.interactiveResponseMessage?.nativeFlowResponseMessage;
+            if (btnResp?.paramsJson) {
+                const params = JSON.parse(btnResp.paramsJson || '{}');
+                const btnId = String(params.id || '').trim();
+                if (btnId) body = '.' + btnId.replace(/^\./, '');
+            }
+        } catch (_) {}
 
         // ── MUTE: elimina i messaggi degli utenti silenziati ──────────────
         try {
@@ -1264,7 +1321,7 @@ async function startBot() {
                     sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
                     getWelcomeGroup, setWelcomeGroup,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
-                    ownerNumber,
+                    sendButtons, clearBotCache, ownerNumber,
                 },
             });
 

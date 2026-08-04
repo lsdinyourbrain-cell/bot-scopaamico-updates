@@ -35,7 +35,7 @@ module.exports = {
                         },
                         message: { audioMessage: audioMsg }
                     };
-                    audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reissueRequest: sock.updateMediaMessage });
+                    audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
                 }
             }
 

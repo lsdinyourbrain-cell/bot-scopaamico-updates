@@ -1,5 +1,7 @@
 'use strict';
 
+const pino = require('pino');
+
 module.exports = {
     name: 'vv',
     aliases: [],

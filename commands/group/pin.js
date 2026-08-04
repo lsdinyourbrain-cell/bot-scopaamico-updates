@@ -47,11 +47,9 @@ module.exports = {
 
         try {
             await sock.sendMessage(from, {
-                pin: {
-                    key,
-                    type: isUnpin ? 2 : 1,
-                    time,
-                },
+                pin: key,
+                type: isUnpin ? 2 : 1,
+                time,
             });
             const label = isUnpin ? '🔓 *Messaggio sfissato*' : `📌 *Messaggio fissato* (${time / 3600}h)`;
             await reply(label);

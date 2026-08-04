@@ -38,12 +38,15 @@ module.exports = {
         db._owners.push({ number: target, addedAt: now });
         saveDB();
 
-        await reply(
+        await sock.sendMessage(from, {
+            text:
 `╭─── ✦ ${SB('ADDOWNER')} ✦ ───╮
 │                          │
 │ 👑 @${target.split('@')[0]} è ora owner!  │
 │                          │
 │ aggiunto alle: ${now}     │
-╰──────────────────────────╯`);
+╰──────────────────────────╯`,
+            mentions: [target],
+        }, { quoted: msg });
     },
 };

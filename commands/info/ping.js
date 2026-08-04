@@ -20,10 +20,10 @@ module.exports = {
             const info    = await getSysInfo(cpuUsagePromise);
 
             const txt = 
-`╭────〔 ⚡ BOT STATUS 〕────╮
+`╭────〔 ⚡ ${'BOT STATUS'} 〕────╮
 │ ⏱️ *Latenza:* ${latency} ms
 │ 🖥️ *CPU:* ${info.cpuModel}
-│ 🧠 *Core:* ${info.cpuCores} | *Uso sistema:* ${info.cpu}
+│ 🧠 *Core:* ${info.cpuCores} | *Uso:* ${info.cpu}
 │ 💾 *RAM sistema:* ${info.ramUsed} GB / ${info.ramTotal} GB (${info.ramPercent}%)
 │ 🤖 *Processo bot:* ${info.processRam} MB RAM | Heap ${info.heapUsed} MB
 │ ⏳ *Uptime bot:* ${info.uptime}
