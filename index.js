@@ -373,6 +373,20 @@ const sameJid = (first, second) => {
     return Boolean(normalizedFirst && normalizedSecond && normalizedFirst === normalizedSecond);
 };
 
+// Verifica se un jid è owner. Gestisce sia PN (@s.whatsapp.net) sia LID (@lid):
+// ownerNumber può essere un LID, e gli owner aggiunti possono essere salvati
+// come LID o numero reale. Confrontiamo anche sock.user.id/lid perché il bot
+// gira sull'account dell'owner (stesso numero).
+const isOwnerJid = (sender, sock, db) => {
+    const candidates = [
+        ownerNumber,
+        sock?.user?.id,
+        sock?.user?.lid,
+        ...(db?._owners || []).flatMap(o => [o.number, o.lid]),
+    ].filter(Boolean);
+    return candidates.some(j => sameJid(sender, j));
+};
+
 const isAdminParticipant = (participant, jid) => {
     if (!['admin', 'superadmin'].includes(participant?.admin)) return false;
     return [participant.id, participant.jid, participant.lid]
@@ -1029,7 +1043,7 @@ async function startBot() {
         const pushName = msg.pushName || 'Utente';
         
 
-        const isOwner  = sameJid(sender, ownerNumber) || (db._owners || []).some(o => sameJid(o.number, sender));
+        const isOwner  = isOwnerJid(sender, sock, db);
 
         if (isGroup && sender) {
             try {
@@ -1087,7 +1101,7 @@ async function startBot() {
                         if (!regex.test(body)) continue;         // nessun match: salta
 
                         // Trovato un link vietato — controlla se il mittente è esente
-                        const isOwnerCheck = sameJid(sender, ownerNumber) || (db._owners || []).some(o => sameJid(o.number, sender));
+                        const isOwnerCheck = isOwnerJid(sender, sock, db);
                         if (isOwnerCheck) break; // owner: lascia passare tutto
 
                         // Recupera lo stato admin del mittente per questo gruppo

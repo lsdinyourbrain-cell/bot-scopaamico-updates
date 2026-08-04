@@ -30,23 +30,39 @@ module.exports = {
 
         if (!db._owners) db._owners = [];
 
-        const exists = db._owners.some(o => sameJid(o.number, target));
+        // Se il target è un LID, risolviamo il numero di telefono reale (via USync)
+        // così l'owner viene riconosciuto anche se si presenta come PN. Salviamo
+        // entrambi (number = numero reale o originale, lid = LID se presente).
+        const resolved = { number: target, lid: target.includes('@lid') ? target : null };
+        if (target.includes('@lid')) {
+            try {
+                const pn = await sock?.signalRepository?.lidMapping?.getPNForLID(target);
+                if (pn) resolved.number = pn;
+            } catch (_) {}
+        }
+
+        const exists = db._owners.some(o =>
+            sameJid(o.number, resolved.number) ||
+            (o.lid && sameJid(o.lid, resolved.lid)) ||
+            (resolved.lid && sameJid(o.number, resolved.lid))
+        );
 
         if (exists) return reply("Questo utente è già owner.");
 
         const now = new Date().toLocaleString('it-IT');
-        db._owners.push({ number: target, addedAt: now });
+        db._owners.push({ number: resolved.number, lid: resolved.lid, addedAt: now });
         saveDB();
 
+        const displayNum = resolved.number.split('@')[0];
         await sock.sendMessage(from, {
             text:
 `╭─── ✦ ${SB('ADDOWNER')} ✦ ───╮
 │                          │
-│ 👑 @${target.split('@')[0]} è ora owner!  │
+│ 👑 @${displayNum} è ora owner! │
 │                          │
 │ aggiunto alle: ${now}     │
 ╰──────────────────────────╯`,
-            mentions: [target],
+            mentions: [resolved.number],
         }, { quoted: msg });
     },
 };

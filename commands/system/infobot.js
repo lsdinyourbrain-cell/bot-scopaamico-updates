@@ -31,9 +31,28 @@ module.exports = {
 
         const owners = db._owners || [];
 
-        // Estrai il numero owner dal source
-        const ownerPhone = ownerNumber ? ownerNumber.split('@')[0] : 'Sconosciuto';
+        // Numero REALE dell'owner principale: il bot gira sull'account dell'owner,
+        // quindi sock.user.id è il numero di telefono vero (PN). Se manca, ripiega
+        // sull'ID salvato in ownerNumber.
+        const botPn = sock?.user?.id ? sock.user.id.split(':')[0].split('@')[0] : '';
+        const ownerPhone = botPn || (ownerNumber ? ownerNumber.split('@')[0] : 'Sconosciuto');
+        const ownerPhoneLabel = ownerNumber && ownerNumber.includes('@lid') && botPn
+            ? `${ownerPhone} (ID interno: ${ownerNumber.split('@')[0]})`
+            : ownerPhone;
         const totalOwners = owners.length + 1;
+
+        // Converte un jid (@lid o @s.whatsapp.net) nel numero di telefono reale.
+        // getPNForLID interroga WhatsApp (USync) e può fallire: in tal caso mostra l'ID.
+        const displayOwnerNumber = async (jid) => {
+            if (!jid) return 'Sconosciuto';
+            const num = jid.split('@')[0];
+            if (!jid.includes('@lid')) return num;
+            try {
+                const pn = await sock?.signalRepository?.lidMapping?.getPNForLID(jid);
+                if (pn) return pn.split('@')[0];
+            } catch (_) {}
+            return num;
+        };
 
         // Genera frasi casuali
         const phrases = [
@@ -65,17 +84,19 @@ module.exports = {
 ┣━━━━━━ ${BF('CONTATTI')} ━━━━━━┫
 ┃
 ┃  👑 ${SB('OWNER PRINCIPALE')}
-┃     📱 ${ownerPhone}
+┃     📱 ${ownerPhoneLabel}
 ┃`;
 
         if (owners.length > 0) {
             txt += `┃\n┃  👑 ${MS('ALTRI OWNER')} (${owners.length})\n`;
-            txt += owners.map(o => {
-                const num = (o.number || '').split('@')[0];
-                const isLid = (o.number || '').includes('@lid');
-                const date = o.addedAt || 'sconosciuta';
-                return `┃     📱 ${num}${isLid ? ' (LID)' : ''} — dal ${date}`;
-            }).join('\n') + '\n';
+            const resolved = await Promise.all(owners.map(async o => ({
+                real: await displayOwnerNumber(o.number || o.lid),
+                date: o.addedAt || 'sconosciuta',
+            })));
+            for (const r of resolved) {
+                txt += `┃     📱 ${r.real} — dal ${r.date}\n`;
+            }
+            txt += '┃';
         }
 
         txt += `┃\n┃  👥 ${SB('TOTALE OWNER')}: ${totalOwners}\n`;
