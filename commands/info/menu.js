@@ -45,9 +45,9 @@ module.exports = {
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
 
         let menuTxt =
-`╭── ✦ ${SB('SCOPAMICO BOT')} v11.1 ✦ ──╮
+`╭── ✦ ${SB('SCOPAMICO BOT')} v11.4 ✦ ──╮
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
-├── 🆕 ${MS('NOVITÀ v11.1')} ─────┤
+├── 🆕 ${MS('NOVITÀ v11.4')} ─────┤
 ${L('🆔', '.id')}
 ${L('🎯', '.pick')}
 ${L('🧮', '.calc')}
@@ -168,6 +168,16 @@ ${L('❓', '.quiz')}
 ${L('🏁', '.bandiera')}
 ${L('💞', '.compatibilita')}
 ${L('⚔️', '.duello', '@utente [puntata]')}
+${L('🎯', '.indovina', '[numero] [puntata]')}
+${L('🪙', '.testa', 'testa|croce [puntata]')}
+${L('🎲', '.parita', 'pari|dispari [puntata]')}
+${L('🃏', '.alta', 'alta|bassa [puntata]')}
+${L('🃏', '.blackjack', '[puntata] [hit]')}
+${L('🎡', '.ruota', '[puntata]')}
+${L('🎟️', '.gratta')}
+${L('⚡', '.reazione')}
+${L('🧩', '.parola')}
+${L('🧠', '.memoria')}
 ├── 🛡️ ${BF('SICUREZZA')} ─────────┤
 ${L('🛡️', '.antivoip', 'on/off')}
 ${L('💼', '.antiwzbusiness', 'on/off')}
@@ -233,6 +243,8 @@ ${L('👋', '.welcome', 'on/off')}
 ${L('👋', '.goodbye', 'on/off')}
 ${L('🔗', '.setlink', '<url>')}
 ${L('👑', '.addowner', '@utente')}
+${L('🗑️', '.unowner', '@utente')}
+${L('📜', '.log', '[n]')}
 ${L('📦', '.aggiorna')}
 ${L('🧹', '.clear')}
 ${L('📋', '.infobot')}

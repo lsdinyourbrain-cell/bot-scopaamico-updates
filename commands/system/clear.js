@@ -24,7 +24,10 @@ module.exports = {
         const before = Date.now();
         const result = clearBotCache();
         const elapsed = Date.now() - before;
-        const freedMB = (result.freedBytes / 1024 / 1024).toFixed(2);
+        const freedMB = (result.freedBytes / 1024).toFixed(2);
+        const tempBeforeMB = (result.tempTotalBefore / 1024).toFixed(2);
+        const dbKB = (result.dbBytes / 1024).toFixed(1);
+        const logKB = (result.logBytes / 1024).toFixed(1);
 
         await reply(
 `╭────〔 🧹 ${SB('CACHE PULITA')} 〕────╮
@@ -35,9 +38,14 @@ module.exports = {
 │ 🗑️ File temporanei rimossi:  │
 │    ${result.deletedFiles}                │
 │ 💾 Spazio liberato:          │
-│    ${freedMB} MB              │
-│ 🔄 Cache gruppi azzerata:    │
+│    ${freedMB} KB              │
+│ 📦 Cache gruppi azzerata:    │
 │    ${result.groupEntries}                │
+│                              │
+│ 📊 Stato attuale:            │
+│    💾 DB: ${dbKB} KB          │
+│    📄 Log: ${logKB} KB        │
+│    🗂️ Temp (prima): ${tempBeforeMB} KB│
 │                              │
 │ ⚡ Il bot ora risponde più   │
 │    veloce! 🚀                │

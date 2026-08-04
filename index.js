@@ -25,6 +25,8 @@ const os      = require('os');
 const crypto  = require('crypto');
 const { loadCommands } = require('./commandLoader');
 const { sleep } = require('./lib/cooldowns');
+const botLogger = require('./lib/logger');
+botLogger.init(); // log su file (logs/bot.log)
 const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
 const { trySpawnBounty, claimBounty, getBounty, removeBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
@@ -418,7 +420,8 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
     };
 };
 
-// Pulizia cache: azzera la cache groupMetadata e svuota la cartella temp/
+// Pulizia cache: azzera la cache groupMetadata, svuota la cartella temp/ e
+// restituisce un report dettagliato di cosa è stato rimosso.
 const clearBotCache = () => {
     const groupEntries = groupMetaCache.size;
     groupMetaCache.clear();
@@ -426,6 +429,7 @@ const clearBotCache = () => {
     const tempDir = path.join(__dirname, 'temp');
     let freedBytes = 0;
     let deletedFiles = 0;
+    let tempTotalBefore = 0;
     if (fs.existsSync(tempDir)) {
         const entries = fs.readdirSync(tempDir);
         for (const entry of entries) {
@@ -433,6 +437,7 @@ const clearBotCache = () => {
             try {
                 const stat = fs.statSync(filePath);
                 if (stat.isFile()) {
+                    tempTotalBefore += stat.size;
                     freedBytes += stat.size;
                     deletedFiles++;
                     fs.unlinkSync(filePath);
@@ -441,7 +446,25 @@ const clearBotCache = () => {
         }
     }
 
-    return { groupEntries, deletedFiles, freedBytes };
+    // Dimensioni del database
+    let dbBytes = 0;
+    try { dbBytes = fs.statSync(DB_FILE).size; } catch (_) {}
+
+    // Dimensione media cache dei log (se esiste)
+    let logBytes = 0;
+    try {
+        const logDir = path.join(__dirname, 'logs');
+        if (fs.existsSync(logDir)) {
+            for (const f of fs.readdirSync(logDir)) {
+                try { logBytes += fs.statSync(path.join(logDir, f)).size; } catch (_) {}
+            }
+        }
+    } catch (_) {}
+
+    return {
+        groupEntries, deletedFiles, freedBytes,
+        tempTotalBefore, dbBytes, logBytes,
+    };
 };
 
 const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento']);
@@ -505,6 +528,9 @@ const COMMAND_EMOJIS = {
     assemblapc: '🖥️', verita: '🤫', obbligo: '🫣', oroscopo: '🔮', maranza: '🐺',
     // Games
     quiz: '❓', bandiera: '🏁', compatibilita: '💞', duello: '⚔️',
+    indovina: '🎯', testa: '🪙', parita: '🎲', alta: '🃏',
+    blackjack: '🃏', ruota: '🎡', gratta: '🎟️',
+    reazione: '⚡', parola: '🧩', memoria: '🧠',
     // Accept requests
     accettarichieste: '✅', approva: '✅', accetta: '✅',
     // p / d
@@ -937,7 +963,9 @@ async function startBot() {
     const sock = makeWASocket({
         auth                : state,
         printQRInTerminal   : true,
-        logger              : pino({ level: 'silent' }),
+        // Livello info scritto su file (logs/bot.log) tramite sink custom:
+        // sul terminale resta silenzioso come prima.
+        logger              : pino({ level: 'info' }, botLogger.makeBaileysSink()),
         version             : waVersion,
         connectTimeoutMs    : 120000,
         keepAliveIntervalMs : 30000,
@@ -1067,6 +1095,14 @@ async function startBot() {
                 if (btnId) body = '.' + btnId.replace(/^\./, '');
             }
         } catch (_) {}
+
+        // ── PULSANTE COME TESTO ──────────────────────────────────────────
+        // WhatsApp a volte inoltra l'etichetta del pulsante come messaggio di
+        // testo che cita il messaggio del bot (es. "🔛 .accendi"). Togliamo
+        // eventuali emoji/spazi iniziali così il comando viene riconosciuto.
+        if (body && !body.startsWith('.')) {
+            body = body.replace(/^[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{00A0}\s]+/u, '');
+        }
 
         // ── MUTE: elimina i messaggi degli utenti silenziati ──────────────
         try {
@@ -1261,6 +1297,117 @@ async function startBot() {
                     await sock.sendMessage(from, {
                         text: `❌ @${sender.split('@')[0]}, risposta sbagliata!`,
                         mentions: [sender],
+                    });
+                }
+            } catch (_) {}
+        }
+
+        // ── REAZIONE: risposte GO ───────────────────────────────────────
+        if (!body.startsWith('.') && db[from]?.reactionGame?.active) {
+            try {
+                const rg = db[from].reactionGame;
+                if (rg.phase === 'go' && /^\s*go\s*$/i.test(body)) {
+                    rg.active = false;
+                    saveDB();
+                    if (Date.now() <= rg.deadline) {
+                        const uDB = getUser(sender, from);
+                        uDB.money += 50;
+                        saveDB();
+                        await sock.sendMessage(from, {
+                            text: `⚡ *VELOCISSIMO!* @${sender.split('@')[0]} ha reagito in tempo!\n+50€ 💰`,
+                            mentions: [sender],
+                        });
+                    } else {
+                        await sock.sendMessage(from, {
+                            text: `🐌 @${sender.split('@')[0]}, troppo tardi! 😴`,
+                            mentions: [sender],
+                        });
+                    }
+                }
+            } catch (_) {}
+        }
+
+        // ── PAROLA: indovina la parola ──────────────────────────────────
+        if (!body.startsWith('.') && db[from]?.wordGame?.active) {
+            try {
+                const wg = db[from].wordGame;
+                if (Date.now() - wg.timestamp > 90000) {
+                    wg.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `⏰ Tempo scaduto! La parola era *${wg.word}*.`,
+                    });
+                    return;
+                }
+                const guess = body.trim().toLowerCase().replace(/[^a-z]/g, '');
+                if (!guess) return;
+
+                // Indovinata con la parola intera
+                if (guess === wg.word) {
+                    wg.active = false;
+                    saveDB();
+                    const uDB = getUser(sender, from);
+                    uDB.money += 100;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `🎉 *PAROLA INDOVINATA!* @${sender.split('@')[0]} ha trovato la parola *${wg.word}*!\n+100€ 💰`,
+                        mentions: [sender],
+                    });
+                    return;
+                }
+
+                if (guess.length === 1) {
+                    if (wg.guessed.includes(guess)) return;
+                    wg.guessed.push(guess);
+                    if (!wg.word.includes(guess)) {
+                        wg.wrong++;
+                        if (wg.wrong >= 6) {
+                            wg.active = false;
+                            saveDB();
+                            await sock.sendMessage(from, {
+                                text: `💀 *GAME OVER!* La parola era *${wg.word}*.`,
+                            });
+                            return;
+                        }
+                    }
+                    const masked = wg.word.split('').map(ch => wg.guessed.includes(ch) ? ch : ' _ ').join('');
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `🧩 ${masked}\n\n❌ Errori: *${wg.wrong}/6*\nLettera scritta: *${guess}*`,
+                    });
+                }
+            } catch (_) {}
+        }
+
+        // ── MEMORIA: ripeti la sequenza ──────────────────────────────────
+        if (!body.startsWith('.') && db[from]?.memGame?.active) {
+            try {
+                const mg = db[from].memGame;
+                if (Date.now() - mg.timestamp > 60000) {
+                    mg.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `⏰ Tempo scaduto! La sequenza era *${mg.sequence.join(' ')}*.`,
+                    });
+                    return;
+                }
+                const clean = body.replace(/\s+/g, '').toUpperCase();
+                if (!clean || !/^[RGBY]+$/.test(clean)) return;
+                if (clean === mg.sequence.join('')) {
+                    mg.active = false;
+                    saveDB();
+                    const uDB = getUser(sender, from);
+                    uDB.money += 75;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `🧠 *MEMORIA FERREA!* @${sender.split('@')[0]} ha ripetuto la sequenza ${mg.sequence.join(' ')}!\n+75€ 💰`,
+                        mentions: [sender],
+                    });
+                } else {
+                    mg.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `❌ Sequenza sbagliata! Era *${mg.sequence.join(' ')}*.`,
                     });
                 }
             } catch (_) {}

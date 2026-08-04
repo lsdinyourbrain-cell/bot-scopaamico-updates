@@ -39,21 +39,35 @@ module.exports = {
         const ownerNumberPn = ownerNumber && !ownerNumber.includes('@lid') ? ownerNumber.split('@')[0] : '';
         const ownerDisplay = botPn || ownerNumberPn || (ownerNumber ? ownerNumber.split('@')[0] : 'Sconosciuto');
         if (botPn) mentions.push(`${botPn}@s.whatsapp.net`);
-        const totalOwners = owners.length + 1;
 
-        // Converte un jid (@lid o @s.whatsapp.net) nel numero di telefono reale
-        // e fornisce il jid da taggare (se risolvibile). getPNForLID interroga
-        // WhatsApp (USync) e può fallire: in tal caso mostra l'ID senza tag.
+        // Converte un jid (@lid, @s.whatsapp.net o numero "nudo") nel numero di
+        // telefono reale e nel jid da taggare. getPNForLID interroga WhatsApp
+        // (USync) e può fallire: in tal caso mostra l'ID senza tag.
+        const normalizeJid = (jid) => {
+            if (!jid) return null;
+            const s = String(jid).split(':')[0].trim(); // toglie eventuale :device
+            if (!s.includes('@')) return s + '@s.whatsapp.net'; // numero nudo → PN
+            return s;
+        };
         const displayOwnerNumber = async (jid) => {
-            if (!jid) return { display: 'Sconosciuto', mention: null };
-            const num = jid.split('@')[0];
-            if (!jid.includes('@lid')) return { display: num, mention: jid };
+            const j = normalizeJid(jid);
+            if (!j) return { display: 'Sconosciuto', mention: null };
+            const num = j.split('@')[0];
+            if (!j.includes('@lid')) return { display: num, mention: j };
             try {
-                const pn = await sock?.signalRepository?.lidMapping?.getPNForLID(jid);
-                if (pn) return { display: pn.split('@')[0], mention: pn };
+                const pn = await sock?.signalRepository?.lidMapping?.getPNForLID(j);
+                if (pn) return { display: pn.split(':')[0].split('@')[0], mention: pn.split(':')[0] };
             } catch (_) {}
             return { display: num, mention: null };
         };
+
+        // Owner principali da escludere dagli "ALTRI OWNER" (sono già in cima)
+        const isMainOwner = (o) => {
+            const j = normalizeJid(o.number || o.lid);
+            return !j ? false : sameJid(j, ownerNumber) || sameJid(j, sock?.user?.id) || sameJid(j, sock?.user?.lid);
+        };
+        const otherOwners = owners.filter(o => !isMainOwner(o));
+        const totalOwners = otherOwners.length + 1;
 
         // Genera frasi casuali
         const phrases = [
@@ -88,9 +102,9 @@ module.exports = {
 ┃     📱 @${ownerDisplay}
 ┃`;
 
-        if (owners.length > 0) {
-            txt += `┃\n┃  👑 ${MS('ALTRI OWNER')} (${owners.length})\n`;
-            const resolved = await Promise.all(owners.map(async o => ({
+        if (otherOwners.length > 0) {
+            txt += `┃\n┃  👑 ${MS('ALTRI OWNER')} (${otherOwners.length})\n`;
+            const resolved = await Promise.all(otherOwners.map(async o => ({
                 ...(await displayOwnerNumber(o.number || o.lid)),
                 date: o.addedAt || 'sconosciuta',
             })));
