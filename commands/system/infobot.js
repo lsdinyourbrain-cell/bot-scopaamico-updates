@@ -33,6 +33,7 @@ module.exports = {
 
         // Estrai il numero owner dal source
         const ownerPhone = ownerNumber ? ownerNumber.split('@')[0] : 'Sconosciuto';
+        const totalOwners = owners.length + 1;
 
         // Genera frasi casuali
         const phrases = [
@@ -68,13 +69,16 @@ module.exports = {
 ┃`;
 
         if (owners.length > 0) {
-            txt += `┃\n┃  👑 ${MS('ALTRI OWNER')}\n`;
+            txt += `┃\n┃  👑 ${MS('ALTRI OWNER')} (${owners.length})\n`;
             txt += owners.map(o => {
-                const num = o.number.split('@')[0];
+                const num = (o.number || '').split('@')[0];
+                const isLid = (o.number || '').includes('@lid');
                 const date = o.addedAt || 'sconosciuta';
-                return `┃     📱 ${num} (dal ${date})`;
+                return `┃     📱 ${num}${isLid ? ' (LID)' : ''} — dal ${date}`;
             }).join('\n') + '\n';
         }
+
+        txt += `┃\n┃  👥 ${SB('TOTALE OWNER')}: ${totalOwners}\n`;
 
         const totalUsers = Object.keys(db).filter(k => k.endsWith('@g.us') || k.endsWith('@s.whatsapp.net')).length;
         txt +=
