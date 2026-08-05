@@ -31,7 +31,7 @@ const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
 const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
-const { sendButtons } = require('./lib/buttons');
+const { sendButtons, buttonRegistry, stripEmoji, BTN_REGISTER_TTL } = require('./lib/buttons');
 
 const execFileAsync = promisify(execFile);
 const ownerNumber = "269956662956146@lid";
@@ -1087,24 +1087,56 @@ async function startBot() {
         let body = extractBody(msg);
 
         // ── RISPOSTA PULSANTI (native flow) ──────────────────────────────
-        // Quando l'utente preme un pulsante con un comando, WhatsApp manda
-        // una interactiveResponseMessage con l'id del pulsante: lo trattiamo
-        // come se avesse scritto il comando.
-        try {
-            const btnResp = msg.message?.interactiveResponseMessage?.nativeFlowResponseMessage;
-            if (btnResp?.paramsJson) {
-                const params = JSON.parse(btnResp.paramsJson || '{}');
-                const btnId = String(params.id || '').trim();
-                if (btnId) body = '.' + btnId.replace(/^\./, '');
+        // Quando l'utente preme un pulsante WhatsApp manda una
+        // interactiveResponseMessage. L'id del pulsante arriva dentro
+        // paramsJson, ma in FORMATI diversi a seconda della versione/app:
+        //  - '{"id":"indovina"}'             (oggetto)
+        //  - '{"response":"indovina"}'       (oggetto, campo diverso)
+        //  - 'indovina'                      (stringa pura)
+        // Quindi proviamo i vari campi, e se è una stringa pura la usiamo
+        // direttamente. Il comando è comunque recuperato alla riga "button-as-text".
+        const btnCmd = (() => {
+            try {
+                const btnResp = msg.message?.interactiveResponseMessage?.nativeFlowResponseMessage;
+                if (!btnResp?.paramsJson) return null;
+                const raw = String(btnResp.paramsJson).trim();
+                if (!raw || raw === '{}') return null;
+                if (raw.startsWith('{')) {
+                    const parsed = JSON.parse(raw);
+                    return parsed?.id || parsed?.response_id || parsed?.response || parsed?.command || parsed?.stringParam || null;
+                }
+                return raw; // stringa pura già con l'id
+            } catch (_) {
+                return null;
             }
-        } catch (_) {}
+        })();
 
-        // ── PULSANTE COME TESTO ──────────────────────────────────────────
-        // WhatsApp a volte inoltra l'etichetta del pulsante come messaggio di
-        // testo che cita il messaggio del bot (es. "🔛 .accendi"). Togliamo
-        // eventuali emoji/spazi iniziali così il comando viene riconosciuto.
+        // ── PULSANTE/IDENTITÀ COME TESTO ─────────────────────────────────
+        // WhatsApp a volte NON manda la interactiveResponseMessage: inoltra
+        // semplicemente il testo del pulsante (l'etichetta) citando il
+        // messaggio del bot, es. "🔛 .accendi" oppure "🔁 Gioca ancora".
+        // 1. Se è arrivato un id valido dal parsing native flow, lo usiamo.
+        // 2. Altrimenti cerchiamo l'etichetta nel registro dei pulsanti
+        //    appena inviati in questa chat (buttonRegistry): se coincide,
+        //    la mappiamo al comando associato.
+        // 3. In ogni caso togliamo emoji/spazi iniziali non visibili così i
+        //    comandi con il punto vengono riconosciuti.
         if (body && !body.startsWith('.')) {
-            body = body.replace(/^[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{00A0}\s]+/u, '');
+            const emojiStripped = stripEmoji(body);
+            if (body !== emojiStripped) {
+                // tiene conto dei casi in cui un'emoji "nascondeva" un comando
+                body = emojiStripped;
+            }
+        }
+
+        if (btnCmd) {
+            body = '.' + String(btnCmd).replace(/^\./, '').trim();
+        } else if (body && !body.startsWith('.')) {
+            const key = stripEmoji(body).toLowerCase();
+            const entry = buttonRegistry.get(`${from}|${key}`);
+            if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) {
+                body = '.' + String(entry.id).replace(/^\./, '').trim();
+            }
         }
 
         // ── MUTE: elimina i messaggi degli utenti silenziati ──────────────
