@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
 
 
             const puntata = Number.parseInt(args[0], 10);
@@ -20,11 +20,15 @@ module.exports = {
             const win = Math.random() < 0.44;
             uDB.money += win ? puntata : -puntata;
             saveDB();
-            await reply(
+
+            const resultText =
 `╭────〔 🎡 *ROULETTE* 〕────╮
 │ Puntata: *${formatMoney(puntata)}*
 │ ${win ? '✨ È uscito il tuo numero. Hai vinto!' : '🫠 Giro storto, questa volta è andata male.'}
 │ Saldo: *${formatMoney(uDB.money)}*
-╰───────────────────────────╯`);
+╰───────────────────────────╯`;
+            await sendButtons(sock, from, resultText, [
+                { label: '🔁 Gioca ancora', id: `${command}${textArgs ? ' ' + textArgs : ''}` },
+            ], msg);
     },
 };

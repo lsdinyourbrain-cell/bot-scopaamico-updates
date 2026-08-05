@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, sendButtons } = services;
 
 
             const sub = args[0]?.toLowerCase();
@@ -45,6 +45,9 @@ module.exports = {
             saveDB();
 
             const poolFinale = Math.floor(lotto.pool);
-            await reply(`🎟️ *LOTTERIA!*\n\nHai comprato un biglietto! (${lotto.tickets[sender]} totale)\n💰 Montepremi: *${poolFinale}€*\n\n.usare .lotteria estrai per sorteggiare! 🏆`);
+            await sendButtons(sock, from, `🎟️ *LOTTERIA!*\n\nHai comprato un biglietto! (${lotto.tickets[sender]} totale)\n💰 Montepremi: *${poolFinale}€*`, [
+                { label: '🎟️ Altro biglietto', id: 'lotteria' },
+                { label: '🏆 Estrai', id: 'lotteria estrai' },
+            ], msg);
     },
 };

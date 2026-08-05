@@ -13,6 +13,7 @@ module.exports = {
             if (!isGroup) return reply("❌ Comando disponibile solo nei gruppi.");
             const chatUsers = db[from] || {};
             const sorted = Object.entries(chatUsers)
+                .filter(([jid, data]) => jid.includes('@') && data && typeof data === 'object')
                 .sort((a, b) => (b[1].msgCount || 0) - (a[1].msgCount || 0))
                 .slice(0, 5);
 

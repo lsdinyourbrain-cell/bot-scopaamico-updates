@@ -12,7 +12,9 @@ module.exports = {
 
             const target = targetJid || sender;
             const uDB = getUser(target, from);
-            const name = pushName || target.split('@')[0];
+            // pushName è il nome di chi invia il comando: lo usiamo solo per il proprio profilo
+            const isSelf = sameJid(target, sender);
+            const name = isSelf ? (pushName || target.split('@')[0]) : target.split('@')[0];
             const wallet = uDB.money || 0;
             const bank = uDB.bank || 0;
             const msgCount = uDB.msgCount || 0;

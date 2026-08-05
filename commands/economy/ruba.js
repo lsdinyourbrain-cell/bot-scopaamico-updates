@@ -17,7 +17,12 @@ module.exports = {
             const targetData = getUser(targetJid, from);
             const thiefData = getUser(sender, from);
 
-            if (targetData.money < 10) return reply(`@${targetJid.split('@')[0]} è al verde, non ha niente da rubare!`, { mentions: [targetJid] });
+            if (targetData.money < 10) {
+                return await sock.sendMessage(from, {
+                    text: `@${targetJid.split('@')[0]} è al verde, non ha niente da rubare!`,
+                    mentions: [targetJid],
+                });
+            }
 
             const success = Math.random() < 0.45;
             if (!success) {

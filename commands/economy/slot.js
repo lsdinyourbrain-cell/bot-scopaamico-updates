@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
 
 
             const puntata = 20;
@@ -26,8 +26,8 @@ module.exports = {
             saveDB();
 
             const risultato = win > 0 ? `🎊 *HAI VINTO ${win}€!* 🎊` : `💀 *HAI PERSO ${puntata}€*`;
-            
-            await reply(
+
+            const resultText =
 `╭────〔 🎰 *SLOT MACHINE* 〕────╮
 │
 │    [ ${r[0]} | ${r[1]} | ${r[2]} ]
@@ -35,7 +35,9 @@ module.exports = {
 ├───────────────────────────────
 │ ${risultato}
 │ 💰 *Saldo attuale:* ${uDB.money}€
-╰───────────────────────────────╯`
-            );
+╰───────────────────────────────╯`;
+            await sendButtons(sock, from, resultText, [
+                { label: '🔁 Gioca ancora', id: `${command}${textArgs ? ' ' + textArgs : ''}` },
+            ], msg);
     },
 };

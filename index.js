@@ -28,7 +28,7 @@ const { sleep } = require('./lib/cooldowns');
 const botLogger = require('./lib/logger');
 botLogger.init(); // log su file (logs/bot.log)
 const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
-const { trySpawnBounty, claimBounty, getBounty, removeBounty } = require('./lib/bounty');
+const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
 const { sendButtons } = require('./lib/buttons');
@@ -400,15 +400,18 @@ const isAdminParticipant = (participant, jid) => {
 const groupMetaCache = new Map();
 const GROUP_META_CACHE_TTL = 15000; // 15 secondi
 
-const getGroupAdminState = async (sock, groupJid, senderJids) => {
+// Legge groupMetadata usando la cache condivisa: evita round-trip di rete
+// su ogni messaggio (antiflame e bounty ne fanno pesantemente uso).
+const getCachedGroupMeta = async (sock, groupJid) => {
     const cached = groupMetaCache.get(groupJid);
-    let metadata;
-    if (cached && Date.now() - cached.ts < GROUP_META_CACHE_TTL) {
-        metadata = cached.data;
-    } else {
-        metadata = await sock.groupMetadata(groupJid);
-        groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
-    }
+    if (cached && Date.now() - cached.ts < GROUP_META_CACHE_TTL) return cached.data;
+    const metadata = await sock.groupMetadata(groupJid);
+    groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
+    return metadata;
+};
+
+const getGroupAdminState = async (sock, groupJid, senderJids) => {
+    const metadata = await getCachedGroupMeta(sock, groupJid);
     const participants = Array.isArray(metadata?.participants) ? metadata.participants : [];
     const isAdmin = (jids) => jids
         .filter(Boolean)
@@ -1204,34 +1207,39 @@ async function startBot() {
         }
 
         // ── ANTIFLAME ──────────────────────────────────────────────────────
-        const adminsList = [];
-        try {
-            const meta = await sock.groupMetadata(from);
-            adminsList.push(...(meta?.participants || []).filter(p => ['admin','superadmin'].includes(p.admin)));
-        } catch (_) {}
-        const isAdm = adminsList.some(p => sameJid(p.id || p.jid, sender));
-        if (db._antiflame?.[from]?.enabled && isGroup && body && !body.startsWith('.') && !isOwner && !isAdm) {
-            const FLAME_WORDS = ['ucciditi','ammazzati','fucilati','impiccati','impiccat','sgozzati','sgozzat','suicidati','suicidio','ammazz','fucil','buttati','buttat','lasciati','lasciat','muori','crepa','stermina','stermin'];
-            const lower = body.toLowerCase();
-            const hasFlame = FLAME_WORDS.some(w => {
-                const regex = new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-                return regex.test(lower);
-            });
-            if (hasFlame) {
-                try {
-                    await sock.sendMessage(from, { delete: msg.key });
-                    await sock.sendMessage(from, {
-                        text: `🔥 *ANTIFLAME* 🚨\n\n@${sender.split('@')[0]} messaggio rimosso (contiene parole pesanti).`,
-                        mentions: [sender],
+        // Ottimizzazione: groupMetadata (API call) viene fetchato SOLO se
+        // antiflame è attivo per questo gruppo (il caso più comune è spento).
+        if (db._antiflame?.[from]?.enabled && isGroup && body && !body.startsWith('.') && !isOwner) {
+            try {
+                const meta = await getCachedGroupMeta(sock, from);
+                const admins = (meta?.participants || []).filter(p => ['admin','superadmin'].includes(p.admin));
+                const isAdm = admins.some(p => sameJid(p.id || p.jid, sender));
+                if (!isAdm) {
+                    const FLAME_WORDS = ['ucciditi','ammazzati','fucilati','impiccati','impiccat','sgozzati','sgozzat','suicidati','suicidio','ammazz','fucil','buttati','buttat','lasciati','lasciat','muori','crepa','stermina','stermin'];
+                    const lower = body.toLowerCase();
+                    const hasFlame = FLAME_WORDS.some(w => {
+                        const regex = new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+                        return regex.test(lower);
                     });
-                } catch (_) {}
-            }
+                    if (hasFlame) {
+                        try {
+                            await sock.sendMessage(from, { delete: msg.key });
+                            await sock.sendMessage(from, {
+                                text: `🔥 *ANTIFLAME* 🚨\n\n@${sender.split('@')[0]} messaggio rimosso (contiene parole pesanti).`,
+                                mentions: [sender],
+                            });
+                        } catch (_) {}
+                    }
+                }
+            } catch (_) {}
         }
 
         // ── BOUNTY SPAWN ──────────────────────────────────────────────────
-        if (isGroup && body && !body.startsWith('.') && from.endsWith('@g.us')) {
+        // Ottimizzazione: la probabilità di spawn viene verificata PRIMA
+        // (senza rete): solo 1 messaggio su 20 circa fa groupMetadata.
+        if (isGroup && body && !body.startsWith('.') && from.endsWith('@g.us') && shouldTrySpawnBounty(from)) {
             try {
-                const metadata = await sock.groupMetadata(from);
+                const metadata = await getCachedGroupMeta(sock, from);
                 const members = metadata?.participants || [];
                 if (members.length > 1) {
                     const bounty = trySpawnBounty(from, members);

@@ -37,8 +37,11 @@ module.exports = {
             return reply("Non ci sono co-owner da rimuovere.");
         }
 
+        // Trova la voce da rimuovere SOLO confrontando con il target indicato.
+        // (la vecchia clausola sameJid(o.number, sock.user.id) abbinava sempre
+        // l'owner principale in posizione 0, rimuovendo quello sbagliato)
         const index = db._owners.findIndex(o =>
-            sameJid(o.number, target) || (o.lid && sameJid(o.lid, target)) || sameJid(o.number, sock?.user?.id)
+            sameJid(o.number, target) || (o.lid && sameJid(o.lid, target))
         );
 
         if (index === -1) return reply("Questo utente non è tra i co-owner.");
