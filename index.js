@@ -337,7 +337,23 @@ const getCpuUsage = (sampleMs = 500) => new Promise(resolve => {
     }, sampleMs);
 });
 
-const getSysInfo = async (cpuUsagePromise = getCpuUsage()) => {
+const getProcessCpu = (sampleMs = 400) => new Promise(resolve => {
+    const before = process.cpuUsage();
+    const wallStart = process.hrtime.bigint();
+    setTimeout(() => {
+        try {
+            const delta = process.cpuUsage(before);
+            const procMs = (delta.user + delta.system) / 1000; // µs -> ms
+            const wallMs = Number(process.hrtime.bigint() - wallStart) / 1e6; // ns -> ms
+            const pct = wallMs > 0 ? (procMs / wallMs) * 100 : 0;
+            resolve(Math.max(0, Math.min(100, pct)).toFixed(1));
+        } catch (_) {
+            resolve(null);
+        }
+    }, sampleMs);
+});
+
+const getSysInfo = async (cpuUsagePromise = getCpuUsage(), processCpuPromise = null) => {
     const totalBytes = os.totalmem();
     const usedBytes  = totalBytes - os.freemem();
     const uptimeSec  = process.uptime();
@@ -346,14 +362,23 @@ const getSysInfo = async (cpuUsagePromise = getCpuUsage()) => {
     const cpus       = os.cpus();
     const cpuUsage   = await cpuUsagePromise;
     const processMem = process.memoryUsage();
+    const processCpu = processCpuPromise ? await processCpuPromise : null;
+
+    // Rilevamento processore robusto: utile su Android/Termux dove os.cpus()
+    // può essere vuoto o con modello vuoto/generico.
+    let cpuModel = (cpus[0]?.model || '').replace(/\s+/g, ' ').trim() || 'Sconosciuto';
+    if (cpuModel.toLowerCase().includes('sconosciuto') || cpuModel.length < 4) {
+        cpuModel = os.arch() === 'arm64' ? 'Processore ARM64' : (os.arch().toUpperCase() || 'Sconosciuto');
+    }
 
     return {
         ramUsed    : (usedBytes / 1024 ** 3).toFixed(2),
         ramTotal   : (totalBytes / 1024 ** 3).toFixed(2),
         ramPercent : ((usedBytes / totalBytes) * 100).toFixed(1),
         cpu        : cpuUsage === null ? 'N/D' : `${cpuUsage.toFixed(1)}%`,
-        cpuModel   : cpus[0]?.model?.replace(/\s+/g, ' ').trim() || 'Sconosciuto',
+        cpuModel,
         cpuCores   : os.availableParallelism ? os.availableParallelism() : cpus.length,
+        cpuProcess : processCpu === null ? 'N/D' : `${processCpu}%`,
         processRam : (processMem.rss / 1024 ** 2).toFixed(1),
         heapUsed   : (processMem.heapUsed / 1024 ** 2).toFixed(1),
         uptime     : hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`,
@@ -470,12 +495,13 @@ const clearBotCache = () => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento']);
+const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento']);
 
 const COMMAND_EMOJIS = {
     // Info/System
     menu: '📋', ping: '⏳', id: '🆔', admin: '👑', infobot: 'ℹ️',
     groupinfo: 'ℹ️', status: '📊', groups: '📦', profile: '👤', profilo: '👤',
+    modoadmin: '🛡️', tinyurl: '🔗', short: '🔗', wiki: '📚', wikipedia: '📚', qr: '▦', uuid: '🔑',
     // Admin - moderation
     tag: '📢', tagall: '📢', tagadmin: '👑', ban: '🚫', kick: '🚫', caccia: '🚫',
     del: '🗑️', mute: '🔇', unmute: '🔊', warn: '⚠️', unwarn: '✅',
@@ -1491,6 +1517,20 @@ async function startBot() {
 
         if (!body.startsWith('.')) return;
 
+        // ── MODO ADMIN ────────────────────────────────────────────────────
+        // Se il gruppo ha .modoadmin attivo, SOLO gli admin possono usare il
+        // bot. Un non-admin che invoca un comando riceve una reazione "X"
+        // rossa sul suo messaggio e nessuna risposta. (l'owner è esente)
+        if (isGroup && db[from]?._modoadmin && !isOwner) {
+            try {
+                const { isSenderAdmin: sa } = await getGroupAdminState(sock, from, [sender]);
+                if (!sa) {
+                    sock.sendMessage(from, { react: { key: msg.key, text: '❌' } }).catch(() => {});
+                    return;
+                }
+            } catch (_) {}
+        }
+
         const args      = body.slice(1).trim().split(/\s+/);
         const command   = (args.shift() || '').toLowerCase();
         if (!command) return;
@@ -1534,7 +1574,7 @@ async function startBot() {
                     ANTILINK_PLATFORMS, ARRAYS, COPY, axios,
                     crypto, db, downloadContentFromMessage, downloadMediaMessage,
                     execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup,
-                    getContextInfo, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path,
+                    getContextInfo, getCpuUsage, getProcessCpu, getQuotedKey, getSysInfo, getUser, os, path,
                     projectDir: __dirname, randomChoice, randomInt,
                     sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
                     getWelcomeGroup, setWelcomeGroup,

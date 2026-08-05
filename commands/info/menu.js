@@ -45,9 +45,9 @@ module.exports = {
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
 
         let menuTxt =
-`╭── ✦ ${SB('SCOPAMICO BOT')} v11.7 ✦ ──╮
+`╭── ✦ ${SB('SCOPAMICO BOT')} v11.8 ✦ ──╮
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
-├── 🆕 ${MS('NOVITÀ v11.7')} ─────┤
+├── 🆕 ${MS('NOVITÀ v11.8')} ─────┤
 ${L('🆔', '.id')}
 ${L('🎯', '.pick')}
 ${L('🧮', '.calc')}
@@ -147,6 +147,10 @@ ${L('🔊', '.tts')}
 ${L('🐿️', '.chipmunk')}
 ${L('🏃', '.rubato')}
 ${L('🎵', '.lyrics')}
+${L('🔗', '.tinyurl', '<url>')}
+${L('📚', '.wiki', '<voce>')}
+${L('▦', '.qr', '<testo>')}
+${L('🔑', '.uuid')}
 ├── 🎤 ${MS('AUDIO')} ─────────────┤
 ${L('🎙️', '.deep')}
 ${L('🔄', '.reverse')}
@@ -203,6 +207,7 @@ ${L('🗣️', '.say')}
 ${L('🔗', '.invito')}
 ${L('⏸️', '.pausa')}
 ${L('▶️', '.riprendi')}
+${L('🛡️', '.modoadmin', 'on/off')}
 ├── 📋 ${BF('GESTIONE')} ──────────┤
 ${L('📛', '.setname', '<nome>')}
 ${L('📝', '.setdesc', '<testo>')}

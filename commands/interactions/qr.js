@@ -1,0 +1,31 @@
+'use strict';
+
+module.exports = {
+    name: 'qr',
+    aliases: ['qrcode'],
+    description: "Genera un QR code per un testo o link (o da un messaggio citato).",
+
+    async run(sock, msg, args, context) {
+        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
+        const { axios } = services;
+
+        const quoted = isReply ? (contextInfo?.quotedMessage?.conversation || contextInfo?.quotedMessage?.extendedTextMessage?.text || '') : '';
+        const data = String(quoted || textArgs || '').trim();
+        if (!data) return reply('⚠️ Scrivi il testo da codificare.\n👉 *Uso:* `.qr https://esempio.it` (o cita un messaggio)');
+
+        try {
+            const encoded = encodeURIComponent(data);
+            const res = await axios.get(
+                `https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=0&data=${encoded}`,
+                { responseType: 'arraybuffer', timeout: 15000 }
+            );
+            const buf = Buffer.from(res.data);
+            await sock.sendMessage(from, {
+                image: buf,
+                caption: `▦ *QR Code generato*\nContenuto: ${data.slice(0, 80)}`,
+            }, { quoted: msg });
+        } catch (_) {
+            await reply('❌ Non riesco a generare il QR. Riprova più tardi.');
+        }
+    },
+};
