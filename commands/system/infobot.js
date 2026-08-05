@@ -7,12 +7,14 @@ const SB = (s) => s.split('').map(c => {
     if (cc >= 48 && cc <= 57) return String.fromCodePoint(0x1D7E2 + cc - 48);
     return c;
 }).join('');
+
 const BF = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D56C + cc - 65);
     if (cc >= 97 && cc <= 122) return String.fromCodePoint(0x1D586 + cc - 97);
     return c;
 }).join('');
+
 const MS = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D670 + cc - 65);
@@ -20,116 +22,175 @@ const MS = (s) => s.split('').map(c => {
     return c;
 }).join('');
 
+// Formatta i numeri di telefono per la visualizzazione quando non si tagga
+const formatPhoneNumber = (numStr) => {
+    if (!numStr) return 'Sconosciuto';
+    const clean = String(numStr).replace(/\D/g, '');
+    if (clean === '15483147193') return '+1 (548) 314-7193';
+    if (clean.length === 11 && clean.startsWith('1')) {
+        return `+1 (${clean.slice(1, 4)}) ${clean.slice(4, 7)}-${clean.slice(7)}`;
+    }
+    return `+${clean}`;
+};
+
 module.exports = {
     name: 'infobot',
     aliases: ['botinfo', 'about'],
-    description: "Mostra informazioni sul bot, owner e owner aggiuntivi.",
+    description: "Mostra informazioni sul bot, owner e co-owner.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, ownerNumber } = services;
+        const { from, pushName, isGroup, services } = context;
+        const { db, sameJid, ownerNumber } = services;
 
-        const owners = db._owners || [];
         const mentions = [];
 
-        // Numero REALE dell'owner principale: il bot gira sull'account dell'owner,
-        // quindi sock.user.id è il numero di telefono vero (PN). Se manca, ripiega
-        // sull'ID salvato in ownerNumber.
-        const botPn = sock?.user?.id ? sock.user.id.split(':')[0].split('@')[0] : '';
-        const ownerNumberPn = ownerNumber && !ownerNumber.includes('@lid') ? ownerNumber.split('@')[0] : '';
-        const ownerDisplay = botPn || ownerNumberPn || (ownerNumber ? ownerNumber.split('@')[0] : 'Sconosciuto');
-        if (botPn) mentions.push(`${botPn}@s.whatsapp.net`);
+        // Owner principale fisso (+1 (548) 314-7193)
+        const MAIN_OWNER_NUM = '15483147193';
+        const MAIN_OWNER_JID = `${MAIN_OWNER_NUM}@s.whatsapp.net`;
+        const MAIN_OWNER_FORMATTED = '+1 (548) 314-7193';
 
-        // Converte un jid (@lid, @s.whatsapp.net o numero "nudo") nel numero di
-        // telefono reale e nel jid da taggare. getPNForLID interroga WhatsApp
-        // (USync) e può fallire: in tal caso mostra l'ID senza tag.
-        const normalizeJid = (jid) => {
-            if (!jid) return null;
-            const s = String(jid).split(':')[0].trim(); // toglie eventuale :device
-            if (!s.includes('@')) return s + '@s.whatsapp.net'; // numero nudo → PN
+        // JID che rappresentano l'owner principale (da non contare tra i co-owner)
+        const mainOwnerJids = [MAIN_OWNER_JID, ownerNumber, sock?.user?.id, sock?.user?.lid].filter(Boolean);
+
+        // Co-Owner reali: il comando .cowner/.addowner salva in db._owners
+        // (inizializzato all'avvio con l'owner principale in posizione 0).
+        let coOwnerList = [];
+        if (Array.isArray(db._owners)) coOwnerList = db._owners;
+        else if (Array.isArray(db._cowner)) coOwnerList = db._cowner;
+        else if (Array.isArray(db.coowners)) coOwnerList = db.coowners;
+        else if (Array.isArray(db._coowners)) coOwnerList = db._coowners;
+        else if (db._cowner) coOwnerList = [db._cowner];
+
+        // Ottiene i partecipanti se il comando è lanciato in un gruppo
+        let groupParticipants = [];
+        if (isGroup) {
+            try {
+                const groupMeta = await sock.groupMetadata(from);
+                groupParticipants = groupMeta?.participants || [];
+            } catch (_) {
+                groupParticipants = [];
+            }
+        }
+
+        // Converte eventuali LID o oggetti nel JID numero reale (PN) ed elimina i prefissi @lid
+        const resolveToPnJid = async (rawJid) => {
+            if (!rawJid) return null;
+            let s = String(typeof rawJid === 'object' ? (rawJid.number || rawJid.jid || rawJid.lid) : rawJid).split(':')[0].trim();
+            
+            if (s.includes('@lid')) {
+                try {
+                    const pn = await sock?.signalRepository?.lidMapping?.getPNForLID(s);
+                    if (pn) s = pn.split(':')[0];
+                } catch (_) {}
+            }
+
+            if (!s.includes('@')) {
+                s = s + '@s.whatsapp.net';
+            }
+
+            // Se è rimasto un LID non risolvibile, si estrae solo la parte numerica per evitare che appaia "@lid"
+            if (s.includes('@lid')) {
+                const cleanNum = s.split('@')[0];
+                return `${cleanNum}@s.whatsapp.net`;
+            }
             return s;
         };
-        const displayOwnerNumber = async (jid) => {
-            const j = normalizeJid(jid);
-            if (!j) return { display: 'Sconosciuto', mention: null };
-            const num = j.split('@')[0];
-            if (!j.includes('@lid')) return { display: num, mention: j };
-            try {
-                const pn = await sock?.signalRepository?.lidMapping?.getPNForLID(j);
-                if (pn) return { display: pn.split(':')[0].split('@')[0], mention: pn.split(':')[0] };
-            } catch (_) {}
-            return { display: num, mention: null };
+
+        // Verifica se un utente è presente nel gruppo attuale
+        const isUserInGroup = (jid) => {
+            if (!isGroup || !jid || !groupParticipants.length) return false;
+            const targetNum = jid.split('@')[0];
+            return groupParticipants.some(p => {
+                const pNum = p.id.split(':')[0].split('@')[0];
+                return pNum === targetNum || (p.lid && p.lid.split('@')[0] === targetNum);
+            });
         };
 
-        // Owner principali da escludere dagli "ALTRI OWNER" (sono già in cima)
-        const isMainOwner = (o) => {
-            const j = normalizeJid(o.number || o.lid);
-            return !j ? false : sameJid(j, ownerNumber) || sameJid(j, sock?.user?.id) || sameJid(j, sock?.user?.lid);
-        };
-        const otherOwners = owners.filter(o => !isMainOwner(o));
-        const totalOwners = otherOwners.length + 1;
+        // Gestione Owner Principale
+        const mainOwnerInGroup = isUserInGroup(MAIN_OWNER_JID);
+        let mainOwnerDisplay = '';
+        if (mainOwnerInGroup) {
+            mainOwnerDisplay = `@${MAIN_OWNER_NUM}`;
+            mentions.push(MAIN_OWNER_JID);
+        } else {
+            mainOwnerDisplay = MAIN_OWNER_FORMATTED;
+        }
 
-        // Genera frasi casuali
+        // Gestione Co-Owner
+        const processedCoOwners = [];
+        for (const item of coOwnerList) {
+            const pnJid = await resolveToPnJid(item);
+            if (!pnJid) continue;
+
+            const numOnly = pnJid.split('@')[0];
+
+            // Esclude l'owner principale se presente nella lista dei co-owner
+            const isMain = numOnly === MAIN_OWNER_NUM ||
+                (sameJid && mainOwnerJids.some(j => sameJid(pnJid, j)));
+            if (isMain) continue;
+
+            const inGroup = isUserInGroup(pnJid);
+            if (inGroup) {
+                mentions.push(pnJid);
+                processedCoOwners.push({ text: `@${numOnly}` });
+            } else {
+                processedCoOwners.push({ text: formatPhoneNumber(numOnly) });
+            }
+        }
+
+        // Frasi casuali
         const phrases = [
-            "✨ *SCOPAAMICO BOT* — il bot che ti scopa.. Amico! 🫶",
-            "🔥 Creato per dominare i gruppi WhatsApp con stile!",
-            "🤖 Dal 2024 in servizio, sempre più forte 💪",
-            "⚡ Fatto con amore (e bestemmie) da un vero italiano 🍝",
-            "💀 Se mi tagghi, rispondo. Se mi ignori, ti ignoro. Semplice.",
-            "🛡️ Proteggo il gruppo, amministro, e ti faccio anche compagnia.",
-            "🎯 Preciso come un colpo di fucile, veloce come un insulto di nonna.",
-            "🚀 Versione 11.0 — sempre più aggiornato, sempre più scam.",
+            "✨ SCOPAAMICO BOT — Potenza e controllo totale! 🫶",
+            "🔥 Creato per gestire e animare i gruppi WhatsApp!",
+            "🤖 Sistema avanzato di gestione e moderazione 💪",
+            "⚡ Sempre attivo e pronto all'uso 🍝",
+            "🛡️ Protezione gruppo, comandi audio e divertimento.",
+            "🚀 Versione 11.0 — Massime prestazioni."
         ];
         const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
 
         const now = new Date();
         const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-        const dateStr = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
-
-        let txt =
-`╭━━━━ ✦ ${SB('INFO BOT')} ✦ ━━━━╮
-┃                            ┃
-┃  ${randomPhrase}
-┃                            ┃
-┃  ${MS('🕐 Info richiesta')}
-┃    📅 ${dateStr}
-┃    🕒 ${timeStr}
-┃    👤 ${pushName}
-┃
-┣━━━━━━ ${BF('CONTATTI')} ━━━━━━┫
-┃
-┃  👑 ${SB('OWNER PRINCIPALE')}
-┃     📱 @${ownerDisplay}
-┃`;
-
-        if (otherOwners.length > 0) {
-            txt += `┃\n┃  👑 ${MS('ALTRI OWNER')} (${otherOwners.length})\n`;
-            const resolved = await Promise.all(otherOwners.map(async o => ({
-                ...(await displayOwnerNumber(o.number || o.lid)),
-                date: o.addedAt || 'sconosciuta',
-            })));
-            for (const r of resolved) {
-                if (r.mention) mentions.push(r.mention);
-                txt += `┃     📱 @${r.display} — dal ${r.date}\n`;
-            }
-            txt += '┃';
-        }
-
-        txt += `┃\n┃  👥 ${SB('TOTALE OWNER')}: ${totalOwners}\n`;
+        const dateStr = now.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
         const totalUsers = Object.keys(db).filter(k => k.endsWith('@g.us') || k.endsWith('@s.whatsapp.net')).length;
-        txt +=
-`┃
-┃  📊 ${SB('STATISTICHE')}
-┃     👥 Chat tracciate: ${totalUsers}
-┃     💾 DB: ${(JSON.stringify(db).length / 1024).toFixed(1)} KB
-┃
-┣━━━━━━ ${BF('COMANDI')} ━━━━━━━┫
-┃
-┃  Digita .menu per vedere
-┃  tutti i comandi! 🚀
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━━━╯`;
+        const dbSize = (JSON.stringify(db).length / 1024).toFixed(1);
+
+        // Layout grafico elegante e pulito
+        let txt = `╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮\n`;
+        txt += `┃ 🤖 ✦ ${SB('INFO SYSTEM BOT')} ✦\n`;
+        txt += `┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\n`;
+        txt += `┃\n`;
+        txt += `┃ 💬 ${randomPhrase}\n`;
+        txt += `┃\n`;
+        txt += `┃ 📅 ${SB('Data')}: ${dateStr} │ 🕒 ${timeStr}\n`;
+        txt += `┃ 👤 ${SB('Richiesto da')}: ${pushName || 'Utente'}\n`;
+        txt += `┃\n`;
+        txt += `┣━━━ 👑 ${BF('STAFF & CREATORI')} ━━━\n`;
+        txt += `┃\n`;
+        txt += `┃ 👑 ${SB('OWNER')}: ${mainOwnerDisplay}\n`;
+
+        if (processedCoOwners.length > 0) {
+            txt += `┃\n`;
+            txt += `┃ ⚔️ ${SB('CO-OWNER')} (${processedCoOwners.length}):\n`;
+            for (const co of processedCoOwners) {
+                txt += `┃   ▫️ ${co.text}\n`;
+            }
+        } else {
+            txt += `┃ ⚔️ ${SB('CO-OWNER')}: Nessuno impostato\n`;
+        }
+
+        txt += `┃\n`;
+        txt += `┣━━━ 📊 ${BF('STATISTICHE')} ━━━\n`;
+        txt += `┃\n`;
+        txt += `┃ 👥 ${SB('Chat attive')}: ${totalUsers}\n`;
+        txt += `┃ 💾 ${SB('Database')}: ${dbSize} KB\n`;
+        txt += `┃\n`;
+        txt += `┣━━━ 🚀 ${BF('COMANDI')} ━━━\n`;
+        txt += `┃\n`;
+        txt += `┃ Scrivi ${SB('.menu')} per la lista completa!\n`;
+        txt += `┃\n`;
+        txt += `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
 
         await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });
     },
