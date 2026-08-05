@@ -1086,56 +1086,72 @@ async function startBot() {
 
         let body = extractBody(msg);
 
+        // True quando il comando arriva da un pulsante premuto: i comandi
+        // possono usarlo per saltare il cooldown (es. "Scava ancora").
+        let fromButton = false;
+
         // ── RISPOSTA PULSANTI (native flow) ──────────────────────────────
         // Quando l'utente preme un pulsante WhatsApp manda una
         // interactiveResponseMessage. L'id del pulsante arriva dentro
         // paramsJson, ma in FORMATI diversi a seconda della versione/app:
-        //  - '{"id":"indovina"}'             (oggetto)
-        //  - '{"response":"indovina"}'       (oggetto, campo diverso)
-        //  - 'indovina'                      (stringa pura)
-        // Quindi proviamo i vari campi, e se è una stringa pura la usiamo
-        // direttamente. Il comando è comunque recuperato alla riga "button-as-text".
+        //  - '{"id":"scava"}'                            → usa l'id
+        //  - '{"id":"scava","display_text":"⛏️ Scava ancora"}'
+        //  - '{"response":"Scava ancora"}'               → testo etichetta
+        //  - 'scava' oppure 'Scava ancora'               → stringa pura
+        // Il resolver prova ogni campo e, se contiene un'etichetta di un
+        // pulsante appena inviato in questa chat, la mappa al comando vero.
         const btnCmd = (() => {
             try {
                 const btnResp = msg.message?.interactiveResponseMessage?.nativeFlowResponseMessage;
                 if (!btnResp?.paramsJson) return null;
-                const raw = String(btnResp.paramsJson).trim();
-                if (!raw || raw === '{}') return null;
-                if (raw.startsWith('{')) {
-                    const parsed = JSON.parse(raw);
-                    return parsed?.id || parsed?.response_id || parsed?.response || parsed?.command || parsed?.stringParam || null;
+                const norm = String(btnResp.paramsJson).trim();
+                if (!norm || norm === '{}') return null;
+
+                let candidates = [];
+                if (norm.startsWith('{')) {
+                    const parsed = JSON.parse(norm);
+                    for (const k of ['id', 'response_id', 'command', 'stringParam', 'display_text', 'response']) {
+                        const v = parsed?.[k];
+                        if (v) candidates.push(String(v).trim());
+                    }
+                } else {
+                    candidates.push(norm);
                 }
-                return raw; // stringa pura già con l'id
+                if (!candidates.length) return null;
+
+                // Se il candidato è un'etichetta appena inviata in questa chat,
+                // usiamo il comando associato (WhatsApp a volte manda il testo).
+                for (const c of candidates) {
+                    const entry = buttonRegistry.get(`${from}|${stripEmoji(c).toLowerCase()}`);
+                    if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) return entry.id;
+                }
+                // Altrimenti il primo candidato È il comando/id del pulsante.
+                return candidates[0] || null;
             } catch (_) {
                 return null;
             }
         })();
 
-        // ── PULSANTE/IDENTITÀ COME TESTO ─────────────────────────────────
+        // ── PULSANTE/ETICHETTA COME TESTO ─────────────────────────────────
         // WhatsApp a volte NON manda la interactiveResponseMessage: inoltra
-        // semplicemente il testo del pulsante (l'etichetta) citando il
-        // messaggio del bot, es. "🔛 .accendi" oppure "🔁 Gioca ancora".
-        // 1. Se è arrivato un id valido dal parsing native flow, lo usiamo.
-        // 2. Altrimenti cerchiamo l'etichetta nel registro dei pulsanti
-        //    appena inviati in questa chat (buttonRegistry): se coincide,
-        //    la mappiamo al comando associato.
-        // 3. In ogni caso togliamo emoji/spazi iniziali non visibili così i
-        //    comandi con il punto vengono riconosciuti.
-        if (body && !body.startsWith('.')) {
-            const emojiStripped = stripEmoji(body);
-            if (body !== emojiStripped) {
-                // tiene conto dei casi in cui un'emoji "nascondeva" un comando
-                body = emojiStripped;
-            }
-        }
-
+        // semplicemente l'etichetta del pulsante come testo citando il
+        // messaggio del bot, es. "🔛 .accendi" oppure "⛏️ Scava ancora".
+        // Togliamo emoji/spazi iniziali e poi:
+        //  - se inizia col punto è già un comando (es. ".scava");
+        //  - altrimenti cerchiamo l'etichetta nel registro della chat.
         if (btnCmd) {
+            fromButton = true;
             body = '.' + String(btnCmd).replace(/^\./, '').trim();
         } else if (body && !body.startsWith('.')) {
-            const key = stripEmoji(body).toLowerCase();
-            const entry = buttonRegistry.get(`${from}|${key}`);
-            if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) {
-                body = '.' + String(entry.id).replace(/^\./, '').trim();
+            const stripped = stripEmoji(body);
+            if (stripped) {
+                const entry = buttonRegistry.get(`${from}|${stripped.toLowerCase()}`);
+                if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) {
+                    fromButton = true;
+                    body = '.' + String(entry.id).replace(/^\./, '').trim();
+                } else {
+                    body = stripped;
+                }
             }
         }
 
@@ -1511,6 +1527,7 @@ async function startBot() {
             await commandModule.run(sock, msg, args, {
                 command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned,
                 targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply,
+                isButton: fromButton,
                 setBotActive: (value) => { isBotActive = Boolean(value); },
                 services: {
                     AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE,

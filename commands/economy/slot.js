@@ -37,7 +37,7 @@ module.exports = {
 │ 💰 *Saldo attuale:* ${uDB.money}€
 ╰───────────────────────────────╯`;
             await sendButtons(sock, from, resultText, [
-                { label: '🔁 Gioca ancora', id: `${command}${textArgs ? ' ' + textArgs : ''}` },
+                { label: `🔁 .${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);
     },
 };

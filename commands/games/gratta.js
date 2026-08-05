@@ -6,7 +6,7 @@ module.exports = {
     description: "Gratta e vinci: 9 caselle, allinea 3 simboli e vinci!",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
+        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, sendButtons } = services;
 
 
@@ -16,7 +16,7 @@ module.exports = {
             const last = userData.cooldowns[cooldownKey] || 0;
             const now = Date.now();
             const cdMs = 8000;
-            if (now - last < cdMs) {
+            if (!isButton && now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
                 return reply(`⏳ Calma! Puoi grattare tra *${remain}s*.`);
             }
@@ -69,7 +69,7 @@ ${render(grid)}
 │ 💰 *Saldo attuale:* ${formatMoney(uDB.money)}
 ╰──────────────────────────────╯`;
             await sendButtons(sock, from, resultText, [
-                { label: '🔁 Gioca ancora', id: `${command}${textArgs ? ' ' + textArgs : ''}` },
+                { label: `🔁 .${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);
     },
 };

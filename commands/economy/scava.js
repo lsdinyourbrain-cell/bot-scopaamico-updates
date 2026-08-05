@@ -6,7 +6,7 @@ module.exports = {
     description: "Scava per guadagnare soldi.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
+        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, sendButtons } = services;
 
 
@@ -17,7 +17,7 @@ module.exports = {
             const now = Date.now();
             const cdMs = 30000;
 
-            if (now - last < cdMs) {
+            if (!isButton && now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
                 return reply(`⏳ Scava e respira! Riposa *${remain}s* prima di riscavare.`);
             }
@@ -27,7 +27,7 @@ module.exports = {
             userData.money += guadagno;
             saveDB();
             await sendButtons(sock, from, `⛏️ Hai scavato come un minatore e trovato *${guadagno}€*!\n💰 Saldo: *${userData.money}€*`, [
-                { label: '⛏️ Scava ancora', id: `${command}` },
+                { label: `⛏️ .${command}`, id: `${command}` },
             ], msg);
     },
 };

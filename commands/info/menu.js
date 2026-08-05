@@ -45,9 +45,9 @@ module.exports = {
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
 
         let menuTxt =
-`╭── ✦ ${SB('SCOPAMICO BOT')} v11.6 ✦ ──╮
+`╭── ✦ ${SB('SCOPAMICO BOT')} v11.7 ✦ ──╮
 │ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
-├── 🆕 ${MS('NOVITÀ v11.6')} ─────┤
+├── 🆕 ${MS('NOVITÀ v11.7')} ─────┤
 ${L('🆔', '.id')}
 ${L('🎯', '.pick')}
 ${L('🧮', '.calc')}

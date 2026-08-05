@@ -14,9 +14,9 @@ module.exports = {
             const userChoice = (args[0] || '').toString().toLowerCase() || command;
             if (!choices.includes(userChoice)) {
                 return await sendButtons(sock, from, "✊ ✋ ✌️ *SASSO CARTA FORBICI*\n\nScegli la tua mossa:", [
-                    { label: '✊ Sasso', id: 'sasso' },
-                    { label: '✋ Carta', id: 'carta' },
-                    { label: '✌️ Forbici', id: 'forbici' },
+                    { label: '✊ .sasso', id: 'sasso' },
+                    { label: '✋ .carta', id: 'carta' },
+                    { label: '✌️ .forbici', id: 'forbici' },
                 ], msg);
             }
             const botChoice = randomChoice(choices);
@@ -27,9 +27,9 @@ module.exports = {
                     ? '🥳 Hai vinto, easy.'
                     : '😅 Stavolta vince il bot.';
             await sendButtons(sock, from, `✊ *Tu:* ${userChoice}\n🤖 *Bot:* ${botChoice}\n\n${result}`, [
-                { label: '✊ Sasso', id: 'sasso' },
-                { label: '✋ Carta', id: 'carta' },
-                { label: '✌️ Forbici', id: 'forbici' },
+                { label: '✊ .sasso', id: 'sasso' },
+                { label: '✋ .carta', id: 'carta' },
+                { label: '✌️ .forbici', id: 'forbici' },
             ], msg);
     },
 };
