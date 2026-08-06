@@ -20,7 +20,7 @@ module.exports = {
             const short = String(data).trim();
             if (!/^https?:\/\//i.test(short)) return reply('❌ Non riesco ad accorciare questo link.');
             await sendButtons(sock, from, `🔗 *Link accorciato:*\n${short}`, [
-                { label: '🔁 .tinyurl', id: 'tinyurl ' + url },
+                { label: '.tinyurl', id: 'tinyurl ' + url },
             ], msg);
         } catch (_) {
             await reply('❌ Errore nell\'accorciare il link. Riprova più tardi.');

@@ -27,7 +27,7 @@ module.exports = {
 ┃ pulsante per         ┃
 ┃ riattivarlo.        ┃
 ╰━━━━━━━━━━━━━━━━━━╯`,
-                [{ label: '▶️ .riprendi', id: 'riprendi' }],
+                [{ label: '.riprendi', id: 'riprendi' }],
                 msg);
         } else {
             db[from]._muted = false;

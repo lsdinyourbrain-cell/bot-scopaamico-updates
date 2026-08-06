@@ -23,7 +23,7 @@ module.exports = {
 ┃ Premi il pulsante per      ┃
 ┃ riattivarlo.               ┃
 ╰────────────────────────────╯`,
-                [{ label: '⏼ .accendi', id: 'accendi' }],
+                [{ label: '.accendi', id: 'accendi' }],
                 msg);
         }
 

@@ -14,7 +14,7 @@ module.exports = {
         if (options.length < 2) return reply("Metti almeno 2 opzioni separate da |");
         const chosen = options[Math.floor(Math.random() * options.length)];
         await sendButtons(sock, from, `🎯 *Scelto:* ${chosen}`, [
-            { label: '🔁 .pick', id: 'pick ' + textArgs },
+            { label: '.pick', id: 'pick ' + textArgs },
         ], msg);
     },
 };

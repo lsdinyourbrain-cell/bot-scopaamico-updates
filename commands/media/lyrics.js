@@ -12,7 +12,7 @@ module.exports = {
 
             if (!textArgs) return sendButtons(sock, from,
                 "🎤 *Manca la canzone!*\n\nEsempio: `.lyrics Blinding Lights The Weeknd`",
-                [{ label: '🎵 .lyrics Blinding Lights', id: 'lyrics Blinding Lights The Weeknd' }],
+                [{ label: '.lyrics Blinding Lights', id: 'lyrics Blinding Lights The Weeknd' }],
                 msg);;
             try {
                 const search = await axios.get('https://itunes.apple.com/search', {

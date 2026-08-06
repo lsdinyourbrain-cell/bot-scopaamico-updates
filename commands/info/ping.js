@@ -36,9 +36,9 @@ module.exports = {
             try { await sock.sendMessage(from, { delete: pingMsg.key }); } catch (_) {}
 
             await sendButtons(sock, from, txt, [
-                { label: '🔄 .ping', id: 'ping' },
-                { label: '📊 .status', id: 'status' },
-                { label: '🧹 .clear',  id: 'clear' },
+                { label: '.ping', id: 'ping' },
+                { label: '.status', id: 'status' },
+                { label: '.clear',  id: 'clear' },
             ], msg);
     },
 };

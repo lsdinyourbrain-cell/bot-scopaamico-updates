@@ -69,7 +69,7 @@ ${render(grid)}
 │ 💰 *Saldo attuale:* ${formatMoney(uDB.money)}
 ╰──────────────────────────────╯`;
             await sendButtons(sock, from, resultText, [
-                { label: `🔁 .${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
+                { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);
     },
 };

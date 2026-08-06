@@ -39,8 +39,8 @@ module.exports = {
 ╰──────────────────────╯`;
 
         await sendButtons(sock, from, txt, [
-            { label: '🔁 .status', id: 'status' },
-            { label: '⚡ .ping', id: 'ping' },
+            { label: '.status', id: 'status' },
+            { label: '.ping', id: 'ping' },
         ], msg);
     },
 };

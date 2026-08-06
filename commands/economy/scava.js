@@ -27,7 +27,7 @@ module.exports = {
             userData.money += guadagno;
             saveDB();
             await sendButtons(sock, from, `⛏️ Hai scavato come un minatore e trovato *${guadagno}€*!\n💰 Saldo: *${userData.money}€*`, [
-                { label: `⛏️ .${command}`, id: `${command}` },
+                { label: `.${command}`, id: `${command}` },
             ], msg);
     },
 };

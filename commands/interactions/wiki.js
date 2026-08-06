@@ -34,7 +34,7 @@ module.exports = {
                 await sock.sendMessage(from, { image: { url: thumb }, caption: txt }, { quoted: msg });
             } else {
                 await sendButtons(sock, from, txt, [
-                    { label: '🔁 .wiki', id: again },
+                    { label: '.wiki', id: again },
                 ], msg);
             }
         } catch (_) {

@@ -12,7 +12,7 @@ module.exports = {
 
             if (!textArgs) return sendButtons(sock, from,
                 "🌤️ *Manca la città!*\n\nEsempio: `.weather Milano`",
-                [{ label: '🌤️ .weather Roma', id: 'weather Roma' }],
+                [{ label: '.weather Roma', id: 'weather Roma' }],
                 msg);
             try {
                 const { data } = await axios.get(`https://wttr.in/${encodeURIComponent(textArgs)}?format=j1`, { timeout: 10_000 });

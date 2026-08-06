@@ -35,7 +35,7 @@ module.exports = {
         if (!textArgs) return reply("🎱 Fai una domanda! Es: .8ball mi vuoi bene?");
         const a = answers[Math.floor(Math.random() * answers.length)];
         await sendButtons(sock, from, `🎱 *Domanda:* ${textArgs}\n\n${a}`, [
-            { label: '🔁 .8ball', id: '8ball ' + textArgs },
+            { label: '.8ball', id: '8ball ' + textArgs },
         ], msg);
     },
 };

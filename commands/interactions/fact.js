@@ -34,7 +34,7 @@ module.exports = {
 
         const fact = facts[Math.floor(Math.random() * facts.length)];
         await sendButtons(sock, from, `🧠 *Lo sapevi?*\n\n${fact}`, [
-            { label: '🔁 .fact', id: 'fact' },
+            { label: '.fact', id: 'fact' },
         ], msg);
     },
 };

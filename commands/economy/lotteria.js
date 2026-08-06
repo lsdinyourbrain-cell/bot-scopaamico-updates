@@ -46,8 +46,8 @@ module.exports = {
 
             const poolFinale = Math.floor(lotto.pool);
             await sendButtons(sock, from, `🎟️ *LOTTERIA!*\n\nHai comprato un biglietto! (${lotto.tickets[sender]} totale)\n💰 Montepremi: *${poolFinale}€*`, [
-                { label: '🎟️ .lotteria', id: 'lotteria' },
-                { label: '🏆 .lotteria estrai', id: 'lotteria estrai' },
+                { label: '.lotteria', id: 'lotteria' },
+                { label: '.lotteria estrai', id: 'lotteria estrai' },
             ], msg);
     },
 };

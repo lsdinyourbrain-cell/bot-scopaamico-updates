@@ -33,7 +33,7 @@ module.exports = {
             : 'Il bot è di nuovo utilizzabile da tutti i membri del gruppo.'}`;
 
         await sendButtons(sock, from, text, [
-            { label: next ? '🚫 .modoadmin off' : '🛡️ .modoadmin on', id: next ? 'modoadmin off' : 'modoadmin on' },
+            { label: next ? '.modoadmin off' : '.modoadmin on', id: next ? 'modoadmin off' : 'modoadmin on' },
         ], msg);
     },
 };

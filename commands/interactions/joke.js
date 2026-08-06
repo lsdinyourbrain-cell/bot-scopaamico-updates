@@ -34,7 +34,7 @@ module.exports = {
 
         const joke = jokes[Math.floor(Math.random() * jokes.length)];
         await sendButtons(sock, from, `😂 *Barzelletta:*\n\n${joke}`, [
-            { label: '🔁 .joke', id: 'joke' },
+            { label: '.joke', id: 'joke' },
         ], msg);
     },
 };

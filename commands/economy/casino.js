@@ -13,9 +13,9 @@ module.exports = {
             await sendButtons(sock, from,
                 "🎰 *Benvenuto al casinò!*\n\nPremi un pulsante per giocare. Buona fortuna, ma senza vendere il divano 😭",
                 [
-                    { label: '🎲 .dadi', id: 'dadi 100' },
-                    { label: '🎰 .slot', id: 'slot 100' },
-                    { label: '🔴 .roulette', id: 'roulette 100' },
+                    { label: '.dadi', id: 'dadi 100' },
+                    { label: '.slot', id: 'slot 100' },
+                    { label: '.roulette', id: 'roulette 100' },
                 ],
                 msg);
     },
