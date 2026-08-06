@@ -10,6 +10,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, sender, isGroup, reply, targetJid, isReply, contextInfo, mentioned, textArgs, services } = context;
+        const { showProgress } = services;
 
         try {
             let target = targetJid;
@@ -22,7 +23,7 @@ module.exports = {
                 target = sender;
             }
 
-            await reply('💀 *Generazione WASTED stile GTA...*');
+            const prog = await showProgress(sock, from, { label: 'WASTED GTA', duration: 2500, quoted: msg });
 
             let pfpUrl;
             try {
@@ -99,6 +100,7 @@ module.exports = {
                 image: wastedBuffer,
                 caption: `💀 *${target.split('@')[0]} WASTED*\n\n*Grand Theft Auto: ScopaAmico Edition*`
             }, { quoted: msg });
+            await prog.done('💀 *WASTED generato!* ✅');
 
         } catch (e) {
             console.error('[wasted]', e);

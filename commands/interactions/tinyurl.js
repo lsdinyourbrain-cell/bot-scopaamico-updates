@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { axios, sendButtons } = services;
+        const { axios, showProgress } = services;
 
         const quoted = isReply ? (contextInfo?.quotedMessage?.conversation || contextInfo?.quotedMessage?.extendedTextMessage?.text || '') : '';
         const url = String(quoted || textArgs || '').trim();
@@ -16,12 +16,11 @@ module.exports = {
         }
 
         try {
+            const prog = await showProgress(sock, from, { label: 'ACCORCIA LINK', duration: 2500, quoted: msg });
             const { data } = await axios.get('https://tinyurl.com/api-create.php', { params: { url }, timeout: 10000 });
             const short = String(data).trim();
-            if (!/^https?:\/\//i.test(short)) return reply('❌ Non riesco ad accorciare questo link.');
-            await sendButtons(sock, from, `🔗 *Link accorciato:*\n${short}`, [
-                { label: '.tinyurl', id: 'tinyurl ' + url },
-            ], msg);
+            if (!/^https?:\/\//i.test(short)) return prog.done('❌ Non riesco ad accorciare questo link.');
+            await prog.done(`🔗 *Link accorciato:*\n${short}`);
         } catch (_) {
             await reply('❌ Errore nell\'accorciare il link. Riprova più tardi.');
         }

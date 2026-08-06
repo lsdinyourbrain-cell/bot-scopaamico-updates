@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons, showProgress } = services;
 
 
             if (!textArgs) return sendButtons(sock, from,
@@ -15,6 +15,7 @@ module.exports = {
                 [{ label: '.lyrics Blinding Lights', id: 'lyrics Blinding Lights The Weeknd' }],
                 msg);;
             try {
+                const prog = await showProgress(sock, from, { label: 'CERCA TESTO', duration: 3500, quoted: msg });
                 const search = await axios.get('https://itunes.apple.com/search', {
                     params: { term: textArgs, entity: 'song', limit: 1 },
                     timeout: 10_000,
@@ -46,7 +47,7 @@ module.exports = {
 
                 if (!lyrics) return reply(`Ho trovato *${title}* — _${artist}_, ma il testo non è disponibile.`);
 
-                await reply(`🎤 *${title}* — _${artist}_\n\n${lyrics.slice(0, 6000)}${lyrics.length > 6000 ? '\n\n…testo tagliato qui.' : ''}`);
+                await prog.done(`🎤 *${title}* — _${artist}_\n\n${lyrics.slice(0, 6000)}${lyrics.length > 6000 ? '\n\n…testo tagliato qui.' : ''}`);
 
                 if (song.previewUrl) {
                     if (!db[from]) db[from] = {};

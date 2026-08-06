@@ -3,6 +3,7 @@
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const googleTTS = require('google-tts-api');
+const { showProgress } = require('../../lib/loading');
 const { Readable, Writable } = require('stream');
 
 if (ffmpegPath) ffmpeg.setFfmpegPath(ffmpegPath);
@@ -40,6 +41,8 @@ module.exports = {
             const text = args.join(' ').trim();
             if (!text) throw new Error('Testo mancante');
 
+            const prog = await showProgress(sock, jid, { label: 'SINTESI VOCALE', duration: 3000, quoted: msg });
+
             const audioParts = await googleTTS.getAllAudioBase64(text, {
                 lang: 'it',
                 slow: false,
@@ -62,6 +65,7 @@ module.exports = {
                 },
                 { quoted: msg }
             );
+            await prog.done('🎙️ *Testo convertito in vocale!* ✅');
         } catch (error) {
             console.error('[tts]', error.message);
             await sock.sendMessage(jid, { text: "❌ Errore durante l'elaborazione della richiesta." });

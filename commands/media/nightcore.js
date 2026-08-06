@@ -16,7 +16,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, reply, isReply, contextInfo, services } = context;
-        const { downloadMediaMessage } = services;
+        const { downloadMediaMessage, showProgress } = services;
 
         try {
             let audioBuffer = null;
@@ -33,13 +33,14 @@ module.exports = {
             }
             if (!audioBuffer) return reply('🎤 Rispondi a un vocale con *.nightcore* per effetto anime.');
 
-            await reply('⚡ *Creando versione Nightcore...*');
+            const prog = await showProgress(sock, from, { label: 'NIGHTCORE', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `nc_in_${Date.now()}.opus`);
             const outputPath = path.join(TMP_DIR, `nc_out_${Date.now()}.opus`);
             fs.writeFileSync(inputPath, audioBuffer);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'atempo=1.25,asetrate=48000*1.3,aresample=48000', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
+            await prog.done('⚡ *Versione Nightcore pronta!* ✅');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[nightcore]', e);

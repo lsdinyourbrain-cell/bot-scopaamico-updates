@@ -2,6 +2,7 @@
 
 const fs = require('fs/promises');
 const { downloadVideo } = require('../../lib/mediaDownloader');
+const { showProgress } = require('../../lib/loading');
 
 module.exports = {
     name: 'ig',
@@ -16,6 +17,8 @@ module.exports = {
             const url = args.join(' ').trim();
             if (!url) throw new Error('URL mancante');
 
+            const prog = await showProgress(sock, jid, { label: 'DOWNLOAD INSTAGRAM', duration: 8000, quoted: msg });
+
             download = await downloadVideo(url);
             const video = await fs.readFile(download.filePath);
 
@@ -24,6 +27,7 @@ module.exports = {
                 { video, caption: '✅ Download completato!' },
                 { quoted: msg }
             );
+            await prog.done('📥 *Video Instagram scaricato!* ✅');
         } catch (error) {
             console.error('[ig]', error.message);
             await sock.sendMessage(jid, { text: "❌ Link non valido o download non disponibile." });

@@ -13,6 +13,7 @@ module.exports = {
             if (!isOwner) return reply("╭────〔 ⛔ ACCESSO NEGATO 〕────╮\n│ Comando riservato all'Owner del bot.\n╰──────────────────────────────╯");
             
             await reply("╭────〔 ⚙️ SISTEMA 〕────╮\n│ 🔄 Riavvio del processo...\n│ Torno operativo a breve! 🚀\n╰──────────────────────╯");
-            setTimeout(() => process.exit(1), 1500);
+            // Codice 42 = "riavviami": start.bat lo rileva e rilancia node.
+            setTimeout(() => process.exit(42), 1500);
     },
 };

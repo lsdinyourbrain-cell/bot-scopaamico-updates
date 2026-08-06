@@ -9,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getContextInfo, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getContextInfo, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, showProgress } = services;
 
 
             const rawCtx = getContextInfo(msg.message);
@@ -42,6 +42,8 @@ module.exports = {
                     participant: rawCtx.participant || sender,
                 };
 
+                const prog = await showProgress(sock, from, { label: 'VIEW ONCE', duration: 2000, quoted: msg });
+
                 const buffer = await downloadMediaMessage(
                     { key: originalKey, message: targetMessage },
                     'buffer',
@@ -61,11 +63,13 @@ module.exports = {
                         { image: buffer, caption: "👁️ *View once sbloccato*" },
                         { quoted: msg }
                     );
+                    await prog.done("👁️ *View once sbloccato!* ✅");
                 } else {
                     await sock.sendMessage(from,
                         { video: buffer, caption: "👁️ *View once sbloccato*" },
                         { quoted: msg }
                     );
+                    await prog.done("👁️ *View once sbloccato!* ✅");
                 }
 
             } catch (err) {

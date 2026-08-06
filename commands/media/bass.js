@@ -16,7 +16,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, reply, isReply, contextInfo, services } = context;
-        const { downloadMediaMessage } = services;
+        const { downloadMediaMessage, showProgress } = services;
 
         try {
             let audioBuffer = null;
@@ -33,13 +33,14 @@ module.exports = {
             }
             if (!audioBuffer) return reply('🎤 Rispondi a un vocale con *.bass* per boostare i bassi.');
 
-            await reply('🔊 *Boostando i bassi...*');
+            const prog = await showProgress(sock, from, { label: 'BASS BOOST', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `bass_in_${Date.now()}.opus`);
             const outputPath = path.join(TMP_DIR, `bass_out_${Date.now()}.opus`);
             fs.writeFileSync(inputPath, audioBuffer);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'bass=g=20:f=100:w=1,equalizer=f=60:t=1:w=1:g=15', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
+            await prog.done('🔊 *Bassi boostati con successo!* ✅');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[bass]', e);

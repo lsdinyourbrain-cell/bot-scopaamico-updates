@@ -32,6 +32,7 @@ const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBoun
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
 const { sendButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
+const { showProgress } = require('./lib/loading');
 
 const execFileAsync = promisify(execFile);
 const ownerNumber = "269956662956146@lid";
@@ -593,6 +594,8 @@ const extractBody = (msg) => {
         m.videoMessage?.caption ||
         m.buttonsResponseMessage?.selectedButtonId ||
         m.listResponseMessage?.singleSelectReply?.selectedRowId ||
+        m.templateButtonReplyMessage?.selectedId ||
+        m.templateButtonReplyMessage?.selectedDisplayText ||
         m.interactiveMessage?.interactionResponseMessage?.body?.text ||
         ''
     );
@@ -1112,6 +1115,12 @@ async function startBot() {
             return;
         }
 
+        try {
+            if (msg.message?.interactiveResponseMessage || msg.message?.buttonsResponseMessage || msg.message?.templateButtonReplyMessage) {
+                console.log('[RECV-FULL]', JSON.stringify(msg.message).slice(0, 2000));
+            }
+        } catch (_) {}
+
         const from     = msg.key.remoteJid;
         const isGroup  = from?.endsWith('@g.us') === true;
         const sender   = isGroup ? msg.key.participant : from;
@@ -1130,6 +1139,19 @@ async function startBot() {
 
         let body = extractBody(msg);
 
+        // [DEBUG PULSANTI] stampa la struttura del messaggio per diagnosticare
+        // perché i comandi dai pulsanti non partono.
+        if (msg.message?.interactiveResponseMessage || msg.message?.buttonsResponseMessage || msg.message?.templateButtonReplyMessage) {
+            try {
+                const t = msg.message?.templateButtonReplyMessage;
+                const interactive = msg.message?.interactiveResponseMessage;
+                console.log('[BTN-DEBUG] keys:', Object.keys(msg.message).join(','));
+                console.log('[BTN-DEBUG] templateButtonReplyMessage:', JSON.stringify(t));
+                console.log('[BTN-DEBUG] interactiveResponseMessage:', JSON.stringify(interactive));
+                console.log('[BTN-DEBUG] body estratto:', JSON.stringify(body));
+            } catch (_) {}
+        }
+
         // True quando il comando arriva da un pulsante premuto: i comandi
         // possono usarlo per saltare il cooldown (es. "Scava ancora").
         let fromButton = false;
@@ -1146,6 +1168,18 @@ async function startBot() {
         // pulsante appena inviato in questa chat, la mappa al comando vero.
         const btnCmd = (() => {
             try {
+                // Risposta ai pulsanti template: WhatsApp la invia come
+                // templateButtonReplyMessage con selectedId / selectedDisplayText.
+                const tmpl = msg.message?.templateButtonReplyMessage;
+                if (tmpl) {
+                    const c = tmpl.selectedId || tmpl.selectedDisplayText;
+                    if (c) {
+                        const entry = buttonRegistry.get(`${from}|${normalizeBtnText(String(c))}`);
+                        if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) return entry.id;
+                        return stripEmoji(String(c)).trim() || null;
+                    }
+                }
+
                 const btnResp = msg.message?.interactiveResponseMessage?.nativeFlowResponseMessage;
                 if (!btnResp?.paramsJson) return null;
                 const norm = String(btnResp.paramsJson).trim();
@@ -1189,16 +1223,19 @@ async function startBot() {
             fromButton = true;
             body = '.' + stripEmoji(String(btnCmd)).replace(/^\./, '').trim();
         } else if (body && !body.startsWith('.')) {
-            const stripped = stripEmoji(body);
+            const stripped = stripEmoji(body).trim();
             if (stripped) {
                 const entry = buttonRegistry.get(`${from}|${normalizeBtnText(stripped)}`);
                 if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) {
                     fromButton = true;
                     body = '.' + String(entry.id).replace(/^\./, '').trim();
-                } else {
-                    body = stripped;
                 }
+                // Nessun fallback: i comandi richiedono sempre il ".".
             }
+        }
+
+        if (msg.message?.interactiveResponseMessage || msg.message?.buttonsResponseMessage || msg.message?.templateButtonReplyMessage) {
+            console.log('[BTN-DEBUG] body finale:', JSON.stringify(body), '| fromButton:', fromButton);
         }
 
         // ── MUTE: elimina i messaggi degli utenti silenziati ──────────────
@@ -1535,6 +1572,33 @@ async function startBot() {
             } catch (_) {}
         }
 
+        // ── AFK ────────────────────────────────────────────────────────────
+        // Se chi scrive è in AFK, lo togliamo automaticamente al suo ritorno.
+        // Se il messaggio menziona qualcuno in AFK, avvisiamo chi scrive.
+        if (isGroup && db.afk) {
+            try {
+                const myAfk = db.afk[sender];
+                const isCmd = body.startsWith('.');
+                if (myAfk && !isCmd) {
+                    delete db.afk[sender];
+                    saveDB();
+                    const mins = Math.floor((Date.now() - myAfk.ts) / 60000);
+                    await reply(`👋 *Bentornato* @${sender.split('@')[0]}!\n\nEri via per _${myAfk.reason || 'nessun motivo'}_\n⏱️ AFK per ${mins > 0 ? mins + ' min' : 'meno di un minuto'}.\n\nStato AFK rimosso. ✅`);
+                }
+                // Avvisa chi menziona un utente in AFK.
+                const mentioned = getContextInfo(msg.message)?.mentionedJid || [];
+                for (const jid of mentioned) {
+                    const afkEntry = db.afk[jid];
+                    if (afkEntry) {
+                        await sock.sendMessage(from, {
+                            text: `🌙 *@${jid.split('@')[0]} è AFK*\n\n📝 Motivo: _${(afkEntry.reason || 'nessun motivo').slice(0, 200)}_\n\nNon aspettarti una risposta immediata.`,
+                            mentions: [jid],
+                        });
+                    }
+                }
+            } catch (_) {}
+        }
+
         if (!body.startsWith('.')) return;
 
         // ── MODO ADMIN ────────────────────────────────────────────────────
@@ -1599,7 +1663,7 @@ async function startBot() {
                     sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
                     getWelcomeGroup, setWelcomeGroup,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
-                    sendButtons, clearBotCache, ownerNumber,
+                    sendButtons, clearBotCache, ownerNumber, showProgress,
                 },
             });
 
@@ -1710,50 +1774,42 @@ async function startBot() {
                     }
 
                     if (!welcomeConfig.welcome) continue; // Welcome disattivato per questo gruppo
-                    
-                    const adminTags = admins.length > 0
-                        ? admins.map(a => `│  👑 @${(a.id || a.jid || '').split('@')[0]}`).join('\n')
-                        : '│  _(nessun admin)_';
 
                     const welcomeText =
 
-`╭━━━━━ 🎉 *BENVENUTO* 🎉 ━━━━━╮
-┃
-┃ 👤 *Ciao* @${short}!
-┃ Ti diamo il benvenuto in:
-┃ *${groupName}*
-┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-┃ 📝 *INFO GRUPPO:*
-┃ _${groupDesc}_
-┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-┃ 👑 *AMMINISTRATORI:*
-┃ ${adminTags}
-┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-┃ 📌 *PER INIZIARE:*
-┃ Digita *".menu"* per vedere
-┃ tutti i comandi disponibili! 🚀
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+`╭─── ☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖔 ☠️ ───╮
+│ 👤 @${short}
+│ 📍 *${groupName}*
+├─── 📜 𝕱𝖆𝖙𝖙𝖊́ ───┤
+│ ✦ _Regolamento in descrizione._
+│ ✦ _Altro da lasciare in chat._
+│ ✦ _Digita_ *".menu"* _per i comandi._
+╰────────────────────────╯`;
 
                     let pfpUrl;
                     try { pfpUrl = await sock.profilePictureUrl(groupJid, 'image'); } catch (_) { pfpUrl = null; }
-
-                    const adminMentions = admins.map(a => a.id || a.jid).filter(Boolean);
 
                     if (pfpUrl) {
                         await sock.sendMessage(groupJid, {
                             image: { url: pfpUrl },
                             caption: welcomeText,
-                            mentions: [jid, ...adminMentions],
+                            mentions: [jid],
                         });
                     } else {
                         await sock.sendMessage(groupJid, {
                             text: welcomeText,
-                            mentions: [jid, ...adminMentions],
+                            mentions: [jid],
                         });
+                    }
+
+                    // Pulsanti rapidi: menu comandi e ping di test.
+                    try {
+                        await sendButtons(sock, groupJid, '🚀 *Cosa vuoi fare?*\n\nPremi un pulsante per iniziare:', [
+                            { label: '.menu', id: 'menu' },
+                            { label: '.ping', id: 'ping' },
+                        ]);
+                    } catch (e) {
+                        console.error('[WELCOME] Errore pulsanti:', e.message);
                     }
 
                 } else if (action === 'remove') {

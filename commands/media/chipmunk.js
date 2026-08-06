@@ -14,7 +14,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, sender, isGroup, reply, targetJid, isReply, contextInfo, textArgs, services } = context;
-        const { downloadMediaMessage } = services;
+        const { downloadMediaMessage, showProgress } = services;
 
         try {
             let audioBuffer = null;
@@ -42,7 +42,7 @@ module.exports = {
                 return reply('🎤 *Chipmunk Effect*\n\nRispondi a un messaggio vocale con *.chipmunk* per velocizzarlo!\n\nEsempio:\n1. Qualcuno manda un vocale\n2. Rispondi al vocale scrivendo *.chipmunk*');
             }
 
-            await reply('🐿️ *Creando effetto scoiattolo...*');
+            const prog = await showProgress(sock, from, { label: 'CHIPMUNK', duration: 2500, quoted: msg });
 
             const os = require('os');
             const fs = require('fs');
@@ -69,6 +69,7 @@ module.exports = {
                 mimetype: 'audio/ogg; codecs=opus',
                 ptt: true
             }, { quoted: msg });
+            await prog.done('🐿️ *Effetto scoiattolo pronto!* ✅');
 
             fs.unlinkSync(inputPath);
             fs.unlinkSync(outputPath);

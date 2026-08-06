@@ -16,7 +16,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, reply, isReply, contextInfo, services } = context;
-        const { downloadMediaMessage } = services;
+        const { downloadMediaMessage, showProgress } = services;
 
         try {
             let audioBuffer = null;
@@ -33,13 +33,14 @@ module.exports = {
             }
             if (!audioBuffer) return reply('🎤 Rispondi a un vocale con *.deep* per renderlo profondo.');
 
-            await reply('🔊 *Creando voce profonda...*');
+            const prog = await showProgress(sock, from, { label: 'VOCE PROFONDA', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `deep_in_${Date.now()}.opus`);
             const outputPath = path.join(TMP_DIR, `deep_out_${Date.now()}.opus`);
             fs.writeFileSync(inputPath, audioBuffer);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'atempo=0.7,asetrate=48000*0.7,aresample=48000', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
+            await prog.done('🔊 *Voce profonda pronta!* ✅');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[deep]', e);

@@ -17,7 +17,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, sender, isGroup, reply, targetJid, isReply, contextInfo, textArgs, services } = context;
-        const { downloadMediaMessage } = services;
+        const { downloadMediaMessage, showProgress } = services;
 
         try {
             let audioBuffer = null;
@@ -43,7 +43,7 @@ module.exports = {
                 return reply('🎤 Rispondi a un vocale con *.8d* per audio spaziale 8D. Usa le cuffie!');
             }
 
-            await reply('🎧 *Generando 8D Audio... Indossa le cuffie!*');
+            const prog = await showProgress(sock, from, { label: 'AUDIO 8D', duration: 2500, quoted: msg });
 
             const inputPath = path.join(TMP_DIR, `8d_input_${Date.now()}.opus`);
             const outputPath = path.join(TMP_DIR, `8d_output_${Date.now()}.opus`);
@@ -66,6 +66,7 @@ module.exports = {
                 mimetype: 'audio/ogg; codecs=opus',
                 ptt: true
             }, { quoted: msg });
+            await prog.done('🎧 *Audio 8D generato!* ✅');
 
             fs.unlinkSync(inputPath);
             fs.unlinkSync(outputPath);

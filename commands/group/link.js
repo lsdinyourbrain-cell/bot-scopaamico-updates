@@ -3,23 +3,45 @@
 module.exports = {
     name: 'link',
     aliases: [],
-    description: "Mostra il link del gruppo e tagga tutti.",
+    description: "Link del gruppo. Gli admin decidono se anche i normali utenti possono generarlo. Il link viene inviato con un pulsante che lo copia (nessuna menzione).",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { db, saveDB, sendButtons } = services;
 
         if (!isGroup) return reply("Questo comando funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("Solo gli admin possono generare il link del gruppo.");
+
+        const arg = String(textArgs || '').trim().toLowerCase();
+
+        // ── Amministrazione: l'admin decide se i normali possono usare .link ──
+        if (['on', 'attiva', 'si', '1', 'true', 'yes', 'off', 'disattiva', 'no', '0', 'false'].includes(arg)) {
+            if (!isOwner && !isSenderAdmin) {
+                return reply('❌ Solo gli admin del gruppo possono cambiare chi può usare .link.');
+            }
+            const enable = ['on', 'attiva', 'si', '1', 'true', 'yes'].includes(arg);
+            if (!db[from]) db[from] = {};
+            db[from]._linkOpen = enable;
+            saveDB();
+            const state = enable ? 'ATTIVO' : 'DISATTIVO';
+            const text = `🔗 *Accesso al link ${state}*\n\n${enable
+                ? 'Ora tutti i membri del gruppo possono usare *\.link*.'
+                : 'Da ora solo gli *admin* possono usare *\.link*.'}`;
+            return sendButtons(sock, from, text, [
+                { label: enable ? '.link off' : '.link on', id: enable ? 'link off' : 'link on' },
+            ], msg);
+        }
+
+        const open = Boolean(db[from]?._linkOpen);
+        if (!isOwner && !isSenderAdmin && !open) {
+            return reply('❌ Solo gli admin possono usare .link in questo gruppo.');
+        }
+
         try {
             const inviteCode = await sock.groupInviteCode(from);
             const link = `https://chat.whatsapp.com/${inviteCode}`;
-            const meta = await sock.groupMetadata(from);
-            const allJids = (meta?.participants || []).map(p => p.id || p.jid).filter(Boolean);
-            await sock.sendMessage(from, {
-                text: `🔗 *Link del gruppo*\n\n${link}\n\n${allJids.map(j => `@${j.split('@')[0]}`).join(' ')}`,
-                mentions: allJids,
-            });
+            await sendButtons(sock, from, `🔗 *Link del gruppo*\n\n${link}`, [
+                { type: 'copy', label: '📋 Copia link', copy: link },
+            ], msg);
         } catch (_) {
             await reply("Non riesco a generare il link. Assicurati che il bot sia admin del gruppo.");
         }

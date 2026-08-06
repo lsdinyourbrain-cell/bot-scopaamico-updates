@@ -151,6 +151,14 @@ ${L('🔗', '.tinyurl', '<url>')}
 ${L('📚', '.wiki', '<voce>')}
 ${L('▦', '.qr', '<testo>')}
 ${L('🔑', '.uuid')}
+${L('🌐', '.translate', '<testo>')}
+${L('🪙', '.crypto', '<nome>')}
+${L('💱', '.currency', '100 EUR USD')}
+${L('🌙', '.afk', '<motivo>')}
+${L('🕐', '.ora', '<città>')}
+${L('👑', '.owner')}
+${L('🐛', '.report', '<problema>')}
+${L('📄', '.readmore', 'a | b')}
 ├── 🎤 ${MS('AUDIO')} ─────────────┤
 ${L('🎙️', '.deep')}
 ${L('🔄', '.reverse')}
@@ -165,6 +173,7 @@ ${L('📸', '.ig')}
 ${L('💀', '.wasted')}
 ${L('📖', '.pokedex')}
 ${L('🤡', '.clown')}
+${L('🖼️', '.toimg', '(reply sticker)')}
 ├── 🤖 ${SB('AI')} ────────────────┤
 ${L('🧠', '.ai', '[domanda]')}
 ├── 🎮 ${MS('GIOCHI')} ────────────┤

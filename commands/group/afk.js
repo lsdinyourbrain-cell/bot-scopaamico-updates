@@ -1,0 +1,22 @@
+'use strict';
+
+module.exports = {
+    name: 'afk',
+    aliases: ['away', 'via'],
+    description: "Ti segna come AFK (lontano dalla tastiera). Il bot avviserà chi ti menziona. Uso: .afk <motivo>. Torna scrivendo qualsiasi messaggio.",
+
+    async run(sock, msg, args, context) {
+        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
+        const { db, saveDB } = services;
+
+        if (!isGroup) return reply('⚠️ Il comando .afk funziona solo nei gruppi.');
+
+        const reason = String(textArgs || '').trim() || 'nessun motivo specificato';
+
+        if (!db.afk) db.afk = {};
+        db.afk[sender] = { reason, ts: Date.now(), from };
+        saveDB();
+
+        return reply(`🌙 *AFK attivo*\n\n@${sender.split('@')[0]} è ora AFK.\n📝 Motivo: _${reason.slice(0, 200)}_\n\nTorna scrivendo un messaggio in chat.`);
+    },
+};

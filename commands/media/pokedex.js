@@ -47,6 +47,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, sender, isGroup, reply, targetJid, isReply, contextInfo, mentioned, textArgs, services } = context;
+        const { showProgress } = services;
 
         try {
             let target = targetJid;
@@ -60,6 +61,8 @@ module.exports = {
             if (!target) {
                 target = sender;
             }
+
+            const prog = await showProgress(sock, from, { label: 'POKÉDEX', duration: 2500, quoted: msg });
 
             const isSelf = target === sender;
             const displayName = isSelf ? (msg.pushName || 'Tu') : target.split('@')[0];
@@ -192,6 +195,7 @@ module.exports = {
                 image: cardBuffer,
                 caption: `📋 *Scheda Pokédex per ${displayName}*\n\n#${String(id).padStart(3, '0')}  •  Liv.${level}  •  ${type1}/${type2}\n\n*Per uso ludico - non ufficiale* 😄`
             }, { quoted: msg });
+            await prog.done('📋 *Scheda Pokédex generata!* ✅');
 
         } catch (e) {
             console.error('[pokedex]', e);

@@ -10,6 +10,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, sender, isGroup, reply, targetJid, isReply, mentioned, services } = context;
+        const { showProgress } = services;
 
         try {
             let target = sender;
@@ -44,7 +45,7 @@ module.exports = {
                 return reply('❌ Foto profilo non disponibile per questo utente.');
             }
 
-            await reply('🤡 *Clownificazione in corso...*');
+            const prog = await showProgress(sock, from, { label: 'CLOWN', duration: 2500, quoted: msg });
 
             const resp = await axios.get(pfpUrl, { responseType: 'arraybuffer', timeout: 15000 });
             const inputBuffer = Buffer.from(resp.data);
@@ -87,6 +88,7 @@ module.exports = {
                 image: overlayed,
                 caption: '🤡 *Ecco a te, pagliaccio!*'
             }, { quoted: msg });
+            await prog.done('🤡 *Clown pronto!* ✅');
 
         } catch (e) {
             console.error('[clown]', e);

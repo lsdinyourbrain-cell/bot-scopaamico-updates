@@ -16,7 +16,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, reply, isReply, contextInfo, services } = context;
-        const { downloadMediaMessage } = services;
+        const { downloadMediaMessage, showProgress } = services;
 
         try {
             let audioBuffer = null;
@@ -33,13 +33,14 @@ module.exports = {
             }
             if (!audioBuffer) return reply('🎤 Rispondi a un vocale con *.echo* per aggiungere riverbero.');
 
-            await reply('🏔️ *Aggiungendo riverbero...*');
+            const prog = await showProgress(sock, from, { label: 'RIVERBERO', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `echo_in_${Date.now()}.opus`);
             const outputPath = path.join(TMP_DIR, `echo_out_${Date.now()}.opus`);
             fs.writeFileSync(inputPath, audioBuffer);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'aecho=0.8:0.9:1000:0.3', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
+            await prog.done('🏔️ *Riverbero aggiunto!* ✅');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[echo]', e);
