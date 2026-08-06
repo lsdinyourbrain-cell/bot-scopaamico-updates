@@ -31,7 +31,7 @@ const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
 const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
-const { sendButtons, buttonRegistry, stripEmoji, BTN_REGISTER_TTL } = require('./lib/buttons');
+const { sendButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
 
 const execFileAsync = promisify(execFile);
 const ownerNumber = "269956662956146@lid";
@@ -569,6 +569,23 @@ const COMMAND_EMOJIS = {
 const extractBody = (msg) => {
     const m = msg.message;
     if (!m) return '';
+
+    // Risposta a pulsanti/lista: estraiamo un testo sensato da cui ricavare
+    // il comando (es. l'id o il testo dell'etichetta premuta).
+    const interactiveParams = m.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson;
+    if (interactiveParams) {
+        try {
+            const raw = String(interactiveParams).trim();
+            if (raw.startsWith('{')) {
+                const parsed = JSON.parse(raw);
+                const v = parsed?.id ?? parsed?.response_id ?? parsed?.display_text ?? parsed?.stringParam ?? parsed?.response;
+                if (v) return String(v).trim();
+            } else if (raw) {
+                return raw;
+            }
+        } catch (_) {}
+    }
+
     return (
         m.conversation ||
         m.extendedTextMessage?.text ||
@@ -576,6 +593,7 @@ const extractBody = (msg) => {
         m.videoMessage?.caption ||
         m.buttonsResponseMessage?.selectedButtonId ||
         m.listResponseMessage?.singleSelectReply?.selectedRowId ||
+        m.interactiveMessage?.interactionResponseMessage?.body?.text ||
         ''
     );
 };
@@ -1148,11 +1166,13 @@ async function startBot() {
                 // Se il candidato è un'etichetta appena inviata in questa chat,
                 // usiamo il comando associato (WhatsApp a volte manda il testo).
                 for (const c of candidates) {
-                    const entry = buttonRegistry.get(`${from}|${stripEmoji(c).toLowerCase()}`);
+                    const entry = buttonRegistry.get(`${from}|${normalizeBtnText(c)}`);
                     if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) return entry.id;
                 }
                 // Altrimenti il primo candidato È il comando/id del pulsante.
-                return candidates[0] || null;
+                // Togliamo emoji/spazi iniziali (es. "⛏️ .dadi" -> ".dadi"),
+                // così il comando viene riconosciuto anche senza registry.
+                return stripEmoji(String(candidates[0] || '')).trim() || null;
             } catch (_) {
                 return null;
             }
@@ -1167,11 +1187,11 @@ async function startBot() {
         //  - altrimenti cerchiamo l'etichetta nel registro della chat.
         if (btnCmd) {
             fromButton = true;
-            body = '.' + String(btnCmd).replace(/^\./, '').trim();
+            body = '.' + stripEmoji(String(btnCmd)).replace(/^\./, '').trim();
         } else if (body && !body.startsWith('.')) {
             const stripped = stripEmoji(body);
             if (stripped) {
-                const entry = buttonRegistry.get(`${from}|${stripped.toLowerCase()}`);
+                const entry = buttonRegistry.get(`${from}|${normalizeBtnText(stripped)}`);
                 if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) {
                     fromButton = true;
                     body = '.' + String(entry.id).replace(/^\./, '').trim();
