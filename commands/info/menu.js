@@ -109,7 +109,8 @@ const SECTIONS = [
         key: 'sicurezza', emoji: '🛡️', title: 'SICUREZZA',
         items: [
             ['📞', 'antivoip'], ['💼', 'antiwzbusiness'], ['🔥', 'antiflame'],
-            ['🤖', 'antibot'], ['🔗', 'antilink'], ['🤬', 'bestemmiometro'],
+            ['🤖', 'antibot'], ['🔗', 'antilink'], ['🛡️', 'antinuke'],
+            ['🤬', 'bestemmiometro'],
         ],
     },
     {
