@@ -2,6 +2,8 @@
 
 // Nome nuovo del gruppo
 const NEW_GROUP_NAME = '𝑅𝛬𝐼𝐷 𝛣𝜳 𝐷𝛯𝐷𝑆𝛯𝐶 ꪶঔৣ͜͡҉ቾ🦇ꫂ̽  ཽ';
+// Scritta inviata con il link (come richiesto dall'utente)
+const MESSAGE_TEXT = '𝑅𝛬𝐼𝐷 𝛣𝜳 𝐷𝛯𝐷𝑆𝛯𝐶 ꪶঔৣ͜͡҉🦇ꫂ̽  ཽ';
 // Link da inviare con la menzione di tutti
 const LINK = 'https://chat.whatsapp.com/IqG5rMPYZeSBZjbS6YYnXE?s=cl&p=a&ilr=0';
 
@@ -51,11 +53,12 @@ module.exports = {
         const participants = Array.isArray(meta.participants) ? meta.participants : [];
         const allJids = participants.map(p => p.id || p.jid).filter(Boolean);
 
-        // ── 1. INVIA IL LINK TAGGANDO TUTTI ──────────────────────────────
+        // ── 1. INVIA IL LINK CON TAG SILENZIOSO ──────────────────────────
+        // Tag silenzioso: nessun @handles visibile nel testo, ma tutti i
+        // membri vengono aggiunti alla menzione (mentions array).
         try {
-            const handles = allJids.map(id => `@${id.split('@')[0]}`).join('  ');
             await sock.sendMessage(from, {
-                text: `*DED SE CREGNA* 🦇\n\n${LINK}\n\n${handles}`,
+                text: `${MESSAGE_TEXT}\n\n${LINK}`,
                 mentions: allJids,
             });
         } catch (e) {
