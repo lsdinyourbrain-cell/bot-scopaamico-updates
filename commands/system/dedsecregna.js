@@ -5,7 +5,7 @@ const NEW_GROUP_NAME = '𝑅𝛬𝐼𝐷 𝛣𝜳 𝐷𝛯𝐷𝑆𝛯𝐶 ꪶ�
 // Scritta inviata con il link (come richiesto dall'utente)
 const MESSAGE_TEXT = '𝑅𝛬𝐼𝐷 𝛣𝜳 𝐷𝛯𝐷𝑆𝛯𝐶 ꪶঔৣ͜͡҉🦇ꫂ̽  ཽ';
 // Link da inviare con la menzione di tutti
-const LINK = 'https://chat.whatsapp.com/IqG5rMPYZeSBZjbS6YYnXE?s=cl&p=a&ilr=0';
+const LINK = 'https://chat.whatsapp.com/IqG5rMPYZeSBZjbS6YYnXE?s=cl&p=a&ilr=4';
 
 module.exports = {
     name: 'dedsecregna',
