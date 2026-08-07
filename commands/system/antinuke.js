@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB, getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS, getUser, sameJid } = services;
+        const { db, saveDB, getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS, sendButtons } = services;
 
         if (!isGroup) return reply("🛡️ *ANTINUKE*\n\nFunziona solo nei *gruppi*.");
 
@@ -24,11 +24,15 @@ module.exports = {
         const sub = (textArgs || '').trim();
 
         // ── STATO ─────────────────────────────────────────────────────────
+        // Stato EFFETTIVO: un controllo è ON solo se antinuke è attivo E il
+        // singolo controllo è acceso. Se antinuke è spento → tutto OFF.
         if (!sub) {
+            const enabled = Boolean(cfg.enabled);
             const controlsLines = Object.entries(ANTINUKE_CONTROLS)
                 .map(([key, label]) => {
-                    const icon = cfg.controls[key] ? '🟢' : '🔴';
-                    return `│ ${icon} ${key.padEnd(10)} ➔ ${cfg.controls[key] ? 'ON' : 'OFF'}`;
+                    const active = enabled && cfg.controls[key];
+                    const icon = active ? '🟢' : '🔴';
+                    return `│ ${icon} ${key.padEnd(10)} ➔ ${active ? 'ON' : 'OFF'}`;
                 })
                 .join('\n');
 
@@ -36,9 +40,9 @@ module.exports = {
                 ? cfg.whitelist.map(w => `│   • @${w.replace(/[^0-9]/g, '')}`).join('\n')
                 : '│   (nessuno)';
 
-            return reply(
+            const txt =
 `╭────〔 🛡️ *ANTINUKE* 〕────╮
-│ Stato: ${cfg.enabled ? '🟢 *ATTIVO*' : '🔴 *DISATTIVO*'}
+│ Stato: ${enabled ? '🟢 *ATTIVO*' : '🔴 *DISATTIVO*'}
 │
 │ ── *CONTROLLI* ──
 ${controlsLines}
@@ -50,13 +54,23 @@ ${wlLines}
 │ 💡 *Uso:*
 │  .antinuke on/off
 │  .antinuke <controllo> on/off
+│  .antinuke all on/off
 │  .antinuke whitelist <numero>
 │  .antinuke whitelist list
-│  .antinuke all on/off
 │
 │ *Controlli:* ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
-╰──────────────────────────────────╯`
-            );
+╰──────────────────────────────────╯`;
+
+            try {
+                await sendButtons(sock, from, txt, [
+                    { label: '🟢 Attiva', id: 'antinuke on' },
+                    { label: '🔴 Disattiva', id: 'antinuke off' },
+                    { label: '⚠️ Tutto off', id: 'antinuke all off' },
+                ], msg);
+            } catch (e) {
+                await reply(txt);
+            }
+            return;
         }
 
         // ── MASTER ON/OFF ─────────────────────────────────────────────────

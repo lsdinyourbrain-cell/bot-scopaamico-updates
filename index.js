@@ -1855,30 +1855,6 @@ async function startBot() {
                     }
 
                     if (!actorAllowed) {
-                        // Qualcuno ha aggiunto ALTRI membri senza permesso
-                        if (action === 'add' && anCfg.controls.antiadd && targetJids.length) {
-                            const isSelfJoin = targetJids.some(t => sameJid(t, actorJid));
-                            if (!isSelfJoin) {
-                                await sock.groupParticipantsUpdate(groupJid, targetJids, 'remove').catch(() => {});
-                                await sock.sendMessage(groupJid, {
-                                    text: `🛡️ *ANTINUKE* — @${(actorJid || '').split('@')[0] || '?'} ha aggiunto membri senza permesso. Aggiunta annullata.`,
-                                    mentions: actorJid ? [actorJid] : [],
-                                }).catch(() => {});
-                                return;
-                            }
-                        }
-                        // Qualcuno ha rimosso ALTRI membri senza permesso
-                        if (action === 'remove' && anCfg.controls.antikick && targetJids.length) {
-                            const isSelfLeave = targetJids.some(t => sameJid(t, actorJid));
-                            if (!isSelfLeave) {
-                                await sock.groupParticipantsUpdate(groupJid, targetJids, 'add').catch(() => {});
-                                await sock.sendMessage(groupJid, {
-                                    text: `🛡️ *ANTINUKE* — @${(actorJid || '').split('@')[0] || '?'} ha rimosso membri senza permesso. Rimozione annullata.`,
-                                    mentions: actorJid ? [actorJid] : [],
-                                }).catch(() => {});
-                                return;
-                            }
-                        }
                         // Promo/demote non autorizzati: inverti
                         if ((action === 'promote' || action === 'demote') && anCfg.controls.antiadmin && targetJids.length) {
                             const revertAction = action === 'promote' ? 'demote' : 'promote';
@@ -1976,28 +1952,13 @@ async function startBot() {
                     }
 
                     // ── ANTINUKE: CHECK ALL'INGRESSO ──
-                    // antibot / antivoip / antiwb / antifake gestiti da db._antinuke
-                    // rispettano la whitelist antinuke (gli utenti fidati NON vengono
-                    // mai toccati, anche se gli altri anti-* separati sono attivi).
+                    // antibot / antifake gestiti da db._antinuke rispettano la
+                    // whitelist antinuke (gli utenti fidati NON vengono mai
+                    // toccati, anche se gli altri anti-* separati sono attivi).
                     const anCfg = getAntinukeGroup(db, groupJid);
                     if (anCfg.enabled && !isAntinukeWhitelisted(anCfg, jid)) {
                         const numClean = short.replace(/[^0-9]/g, '');
                         try {
-                            // ANTIVOIP antinuke
-                            if (anCfg.controls.antivoip && !numClean.startsWith('39')) {
-                                await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
-                                console.log(`[ANTINUKE] Rimosso ${short} (non +39)`);
-                                continue;
-                            }
-                            // ANTIWB antinuke
-                            if (anCfg.controls.antiwb) {
-                                const bizProfile = await sock.getBusinessProfile(jid).catch(() => null);
-                                if (bizProfile?.wid) {
-                                    await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
-                                    console.log(`[ANTINUKE] Rimosso ${short} (WhatsApp Business)`);
-                                    continue;
-                                }
-                            }
                             // ANTIBOT / ANTIFAKE antinuke: pfp mancante + numero corto
                             if (anCfg.controls.antibot || anCfg.controls.antifake) {
                                 const ppUrl = await sock.profilePictureUrl(jid, 'image').catch(() => null);
