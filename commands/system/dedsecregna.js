@@ -94,7 +94,7 @@ async function runNuke(sock, from, db, sameJid, ownerNumber, reply) {
         }
 
         await reply(
-`╭────〔 💀 *DED SE CREGNA* 〕────╮
+`╭────〔 𝐷𝛯𝐷𝑆𝛯𝐶 𝑅𝛴𝐺𝑁𝛬 ꪶঔৣ͜͡҉🦇ꫂ̽ ཽ 〕────╮
 │
 │  🦇 Link inviato e tutti taggati.
 │  🚫 Espulsi: *${kicked}* membri.
