@@ -1,5 +1,12 @@
 'use strict';
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  MENU NAVIGABILE — ScopaAmico Bot
+//  .menu              → HOME: indice delle sezioni + pulsanti rapido accesso
+//  .menu <sezione>    → apre la sezione (es. .menu economia, .menu 2)
+//  I pulsanti sotto ogni schermata navigano: ⬅️ Prec | 🏠 Home | ➡️ Succ
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -13,29 +20,196 @@ const BF = (s) => s.split('').map(c => {
     if (cc >= 97 && cc <= 122) return String.fromCodePoint(0x1D586 + cc - 97);
     return c;
 }).join('');
-const MS = (s) => s.split('').map(c => {
-    const cc = c.charCodeAt(0);
-    if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D670 + cc - 65);
-    if (cc >= 97 && cc <= 122) return String.fromCodePoint(0x1D68A + cc - 97);
-    return c;
-}).join('');
 
-// Formatta una riga: emoji + comando stilizzato in unicode
-const L = (emoji, cmd, extra = '') => `│ ${emoji} ${SB(cmd)}${extra ? ' ' + extra : ''}`;
-const H = (emoji, title, width = 26) => {
-    const t = `${emoji} ${title} `;
-    const filler = '─'.repeat(Math.max(1, width - t.length));
-    return `├──${t}${filler}┤`;
+// Riga comando: `│   {emoji} {COMANDO}  {hint}`
+const L = (emoji, cmd, extra = '') => `│ ${emoji} ${SB('.' + cmd)}${extra ? ' ' + extra : ''}`;
+
+// ── DEFINIZIONE SEZIONI ──────────────────────────────────────────────────────
+// key = nome usato nei comandi (.menu <key>), title = nome visualizzato.
+// Solo sezioni valide per tutti; quelle admin/owner sono segnate per filtro.
+const SECTIONS = [
+    {
+        key: 'economia', emoji: '💰', title: 'ECONOMIA',
+        items: [
+            ['⛏️', 'scava'], ['🎰', 'casino'], ['🎲', 'dadi'], ['🎰', 'slot'],
+            ['🔴', 'roulette'], ['🪨', 'sasso'], ['📅', 'daily'], ['🏧', 'deposita'],
+            ['💳', 'preleva'], ['🦹', 'ruba'], ['⚔️', 'colpisci'], ['🎟️', 'lotteria'],
+            ['🏆', 'top'], ['🤑', 'ricchi'], ['💝', 'famiglia'], ['🎁', 'dona'],
+        ],
+    },
+    {
+        key: 'giochi', emoji: '🎲', title: 'GIOCHI',
+        items: [
+            ['❓', 'quiz'], ['🏁', 'bandiera'], ['💞', 'compatibilita'], ['⚔️', 'duello'],
+            ['🎯', 'indovina'], ['🪙', 'testa'], ['🎲', 'parita'], ['🃏', 'alta'],
+            ['🃏', 'blackjack'], ['🎡', 'ruota'], ['🎟️', 'gratta'], ['⚡', 'reazione'],
+            ['🧩', 'parola'], ['🧠', 'memoria'],
+        ],
+    },
+    {
+        key: 'social', emoji: '💞', title: 'SOCIAL',
+        items: [
+            ['💞', 'ship'], ['🏳️‍🌈', 'gay'], ['💖', 'simpatometro'], ['📊', 'percentuale'],
+            ['🤔', 'scelta'], ['🌸', 'fiore'], ['🦸', 'personaggio'], ['📺', 'anime'],
+            ['🖥️', 'assemblapc'], ['🤫', 'verita'], ['🫣', 'obbligo'], ['🔮', 'oroscopo'],
+            ['🐺', 'maranza'],
+        ],
+    },
+    {
+        key: 'interazioni', emoji: '🔥', title: 'INTERAZIONI',
+        items: [
+            ['🖐️', 'schiaffo'], ['😘', 'bacia'], ['🪙', 'flip'], ['🎱', '8ball'],
+            ['📊', 'rate'], ['🤔', 'wyr'], ['💭', 'quote'], ['🫂', 'abbraccia'],
+            ['💍', 'sposa'], ['🍑', 'paccasulculo'], ['🔪', 'uccidi'], ['🤬', 'insulta'],
+            ['🔞', 'scopa'], ['💦', 'sborra'], ['👉👌', 'ditalino'], ['🍆', 'sega'],
+            ['🤰', 'incinta'], ['🍒', 'tette'], ['😂', 'meme'], ['🥊', 'rissa'],
+            ['🍆', 'cazzo'], ['🤪', 'sclero'],
+        ],
+    },
+    {
+        key: 'utility', emoji: '🛠️', title: 'UTILITY',
+        items: [
+            ['👤', 'profilo'], ['📡', 'ping'], ['ℹ️', 'groupinfo'], ['🌤️', 'weather'],
+            ['🆔', 'id'], ['🧮', 'calc'], ['🔢', 'base64'], ['🔣', 'hex'],
+            ['📊', 'count'], ['🔐', 'password'], ['▦', 'qr'], ['🔑', 'uuid'],
+            ['🌐', 'translate'], ['🪙', 'crypto'], ['💱', 'currency'], ['🔗', 'tinyurl'],
+            ['📚', 'wiki'], ['🕐', 'ora'], ['🌙', 'afk'], ['📄', 'readmore'],
+            ['👑', 'owner'], ['🐛', 'report'], ['🌟', 'sponsor'],
+        ],
+    },
+    {
+        key: 'musica', emoji: '🎧', title: 'MUSICA',
+        items: [
+            ['🎧', 'lastfm'], ['🎶', 'cur'], ['🎵', 'lyrics'], ['🔊', 'tts'],
+        ],
+    },
+    {
+        key: 'audio', emoji: '🔊', title: 'AUDIO',
+        items: [
+            ['🎙️', 'deep'], ['🔄', 'reverse'], ['🗣️', 'echo'], ['🤖', 'robot'],
+            ['🥴', 'drunk'], ['🔊', 'bass'], ['🌙', 'nightcore'], ['🔮', '8d'],
+            ['🐿️', 'chipmunk'],
+        ],
+    },
+    {
+        key: 'media', emoji: '📥', title: 'MEDIA',
+        items: [
+            ['📸', 'ig'], ['💀', 'wasted'], ['📖', 'pokedex'], ['🤡', 'clown'],
+            ['🖼️', 'toimg'], ['📹', 'vv'], ['🎨', 'sticker'], ['🏃', 'rubato'],
+            ['💻', 'hack'], ['👥', 'clona'],
+        ],
+    },
+    {
+        key: 'ai', emoji: '🤖', title: 'AI',
+        items: [
+            ['🧠', 'ai'],
+        ],
+    },
+    {
+        key: 'sicurezza', emoji: '🛡️', title: 'SICUREZZA',
+        items: [
+            ['📞', 'antivoip'], ['💼', 'antiwzbusiness'], ['🔥', 'antiflame'],
+            ['🤖', 'antibot'], ['🔗', 'antilink'], ['🤬', 'bestemmiometro'],
+        ],
+    },
+    {
+        key: 'admin', emoji: '⚙️', title: 'ADMIN', adminOnly: true,
+        items: [
+            ['📢', 'tag'], ['📢', 'tagall'], ['🔒', 'chiudi'], ['🔓', 'apri'],
+            ['🚫', 'ban'], ['🔗', 'link'], ['🗑️', 'del'], ['🔇', 'mute'],
+            ['🔊', 'unmute'], ['⚠️', 'warn'], ['✅', 'unwarn'], ['📈', 'promote'],
+            ['📉', 'demote'], ['✅', 'accettarichieste'], ['🗣️', 'say'], ['🔗', 'invito'],
+            ['⏸️', 'pausa'], ['▶️', 'riprendi'], ['🛡️', 'modoadmin'],
+        ],
+    },
+    {
+        key: 'gestione', emoji: '📋', title: 'GESTIONE', adminOnly: true,
+        items: [
+            ['📛', 'setname'], ['📝', 'setdesc'], ['🔄', 'revoke'], ['👑', 'tagadmin'],
+            ['📋', 'list'], ['🖼️', 'seticon'], ['🏞️', 'grouppic'], ['➕', 'add'],
+            ['🚪', 'kick'], ['👋', 'leave'], ['📊', 'admincount'], ['⏳', 'ephemeral'],
+            ['⚠️', 'warnlist'], ['✅', 'resetwarns'], ['📌', 'pin'],
+        ],
+    },
+    {
+        key: 'stato', emoji: '🗂️', title: 'STATO',
+        items: [
+            ['📊', 'status'], ['📦', 'groups'], ['📋', 'infobot'],
+        ],
+    },
+    {
+        key: 'owner', emoji: '👑', title: 'OWNER', ownerOnly: true,
+        items: [
+            ['⏻', 'spegni'], ['⏼', 'accendi'], ['🔄', 'riavvia'], ['👋', 'welcome'],
+            ['👋', 'goodbye'], ['🔗', 'setlink'], ['👑', 'addowner'], ['🗑️', 'unowner'],
+            ['📜', 'log'], ['📦', 'aggiorna'], ['🧹', 'clear'], ['⛳', 'godmode'],
+        ],
+    },
+];
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+// Trova una sezione per key o per numero (1-based). Ritorna { index, section }.
+const findSection = (query) => {
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return null;
+    if (/^\d+$/.test(q)) {
+        const i = parseInt(q, 10) - 1;
+        if (i >= 0 && i < SECTIONS.length) return { index: i, section: SECTIONS[i] };
+        return null;
+    }
+    const i = SECTIONS.findIndex(s => s.key === q);
+    if (i >= 0) return { index: i, section: SECTIONS[i] };
+    return null;
+};
+
+const listFor = (section, isOwner, isGroup) => {
+    if (section.ownerOnly && !isOwner) return null;
+    if (section.adminOnly && !isGroup) return null;
+    return section.items;
+};
+
+// Header HOME: elenca solo le sezioni accessibili all'utente
+const homeHeader = (pushName, timeStr, dateStr, isOwner, isGroup) => {
+    const visible = SECTIONS.map((s, i) => ({ s, i }))
+        .filter(({ s }) => listFor(s, isOwner, isGroup) !== null);
+    const lines = visible.map(({ s, i }) => `${String(i + 1).padStart(2, '0')} ${s.emoji} ${s.title}`);
+    return (
+`╭── ✦ ${SB('SCOPAMICO BOT')} ✦ ──╮
+│ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
+├── 🧭 ${BF('NAVIGA IL MENU')} ────┤
+│ Usa i pulsanti per scorrere,
+│ 🏠 per tornare qui, oppure
+│ scrivi  .menu <sezione>
+│
+│ ${lines.join('\n│ ')}
+├── ⭐ ${BF('RAPIDO ACCESSO')} ─────┤
+│ Premi un pulsante qui sotto per
+│ aprire subito una sezione.
+╰──────────────────────────────────╯`
+    );
+};
+
+// Schermata sezione: header + righe comandi
+const sectionScreen = (section, index, pushName) => {
+    const header =
+`╭── ${section.emoji} ${SB(section.title)} (${index + 1}/${SECTIONS.length}) ──╮
+│ 👤 ${pushName.slice(0, 14).padEnd(14)}
+│`;
+    const rows = section.items.map(([e, cmd]) => L(e, cmd)).join('\n');
+    return `${header}
+${rows}
+╰──────────────────────────────────╯`;
 };
 
 module.exports = {
     name: 'menu',
     aliases: [],
-    description: "Mostra l'elenco dei comandi disponibili.",
+    description: "Mostra l'elenco dei comandi per sezioni, navigabile con i pulsanti.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { command, textArgs, from, sender, pushName, isGroup, isOwner, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
+        const { db, sendButtons } = services;
 
         let pfpUrl;
         try { pfpUrl = await sock.profilePictureUrl(from, 'image'); } catch (_) { pfpUrl = null; }
@@ -43,246 +217,48 @@ module.exports = {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
+        const name = pushName || 'Utente';
 
-        let menuTxt =
-`╭── ✦ ${SB('SCOPAMICO BOT')} v11.8 ✦ ──╮
-│ 👤 ${pushName.slice(0, 14).padEnd(14)} 🕐 ${timeStr} ${dateStr}
-├── 🆕 ${MS('NOVITÀ v11.8')} ─────┤
-${L('🆔', '.id')}
-${L('🎯', '.pick')}
-${L('🧮', '.calc')}
-${L('😂', '.joke')}
-${L('🧠', '.fact')}
-${L('🔐', '.password')}
-${L('🔢', '.base64')}
-${L('🔣', '.hex')}
-${L('📊', '.count')}
-${L('👑', '.admin', '[rivisto]')}
-${L('🛡️', '.antivoip')}
-${L('💼', '.antiwzbusiness')}
-${L('🔥', '.antiflame')}
-${L('🤖', '.antibot')}
-${L('🤬', '.bestemmiometro')}
-${L('🤝', '.cowner')}
-${L('📋', '.infobot')}
-${L('🔗', '.setlink')}
-├── 💝 ${BF('FAMIGLIA')} ─────────┤
-│ .famiglia sposa|adotta|caccia
-│ |divorzia|abbandona
-├── 🪙 ${SB('ECONOMIA')} ─────────┤
-${L('💰', '.cassaforte')}
-${L('⛏️', '.scava')}
-${L('🎰', '.casino')}
-${L('🎲', '.dadi')}
-${L('🎰', '.slot')}
-${L('🔴', '.roulette')}
-${L('🪨', '.sasso')}
-${L('📅', '.daily')}
-${L('🏧', '.deposita')}
-${L('💳', '.preleva')}
-${L('🦹', '.ruba')}
-${L('⚔️', '.colpisci')}
-${L('🎟️', '.lotteria')}
-${L('🏆', '.top')}
-${L('🤑', '.ricchi')}
-├── 🎲 ${MS('SOCIAL')} ───────────┤
-${L('💞', '.ship')}
-${L('🏳️‍🌈', '.gay')}
-${L('💖', '.simpatometro')}
-${L('📊', '.percentuale')}
-${L('🤔', '.scelta')}
-${L('🌸', '.fiore')}
-${L('🦸', '.personaggio')}
-${L('📺', '.anime')}
-${L('🖥️', '.assemblapc')}
-${L('🤫', '.verita')}
-${L('🫣', '.obbligo')}
-${L('🔮', '.oroscopo')}
-${L('🐺', '.maranza')}
-├── 🔥 ${BF('INTERAZIONI')} ──────┤
-${L('🖐️', '.schiaffo')}
-${L('😘', '.bacia')}
-${L('🎯', '.pick')}
-${L('🪙', '.flip')}
-${L('🎱', '.8ball')}
-${L('📊', '.rate')}
-${L('🤔', '.wyr')}
-${L('💭', '.quote')}
-${L('🫂', '.abbraccia')}
-${L('💍', '.sposa')}
-${L('🍑', '.paccasulculo')}
-${L('🔪', '.uccidi')}
-${L('🤬', '.insulta')}
-${L('🔞', '.scopa')}
-${L('💦', '.sborra')}
-${L('👉👌', '.ditalino')}
-${L('🍆', '.sega')}
-${L('🤰', '.incinta')}
-${L('🍒', '.tette')}
-${L('😂', '.meme')}
-${L('🥊', '.rissa')}
-${L('🍆', '.cazzo')}
-${L('🤪', '.sclero')}
-${L('🍹', '.drink')}
-${L('🙏', '.scusa')}
-${L('🪵', '.palo')}
-${L('🗣️', '.gossip')}
-├── 🛠️ ${SB('UTILITY')} ──────────┤
-${L('👤', '.profilo')}
-${L('👑', '.admin')}
-${L('📡', '.ping')}
-${L('ℹ️', '.groupinfo')}
-${L('🌤️', '.weather')}
-${L('🆔', '.id')}
-${L('🧮', '.calc')}
-${L('🔢', '.base64')}
-${L('🔣', '.hex')}
-${L('📊', '.count')}
-${L('🔐', '.password')}
-${L('🎨', '.sticker')}
-${L('📹', '.vv')}
-${L('💻', '.hack')}
-${L('👥', '.clona')}
-${L('🔊', '.tts')}
-${L('🐿️', '.chipmunk')}
-${L('🏃', '.rubato')}
-${L('🎵', '.lyrics')}
-${L('🔗', '.tinyurl', '<url>')}
-${L('📚', '.wiki', '<voce>')}
-${L('▦', '.qr', '<testo>')}
-${L('🔑', '.uuid')}
-${L('🌐', '.translate', '<testo>')}
-${L('🪙', '.crypto', '<nome>')}
-${L('💱', '.currency', '100 EUR USD')}
-${L('🌙', '.afk', '<motivo>')}
-${L('🕐', '.ora', '<città>')}
-${L('👑', '.owner')}
-${L('🐛', '.report', '<problema>')}
-${L('📄', '.readmore', 'a | b')}
-├── 🎧 ${MS('MUSICA')} ─────────────┤
-${L('🎧', '.lastfm', '<nome>')}
-${L('🎶', '.cur')}
-├── 🎤 ${MS('AUDIO')} ─────────────┤
-${L('🎙️', '.deep')}
-${L('🔄', '.reverse')}
-${L('🗣️', '.echo')}
-${L('🤖', '.robot')}
-${L('🥴', '.drunk')}
-${L('🔊', '.bass')}
-${L('🌙', '.nightcore')}
-${L('🔮', '.8d')}
-├── 📥 ${BF('MEDIA')} ─────────────┤
-${L('📸', '.ig')}
-${L('💀', '.wasted')}
-${L('📖', '.pokedex')}
-${L('🤡', '.clown')}
-${L('🖼️', '.toimg', '(reply sticker)')}
-├── 🤖 ${SB('AI')} ────────────────┤
-${L('🧠', '.ai', '[domanda]')}
-├── 🎮 ${MS('GIOCHI')} ────────────┤
-${L('❓', '.quiz')}
-${L('🏁', '.bandiera')}
-${L('💞', '.compatibilita')}
-${L('⚔️', '.duello', '@utente [puntata]')}
-${L('🎯', '.indovina', '[numero] [puntata]')}
-${L('🪙', '.testa', 'testa|croce [puntata]')}
-${L('🎲', '.parita', 'pari|dispari [puntata]')}
-${L('🃏', '.alta', 'alta|bassa [puntata]')}
-${L('🃏', '.blackjack', '[puntata] [hit]')}
-${L('🎡', '.ruota', '[puntata]')}
-${L('🎟️', '.gratta')}
-${L('⚡', '.reazione')}
-${L('🧩', '.parola')}
-${L('🧠', '.memoria')}
-├── 🛡️ ${BF('SICUREZZA')} ─────────┤
-${L('🛡️', '.antivoip', 'on/off')}
-${L('💼', '.antiwzbusiness', 'on/off')}
-${L('🔥', '.antiflame', 'on/off')}
-${L('🤖', '.antibot', 'on/off')}
-${L('📋', '.antilink', 'on/off')}
-${L('🤬', '.bestemmiometro', 'on/off')}
-├── ⚙️ ${BF('ADMIN')} ─────────────┤
-${L('📢', '.tag')}
-${L('📣', '.tagall')}
-${L('🔒', '.chiudi')}
-${L('🔓', '.apri')}
-${L('🚫', '.ban')}
-${L('🔗', '.link')}
-${L('🗑️', '.del')}
-${L('🔇', '.mute')}
-${L('🔊', '.unmute')}
-${L('⚠️', '.warn')}
-${L('👑', '.promote')}
-${L('👑', '.demote')}
-${L('✅', '.accettarichieste')}
-${L('🗣️', '.say')}
-${L('🔗', '.invito')}
-${L('⏸️', '.pausa')}
-${L('▶️', '.riprendi')}
-${L('🛡️', '.modoadmin', 'on/off')}
-├── 📋 ${BF('GESTIONE')} ──────────┤
-${L('📛', '.setname', '<nome>')}
-${L('📝', '.setdesc', '<testo>')}
-${L('🔄', '.revoke')}
-${L('👑', '.tagadmin')}
-${L('📋', '.list')}
-${L('🖼️', '.seticon', '(reply a img)')}
-${L('🏞️', '.grouppic')}
-${L('➕', '.add', '<numero>')}
-${L('🚪', '.kick', '@utente')}
-${L('👋', '.leave')}
-${L('👑', '.admincount')}
-${L('⏳', '.ephemeral', 'on/off')}
-${L('⚠️', '.warnlist')}
-${L('✅', '.resetwarns', '@utente')}
-${L('📌', '.pin', '(reply msg)')}
-├── 🗂️ ${MS('STATO')} ─────────────┤
-${L('📊', '.status')}
-${L('📦', '.groups')}`;
-
-        if (isGroup) {
-            const alCfg = getAntilinkGroup(from);
-            const keys = Object.keys(ANTILINK_PLATFORMS);
-            const alLines = keys.map(p => `│ ${alCfg[p] ? '🟢' : '🔴'} ${SB('.antilink')} ${p}`).join('\n');
-            menuTxt +=
-`├── 🔗 ${SB('ANTILINK')} ──────────┤
-${alLines}
-│ 🟢 ${SB('.antilink')} tutti on/off`;
+        // ── SEZIONE RICHIESTA ─────────────────────────────────────────────
+        const found = findSection(textArgs);
+        if (textArgs && textArgs.trim().toLowerCase() !== 'home') {
+            if (found) {
+                const list = listFor(found.section, isOwner, isGroup);
+                if (!list) {
+                    return reply('🔒 Sezione riservata. Non hai i permessi per vederla.');
+                }
+                const n = SECTIONS.length;
+                const prev = SECTIONS[(found.index - 1 + n) % n];
+                const next = SECTIONS[(found.index + 1) % n];
+                const txt = sectionScreen(found.section, found.index, name);
+                await sendButtons(sock, from, txt, [
+                    { label: '⬅️ Prec', id: `menu ${prev.key}` },
+                    { label: '🏠 Home', id: 'menu' },
+                    { label: '➡️ Succ', id: `menu ${next.key}` },
+                ], msg);
+                return;
+            }
+            // Sezione inesistente → HOME con avviso
+            const txt = homeHeader(name, timeStr, dateStr, isOwner, isGroup);
+            return sendButtons(sock, from, txt, [
+                { label: '💰 Economia', id: 'menu economia' },
+                { label: '🛠️ Utility', id: 'menu utility' },
+                { label: '🎲 Giochi', id: 'menu giochi' },
+            ], msg);
         }
 
-        if (isOwner) {
-            menuTxt +=
-`├── 🛡 ${MS('OWNER')} ──────────────┤
-${L('⏻', '.spegni')}
-${L('⏼', '.accendi')}
-${L('🔄', '.riavvia')}
-${L('👋', '.welcome', 'on/off')}
-${L('👋', '.goodbye', 'on/off')}
-${L('🔗', '.setlink', '<url>')}
-${L('👑', '.addowner', '@utente')}
-${L('🗑️', '.unowner', '@utente')}
-${L('📜', '.log', '[n]')}
-${L('📦', '.aggiorna')}
-${L('🧹', '.clear')}
-${L('📋', '.infobot')}
-${L('📊', '.status')}
-${L('📦', '.groups')}`;
-        }
-
-        const SP = db._config?.sponsorLink || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo?s=cl&p=a&ilr=0';
-        menuTxt +=
-`├── 🌟 ${BF('SPONSOR')} ───────────┤
-│ Unisciti al gruppo ufficiale! 🫶
-│ ${SP}
-╰───────────────────────────────────╯`;
-
+        // ── HOME ──────────────────────────────────────────────────────────
+        const txt = homeHeader(name, timeStr, dateStr, isOwner, isGroup);
         if (pfpUrl) {
             await sock.sendMessage(from,
-                { image: { url: pfpUrl }, caption: menuTxt },
+                { image: { url: pfpUrl }, caption: txt },
                 { quoted: msg }
             );
-        } else {
-            await reply(menuTxt);
         }
+        await sendButtons(sock, from, txt, [
+            { label: '💰 Economia', id: 'menu economia' },
+            { label: '🛠️ Utility', id: 'menu utility' },
+            { label: '🎲 Giochi', id: 'menu giochi' },
+        ], msg);
     },
 };
