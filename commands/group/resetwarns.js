@@ -20,6 +20,7 @@ module.exports = {
 
         const data = getUser(tgt, from);
         data.warnings = 0;
+        data.warnLog = [];
         saveDB();
 
         await sock.sendMessage(from, {

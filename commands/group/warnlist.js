@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { db, getUser } = services;
 
         if (!isGroup) return reply("Funziona solo nei gruppi.");
         if (!isSenderAdmin) return reply("Solo gli admin.");
@@ -16,8 +16,9 @@ module.exports = {
         if (!chatData) return reply("Nessun dato trovato per questo gruppo.");
 
         const warned = Object.entries(chatData)
-            .filter(([jid, data]) => data.warnings > 0)
-            .map(([jid, data]) => ({ jid, warnings: data.warnings }));
+            .filter(([jid, data]) => (data.warnings || 0) > 0)
+            .map(([jid, data]) => ({ jid, warnings: data.warnings, warnLog: Array.isArray(data.warnLog) ? data.warnLog : [] }))
+            .sort((a, b) => b.warnings - a.warnings);
 
         if (!warned.length) return reply("✅ Nessun utente con warning.");
 
@@ -25,6 +26,9 @@ module.exports = {
         warned.forEach((w, i) => {
             const short = w.jid.split('@')[0];
             txt += `│ ${i+1}. @${short} — ${w.warnings} warn\n`;
+            w.warnLog.forEach((entry, j) => {
+                txt += `│   ${j+1}. ${String(entry.reason || '—').slice(0, 40)}\n`;
+            });
         });
         txt += `╰───────────────────────╯`;
 

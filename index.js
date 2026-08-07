@@ -28,6 +28,13 @@ const { sleep } = require('./lib/cooldowns');
 const botLogger = require('./lib/logger');
 botLogger.init(); // log su file (logs/bot.log)
 const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
+const {
+    ANTINUKE_CONTROLS,
+    DEFAULT_ANTINUKE_GROUP,
+    getAntinukeGroup,
+    isAntinukeWhitelisted,
+    extractPollText,
+} = require('./lib/antinuke');
 const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
@@ -123,6 +130,7 @@ const getUser = (jid, chatId) => {
         db[chatId][jid] = {
             money    : 100,
             warnings : 0,
+            warnLog  : [],
             isMuted  : false,
             msgCount : 0,
             spouse   : null,
@@ -135,6 +143,7 @@ const getUser = (jid, chatId) => {
     const user = db[chatId][jid];
     user.money = Number.isFinite(user.money) ? user.money : 100;
     user.warnings = Number.isFinite(user.warnings) ? user.warnings : 0;
+    user.warnLog = Array.isArray(user.warnLog) ? user.warnLog : [];
     user.isMuted = Boolean(user.isMuted);
     user.msgCount = Number.isFinite(user.msgCount) ? user.msgCount : 0;
     user.spouse ??= null;
@@ -142,6 +151,52 @@ const getUser = (jid, chatId) => {
     user.parents = Array.isArray(user.parents) ? user.parents : [];
     user.inventory = Array.isArray(user.inventory) ? user.inventory : [];
     return user;
+};
+
+const WARN_LIMIT = 3;
+
+/**
+ * Aggiunge un avviso con motivo all'utente nel gruppo. Al terzo avviso
+ * l'utente viene rimosso con la descrizione dei 3 avvisi/motivi ricevuti.
+ * @returns {Promise<{kicked: boolean, warnings: number, reasons: string[]}>}
+ */
+const applyWarn = async (sock, groupJid, userJid, reason) => {
+    const user = getUser(userJid, groupJid);
+    user.warnLog.push({ reason, ts: Date.now() });
+    user.warnings = user.warnLog.length;
+    saveDB();
+
+    const short = userJid.split('@')[0];
+
+    if (user.warnings >= WARN_LIMIT) {
+        const reasons = user.warnLog.map((w, i) => `${i + 1}. ${w.reason}`).join('\n');
+        try {
+            await sock.groupParticipantsUpdate(groupJid, [userJid], 'remove');
+            user.warnLog = [];
+            user.warnings = 0;
+            saveDB();
+            await sock.sendMessage(groupJid, {
+                text: `🚨 @${short} ha raggiunto *${WARN_LIMIT} avvisi* ed è stato rimosso.\n\n📋 *Avvisi ricevuti:*\n${reasons}`,
+                mentions: [userJid],
+            }).catch(() => {});
+            return { kicked: true, warnings: 0, reasons: [] };
+        } catch (err) {
+            user.warnLog = user.warnLog.slice(-(WARN_LIMIT - 1));
+            user.warnings = user.warnLog.length;
+            saveDB();
+            await sock.sendMessage(groupJid, {
+                text: `⛔ @${short} ha raggiunto *${WARN_LIMIT} avvisi*, ma non riesco a rimuoverlo. Controlla i miei permessi.\n\n📋 *Avvisi ricevuti:*\n${reasons}`,
+                mentions: [userJid],
+            }).catch(() => {});
+            return { kicked: false, warnings: user.warnings, reasons: user.warnLog.map(w => w.reason) };
+        }
+    }
+
+    await sock.sendMessage(groupJid, {
+        text: `⚠️ @${short} — *${reason}*\nAvvisi: *${user.warnings}/${WARN_LIMIT}*`,
+        mentions: [userJid],
+    }).catch(() => {});
+    return { kicked: false, warnings: user.warnings, reasons: user.warnLog.map(w => w.reason) };
 };
 
 gistBackup.init(GIST_ID, GIST_TOKEN);
@@ -499,7 +554,7 @@ const clearBotCache = () => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento']);
+const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento', 'antinuke']);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -524,7 +579,7 @@ const COMMAND_EMOJIS = {
     pin: '📌', fissa: '📌', unpin: '🔓', sfissa: '🔓',
     // Security
     antivoip: '📞', antiwzbusiness: '💼', antiwb: '💼', awb: '💼',
-    antiflame: '🔥', flame: '🔥', antibot: '🤖',
+    antiflame: '🔥', flame: '🔥', antibot: '🤖', antinuke: '🛡️',
     antilink: '🔗', bestemmiometro: '🤬',
     // Owner
     spegni: '⏻', accendi: '⏼', riavvia: '🔄', welcome: '👋', goodbye: '👋',
@@ -1258,22 +1313,28 @@ async function startBot() {
         //  1. Funziona solo nei gruppi (non in chat private).
         //  2. Legge la config del gruppo corrente (remoteJid = `from`).
         //  3. Per ogni piattaforma con filtro attivo, verifica se il testo
-        //     del messaggio contiene un link corrispondente.
-        //  4. Se il mittente NON è admin, elimina il messaggio silenziosamente.
+        //     del messaggio (incluso il testo dei sondaggi) contiene un link.
+        //  4. Se il mittente NON è admin, elimina il messaggio e dà 1 avviso
+        //     progressivo; al 3° avviso viene rimosso con i motivi ricevuti.
         //  5. Gli admin sono esentati: possono postare link liberamente.
-        //  6. L'Owner è sempre esente.
+        //  6. L'Owner è sempre esente, così come la whitelist antinuke.
         //
-        if (isGroup && body) {
+        const linkBody = (body || '') + ' ' + extractPollText(msg);
+        const anCfg = getAntinukeGroup(db, from);
+        const anEnabled = Boolean(anCfg.enabled);
+        const anWl = anEnabled && isAntinukeWhitelisted(anCfg, sender);
+        let warnedForMsg = false; // evita doppi avvisi sullo stesso messaggio
+        if (isGroup && linkBody) {
             try {
                 const antilinkConfig = getAntilinkGroup(from);
                 // Determina se almeno un filtro è attivo per questo gruppo
                 const hasActiveFilter = Object.values(antilinkConfig).some(Boolean);
 
-                if (hasActiveFilter) {
+                if (hasActiveFilter && !anWl) {
                     // Scorri le piattaforme nell'ordine definito in ANTILINK_PLATFORMS
                     for (const [platform, regex] of Object.entries(ANTILINK_PLATFORMS)) {
                         if (!antilinkConfig[platform]) continue; // filtro disattivo: salta
-                        if (!regex.test(body)) continue;         // nessun match: salta
+                        if (!regex.test(linkBody)) continue;     // nessun match: salta
 
                         // Trovato un link vietato — controlla se il mittente è esente
                         const isOwnerCheck = isOwnerJid(sender, sock, db);
@@ -1290,14 +1351,13 @@ async function startBot() {
 
                         if (senderIsAdmin) break; // admin: esente
 
-                        // Utente normale con link vietato → elimina silenziosamente
+                        // Utente normale con link vietato → elimina + 1 avviso progressivo
                         try {
                             await sock.sendMessage(from, { delete: msg.key });
-                            // Avviso opzionale nel gruppo (commentalo se lo vuoi silenzioso)
-                            await sock.sendMessage(from, {
-                                text: `🚫 *Link rimosso*\n\n@${sender.split('@')[0]}, i link *${platform}* non sono permessi in questo gruppo.`,
-                                mentions: [sender],
-                            });
+                            if (!warnedForMsg) {
+                                warnedForMsg = true;
+                                await applyWarn(sock, from, sender, `Link *${platform}* inviato`);
+                            }
                         } catch (delErr) {
                             // Se il bot non è admin, non può eliminare — logga senza crashare
                             console.warn(`[ANTILINK] Impossibile eliminare il msg di ${sender}: ${delErr.message}`);
@@ -1308,6 +1368,72 @@ async function startBot() {
             } catch (antilinkErr) {
                 // Errore nel middleware antilink: non bloccare il flusso principale
                 console.error('[ANTILINK] Errore middleware:', antilinkErr.message);
+            }
+        }
+
+        // ── ANTINUKE MIDDLEWARE (messaggi) ─────────────────────────────────
+        //
+        //  Controlli a livello di messaggio attivi quando db._antinuke[from]
+        //  è abilitato. Qui gestiamo:
+        //   - antilink:  blocca TUTTI i link (qualsiasi piattaforma)
+        //   - antipoll:  elimina qualsiasi sondaggio
+        //   - antitagall: elimina @all / tag di massa
+        //  Owner, admin e whitelist sono sempre esenti.
+        //
+        if (isGroup && anEnabled && !anWl) {
+            try {
+                // Verifica admin del mittente (una sola chiamata per questo blocco)
+                let senderIsAdmin = false;
+                try {
+                    const { isSenderAdmin: adminCheck } = await getGroupAdminState(sock, from, [sender]);
+                    senderIsAdmin = adminCheck;
+                } catch (_) {}
+                const anIsOwner = isOwnerJid(sender, sock, db);
+                if (!anIsOwner && !senderIsAdmin) {
+                    // 1) ANTILINK antinuke: blocca qualunque link
+                    if (anCfg.controls.antilink && linkBody && !warnedForMsg) {
+                        for (const [platform, regex] of Object.entries(ANTILINK_PLATFORMS)) {
+                            if (regex.test(linkBody)) {
+                                try {
+                                    await sock.sendMessage(from, { delete: msg.key });
+                                    warnedForMsg = true;
+                                    await applyWarn(sock, from, sender, `Link *${platform}* (antinuke)`);
+                                } catch (delErr) {
+                                    console.warn(`[ANTINUKE] Impossibile eliminare il msg di ${sender}: ${delErr.message}`);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // 2) ANTIPOLL: elimina qualsiasi sondaggio
+                    if (anCfg.controls.antipoll && msg.message?.pollCreationMessage && !warnedForMsg) {
+                        try {
+                            await sock.sendMessage(from, { delete: msg.key });
+                            warnedForMsg = true;
+                            await applyWarn(sock, from, sender, 'Sondaggio inviato');
+                        } catch (delErr) {
+                            console.warn(`[ANTINUKE] Impossibile eliminare il sondaggio di ${sender}: ${delErr.message}`);
+                        }
+                    }
+                    // 3) ANTITAGALL: elimina tag di massa (@all / tanti mention)
+                    if (anCfg.controls.antitagall && body && !warnedForMsg) {
+                        const lower = body.toLowerCase();
+                        const isTagAll = /@all|@everyone|@tutti|@membri|@gruppo/i.test(lower);
+                        const contextInfoLocal = getContextInfo(msg.message);
+                        const mentionCount = (contextInfoLocal?.mentionedJid || []).length;
+                        if (isTagAll || mentionCount >= 5) {
+                            try {
+                                await sock.sendMessage(from, { delete: msg.key });
+                                warnedForMsg = true;
+                                await applyWarn(sock, from, sender, 'Tag di massa (@all)');
+                            } catch (delErr) {
+                                console.warn(`[ANTINUKE] Impossibile eliminare il tagall di ${sender}: ${delErr.message}`);
+                            }
+                        }
+                    }
+                }
+            } catch (anErr) {
+                console.error('[ANTINUKE] Errore middleware messaggi:', anErr.message);
             }
         }
 
@@ -1670,6 +1796,8 @@ async function startBot() {
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
                     sendButtons, editButtons, clearBotCache, ownerNumber, showProgress,
                     lastfm,
+                    getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS,
+                    applyWarn, extractPollText, WARN_LIMIT,
                 },
             });
 
@@ -1695,10 +1823,78 @@ async function startBot() {
     sock.ev.on('group-participants.update', async (update) => {
         console.log('[group-participants.update] Evento ricevuto:', JSON.stringify(update, null, 2));
         try {
-            const { id: groupJid, participants, action } = update;
+            const { id: groupJid, participants, action, author } = update;
             if (!groupJid || !participants || !action) {
                 console.log('[group-participants.update] Dati mancanti, skip');
                 return;
+            }
+
+            // ── ANTINUKE: CONTROLLI PARTECIPANTI ────────────────────────────
+            // Reverte le azioni distruttive fatte da chi NON è owner/whitelist/
+            // admin (antiadd, antikick, antiadmin). Self-join e self-leave
+            // vengono rispettati (non sono "nuke").
+            const anCfg = getAntinukeGroup(db, groupJid);
+            if (anCfg.enabled) {
+                try {
+                    const actorJid = author || null;
+                    const targetJids = participants
+                        .map(p => p?.id || p?.phoneNumber)
+                        .filter(Boolean);
+
+                    let actorAllowed = !actorJid; // nessun autore noto: non bloccare
+                    if (actorJid) {
+                        if (isOwnerJid(actorJid, sock, db) || isAntinukeWhitelisted(anCfg, actorJid)) {
+                            actorAllowed = true;
+                        } else {
+                            try {
+                                const meta2 = await getCachedGroupMeta(sock, groupJid);
+                                actorAllowed = (meta2?.participants || [])
+                                    .some(p => isAdminParticipant(p, actorJid));
+                            } catch (_) { actorAllowed = false; }
+                        }
+                    }
+
+                    if (!actorAllowed) {
+                        // Qualcuno ha aggiunto ALTRI membri senza permesso
+                        if (action === 'add' && anCfg.controls.antiadd && targetJids.length) {
+                            const isSelfJoin = targetJids.some(t => sameJid(t, actorJid));
+                            if (!isSelfJoin) {
+                                await sock.groupParticipantsUpdate(groupJid, targetJids, 'remove').catch(() => {});
+                                await sock.sendMessage(groupJid, {
+                                    text: `🛡️ *ANTINUKE* — @${(actorJid || '').split('@')[0] || '?'} ha aggiunto membri senza permesso. Aggiunta annullata.`,
+                                    mentions: actorJid ? [actorJid] : [],
+                                }).catch(() => {});
+                                return;
+                            }
+                        }
+                        // Qualcuno ha rimosso ALTRI membri senza permesso
+                        if (action === 'remove' && anCfg.controls.antikick && targetJids.length) {
+                            const isSelfLeave = targetJids.some(t => sameJid(t, actorJid));
+                            if (!isSelfLeave) {
+                                await sock.groupParticipantsUpdate(groupJid, targetJids, 'add').catch(() => {});
+                                await sock.sendMessage(groupJid, {
+                                    text: `🛡️ *ANTINUKE* — @${(actorJid || '').split('@')[0] || '?'} ha rimosso membri senza permesso. Rimozione annullata.`,
+                                    mentions: actorJid ? [actorJid] : [],
+                                }).catch(() => {});
+                                return;
+                            }
+                        }
+                        // Promo/demote non autorizzati: inverti
+                        if ((action === 'promote' || action === 'demote') && anCfg.controls.antiadmin && targetJids.length) {
+                            const revertAction = action === 'promote' ? 'demote' : 'promote';
+                            for (const t of targetJids) {
+                                await sock.groupParticipantsUpdate(groupJid, [t], revertAction).catch(() => {});
+                            }
+                            await sock.sendMessage(groupJid, {
+                                text: `🛡️ *ANTINUKE* — @${(actorJid || '').split('@')[0] || '?'} ha ${action === 'promote' ? 'promosso' : 'retrocesso'} membri senza permesso. Azione annullata.`,
+                                mentions: actorJid ? [actorJid] : [],
+                            }).catch(() => {});
+                            return;
+                        }
+                    }
+                } catch (anErr) {
+                    console.error('[ANTINUKE] Errore handler partecipanti:', anErr.message);
+                }
             }
 
             // Ignora promote/demote — non servono welcome/goodbye
@@ -1779,6 +1975,43 @@ async function startBot() {
                         }
                     }
 
+                    // ── ANTINUKE: CHECK ALL'INGRESSO ──
+                    // antibot / antivoip / antiwb / antifake gestiti da db._antinuke
+                    // rispettano la whitelist antinuke (gli utenti fidati NON vengono
+                    // mai toccati, anche se gli altri anti-* separati sono attivi).
+                    const anCfg = getAntinukeGroup(db, groupJid);
+                    if (anCfg.enabled && !isAntinukeWhitelisted(anCfg, jid)) {
+                        const numClean = short.replace(/[^0-9]/g, '');
+                        try {
+                            // ANTIVOIP antinuke
+                            if (anCfg.controls.antivoip && !numClean.startsWith('39')) {
+                                await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
+                                console.log(`[ANTINUKE] Rimosso ${short} (non +39)`);
+                                continue;
+                            }
+                            // ANTIWB antinuke
+                            if (anCfg.controls.antiwb) {
+                                const bizProfile = await sock.getBusinessProfile(jid).catch(() => null);
+                                if (bizProfile?.wid) {
+                                    await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
+                                    console.log(`[ANTINUKE] Rimosso ${short} (WhatsApp Business)`);
+                                    continue;
+                                }
+                            }
+                            // ANTIBOT / ANTIFAKE antinuke: pfp mancante + numero corto
+                            if (anCfg.controls.antibot || anCfg.controls.antifake) {
+                                const ppUrl = await sock.profilePictureUrl(jid, 'image').catch(() => null);
+                                if (!ppUrl && numClean.length < 8) {
+                                    await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
+                                    console.log(`[ANTINUKE] Rimosso ${short} (probabile bot/fake)`);
+                                    continue;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('[ANTINUKE] Errore check ingresso:', e.message);
+                        }
+                    }
+
                     if (!welcomeConfig.welcome) continue; // Welcome disattivato per questo gruppo
 
                     const welcomeText =
@@ -1842,6 +2075,70 @@ async function startBot() {
             }
         } catch (err) {
             console.error('[group-participants.update] Errore:', err.message);
+        }
+    });
+
+    // ── GROUPS UPDATE (ANTINUKE ANTIGC) ────────────────────────────────────
+    // Quando qualcuno NON autorizzato cambia nome/desc/impostazioni del
+    // gruppo, l'antinuke lo ripristina allo snapshot salvato all'attivazione.
+    // L'autore dell'azione arriva in update.author (stub system message).
+    sock.ev.on('groups.update', async (updates) => {
+        const list = Array.isArray(updates) ? updates : [updates];
+        for (const u of list) {
+            try {
+                const gid = u?.id;
+                if (!gid || !gid.endsWith('@g.us')) continue;
+
+                const cfg = getAntinukeGroup(db, gid);
+                if (!cfg.enabled || !cfg.controls.antigc) continue;
+
+                // Il full-sync iniziale (groupFetchAllParticipating) non ha
+                // "author": non è una modifica reale, lo ignoriamo.
+                const actor = u?.author;
+                if (!actor) continue;
+
+                // Owner, whitelist e admin sono esenti.
+                if (isOwnerJid(actor, sock, db) || isAntinukeWhitelisted(cfg, actor)) continue;
+                let isAdminActor = false;
+                try {
+                    const meta = await getCachedGroupMeta(sock, gid);
+                    isAdminActor = (meta?.participants || []).some(p => isAdminParticipant(p, actor));
+                } catch (_) {}
+                if (isAdminActor) continue;
+
+                // Determiniamo cosa è cambiato e se possiamo ripristinarlo.
+                const snapshot = cfg.snapshot;
+                const changed = [];
+                if (typeof u.subject === 'string' && snapshot?.subject !== undefined) changed.push('nome');
+                if (typeof u.desc === 'string' && snapshot?.desc !== undefined) changed.push('descrizione');
+                if (typeof u.announce === 'boolean') changed.push('impostazioni');
+                if (typeof u.restrict === 'boolean') changed.push('impostazioni');
+                if (!changed.length) continue;
+
+                const short = actor.split('@')[0];
+                try {
+                    if (typeof u.subject === 'string' && snapshot?.subject !== undefined) {
+                        await sock.groupUpdateSubject(gid, snapshot.subject || '').catch(() => {});
+                    }
+                    if (typeof u.desc === 'string' && snapshot?.desc !== undefined) {
+                        await sock.groupUpdateDescription(gid, snapshot.desc || '').catch(() => {});
+                    }
+                    if (typeof u.announce === 'boolean') {
+                        await sock.groupSettingUpdate(gid, u.announce ? 'not_announcement' : 'announcement').catch(() => {});
+                    }
+                    if (typeof u.restrict === 'boolean') {
+                        await sock.groupSettingUpdate(gid, u.restrict ? 'unlocked' : 'locked').catch(() => {});
+                    }
+                    await sock.sendMessage(gid, {
+                        text: `🛡️ *ANTINUKE* — @${short} ha cambiato *${changed.join(', ')}* senza permesso. Ripristinato.`,
+                        mentions: [actor],
+                    }).catch(() => {});
+                } catch (e) {
+                    console.error('[ANTINUKE] Errore revert antigc:', e.message);
+                }
+            } catch (err) {
+                console.error('[ANTINUKE] Errore groups.update:', err.message);
+            }
         }
     });
 }
