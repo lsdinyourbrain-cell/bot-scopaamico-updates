@@ -7,8 +7,9 @@ const BOT_IDENTITY = 'Bot di +1(548)314-7193';
 const SPONSOR_LINK = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
 
 // API key per Last.fm (gratuita: https://www.last.fm/api/account/create).
-// Lascia vuota per usare la variabile d'ambiente LASTFM_API_KEY.
-const LASTFM_API_KEY = process.env.LASTFM_API_KEY || '';
+const LASTFM_API_KEY = process.env.LASTFM_API_KEY || '0370eb25664f53ae121328eb3c6b5f16';
+// Shared secret (serve solo per richieste autenticate, es. scrobbling).
+const LASTFM_API_SECRET = process.env.LASTFM_API_SECRET || '21ae56bf15b76a0309cd3dbc41059571';
 
 module.exports = Object.freeze({
     ROOT_DIR,
@@ -22,4 +23,5 @@ module.exports = Object.freeze({
     STICKER_PACK_ID: 'bot.whatsapp.15483147193',
     SPONSOR_LINK,
     LASTFM_API_KEY,
+    LASTFM_API_SECRET,
 });
