@@ -33,6 +33,9 @@ const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
 const { sendButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
 const { showProgress } = require('./lib/loading');
+const lastfm = require('./lib/lastfm');
+const config = require('./config');
+lastfm.setApiKey(config.LASTFM_API_KEY);
 
 const execFileAsync = promisify(execFile);
 const ownerNumber = "269956662956146@lid";
@@ -532,6 +535,8 @@ const COMMAND_EMOJIS = {
     sticker: '🎨', vv: '📹', hack: '💻', clona: '👥', tts: '🔊',
     rubato: '🏃', lyrics: '🎵', weather: '🌤️', ig: '📸',
     wasted: '💀', pokedex: '📖', clown: '🤡',
+    cur: '🎶', nowplaying: '🎶', np: '🎶',
+    lastfm: '🎧', setfm: '🎧', setlastfm: '🎧',
     deep: '🎙️', reverse: '🔄', echo: '🗣️', robot: '🤖', drunk: '🥴',
     bass: '🔊', nightcore: '🌙', '8d': '🔮', chipmunk: '🐿️',
     // Interactions
@@ -1664,6 +1669,7 @@ async function startBot() {
                     getWelcomeGroup, setWelcomeGroup,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
                     sendButtons, clearBotCache, ownerNumber, showProgress,
+                    lastfm,
                 },
             });
 

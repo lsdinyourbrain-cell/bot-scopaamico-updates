@@ -159,6 +159,9 @@ ${L('🕐', '.ora', '<città>')}
 ${L('👑', '.owner')}
 ${L('🐛', '.report', '<problema>')}
 ${L('📄', '.readmore', 'a | b')}
+├── 🎧 ${MS('MUSICA')} ─────────────┤
+${L('🎧', '.lastfm', '<nome>')}
+${L('🎶', '.cur')}
 ├── 🎤 ${MS('AUDIO')} ─────────────┤
 ${L('🎙️', '.deep')}
 ${L('🔄', '.reverse')}
