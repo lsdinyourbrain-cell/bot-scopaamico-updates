@@ -209,26 +209,28 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, pushName, isGroup, isOwner, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { db, sendButtons, editButtons } = services;
-
-        let pfpUrl;
-        try { pfpUrl = await sock.profilePictureUrl(from, 'image'); } catch (_) { pfpUrl = null; }
+        const { db, sendButtons } = services;
 
         const now = new Date();
         const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
         const name = pushName || 'Utente';
 
-        // Se il comando arriva da un pulsante premuto, possiamo MODIFICARE la
-        // bolla del menu già inviata (niente spam) invece di mandarne una nuova.
-        // contextInfo.stanzaId è l'id del messaggio originale col pulsante.
+        // Se il comando arriva da un pulsante premuto, invece di accumulare
+        // menu su menu ELIMINIAMO la bolla precedente e ne inviamo una nuova:
+        // in chat resta sempre un solo menu, senza spam. L'edit delle bolle
+        // con pulsanti non è supportato da WhatsApp, quindi delete+nuovo invio.
+        // contextInfo.stanzaId è l'id della bolla originale con i pulsanti.
         const editKey = (isButton && contextInfo?.stanzaId)
-            ? { remoteJid: from, id: contextInfo.stanzaId, participant: contextInfo.participant }
+            ? { remoteJid: from, fromMe: true, id: contextInfo.stanzaId, participant: isGroup ? (sock.user?.id || sock.user?.lid) : undefined }
             : null;
 
         const show = async (txt, buttons) => {
-            if (editKey) return editButtons(sock, from, txt, buttons, editKey, msg);
-            return sendButtons(sock, from, txt, buttons, msg);
+            await sendButtons(sock, from, txt, buttons, msg);
+            // Elimina la bolla vecchia SOLO dopo che la nuova è stata inviata.
+            if (editKey?.id) {
+                try { await sock.sendMessage(from, { delete: editKey }); } catch (_) {}
+            }
         };
 
         // ── SEZIONE RICHIESTA ─────────────────────────────────────────────
@@ -260,12 +262,6 @@ module.exports = {
 
         // ── HOME ──────────────────────────────────────────────────────────
         const txt = homeHeader(name, timeStr, dateStr, isOwner, isGroup);
-        if (pfpUrl && !editKey) {
-            await sock.sendMessage(from,
-                { image: { url: pfpUrl }, caption: txt },
-                { quoted: msg }
-            );
-        }
         return show(txt, [
             { label: '💰 Economia', id: 'menu economia' },
             { label: '🛠️ Utility', id: 'menu utility' },
