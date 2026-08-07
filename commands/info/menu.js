@@ -208,8 +208,8 @@ module.exports = {
     description: "Mostra l'elenco dei comandi per sezioni, navigabile con i pulsanti.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, pushName, isGroup, isOwner, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, sendButtons } = services;
+        const { command, textArgs, from, sender, pushName, isGroup, isOwner, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
+        const { db, sendButtons, editButtons } = services;
 
         let pfpUrl;
         try { pfpUrl = await sock.profilePictureUrl(from, 'image'); } catch (_) { pfpUrl = null; }
@@ -218,6 +218,18 @@ module.exports = {
         const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
         const name = pushName || 'Utente';
+
+        // Se il comando arriva da un pulsante premuto, possiamo MODIFICARE la
+        // bolla del menu già inviata (niente spam) invece di mandarne una nuova.
+        // contextInfo.stanzaId è l'id del messaggio originale col pulsante.
+        const editKey = (isButton && contextInfo?.stanzaId)
+            ? { remoteJid: from, id: contextInfo.stanzaId, participant: contextInfo.participant }
+            : null;
+
+        const show = async (txt, buttons) => {
+            if (editKey) return editButtons(sock, from, txt, buttons, editKey, msg);
+            return sendButtons(sock, from, txt, buttons, msg);
+        };
 
         // ── SEZIONE RICHIESTA ─────────────────────────────────────────────
         const found = findSection(textArgs);
@@ -231,34 +243,33 @@ module.exports = {
                 const prev = SECTIONS[(found.index - 1 + n) % n];
                 const next = SECTIONS[(found.index + 1) % n];
                 const txt = sectionScreen(found.section, found.index, name);
-                await sendButtons(sock, from, txt, [
+                return show(txt, [
                     { label: '⬅️ Prec', id: `menu ${prev.key}` },
                     { label: '🏠 Home', id: 'menu' },
                     { label: '➡️ Succ', id: `menu ${next.key}` },
-                ], msg);
-                return;
+                ]);
             }
             // Sezione inesistente → HOME con avviso
             const txt = homeHeader(name, timeStr, dateStr, isOwner, isGroup);
-            return sendButtons(sock, from, txt, [
+            return show(txt, [
                 { label: '💰 Economia', id: 'menu economia' },
                 { label: '🛠️ Utility', id: 'menu utility' },
                 { label: '🎲 Giochi', id: 'menu giochi' },
-            ], msg);
+            ]);
         }
 
         // ── HOME ──────────────────────────────────────────────────────────
         const txt = homeHeader(name, timeStr, dateStr, isOwner, isGroup);
-        if (pfpUrl) {
+        if (pfpUrl && !editKey) {
             await sock.sendMessage(from,
                 { image: { url: pfpUrl }, caption: txt },
                 { quoted: msg }
             );
         }
-        await sendButtons(sock, from, txt, [
+        return show(txt, [
             { label: '💰 Economia', id: 'menu economia' },
             { label: '🛠️ Utility', id: 'menu utility' },
             { label: '🎲 Giochi', id: 'menu giochi' },
-        ], msg);
+        ]);
     },
 };

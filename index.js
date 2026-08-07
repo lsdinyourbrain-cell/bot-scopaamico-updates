@@ -31,7 +31,7 @@ const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
 const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
-const { sendButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
+const { sendButtons, editButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
 const { showProgress } = require('./lib/loading');
 const lastfm = require('./lib/lastfm');
 const config = require('./config');
@@ -1668,7 +1668,7 @@ async function startBot() {
                     sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
                     getWelcomeGroup, setWelcomeGroup,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
-                    sendButtons, clearBotCache, ownerNumber, showProgress,
+                    sendButtons, editButtons, clearBotCache, ownerNumber, showProgress,
                     lastfm,
                 },
             });
