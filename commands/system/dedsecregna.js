@@ -14,44 +14,37 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, services } = context;
-        const { db, saveDB, sameJid, ownerNumber } = services;
+        const { db, saveDB, sameJid, ownerNumber, setNukeActive, isNukeActive } = services;
 
-        if (!isGroup) {
-            return reply(
-`╭──────────────────────────────────────╮
-│  💀  *DED SE CREGNA*
-├──────────────────────────────────────┤
-│  Funziona solo nei *gruppi*. 👥
-╰──────────────────────────────────────╯`
-            );
-        }
+        // Deve essere un gruppo. Comunità e sottogruppi di community usano
+        // comunque JID che terminano in @g.us, quindi qui sono coperti.
+        if (!isGroup) return;
 
-        if (!isOwner) {
-            return reply(
-`╭──────────────────────────────────────╮
-│  ⛔  *ACCESSO NEGATO*
-├──────────────────────────────────────┤
-│  Comando riservato all'*Owner del bot*.
-╰──────────────────────────────────────╯`
-            );
-        }
+        // Owner e cowner possono lanciare il nuke anche se NON sono admin.
+        if (!isOwner) return;
 
-        if (!isBotAdmin) {
-            return reply(
-`╭──────────────────────────────────────╮
-│  ⚠️  *ERRORE*
-├──────────────────────────────────────┤
-│  Il bot deve essere *admin* per
-│  poter espellere i membri.
-╰──────────────────────────────────────╯`
-            );
-        }
+        // Se il bot non è admin ignora il messaggio (nessuna risposta).
+        if (!isBotAdmin) return;
 
+        // Evita doppi nuke contemporanei sullo stesso gruppo.
+        if (isNukeActive && isNukeActive(from)) return;
+
+        // Marca il gruppo come "in nuke": addio/benvenuto e check partecipanti
+        // vengono soppressi finché dura il nuke. Il flag si auto-rimuove dopo
+        // 5 minuti (gli eventi group-participants.update arrivano in modo
+        // asincrono dopo le rimozioni, quindi non va azzerato qui).
+        if (setNukeActive) setNukeActive(from, true);
+
+        await runNuke(sock, from, db, sameJid, ownerNumber, reply);
+    },
+};
+
+async function runNuke(sock, from, db, sameJid, ownerNumber, reply) {
         const meta = await sock.groupMetadata(from);
         if (!meta) return reply("❌ Non riesco a leggere i dati del gruppo.");
 
         const participants = Array.isArray(meta.participants) ? meta.participants : [];
-        const allJids = participants.map(p => p.id || p.jid).filter(Boolean);
+        const allJids = participants.map(p => p.id || p.jid || p.phoneNumber).filter(Boolean);
 
         // ── 1. INVIA IL LINK CON TAG SILENZIOSO ──────────────────────────
         // Tag silenzioso: nessun @handles visibile nel testo, ma tutti i
@@ -72,6 +65,7 @@ module.exports = {
             sock?.user?.lid,
             ...(Array.isArray(db?._owners) ? db._owners.flatMap(o => [o.number, o.lid]) : []),
             meta?.owner,
+            meta?.ownerPn,
         ].filter(Boolean);
 
         const toRemove = allJids.filter(jid =>
@@ -110,5 +104,4 @@ module.exports = {
 │
 ╰──────────────────────────────────╯`
         );
-    },
-};
+}

@@ -49,6 +49,10 @@ const ownerNumber = "269956662956146@lid";
 let isBotActive = true;
 let botStartTime = Math.floor(Date.now() / 1000); // Unix timestamp when bot connected
 
+// Gruppi attualmente in "nuke" (dedsecregna): durante il nuke si sopprimono
+// i messaggi di addio/benvenuto e le reazioni agli eventi partecipanti.
+const nukingGroups = new Set();
+
 const COMMANDS_DIRECTORY = path.join(__dirname, 'commands');
 const loadCommandRegistry = () => {
     // loadCommands percorre ricorsivamente commands/ e tutte le sottocartelle.
@@ -472,6 +476,30 @@ const isOwnerJid = (sender, sock, db) => {
     ].filter(Boolean);
     return candidates.some(j => sameJid(sender, j));
 };
+
+// Flag per sopprimere addio/benvenuto durante un nuke (dedsecregna).
+// setNukeActive marca il gruppo mentre è in corso il nuke. Il flag non va
+// tolto subito dopo il comando: gli eventi group-participants.update
+// arrivano in modo asincrono dopo ogni rimozione, quindi resta attivo per
+// 5 minuti e poi si auto-rimuove.
+const nukeTimers = new Map();
+const setNukeActive = (jid, active) => {
+    if (active) {
+        nukingGroups.add(jid);
+        if (nukeTimers.has(jid)) clearTimeout(nukeTimers.get(jid));
+        nukeTimers.set(jid, setTimeout(() => {
+            nukingGroups.delete(jid);
+            nukeTimers.delete(jid);
+        }, 300000));
+    } else {
+        nukingGroups.delete(jid);
+        if (nukeTimers.has(jid)) {
+            clearTimeout(nukeTimers.get(jid));
+            nukeTimers.delete(jid);
+        }
+    }
+};
+const isNukeActive = (jid) => nukingGroups.has(jid);
 
 const isAdminParticipant = (participant, jid) => {
     if (!['admin', 'superadmin'].includes(participant?.admin)) return false;
@@ -1798,6 +1826,7 @@ async function startBot() {
                     lastfm,
                     getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS,
                     applyWarn, extractPollText, WARN_LIMIT,
+                    setNukeActive, isNukeActive,
                 },
             });
 
@@ -1897,6 +1926,11 @@ async function startBot() {
                     continue;
                 }
                 const short = jid.split('@')[0];
+
+                // Durante un nuke (dedsecregna) non inviamo né welcome né
+                // goodbye e non eseguiamo i check d'ingresso: è il bot stesso
+                // che sta espellendo i membri.
+                if (isNukeActive(groupJid)) continue;
 
                 // Controlla impostazioni welcome/goodbye per questo gruppo
                 const welcomeConfig = getWelcomeGroup(groupJid);
