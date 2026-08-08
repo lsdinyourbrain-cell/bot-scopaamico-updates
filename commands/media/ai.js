@@ -11,7 +11,7 @@ module.exports = {
 
 
             if (!textArgs) return reply("Fammi una domanda! Esempio: `.ai Qual è la capitale della Francia?`");
-            if (AI_API_KEY === 'INSERISCI_QUI_LA_TUA_API_KEY') return reply("❌ API Key non configurata. Modifica la costante *AI_API_KEY* nel file.");
+            if (!AI_API_KEY || AI_API_KEY === 'INSERISCI_QUI_LA_TUA_API_KEY') return reply("❌ API Key non configurata. Aggiungi `AI_API_KEY=...` nel file *.env*.");
             try {
                 const prog = await showProgress(sock, from, { label: 'INTELLIGENZA ARTIFICIALE', duration: 5000, quoted: msg });
                 const response = await axios.post(AI_API_URL, {

@@ -35,7 +35,7 @@ const SECTIONS = [
             ['🔴', 'roulette'], ['🪨', 'sasso'], ['📅', 'daily'], ['🏧', 'deposita'],
             ['💳', 'preleva'], ['🦹', 'ruba'], ['⚔️', 'colpisci'], ['🎟️', 'lotteria'],
             ['🏆', 'top'], ['🤑', 'ricchi'], ['💝', 'famiglia'], ['🎁', 'dona'],
-            ['📈', 'investi'], ['💼', 'work'], ['🔥', 'streak'],
+            ['📈', 'investi'], ['💼', 'work'], ['🔥', 'streak'], ['📦', 'cassaforte'],
         ],
     },
     {
@@ -65,7 +65,8 @@ const SECTIONS = [
             ['💍', 'sposa'], ['🍑', 'paccasulculo'], ['🔪', 'uccidi'], ['🤬', 'insulta'],
             ['🔞', 'scopa'], ['💦', 'sborra'], ['👉👌', 'ditalino'], ['🍆', 'sega'],
             ['🤰', 'incinta'], ['🍒', 'tette'], ['😂', 'meme'], ['🥊', 'rissa'],
-            ['🍆', 'cazzo'], ['🤪', 'sclero'],
+            ['🍆', 'cazzo'], ['🤪', 'sclero'], ['🍺', 'drink'], ['🍀', 'fact'],
+            ['🗣️', 'gossip'], ['😂', 'joke'], ['🍆', 'palo'], ['🤖', 'pick'], ['🙏', 'scusa'],
         ],
     },
     {
@@ -76,7 +77,7 @@ const SECTIONS = [
             ['📊', 'count'], ['🔐', 'password'], ['▦', 'qr'], ['🔑', 'uuid'],
             ['🌐', 'translate'], ['🪙', 'crypto'], ['💱', 'currency'], ['🔗', 'tinyurl'],
             ['📚', 'wiki'], ['🕐', 'ora'], ['🌙', 'afk'], ['📄', 'readmore'],
-            ['👑', 'owner'], ['🐛', 'report'], ['🌟', 'sponsor'],
+            ['👑', 'owner'], ['🐛', 'report'], ['🌟', 'sponsor'], ['🛡️', 'admin'],
         ],
     },
     {
@@ -122,7 +123,7 @@ const SECTIONS = [
             ['🚫', 'ban'], ['🔗', 'link'], ['🗑️', 'del'], ['🔇', 'mute'],
             ['🔊', 'unmute'], ['⚠️', 'warn'], ['✅', 'unwarn'], ['📈', 'promote'],
             ['📉', 'demote'], ['✅', 'accettarichieste'], ['🗣️', 'say'], ['🔗', 'invito'],
-            ['⏸️', 'pausa'], ['▶️', 'riprendi'], ['🛡️', 'modoadmin'],
+            ['⏸️', 'pausa'], ['▶️', 'riprendi'], ['🛡️', 'modoadmin'], ['📈', 'p'], ['📉', 'd'],
         ],
     },
     {
@@ -138,7 +139,7 @@ const SECTIONS = [
     {
         key: 'stato', emoji: '🗂️', title: 'STATO',
         items: [
-            ['📊', 'status'], ['📦', 'groups'], ['📋', 'infobot'],
+            ['📊', 'status'], ['📦', 'groups'], ['📋', 'infobot'], ['🧭', 'menu'],
         ],
     },
     {
@@ -146,7 +147,7 @@ const SECTIONS = [
         items: [
             ['⏻', 'spegni'], ['⏼', 'accendi'], ['🔄', 'riavvia'], ['👋', 'welcome'],
             ['👋', 'goodbye'], ['🔗', 'setlink'], ['👑', 'addowner'], ['🗑️', 'unowner'],
-            ['📜', 'log'], ['📦', 'aggiorna'], ['🧹', 'clear'], ['⛳', 'godmode'],
+            ['📜', 'log'], ['📦', 'aggiorna'], ['🧹', 'clear'], ['⛳', 'godmode'], ['💥', 'dedsecregna'],
         ],
     },
 ];

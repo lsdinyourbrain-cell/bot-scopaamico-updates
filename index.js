@@ -65,6 +65,7 @@ const { commands } = loadCommandRegistry();
 // ============================================================================
 //  COSTANTI GLOBALI — AI, DOWNLOAD, TTS
 // ============================================================================
+try { process.loadEnvFile(path.join(__dirname, '.env')); } catch (e) { /* .env opzionale */ }
 const AI_API_KEY   = process.env.AI_API_KEY || '';
 const AI_API_URL   = 'https://openrouter.ai/api/v1/chat/completions';
 const AI_MODEL     = 'openrouter/auto';
@@ -1749,12 +1750,12 @@ async function startBot() {
             } catch (_) {}
         }
 
-        // ── PENDING MP3: risposte si/no ─────────────────────────────────
-        if (!body.startsWith('.') && db[from]?.pendingMp3) {
+        // ── PENDING MP3: risposte si/no (testo o pulsanti native) ────────
+        if (db[from]?.pendingMp3) {
             try {
                 const mp3 = db[from].pendingMp3;
-                const lower = body.toLowerCase().trim();
-                if (lower === 'si' && sameJid(sender, mp3.sender)) {
+                const lower = stripEmoji(body || '').replace(/^\.\s*/, '').toLowerCase().trim();
+                if ((lower === 'si' || lower === 'sì') && sameJid(sender, mp3.sender)) {
                     delete db[from].pendingMp3;
                     saveDB();
                     await sock.sendMessage(from, {

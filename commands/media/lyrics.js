@@ -59,10 +59,13 @@ module.exports = {
                         timestamp: Date.now(),
                     };
                     saveDB();
-                    await sock.sendMessage(from, {
-                        text: `🎵 @${sender.split('@')[0]}, vuoi anche l\'anteprima MP3? Rispondi *si* o *no*.`,
-                        mentions: [sender],
-                    });
+                    await sendButtons(sock, from,
+                        `🎵 @${sender.split('@')[0]}, vuoi anche l'anteprima MP3 di _${title}_?`,
+                        [
+                            { label: '🎵 Scarica MP3', id: 'si' },
+                            { label: '❌ No grazie', id: 'no' },
+                        ],
+                        msg);
 
                     setTimeout(() => {
                         if (db[from]?.pendingMp3?.sender === sender) {
