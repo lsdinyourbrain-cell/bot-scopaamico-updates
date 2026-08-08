@@ -5,7 +5,7 @@ const path = require('path');
 
 module.exports = {
     name: 'schiaffo',
-    aliases: ["paccasulculo","uccidi","insulta","scopa","sborra","ditalino","sega","bacia","abbraccia","sposa"],
+    aliases: ["paccasulculo","uccidi","insulta","ditalino","bacia","abbraccia","sposa"],
     description: "Esegue il comando .schiaffo.",
 
     async run(sock, msg, args, context) {
@@ -15,7 +15,7 @@ module.exports = {
 
             if (!targetJid) return reply("Tagga qualcuno oppure rispondi a un suo messaggio.");
 
-            const roleplayCommands = ['scopa', 'sborra', 'ditalino', 'sega'];
+            const roleplayCommands = ['ditalino'];
 
             if (roleplayCommands.includes(command)) {
                 const rpFile = path.join(projectDir, 'data', `roleplay_${command}.json`);

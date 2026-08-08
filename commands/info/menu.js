@@ -63,7 +63,7 @@ const SECTIONS = [
             ['🖐️', 'schiaffo'], ['😘', 'bacia'], ['🪙', 'flip'], ['🎱', '8ball'],
             ['📊', 'rate'], ['🤔', 'wyr'], ['💭', 'quote'], ['🫂', 'abbraccia'],
             ['💍', 'sposa'], ['🍑', 'paccasulculo'], ['🔪', 'uccidi'], ['🤬', 'insulta'],
-            ['🔞', 'scopa'], ['💦', 'sborra'], ['👉👌', 'ditalino'], ['🍆', 'sega'],
+            ['🔞', 'scopa'], ['💦', 'sborra'], ['👉👌', 'ditalino'], ['🍆', 'sega'], ['💧', 'squirt'],
             ['🤰', 'incinta'], ['🍒', 'tette'], ['😂', 'meme'], ['🥊', 'rissa'],
             ['🍆', 'cazzo'], ['🤪', 'sclero'], ['🍺', 'drink'], ['🍀', 'fact'],
             ['🗣️', 'gossip'], ['😂', 'joke'], ['🍆', 'palo'], ['🤖', 'pick'], ['🙏', 'scusa'],
