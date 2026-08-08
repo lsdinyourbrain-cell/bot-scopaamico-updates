@@ -49,7 +49,15 @@ module.exports = {
             const mask = (wg) => wg.word.split('').map(ch => wg.guessed.includes(ch) ? ch : ' _ ').join('');
 
             await reply(
-`🧩 *INDOVINA LA PAROLA!* 🧩\n\n${mask(db[from].wordGame)}\n\nScrivi una *lettera* o la *parola intera*!\n⏳ Hai 90 secondi. 6 errori = game over.`
+`╔════════════════════════════════╗
+║     🧩 *INDOVINA LA PAROLA* 🧩
+╠════════════════════════════════╣
+║  ${mask(db[from].wordGame)}
+║
+║  ✏️ Scrivi una *lettera* o la
+║  *parola intera*!
+║  ⏳ 90 secondi · 6 errori = fine.
+╚════════════════════════════════╝`
             );
 
             setTimeout(() => {
@@ -57,7 +65,7 @@ module.exports = {
                 if (wg?.active && Date.now() - wg.timestamp >= 90000) {
                     wg.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `⏰ Tempo scaduto! La parola era *${wg.word}*.` }).catch(() => {});
+                    sock.sendMessage(from, { text: `╔════════════════════════════════╗\n║       ⏰ *TEMPO SCADUTO* ⏰\n╠════════════════════════════════╣\n║  La parola era: *${wg.word}*\n╚════════════════════════════════╝` }).catch(() => {});
                 }
             }, 90000);
     },

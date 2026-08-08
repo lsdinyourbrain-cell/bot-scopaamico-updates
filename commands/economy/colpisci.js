@@ -13,11 +13,19 @@ module.exports = {
             const result = claimBounty(from, sender);
             if (result === null) return reply("Nessuna taglia attiva in questo gruppo 🤷");
             if (result === 0) {
-                return reply("💥 Hai provato a colpire ma il bersaglio si è schivato! Per stavolta niente taglia 😂");
+                return reply("💥 Hai provato a colpire ma il bersaglio si è schivato!\nPer stavolta niente taglia 😂");
             }
             const userData = getUser(sender, from);
             userData.money += result;
             saveDB();
-            await reply(`🎯 *TAGLIASSA!*\n\nHai centrato il bersaglio e intascato *${result}€*! 💰\nNuovo saldo: *${userData.money}€*`);
+            await reply(
+`╔══════════════════════════════╗
+║     🎯 *TAGLIASSA!* 🎯
+╠══════════════════════════════╣
+║  Hai centrato il bersaglio!
+║  Intascato: *${result}€* 💰
+║
+║  💰 Saldo: *${userData.money}€*
+╚══════════════════════════════╝`);
     },
 };

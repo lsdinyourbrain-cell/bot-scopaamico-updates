@@ -36,7 +36,7 @@ module.exports = {
             const optionsText = pick.a.map((opt, i) => `${optLetters[i]}) ${opt}`).join('\n');
 
             await sock.sendMessage(from, {
-                text: `❓ *QUIZ TIME!* ❓\n\n*${pick.q}*\n\n${optionsText}\n\nRispondi con la lettera (A/B/C/D) o col testo!\n⏳ Hai 30 secondi!`,
+                text: `╔══════════════════════════════════════════╗\n║        ❓ *QUIZ TIME!* ❓\n╠══════════════════════════════════════════╣\n║  ${("❓ " + pick.q)}\n║\n║  ${optionsText.split('\n').join('\n║  ')}\n║\n║  ⚡ Rispondi A/B/C/D o col testo!\n║  ⏳ Hai 30 secondi!\n╚══════════════════════════════════════════╝`,
             }, { quoted: msg });
 
             setTimeout(() => {

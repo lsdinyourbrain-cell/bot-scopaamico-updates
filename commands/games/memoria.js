@@ -42,7 +42,17 @@ module.exports = {
             const display = sequence.map(k => `${COLOR_MAP[k]} ${k}`).join(' ');
 
             await reply(
-`🧠 *MEMORIA!* 🧠\n\nMemorizza questa sequenza:\n\n${display}\n\nOra ripetila scrivendo le *lettere* (es. \`R G B Y\`)!\n⏳ Hai 60 secondi.`
+`╔════════════════════════════════╗
+║       🧠 *MEMORIA!* 🧠
+╠════════════════════════════════╣
+║  Memorizza questa sequenza:
+║
+║  ${display}
+║
+║  ✏️ Ripetila scrivendo le
+║  *lettere* (es: \`R G B Y\`)
+║  ⏳ Hai 60 secondi.
+╚════════════════════════════════╝`
             );
 
             setTimeout(() => {

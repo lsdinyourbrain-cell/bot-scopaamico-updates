@@ -10,6 +10,6 @@ module.exports = {
         const { randomChoice } = services;
         const options = args.join(' ').split(/\s*(?:\||,| oppure | o )\s*/i).filter(Boolean);
         if (options.length < 2) return reply('Dammi almeno due opzioni. Esempio: `.scelta pizza o pasta`');
-        await reply(`🎯 Io direi: *${randomChoice(options)}*`);
+        await reply(`╔════════════════════════════════╗\n║      🎯 *LA MIA SCELTA* 🎯\n╠════════════════════════════════╣\n║  Io direi: *${randomChoice(options)}*\n╚════════════════════════════════╝`);
     },
 };

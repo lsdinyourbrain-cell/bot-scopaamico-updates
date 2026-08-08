@@ -13,7 +13,7 @@ module.exports = {
             const role = randomChoice(['Eroe/a del gruppo', 'Mago/a delle scuse', 'Boss finale', 'Spalla comica', 'Leggenda urbana']);
             const power = randomChoice(['arriva sempre al momento giusto', 'trova cibo ovunque', 'fa ridere anche quando non vuole', 'sopravvive a ogni figuraccia', 'sparisce quando c’è da pagare']);
             await sock.sendMessage(from, {
-                text: `🎭 *@${sender.split('@')[0]} è:* ${role}\n\nSuperpotere: *${power}*.`,
+                text: `╔══════════════════════════════════════╗\n║      🎭 *PERSONAGGIO* 🎭\n╠══════════════════════════════════════╣\n║  @${sender.split('@')[0]} è:\n║  *${role}*\n║\n║  💥 Superpotere: *${power}*\n╚══════════════════════════════════════╝`,
                 mentions: [sender],
             });
     },

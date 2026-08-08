@@ -9,6 +9,6 @@ module.exports = {
         const { textArgs, reply, services } = context;
         const { randomInt } = services;
         if (!textArgs) return reply('Scrivi qualcosa da misurare. Esempio: `.percentuale pizza`');
-        await reply(`📊 *${textArgs}*\n\nDirei *${randomInt(1, 100)}%*. Ci sta.`);
+        await reply(`╔════════════════════════════════╗\n║      📊 *PERCENTUALE* 📊\n╠════════════════════════════════╣\n║  ${textArgs}\n║\n║  ➡ *${randomInt(1, 100)}%*. Ci sta.\n╚════════════════════════════════╝`);
     },
 };

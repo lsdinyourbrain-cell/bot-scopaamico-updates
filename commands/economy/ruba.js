@@ -19,7 +19,7 @@ module.exports = {
 
             if (targetData.money < 10) {
                 return await sock.sendMessage(from, {
-                    text: `@${targetJid.split('@')[0]} è al verde, non ha niente da rubare!`,
+                    text: `@${targetJid.split('@')[0]} è al verde, non ha niente da rubare! 🍃`,
                     mentions: [targetJid],
                 });
             }
@@ -29,7 +29,15 @@ module.exports = {
                 const penalty = Math.floor(Math.random() * 30) + 10;
                 thiefData.money = Math.max(0, thiefData.money - penalty);
                 saveDB();
-                return reply(`🚔 Sei stato beccato! Il proprietario ti ha fatto una multa di *${penalty}€*\n💰 Saldo: *${thiefData.money}€*`);
+                return reply(
+`╔══════════════════════════════╗
+║       🚔 *BECCATO!* 🚔
+╠══════════════════════════════╣
+║  Il proprietario ti ha fatto
+║  una multa di *${penalty}€*!
+║
+║  💰 Saldo: *${thiefData.money}€*
+╚══════════════════════════════╝`);
             }
 
             const stolen = Math.min(targetData.money, Math.floor(Math.random() * 100) + 20);
@@ -38,7 +46,7 @@ module.exports = {
             saveDB();
 
             await sock.sendMessage(from, {
-                text: `🕵️ *FURTO RIUSCITO!*\n\n@${sender.split('@')[0]} ha rubato *${stolen}€* a @${targetJid.split('@')[0]}! 💀\n\n💰 Il tuo saldo: *${thiefData.money}€*`,
+                text: `╔══════════════════════════════╗\n║     🕵️ *FURTO!* 🕵️\n╠══════════════════════════════╣\n║  @${sender.split('@')[0]} ha rubato\n║  *${stolen}€* a @${targetJid.split('@')[0]}! 💀\n║\n║  💰 Il tuo saldo: *${thiefData.money}€*\n╚══════════════════════════════╝`,
                 mentions: [sender, targetJid],
             });
     },

@@ -12,7 +12,7 @@ module.exports = {
 
             const anime = randomChoice(['protagonista shōnen', 'villain con un passato triste', 'sensei rilassatissimo', 'personaggio che arriva tardi ma salva tutto', 'best friend che ruba la scena']);
             await sock.sendMessage(from, {
-                text: `✨ *@${sender.split('@')[0]} in un anime sarebbe:* ${anime}.\n\nOpening già in playlist, ovvio.`,
+                text: `╔══════════════════════════════════════╗\n║        ✨ *ANIME* ✨\n╠══════════════════════════════════════╣\n║  @${sender.split('@')[0]} in un anime\n║  sarebbe: *${anime}*\n║\n║  🎶 Opening già in playlist, ovvio.\n╚══════════════════════════════════════╝`,
                 mentions: [sender],
             });
     },

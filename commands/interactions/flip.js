@@ -9,6 +9,6 @@ module.exports = {
         const { services } = context;
         const { randomChoice } = services;
         const result = randomChoice(['🌕 *TESTA*', '🌑 *CROCE*']);
-        await context.reply(`🪙 *Lancia moneta:* ${result}`);
+        await context.reply(`╔════════════════════════════════╗\n║      🪙 *LANCIA MONETA* 🪙\n╠════════════════════════════════╣\n║  ${result}\n╚════════════════════════════════╝`);
     },
 };

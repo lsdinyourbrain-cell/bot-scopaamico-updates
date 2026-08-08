@@ -11,16 +11,24 @@ module.exports = {
 
 
             const amount = parseInt(textArgs);
-            if (!amount || amount <= 0) return reply("Metti l'importo da prelevare. Esempio: `.preleva 500`");
+            if (!amount || amount <= 0) return reply("⚠️ Importo non valido.\n👉 *Uso:* `.preleva 500`");
 
             const userData = getUser(sender, from);
             if (!userData.bank) userData.bank = 0;
-            if (userData.bank < amount) return reply(`In banca hai solo *${userData.bank}€*, non puoi prelevare *${amount}€*`);
+            if (userData.bank < amount) return reply(`❌ In banca hai solo *${userData.bank}€*.`);
 
             userData.bank -= amount;
             userData.money += amount;
             saveDB();
 
-            await reply(`🏦 *PRELEVATO!*\n\n📤 *${amount}€* prelevati dalla banca.\n💰 Contante: *${userData.money}€*\n🏦 Banca: *${userData.bank}€*`);
+            await reply(
+`╔══════════════════════════════╗
+║      🏦 *PRELEVO* 🏦
+╠══════════════════════════════╣
+║  📤 Prelievo: *${amount}€*
+║
+║  💰 Contante: *${userData.money}€*
+║  🏦 Banca: *${userData.bank}€*
+╚══════════════════════════════╝`);
     },
 };

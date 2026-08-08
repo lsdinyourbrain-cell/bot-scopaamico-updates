@@ -11,16 +11,24 @@ module.exports = {
 
 
             const amount = parseInt(textArgs);
-            if (!amount || amount <= 0) return reply("Metti l'importo da depositare. Esempio: `.deposita 500`");
+            if (!amount || amount <= 0) return reply("⚠️ Importo non valido.\n👉 *Uso:* `.deposita 500`");
 
             const userData = getUser(sender, from);
-            if (userData.money < amount) return reply(`Non hai abbastanza soldi. Hai solo *${userData.money}€*`);
+            if (userData.money < amount) return reply(`❌ Non hai abbastanza soldi. Hai solo *${userData.money}€*.`);
             if (!userData.bank) userData.bank = 0;
 
             userData.money -= amount;
             userData.bank += amount;
             saveDB();
 
-            await reply(`🏦 *DEPOSITATO!*\n\n📥 *${amount}€* messi al sicuro in banca.\n💰 Contante: *${userData.money}€*\n🏦 Banca: *${userData.bank}€*`);
+            await reply(
+`╔══════════════════════════════╗
+║      🏦 *DEPOSITO* 🏦
+╠══════════════════════════════╣
+║  📥 Deposito: *${amount}€*
+║
+║  💰 Contante: *${userData.money}€*
+║  🏦 Banca: *${userData.bank}€*
+╚══════════════════════════════╝`);
     },
 };

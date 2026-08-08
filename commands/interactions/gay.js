@@ -11,7 +11,7 @@ module.exports = {
         const person = targetJid || sender;
         const percent = randomInt(1, 100);
         await sock.sendMessage(from, {
-            text: `🌈 @${person.split('@')[0]} è gay al *${percent}%*!`,
+            text: `╔════════════════════════════════╗\n║      🌈 *GAY O METRO* 🌈\n╠════════════════════════════════╣\n║  @${person.split('@')[0]} è gay\n║  al *${percent}%*! 🏳️‍🌈\n╚════════════════════════════════╝`,
             mentions: [person],
         });
     },

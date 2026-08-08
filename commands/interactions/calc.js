@@ -14,7 +14,7 @@ module.exports = {
         if (!safe) return reply("Espressione non valida.");
         try {
             const result = Function('"use strict"; return (' + safe + ')')();
-            await reply(`🧮 *${safe}* = _${result}_`);
+            await reply(`╔════════════════════════════════╗\n║         🧮 *CALCOLATRICE* 🧮\n╠════════════════════════════════╣\n║  ${safe} =\n║  *${result}*\n╚════════════════════════════════╝`);
         } catch (e) {
             await reply("❌ Errore di calcolo.");
         }

@@ -35,6 +35,7 @@ const SECTIONS = [
             ['🔴', 'roulette'], ['🪨', 'sasso'], ['📅', 'daily'], ['🏧', 'deposita'],
             ['💳', 'preleva'], ['🦹', 'ruba'], ['⚔️', 'colpisci'], ['🎟️', 'lotteria'],
             ['🏆', 'top'], ['🤑', 'ricchi'], ['💝', 'famiglia'], ['🎁', 'dona'],
+            ['📈', 'investi'], ['💼', 'work'], ['🔥', 'streak'],
         ],
     },
     {
@@ -44,6 +45,7 @@ const SECTIONS = [
             ['🎯', 'indovina'], ['🪙', 'testa'], ['🎲', 'parita'], ['🃏', 'alta'],
             ['🃏', 'blackjack'], ['🎡', 'ruota'], ['🎟️', 'gratta'], ['⚡', 'reazione'],
             ['🧩', 'parola'], ['🧠', 'memoria'],
+            ['🧩', 'enigma'], ['🃏', 'poker'], ['🔫', 'russia'], ['🎱', 'tombola'],
         ],
     },
     {
@@ -130,6 +132,7 @@ const SECTIONS = [
             ['📋', 'list'], ['🖼️', 'seticon'], ['🏞️', 'grouppic'], ['➕', 'add'],
             ['🚪', 'kick'], ['👋', 'leave'], ['📊', 'admincount'], ['⏳', 'ephemeral'],
             ['⚠️', 'warnlist'], ['✅', 'resetwarns'], ['📌', 'pin'],
+            ['🧹', 'kickall'], ['👑', 'promoteall'], ['⬇️', 'demoteall'],
         ],
     },
     {

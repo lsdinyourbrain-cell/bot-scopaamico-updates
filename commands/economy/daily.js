@@ -18,7 +18,7 @@ module.exports = {
                 const remaining = DAY_MS - (now - userData.lastDaily);
                 const hours = Math.floor(remaining / 3600000);
                 const mins = Math.floor((remaining % 3600000) / 60000);
-                return reply(`Hai già ritirato il daily! Ripassa tra *${hours}h ${mins}m* ⏳`);
+                return reply(`⏳ Hai già ritirato il daily!\nRipassa tra *${hours}h ${mins}m*.`);
             }
 
             const bonus = randomInt(150, 400);
@@ -26,6 +26,14 @@ module.exports = {
             userData.lastDaily = now;
             saveDB();
 
-            await reply(`🎁 *DAILY BONUS!*\n\nHai ricevuto *${bonus}€*! 🤑\n💰 Saldo: *${userData.money}€*`);
+            await reply(
+`╔══════════════════════════════╗
+║      🎁 *DAILY BONUS* 🎁
+╠══════════════════════════════╣
+║  📅 Bonus ritirato: *+${bonus}€*
+║  🤑 Che giornata fortunata!
+║
+║  💰 Saldo: *${userData.money}€*
+╚══════════════════════════════╝`);
     },
 };

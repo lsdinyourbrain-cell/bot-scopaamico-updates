@@ -27,7 +27,7 @@ module.exports = {
 
             await sleep(1000);
             await sock.sendMessage(from, {
-                text: `⚔️ *DUELLO* ⚔️\n\n@${sender.split('@')[0]} sfida @${targetJid.split('@')[0]} a duello!\n💰 Puntata: *${puntata}€*`,
+                text: `╔══════════════════════════════════╗\n║      ⚔️ *DUELLO* ⚔️\n╠══════════════════════════════════╣\n║  @${sender.split('@')[0]} sfida\n║  @${targetJid.split('@')[0]} a duello!\n║\n║  💰 Puntata: *${puntata}€*\n╚══════════════════════════════════╝`,
                 mentions: [sender, targetJid],
             });
             await sleep(2000);
@@ -47,7 +47,7 @@ module.exports = {
             saveDB();
 
             await sock.sendMessage(from, {
-                text: `🎲 @${sender.split('@')[0]} tira *${tiro1}*\n🎲 @${targetJid.split('@')[0]} tira *${tiro2}*\n\n${msgText}`,
+                text: `╔══════════════════════════════════╗\n╠════ *RISULTATO DUELIO* ════╣\n║  🎲 @${sender.split('@')[0]} tira *${tiro1}*\n║  🎲 @${targetJid.split('@')[0]} tira *${tiro2}*\n║\n║  ${msgText.split('\n').join('\n║  ')}\n╚══════════════════════════════════╝`,
                 mentions: [sender, targetJid],
             });
     },

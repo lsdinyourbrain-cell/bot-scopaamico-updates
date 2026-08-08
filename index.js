@@ -582,7 +582,11 @@ const clearBotCache = () => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento', 'antinuke', 'dedsecregna']);
+const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'accettarichieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento', 'antinuke', 'dedsecregna', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall']);
+
+// Comandi per cui il pulsante "Ripeti" automatico NON deve comparire:
+// sistemici o distruttivi, rischiosi da far ripartire a un tap.
+const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'clear', 'dedsecregna', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'accettarichieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri' ]);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -649,6 +653,17 @@ const COMMAND_EMOJIS = {
     indovina: '🎯', testa: '🪙', parita: '🎲', alta: '🃏',
     blackjack: '🃏', ruota: '🎡', gratta: '🎟️',
     reazione: '⚡', parola: '🧩', memoria: '🧠',
+    // Nuovi comandi v11.10
+    enigma: '🧩', indovinello: '🧩', riddle: '🧩',
+    poker: '🃏', elev: '🃏', scala: '🃏',
+    russia: '🔫', revolver: '🔫', roulettarussa: '🔫',
+    tombola: '🎱', bingo: '🎱', cartella: '🎱',
+    streak: '🔥', serie: '🔥',
+    investi: '📈', borsa: '📈', azioni: '📈',
+    work: '💼', lavora: '💼', turno: '💼',
+    kickall: '🧹', espellitutti: '🧹',
+    promoteall: '👑', tuttiadmin: '👑',
+    demoteall: '⬇️', tuttimembri: '⬇️', unadminall: '⬇️',
     // Accept requests
     accettarichieste: '✅', approva: '✅', accetta: '✅',
     // p / d
@@ -1544,6 +1559,29 @@ async function startBot() {
             } catch (_) {}
         }
 
+        // ── ENIGMA: risposte via testo libero ────────────────────────────
+        if (!body.startsWith('.') && db[from]?.enigma?.active) {
+            try {
+                const eg = db[from].enigma;
+                const lower = body.toLowerCase().trim();
+                const answerNorm = String(eg.answer || '').toLowerCase().trim();
+                // accetta anche "il fiume" o "un ago" senza articolo
+                const stripped = lower.replace(/^(il|lo|la|i|gli|le|un|uno|una)\s+/, '').trim();
+                const strippedAns = answerNorm.replace(/^(il |lo |la |i |gli |le |un |uno |una )/, '').trim();
+                if (lower === answerNorm || (stripped && stripped === strippedAns)) {
+                    eg.active = false;
+                    const reward = 50;
+                    const uDB = getUser(sender, from);
+                    uDB.money += reward;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `✅ *ENIGMA RISOLTO!* 🧠\n\n@${sender.split('@')[0]} ha risposto:\n*${eg.answer}*\n\n+${reward}€ 💰`,
+                        mentions: [sender],
+                    });
+                }
+            } catch (_) {}
+        }
+
         // ── QUIZ: risposte via lettera (A/B/C/D) o testo ────────────────
         if (!body.startsWith('.') && db[from]?.quizGame?.active) {
             try {
@@ -1726,7 +1764,7 @@ async function startBot() {
                 } else if ((lower === 'no' || lower === 'n') && sameJid(sender, mp3.sender)) {
                     delete db[from].pendingMp3;
                     saveDB();
-                    await reply("Ok, niente mp3! 🎵");
+                    await sock.sendMessage(from, { text: "Ok, niente mp3! 🎵" }, { quoted: msg }).catch(() => {});
                 }
             } catch (_) {}
         }
@@ -1742,7 +1780,10 @@ async function startBot() {
                     delete db.afk[sender];
                     saveDB();
                     const mins = Math.floor((Date.now() - myAfk.ts) / 60000);
-                    await reply(`👋 *Bentornato* @${sender.split('@')[0]}!\n\nEri via per _${myAfk.reason || 'nessun motivo'}_\n⏱️ AFK per ${mins > 0 ? mins + ' min' : 'meno di un minuto'}.\n\nStato AFK rimosso. ✅`);
+                    await sock.sendMessage(from, {
+                        text: `👋 *Bentornato* @${sender.split('@')[0]}!\n\nEri via per _${myAfk.reason || 'nessun motivo'}_\n⏱️ AFK per ${mins > 0 ? mins + ' min' : 'meno di un minuto'}.\n\nStato AFK rimosso. ✅`,
+                        mentions: [sender],
+                    }, { quoted: msg }).catch(() => {});
                 }
                 // Avvisa chi menziona un utente in AFK.
                 const mentioned = getContextInfo(msg.message)?.mentionedJid || [];
@@ -1786,8 +1827,22 @@ async function startBot() {
         const targetJid = mentioned[0] || contextInfo.participant || null;
 
         const reply = async (text) => {
-            try { await sock.sendMessage(from, { text }, { quoted: msg }); } 
-            catch (e) { console.error(`[reply] Errore invio: ${e.message}`); }
+            try {
+                const clean = String(text ?? '');
+                // Pulsante "Ripeti" automatico per ogni comando (tranne quelli
+                // pericolosi). Se il testo è troppo lungo o il comando è in
+                // NO_REPLAY_BUTTON, invio un semplice messaggio di testo.
+                const wantButton = command && !NO_REPLAY_BUTTON.has(command)
+                    && clean.length > 0 && clean.length <= 900;
+                if (wantButton) {
+                    const replayId = `${command}${textArgs ? ' ' + textArgs : ''}`;
+                    await sendButtons(sock, from, clean, [
+                        { label: `${COMMAND_EMOJIS[command] || '🔁'} Ripeti`, id: replayId },
+                    ], msg);
+                } else {
+                    await sock.sendMessage(from, { text: clean }, { quoted: msg });
+                }
+            } catch (e) { console.error(`[reply] Errore invio: ${e.message}`); }
         };
 
         let isBotAdmin    = false;

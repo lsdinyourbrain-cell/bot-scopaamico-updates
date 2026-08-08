@@ -8,6 +8,6 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { reply, services } = context;
         const { ARRAYS, randomChoice } = services;
-        await reply(`🗣️ *VERITÀ*\n\n${randomChoice(ARRAYS.verita)}`);
+        await reply(`╔════════════════════════════════╗\n║        🗣️ *VERITÀ* 🗣️\n╠════════════════════════════════╣\n║  ${randomChoice(ARRAYS.verita)}\n╚════════════════════════════════╝`);
     },
 };

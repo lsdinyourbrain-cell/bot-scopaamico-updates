@@ -33,6 +33,6 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
         const q = wyrQuestions[Math.floor(Math.random() * wyrQuestions.length)];
-        await reply(`🤔 *Preferiresti...*\n\n_“${q}”_\n\nRispondi con 1️⃣ o 2️⃣!`);
+        await reply(`╔══════════════════════════════════════╗\n║    🤔 *PREFERIRESTI...?* 🤔\n╠══════════════════════════════════════╣\n║  _${q}_\n║\n║  ➡ Rispondi con 1️⃣ o 2️⃣!\n╚══════════════════════════════════════╝`);
     },
 };
