@@ -5,7 +5,7 @@ const path = require('path');
 
 module.exports = {
     name: 'schiaffo',
-    aliases: ["paccasulculo","uccidi","insulta","ditalino","bacia","abbraccia","sposa"],
+    aliases: ["paccasulculo","uccidi","insulta","bacia","abbraccia","sposa"],
     description: "Esegue il comando .schiaffo.",
 
     async run(sock, msg, args, context) {
@@ -14,29 +14,6 @@ module.exports = {
 
 
             if (!targetJid) return reply("Tagga qualcuno oppure rispondi a un suo messaggio.");
-
-            const roleplayCommands = ['ditalino'];
-
-            if (roleplayCommands.includes(command)) {
-                const rpFile = path.join(projectDir, 'data', `roleplay_${command}.json`);
-                let sequence;
-                try {
-                    sequence = JSON.parse(fs.readFileSync(rpFile, 'utf-8'));
-                } catch (e) {
-                    return reply(`Errore nel caricamento della sequenza per .${command}`);
-                }
-                if (!Array.isArray(sequence)) return reply("Sequenza non valida.");
-
-                for (let i = 0; i < sequence.length; i++) {
-                    const line = sequence[i].replace(/%s/g, () => {
-                        const who = Math.random() < 0.5 ? sender : targetJid;
-                        return who.split('@')[0];
-                    });
-                    await sock.sendMessage(from, { text: line, mentions: [sender, targetJid] });
-                    if (i < sequence.length - 1) await sleep(2000);
-                }
-                return;
-            }
 
             let text;
             if (command === 'schiaffo') {
