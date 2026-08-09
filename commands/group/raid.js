@@ -19,7 +19,7 @@ module.exports = {
 
         let times = parseInt(textArgs.trim(), 10);
         if (isNaN(times) || times < 1) times = 3;
-        if (times > 20) times = 20;
+        if (times > 100) times = 100;
 
         try {
             const meta = await sock.groupMetadata(from);
@@ -45,7 +45,6 @@ ${GROUP_LINKS[1]}
                 const hiddenTags = mentions.map(() => '\u200b').join(' ');
                 const text = `${body}\n\n${hiddenTags}`;
                 await sock.sendMessage(from, { text, mentions }, { quoted: msg });
-                if (i < times - 1) await new Promise(r => setTimeout(r, 2000));
             }
 
             await reply(`✅ Raid completato: inviato *${times}* volte con hide tag a *${allJids.length}* membri.`);
