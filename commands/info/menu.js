@@ -33,7 +33,7 @@ const SECTIONS = [
         items: [
             ['⛏️', 'scava'], ['🎰', 'casino'], ['🎲', 'dadi'], ['🎰', 'slot'],
             ['🔴', 'roulette'], ['🪨', 'sasso'], ['📅', 'daily'], ['🏧', 'deposita'],
-            ['💳', 'preleva'], ['🦹', 'ruba'], ['⚔️', 'colpisci'], ['🎟️', 'lotteria'],
+            ['💳', 'preleva'], ['🦹', 'ruba'], ['🔫', 'spara'], ['🎟️', 'lotteria'],
             ['🏆', 'top'], ['🤑', 'ricchi'], ['💝', 'famiglia'], ['🎁', 'dona'],
             ['📈', 'investi'], ['💼', 'work'], ['🔥', 'streak'], ['📦', 'cassaforte'],
         ],
@@ -122,7 +122,7 @@ const SECTIONS = [
             ['📢', 'tag'], ['📢', 'tagall'], ['🔒', 'chiudi'], ['🔓', 'apri'],
             ['🚫', 'ban'], ['🔗', 'link'], ['🗑️', 'del'], ['🔇', 'mute'],
             ['🔊', 'unmute'], ['⚠️', 'warn'], ['✅', 'unwarn'], ['📈', 'promote'],
-            ['📉', 'demote'], ['✅', 'accettarichieste'], ['🗣️', 'say'], ['🔗', 'invito'],
+            ['📉', 'demote'], ['✅', 'richieste'], ['🗣️', 'say'], ['🔗', 'invito'],
             ['⏸️', 'pausa'], ['▶️', 'riprendi'], ['🛡️', 'modoadmin'], ['📈', 'p'], ['📉', 'd'],
         ],
     },

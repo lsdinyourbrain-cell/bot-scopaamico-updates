@@ -79,7 +79,7 @@ ${ownerList ? `│ ${SB('FONDATORI')}\n${ownerList}│\n` : ''}${adminList ? `�
 │ 🗑️ .del  🔇 .mute/.unmute   │
 │ ⚠️ .warn  ✅ .unwarn          │
 │ 👑 .promote/.demote (.p/.d) │
-│ ✅ .accettarichieste         │
+│ ✅ .richieste accetta/rifiuta │
 │ 🗣️ .say  🔗 .invito          │
 │ ⏸️ .pausa  ▶️ .riprendi      │
 │ 🛡️ .antivoip  🤖 .antibot    │

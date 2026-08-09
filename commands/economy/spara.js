@@ -1,9 +1,9 @@
 'use strict';
 
 module.exports = {
-    name: 'colpisci',
+    name: 'spara',
     aliases: [],
-    description: "Prova a incassare la taglia attiva.",
+    description: "Spara alla taglia attiva per incassarla.",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
@@ -13,7 +13,7 @@ module.exports = {
             const result = claimBounty(from, sender);
             if (result === null) return reply("Nessuna taglia attiva in questo gruppo 🤷");
             if (result === 0) {
-                return reply("💥 Hai provato a colpire ma il bersaglio si è schivato!\nPer stavolta niente taglia 😂");
+                return reply("💥 Hai sparato ma il bersaglio si è schivato!\nPer stavolta niente taglia 😂");
             }
             const userData = getUser(sender, from);
             userData.money += result;
