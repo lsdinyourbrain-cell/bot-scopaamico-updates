@@ -504,7 +504,10 @@ const isNukeActive = (jid) => nukingGroups.has(jid);
 
 const isAdminParticipant = (participant, jid) => {
     if (!['admin', 'superadmin'].includes(participant?.admin)) return false;
-    return [participant.id, participant.jid, participant.lid]
+    // In LID mode i participant di groupMetadata espongono il numero in
+    // `phoneNumber` (mentre `id` è il LID): confrontiamo anche quello,
+    // altrimenti il bot/sender non viene mai riconosciuto come admin.
+    return [participant.id, participant.jid, participant.lid, participant.phoneNumber]
         .filter(Boolean)
         .some(participantJid => sameJid(participantJid, jid));
 };
@@ -587,7 +590,7 @@ const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag
 
 // Comandi per cui il pulsante "Ripeti" automatico NON deve comparire:
 // sistemici o distruttivi, rischiosi da far ripartire a un tap.
-const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'clear', 'dedsecregna', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'accettarichieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri' ]);
+const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'clear', 'dedsecregna', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'accettarichieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'colpisci' ]);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -1552,7 +1555,7 @@ async function startBot() {
                     if (bounty) {
                         const targetShort = bounty.target.split('@')[0];
                         await sock.sendMessage(from, {
-                            text: `💰 *TAGLIA ATTIVA!* 💰\n\nÈ stata messa una taglia di *${bounty.reward}€* su @${targetShort}!\n\n.usare .colpisci per provare a incassarla! ⚔️`,
+                            text: `💰 *TAGLIA ATTIVA!* 💰\n\nÈ stata messa una taglia di *${bounty.reward}€* su @${targetShort}!\n\nusa \`.colpisci\` per provare a incassarla! ⚔️`,
                             mentions: [bounty.target],
                         });
                     }
