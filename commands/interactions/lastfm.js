@@ -46,7 +46,7 @@ module.exports = {
 👤 *${info.realName}*
 🎧 ${playcount} ascolti totali
 
-Ora usa `.cur` per vedere la canzone in riproduzione.`
+Ora usa \`.cur\` per vedere la canzone in riproduzione.`
             );
         } catch (e) {
             const msgMap = {
