@@ -22,29 +22,6 @@ function fmt(n) {
     return Number(n || 0).toLocaleString('it-IT');
 }
 
-// ─── Font loading (con fallback) ────────────────────────────────────────────
-
-function loadFont(projectDir) {
-    const fontsDir = projectDir + '/assets/fonts';
-    // Prova woff2 piccolo (21KB), altrimenti ttf, altrimenti null
-    const candidates = [
-        { file: 'roboto-latin-400-normal.woff2', mime: 'font/woff2', fmt: 'woff2' },
-        { file: 'roboto-latin-700-normal.woff2', mime: 'font/woff2', fmt: 'woff2' },
-        { file: 'Roboto-Regular.ttf', mime: 'font/truetype', fmt: 'truetype' },
-        { file: 'Roboto-Bold.ttf', mime: 'font/truetype', fmt: 'truetype' },
-    ];
-    const fs = require('fs');
-    for (const c of candidates) {
-        try {
-            const path = fontsDir + '/' + c.file;
-            if (!fs.existsSync(path)) continue;
-            const b64 = fs.readFileSync(path).toString('base64');
-            return { b64, mime: c.mime, fmt: c.fmt };
-        } catch (e) { /* continua */ }
-    }
-    return null;
-}
-
 // ─── Cover ──────────────────────────────────────────────────────────────────
 
 async function fetchCover(coverUrl, axios, sharpF) {
@@ -52,7 +29,7 @@ async function fetchCover(coverUrl, axios, sharpF) {
     try {
         const resp = await axios.get(coverUrl, { responseType: 'arraybuffer', timeout: 8000 });
         return await sharpF(Buffer.from(resp.data))
-            .resize(180, 180, { fit: 'cover', position: 'centre' })
+            .resize(180, 180, { fit: 'cover' })
             .png()
             .toBuffer();
     } catch {
@@ -60,26 +37,24 @@ async function fetchCover(coverUrl, axios, sharpF) {
     }
 }
 
-// ─── Card builder ────────────────────────────────────────────────────────────
+// ─── Card builder (stesso pattern di pokedex.js: NIENTE @font-face) ────────
 
-async function buildCard(data, axios, sharpF, projectDir) {
+async function buildCard(data, axios, sharpF) {
     const { nowPlaying, track, username, userInfo, trackInfo } = data;
 
     // Cover SOLO quando in riproduzione
     const coverBuf = nowPlaying ? await fetchCover(track.cover, axios, sharpF) : null;
+    let coverBase64 = '';
+    if (coverBuf) coverBase64 = coverBuf.toString('base64');
 
-    // Carica font (base64)
-    const font = loadFont(projectDir);
+    const W = 800, H = 520;
+    const TX = 255;
 
-    const W = 800, H = 500;
-    const COVER_X = 30, COVER_Y = 80, COVER_SIZE = 180;
-    const TX = 240;
-
-    const eName   = escapeXml(truncate(track.name, 30));
-    const eArtist = escapeXml(truncate(track.artist, 36));
-    const eAlbum  = escapeXml(truncate(track.album, 36));
-    const eUrl    = escapeXml(truncate(track.url, 56));
-    const eUser   = escapeXml(truncate(username, 40));
+    const eName   = escapeXml(truncate(track.name,   30));
+    const eArtist = escapeXml(truncate(track.artist, 34));
+    const eAlbum  = escapeXml(truncate(track.album,  34));
+    const eUrl    = escapeXml(truncate(track.url,    50));
+    const eUser   = escapeXml(truncate(username,     36));
 
     const stateText = nowPlaying ? 'IN RIPRODUZIONE' : 'ULTIMO ASCOLTO';
     const accent    = nowPlaying ? '#1DB954' : '#8b93a7';
@@ -89,79 +64,87 @@ async function buildCard(data, axios, sharpF, projectDir) {
     const statFreq  = fmt(trackInfo.userplaycount);
     const statWorld = fmt(trackInfo.playcount);
 
-    // Layout riquadri
-    const BX = 30, BY = 290, BH = 120, BGAP = 20;
+    // Riquadri
+    const BX = 30, BY = 300, BH = 110, BGAP = 20;
     const BW = (W - 60 - BGAP * 2) / 3;
     const B1X = BX, B2X = BX + BW + BGAP, B3X = B2X + BW + BGAP;
 
-    // Font face CSS
-    const fontFace = font
-        ? `@font-face{font-family:"BotFont";src:url(data:${font.mime};base64,${font.b64})format("${font.fmt}");}`
-        : '';
+    // Cover o segnaposto (solo se NON è ultimo ascolto: niente cover)
+    const coverSvg = nowPlaying
+        ? (coverBuf
+            ? `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="2"/>
+               <image href="data:image/png;base64,${coverBase64}" x="30" y="80" width="180" height="180" clip-path="inset(0% 0% 0% 0% round 14px)"/>`
+            : `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="1.5"/>
+               <circle cx="120" cy="170" r="55" fill="#1a1f30" stroke="#2a3040" stroke-width="1"/>
+               <circle cx="120" cy="170" r="15" fill="#0d101a"/>`)
+        : `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="1.5"/>
+           <circle cx="120" cy="170" r="45" fill="#1a1f2e" stroke="#2a3040" stroke-width="1"/>
+           <circle cx="120" cy="170" r="30" fill="none" stroke="#2a3040" stroke-width="1"/>
+           <circle cx="120" cy="170" r="14" fill="#0d101a"/>
+           <text x="120" y="178" font-family="Arial, sans-serif" font-size="10" fill="#666" text-anchor="middle">ULTIMO</text>
+           <text x="120" y="192" font-family="Arial, sans-serif" font-size="10" fill="#666" text-anchor="middle">ASCOLTO</text>`;
 
-    // Font family da usare (senza virgolette doppie negli attributi)
-    const ff = font ? 'BotFont,sans-serif' : 'sans-serif';
+    // Riquadro statistica
+    const statBox = (bx, label, val, icon) =>
+        `<rect x="${bx}" y="${BY}" width="${BW}" height="${BH}" rx="12" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+         <text x="${bx + 14}" y="${BY + 26}" font-family="Arial, sans-serif" font-size="11" fill="#8b93a7">${icon} ${label}</text>
+         <text x="${bx + 14}" y="${BY + 78}" font-family="Arial, sans-serif" font-size="27" font-weight="bold" fill="#fff">${val}</text>`;
 
-    // Cover o placeholder
-    const coverSvg = coverBuf
-        ? `<rect x="${COVER_X}" y="${COVER_Y}" width="${COVER_SIZE}" height="${COVER_SIZE}" rx="14" ry="14" fill="#111520" stroke="#3a4055" stroke-width="2"/>`
-        : `<rect x="${COVER_X}" y="${COVER_Y}" width="${COVER_SIZE}" height="${COVER_SIZE}" rx="14" ry="14" fill="#111520" stroke="#3a4055" stroke-width="1.5"/>
-        <circle cx="${COVER_X + COVER_SIZE/2}" cy="${COVER_Y + COVER_SIZE/2}" r="55" fill="#1a1f30" stroke="#3a4055" stroke-width="1"/>
-        <circle cx="${COVER_X + COVER_SIZE/2}" cy="${COVER_Y + COVER_SIZE/2}" r="40" fill="none" stroke="#2a3040" stroke-width="1"/>
-        <circle cx="${COVER_X + COVER_SIZE/2}" cy="${COVER_Y + COVER_SIZE/2}" r="25" fill="none" stroke="#2a3040" stroke-width="1"/>
-        <circle cx="${COVER_X + COVER_SIZE/2}" cy="${COVER_Y + COVER_SIZE/2}" r="15" fill="#0d101a"/>
-        <circle cx="${COVER_X + COVER_SIZE/2}" cy="${COVER_Y + COVER_SIZE/2}" r="4" fill="#555"/>`;
+    const svg = `
+<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0b0f1a"/>
+            <stop offset="50%" stop-color="#151a2e"/>
+            <stop offset="100%" stop-color="#0e1422"/>
+        </linearGradient>
+        <linearGradient id="panel" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#1a1f2e"/>
+            <stop offset="100%" stop-color="#0f1420"/>
+        </linearGradient>
+    </defs>
 
-    // Riquadro stat
-    const statBox = (bx, label, val) =>
-        `<rect x="${bx}" y="${BY}" width="${BW}" height="${BH}" rx="12" ry="12" fill="#ffffff0d" stroke="#ffffff18" stroke-width="1"/>
-         <text x="${bx+16}" y="${BY+28}" font-family="${ff}" font-size="11" fill="#8b93a7">${label}</text>
-         <text x="${bx+16}" y="${BY+82}" font-family="${ff}" font-size="26" font-weight="bold" fill="#ffffff">${val}</text>`;
+    <!-- Sfondo -->
+    <rect width="${W}" height="${H}" fill="url(#bg)"/>
 
-    const svg =
-`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <defs>
-    <style>${fontFace}</style>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0b0f1a"/>
-      <stop offset="50%" stop-color="#151a2e"/>
-      <stop offset="100%" stop-color="#0e1422"/>
-    </linearGradient>
-  </defs>
+    <!-- Blob -->
+    <ellipse cx="60" cy="60" rx="180" ry="150" fill="#2a1a4a" opacity="0.30"/>
+    <ellipse cx="740" cy="40" rx="150" ry="130" fill="#0a3a4a" opacity="0.25"/>
+    <ellipse cx="720" cy="470" rx="170" ry="130" fill="#3a1a2a" opacity="0.22"/>
 
-  <rect width="${W}" height="${H}" fill="url(#bg)"/>
+    <!-- Pannello testo -->
+    <rect x="20" y="20" width="${W - 40}" height="${H - 40}" fill="rgba(0,0,0,0.25)" rx="16"/>
 
-  <ellipse cx="60" cy="60" rx="180" ry="150" fill="#2a1a4a" opacity="0.30"/>
-  <ellipse cx="740" cy="40" rx="150" ry="130" fill="#0a3a4a" opacity="0.25"/>
-  <ellipse cx="720" cy="470" rx="170" ry="130" fill="#3a1a2a" opacity="0.22"/>
+    <!-- Pill stato -->
+    <rect x="${TX}" y="40" width="235" height="32" rx="16" fill="rgba(255,255,255,0.08)" stroke="${accent}" stroke-width="1"/>
+    <circle cx="${TX + 16}" cy="56" r="5" fill="${accent}"/>
+    <text x="${TX + 34}" y="61" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="${accent}">✈ ${stateText}</text>
 
-  <rect x="${TX}" y="30" width="230" height="30" rx="15" ry="15" fill="#ffffff14" stroke="${accent}" stroke-width="1"/>
-  <circle cx="${TX+15}" cy="45" r="5" fill="${accent}"/>
-  <text x="${TX+32}" y="51" font-family="${ff}" font-size="13" font-weight="bold" fill="${accent}">${stateText}</text>
+    <!-- Cover / segnaposto -->
+    ${coverSvg}
 
-  ${coverSvg}
+    <!-- Titolo canzone (prominente) -->
+    <text x="${TX}" y="140" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#ffffff">${eName}</text>
 
-  <text x="${TX}" y="125" font-family="${ff}" font-size="30" font-weight="bold" fill="#ffffff">${eName}</text>
-  <text x="${TX}" y="168" font-family="${ff}" font-size="18" fill="#8ab4f8">${eArtist}</text>
-  <text x="${TX}" y="205" font-family="${ff}" font-size="15" fill="#b0b6c9">${eAlbum}</text>
-  <text x="${TX}" y="242" font-family="${ff}" font-size="12" fill="#6ea8fe">${eUrl}</text>
+    <!-- Artista -->
+    <text x="${TX}" y="182" font-family="Arial, sans-serif" font-size="18" fill="#8ab4f8">🎵 ${eArtist}</text>
 
-  ${statBox(B1X, 'Ascolti totali', statTotal)}
-  ${statBox(B2X, 'Frequenza', statFreq)}
-  ${statBox(B3X, 'Ascolti mondiali', statWorld)}
+    <!-- Album -->
+    <text x="${TX}" y="218" font-family="Arial, sans-serif" font-size="15" fill="#b0b6c9">💿 ${eAlbum}</text>
 
-  <text x="${W/2}" y="455" font-family="${ff}" font-size="12" fill="#7a8194" text-anchor="middle">Account Last.fm: ${eUser}</text>
+    <!-- Link -->
+    <text x="${TX}" y="254" font-family="Arial, sans-serif" font-size="12" fill="#6ea8fe">🔗 ${eUrl}</text>
+
+    <!-- Riquadri statistiche -->
+    ${statBox(B1X, 'ASCOLTI TOTALI', statTotal, '📊')}
+    ${statBox(B2X, 'FREQUENZA', statFreq, '🔁')}
+    ${statBox(B3X, 'ASCOLTI MONDIALI', statWorld, '🌍')}
+
+    <!-- Footer -->
+    <text x="${W / 2}" y="${H - 18}" font-family="Arial, sans-serif" font-size="12" fill="#7a8194" text-anchor="middle">👤 Account Last.fm: ${eUser}</text>
 </svg>`;
 
-    let card = await sharpF(Buffer.from(svg)).png().toBuffer();
-
-    if (coverBuf) {
-        card = await sharpF(card)
-            .composite([{ input: coverBuf, left: COVER_X, top: COVER_Y }])
-            .png()
-            .toBuffer();
-    }
-
+    const card = await sharpF(Buffer.from(svg)).png().toBuffer();
     return card;
 }
 
@@ -193,7 +176,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { reply, from, sender, textArgs, mentioned } = context;
-        const { db, lastfm, axios, sharp, projectDir } = context.services;
+        const { db, lastfm, axios, sharp } = context.services;
 
         if (!lastfm.isConfigured()) {
             return reply('⚠️ *Last.fm non configurato.*\n\nL\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).');
@@ -254,8 +237,9 @@ module.exports = {
             '🌍 Ascolti mondiali: ' + fmt(trackInfo.playcount) + '\n\n' +
             '👤 Account: ' + username;
 
+        // 3. Genera card; fallback testo
         try {
-            const cardBuffer = await buildCard({ nowPlaying, track, username, userInfo, trackInfo }, axios, sharp, projectDir);
+            const cardBuffer = await buildCard({ nowPlaying, track, username, userInfo, trackInfo }, axios, sharp);
             await sock.sendMessage(from, { image: cardBuffer, caption }, { quoted: msg });
         } catch (imgErr) {
             console.error('[cur] Errore card:', imgErr);
