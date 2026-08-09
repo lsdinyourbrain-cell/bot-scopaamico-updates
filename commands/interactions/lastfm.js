@@ -57,7 +57,22 @@ Ora usa `.cur` per vedere la canzone in riproduzione.`
                 RETE: '❌ Non riesco a contattare Last.fm. Controlla la connessione.',
                 API_KEY_MANCA: '⚠️ *Last.fm non configurato.*\n\nL\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).',
             };
-            await reply(msgMap[e.message] || '❌ Errore imprevisto. Riprova più tardi.');
+            // Traduce anche gli errori grezzi di axios (caso "user not found"):
+            // in certe versioni la chiamata fallisce con "Request failed with
+            // status code 404" invece del codice mappato.
+            const raw = String(e.message || '');
+            let fallback;
+            if (/404|not found|non trovato/i.test(raw)) {
+                fallback = '❌ Utente Last.fm non trovato. Controlla che il nome sia esatto.';
+            } else if (/403|invalid.*key|key.*invalid/i.test(raw)) {
+                fallback = '❌ API key Last.fm non valida. Verifica config.js.';
+            } else if (/timeout|timed out|ECONN|ENOTFOUND|network/i.test(raw)) {
+                fallback = '❌ Non riesco a contattare Last.fm. Controlla la connessione.';
+            } else {
+                fallback = '❌ Errore imprevisto. Riprova più tardi.';
+            }
+            console.error('[lastfm] Errore:', e.message, e.stack || '');
+            await reply(msgMap[e.message] || fallback);
         }
     },
 };
