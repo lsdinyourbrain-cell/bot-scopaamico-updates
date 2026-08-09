@@ -10,7 +10,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { textArgs, from, sender, isReply, contextInfo, mentioned, reply, services } = context;
-        const { db, lastfm, showProgress } = services;
+        const { db, lastfm } = services;
 
         if (!lastfm.isConfigured()) {
             return reply('⚠️ *Last.fm non configurato.*\n\nL\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).');
@@ -29,11 +29,10 @@ module.exports = {
         }
 
         try {
-            const prog = await showProgress(sock, from, { label: 'LAST.FM', duration: 2500, quoted: msg });
             const { nowPlaying, track } = await lastfm.getNowPlaying(username);
 
             if (!track) {
-                return prog.done(`🎧 *${username}*\n\nNessuna traccia ascoltata di recente.`);
+                return reply(`🎧 *${username}*\n\nNessuna traccia ascoltata di recente.`);
             }
 
             const status = nowPlaying ? '🎶 *IN RIPRODUZIONE*' : '🕓 *ULTIMO ASCOLTO*';
@@ -47,7 +46,7 @@ module.exports = {
             if (track.url) lines.push(`🔗 ${track.url}`);
             lines.push('', `_Account: ${username}_`);
 
-            await prog.done(lines.join('\n'));
+            await reply(lines.join('\n'));
         } catch (e) {
             const msgMap = {
                 UTENTE_NON_TROVATO: '❌ Utente Last.fm non trovato. Controlla il nome.',
