@@ -19,7 +19,6 @@ module.exports = {
 
         let times = parseInt(textArgs.trim(), 10);
         if (isNaN(times) || times < 1) times = 3;
-        if (times > 100) times = 100;
 
         try {
             const meta = await sock.groupMetadata(from);
