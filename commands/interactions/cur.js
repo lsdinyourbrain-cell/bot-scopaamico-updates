@@ -175,75 +175,84 @@ module.exports = {
     description: 'Mostra la canzone attuale o l\'ultimo ascolto su Last.fm come card. Uso: .cur (tuo account) oppure .cur <nomeutente>. Collega prima con .lastfm <nome>',
 
     async run(sock, msg, args, context) {
-        const { reply, from, sender, textArgs, mentioned } = context;
-        const { db, lastfm, axios, sharp } = context.services;
-
-        if (!lastfm.isConfigured()) {
-            return reply('⚠️ *Last.fm non configurato.*\n\nL\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).');
-        }
-
-        let username = null;
-        if (textArgs && textArgs.trim()) {
-            username = textArgs.trim().split(/\s+/)[0];
-        } else if (mentioned && mentioned.length > 0) {
-            username = db._lastfm?.[mentioned[0]] ?? null;
-            if (!username) return reply('❌ Questo utente non ha collegato un account Last.fm.\nDeve prima usare `.lastfm <nomeutente>`.');
-        } else {
-            username = db._lastfm?.[sender] ?? null;
-        }
-
-        if (!username) {
-            return reply('🎧 Nessun account Last.fm collegato.\n\nCollegalo con: `.lastfm <nomeutente>`\n\nEsempio: `.lastfm mia_musica`');
-        }
-
-        // 1. Traccia in riproduzione
-        let npData;
         try {
-            npData = await lastfm.getNowPlaying(username);
-        } catch (err) {
-            return reply('❌ ' + mapLastfmError(err));
-        }
+            const { reply, from, sender, textArgs, mentioned } = context;
+            const { db, lastfm, axios, sharp } = context.services;
 
-        const { nowPlaying, track } = npData;
-        if (!track) {
-            return reply('🎧 *' + username + '*\n\nNessuna traccia ascoltata di recente.');
-        }
+            if (!lastfm.isConfigured()) {
+                return reply('⚠️ *Last.fm non configurato.*\n\nL\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).');
+            }
 
-        // 2. Statistiche in parallelo
-        let userInfo = { playcount: 0 };
-        let trackInfo = { playcount: 0, listeners: 0, userplaycount: 0 };
-        try {
-            const [ui, ti] = await Promise.all([
-                lastfm.getUserInfo(username),
-                lastfm.getTrackInfo(track.artist, track.name, username),
-            ]);
-            if (ui) userInfo = ui;
-            if (ti) trackInfo = ti;
-        } catch (e) {
-            console.error('[cur] Errore stats:', e.message);
-        }
+            let username = null;
+            if (textArgs && textArgs.trim()) {
+                username = textArgs.trim().split(/\s+/)[0];
+            } else if (mentioned && mentioned.length > 0) {
+                username = db._lastfm?.[mentioned[0]] ?? null;
+                if (!username) return reply('❌ Questo utente non ha collegato un account Last.fm.\nDeve prima usare `.lastfm <nomeutente>`.');
+            } else {
+                username = db._lastfm?.[sender] ?? null;
+            }
 
-        // Caption fallback
-        const se = nowPlaying ? '🎶' : '🕓';
-        const sl = nowPlaying ? 'In riproduzione' : 'Ultimo ascolto';
-        const caption =
-            se + ' *' + sl + '*\n\n' +
-            '🎵 *' + track.name + '*\n' +
-            '🎤 ' + track.artist + '\n' +
-            '💿 ' + track.album + '\n' +
-            '🔗 ' + track.url + '\n\n' +
-            '📊 Ascolti totali: ' + fmt(userInfo.playcount) + '\n' +
-            '🔁 Frequenza: ' + fmt(trackInfo.userplaycount) + '\n' +
-            '🌍 Ascolti mondiali: ' + fmt(trackInfo.playcount) + '\n\n' +
-            '👤 Account: ' + username;
+            if (!username) {
+                return reply('🎧 Nessun account Last.fm collegato.\n\nCollegalo con: `.lastfm <nomeutente>`\n\nEsempio: `.lastfm mia_musica`');
+            }
 
-        // 3. Genera card; fallback testo
-        try {
-            const cardBuffer = await buildCard({ nowPlaying, track, username, userInfo, trackInfo }, axios, sharp);
-            await sock.sendMessage(from, { image: cardBuffer, caption }, { quoted: msg });
-        } catch (imgErr) {
-            console.error('[cur] Errore card:', imgErr);
-            await reply(caption);
+            // 1. Traccia in riproduzione
+            let npData;
+            try {
+                npData = await lastfm.getNowPlaying(username);
+            } catch (err) {
+                return reply('❌ ' + mapLastfmError(err));
+            }
+
+            const { nowPlaying, track } = npData;
+            if (!track) {
+                return reply('🎧 *' + username + '*\n\nNessuna traccia ascoltata di recente.');
+            }
+
+            // 2. Statistiche (non bloccanti)
+            let userInfo = { playcount: 0 };
+            let trackInfo = { playcount: 0, listeners: 0, userplaycount: 0 };
+            try {
+                const ui = await lastfm.getUserInfo(username);
+                if (ui) userInfo = ui;
+            } catch (e) {
+                console.error('[cur] Errore userInfo:', e.message);
+            }
+            try {
+                const ti = await lastfm.getTrackInfo(track.artist, track.name, username);
+                if (ti) trackInfo = ti;
+            } catch (e) {
+                console.error('[cur] Errore trackInfo:', e.message);
+            }
+
+            // Caption fallback
+            const se = nowPlaying ? '🎶' : '🕓';
+            const sl = nowPlaying ? 'In riproduzione' : 'Ultimo ascolto';
+            const caption =
+                se + ' *' + sl + '*\n\n' +
+                '🎵 *' + track.name + '*\n' +
+                '🎤 ' + track.artist + '\n' +
+                '💿 ' + track.album + '\n' +
+                '🔗 ' + track.url + '\n\n' +
+                '📊 Ascolti totali: ' + fmt(userInfo.playcount) + '\n' +
+                '🔁 Frequenza: ' + fmt(trackInfo.userplaycount) + '\n' +
+                '🌍 Ascolti mondiali: ' + fmt(trackInfo.playcount) + '\n\n' +
+                '👤 Account: ' + username;
+
+            // 3. Genera card; fallback testo
+            try {
+                const cardBuffer = await buildCard({ nowPlaying, track, username, userInfo, trackInfo }, axios, sharp);
+                await sock.sendMessage(from, { image: cardBuffer, caption }, { quoted: msg });
+            } catch (imgErr) {
+                console.error('[cur] Errore card:', imgErr);
+                await reply(caption);
+            }
+        } catch (fatalErr) {
+            console.error('[cur] ERRORE FATALE:', fatalErr);
+            try {
+                return reply('❌ Errore imprevisto. Riprova.');
+            } catch {}
         }
     },
 };
