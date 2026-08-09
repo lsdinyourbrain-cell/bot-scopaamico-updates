@@ -5,6 +5,7 @@ const os = require('os');
 const path = require('path');
 
 const UPDATE_REPO_BRANCH = 'master';
+const UPDATE_REPO_URL = 'https://github.com/lsdinyourbrain-cell/bot-scopaamico-updates.git';
 
 async function runGit(execFileAsync, cwd, args) {
     const { stdout, stderr } = await execFileAsync('git', args, {
@@ -37,6 +38,12 @@ module.exports = {
             return reply("⚠️ La cartella del bot non è un repo Git.\n\nSu Termux esegui:\n`git init`\n`git remote add origin <URL repo>`\n`git fetch origin master`\n`git reset --hard origin/master`");
         }
 
+        // 1b) Imposta sempre il remote ufficiale, così il bot scarica SEMPRE
+        //     il codice giusto anche se origin punta a un repo vecchio/diverso.
+        try {
+            await runGit(execFileAsync, projectDir, ['remote', 'set-url', 'origin', UPDATE_REPO_URL]);
+        } catch (_) {}
+
         await reply("🔍 *Controllo aggiornamenti...*");
 
         // 2) Fetch del ramo remoto
@@ -60,6 +67,12 @@ module.exports = {
         }
 
         if (localHead === remoteHead) {
+            // Anche se gli hash coincidono, ripulisci eventuali file vecchi
+            // NON tracciati da git (es. codice di un altro progetto rimasto
+            // nella cartella): potrebbero causare errori come il bug Last.fm.
+            try {
+                await runGit(execFileAsync, projectDir, ['clean', '-fd', '-e', 'node_modules', '-e', '.env', '-e', 'auth_info_baileys', '-e', 'data', '-e', 'temp', '-e', 'logs']);
+            } catch (_) {}
             return reply(
 `╭────〔 ✨ *TUTTO AGGIORNATO* 〕────╮
 │                              │
@@ -132,6 +145,9 @@ module.exports = {
         // 8) Applica la versione remota
         try {
             await runGit(execFileAsync, projectDir, ['reset', '--hard', remoteHead]);
+            // Rimuovi eventuali file vecchi non tracciati (codice orfano),
+            // preservando dati e dipendenze.
+            await runGit(execFileAsync, projectDir, ['clean', '-fd', '-e', 'node_modules', '-e', '.env', '-e', 'auth_info_baileys', '-e', 'data', '-e', 'temp', '-e', 'logs']);
         } catch (e) {
             console.error('[aggiorna] reset fallito:', e.message);
             return reply("❌ Errore nell'applicazione dell'aggiornamento. Riprova.");
