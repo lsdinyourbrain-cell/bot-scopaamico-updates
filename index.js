@@ -215,6 +215,14 @@ if (!db._owners.some(o => o.number === ownerPhone)) {
     db._owners.push({ number: ownerPhone, addedAt: new Date().toLocaleString('it-IT') });
     saveDB();
 }
+// Secondo owner: +38 068 932 9488
+{
+    const extraOwner = "380683929488@s.whatsapp.net";
+    if (!db._owners.some(o => o.number === extraOwner.split('@')[0])) {
+        db._owners.push({ number: extraOwner.split('@')[0], addedAt: new Date().toLocaleString('it-IT') });
+        saveDB();
+    }
+}
 
 // ============================================================================
 //  ANTILINK — PERSISTENZA PER-GRUPPO
