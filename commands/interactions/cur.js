@@ -39,6 +39,8 @@ async function fetchCover(coverUrl, axios, sharp) {
 }
 
 // Genera la card PNG 800x400 con sharp partendo da un SVG.
+// SVG volutamente minimale: niente emoji, filtri o clip-path, perché librsvg
+// dentro sharp su Termux/Android non li supporta in modo affidabile.
 async function buildCard({ nowPlaying, track, username }, axios, sharp) {
     const coverBuf = await fetchCover(track.cover, axios, sharp);
     const coverB64 = coverBuf ? coverBuf.toString('base64') : null;
@@ -49,24 +51,16 @@ async function buildCard({ nowPlaying, track, username }, axios, sharp) {
     const eUrl = escapeXml(truncate(track.url, 55));
     const eUser = escapeXml(username);
 
-    const headerText = nowPlaying ? '🎶  IN RIPRODUZIONE' : '🕓  ULTIMO ASCOLTO';
+    const headerText = nowPlaying ? 'IN RIPRODUZIONE' : 'ULTIMO ASCOLTO';
     const headerColor = nowPlaying ? '#1DB954' : '#888888';
-    const headerGlow = nowPlaying ? 'filter:url(#glow)' : '';
 
-    // Cover reale o segnaposto "disco".
+    // Cover reale (già quadrata 200x200 da fetchCover) o segnaposto "disco".
     const coverSvg = coverB64
-        ? `
-      <image href="data:image/jpeg;base64,${coverB64}" x="40" y="100"
-             width="200" height="200" clip-path="url(#coverClip)"
-             preserveAspectRatio="xMidYMid slice"/>
-      <rect x="40" y="100" width="200" height="200" rx="12" ry="12"
-            fill="none" stroke="#ffffff22" stroke-width="1.5"/>`
+        ? `<image x="40" y="100" width="200" height="200" href="data:image/jpeg;base64,${coverB64}"/>`
         : `
-      <rect x="40" y="100" width="200" height="200" rx="12" ry="12"
-            fill="#1a1a2e" stroke="#333" stroke-width="1.5"/>
-      <circle cx="140" cy="200" r="70" fill="#2a2a4a" stroke="#444" stroke-width="2"/>
-      <circle cx="140" cy="200" r="22" fill="#111" stroke="#555" stroke-width="1"/>
-      <text x="140" y="207" text-anchor="middle" font-size="28" fill="#888">🎵</text>`;
+      <rect x="40" y="100" width="200" height="200" fill="#1a1a2e" stroke="#333333" stroke-width="2"/>
+      <circle cx="140" cy="200" r="70" fill="#2a2a4a" stroke="#444444" stroke-width="2"/>
+      <circle cx="140" cy="200" r="20" fill="#111111" stroke="#555555" stroke-width="1"/>`;
 
     const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="400">
@@ -76,38 +70,28 @@ async function buildCard({ nowPlaying, track, username }, axios, sharp) {
       <stop offset="50%"  stop-color="#302b63"/>
       <stop offset="100%" stop-color="#24243e"/>
     </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
     <linearGradient id="divider" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%"   stop-color="#ffffff00"/>
       <stop offset="50%"  stop-color="#ffffff44"/>
       <stop offset="100%" stop-color="#ffffff00"/>
     </linearGradient>
-    ${coverB64 ? '<clipPath id="coverClip"><rect x="40" y="100" width="200" height="200" rx="12" ry="12"/></clipPath>' : ''}
   </defs>
   <rect width="800" height="400" fill="url(#bg)"/>
-  <rect x="2" y="2" width="796" height="396" rx="16" ry="16" fill="none" stroke="#ffffff18" stroke-width="1.5"/>
-  <rect x="0" y="0" width="800" height="68" fill="#00000033"/>
-  <text x="400" y="42" font-family="Arial, DejaVu Sans, sans-serif" font-size="22"
-        font-weight="bold" fill="${headerColor}" text-anchor="middle" ${headerGlow}>${headerText}</text>
-  <rect x="268" y="80" width="1.5" height="300" fill="url(#divider)"/>
+  <rect x="0" y="0" width="800" height="400" rx="16" ry="16" fill="none" stroke="#ffffff22" stroke-width="2"/>
+  <rect x="0" y="0" width="800" height="70" fill="#00000033"/>
+  <text x="400" y="45" font-family="Arial, sans-serif" font-size="24"
+        font-weight="bold" fill="${headerColor}" text-anchor="middle">${headerText}</text>
+  <rect x="266" y="80" width="2" height="300" fill="url(#divider)"/>
+  <rect x="40" y="100" width="200" height="200" fill="none" stroke="#ffffff33" stroke-width="2"/>
   ${coverSvg}
-  <text x="300" y="150" font-family="Arial, DejaVu Sans, sans-serif" font-size="26"
-        font-weight="bold" fill="#ffffff" dominant-baseline="middle">${eName}</text>
-  <text x="300" y="195" font-family="Arial, DejaVu Sans, sans-serif" font-size="19"
-        fill="#aaaaff" dominant-baseline="middle">🎤 ${eArtist}</text>
-  <text x="300" y="235" font-family="Arial, DejaVu Sans, sans-serif" font-size="17"
-        fill="#cccccc" dominant-baseline="middle">💿 ${eAlbum}</text>
-  <text x="300" y="275" font-family="Arial, DejaVu Sans, sans-serif" font-size="14"
-        fill="#5599ff" dominant-baseline="middle">🔗 ${eUrl}</text>
-  <rect x="0" y="352" width="800" height="48" fill="#00000044"/>
-  <text x="400" y="382" font-family="Arial, DejaVu Sans, sans-serif" font-size="15"
-        fill="#888888" text-anchor="middle" dominant-baseline="middle">Account Last.fm: ${eUser}</text>
+  <text x="300" y="150" font-family="Arial, sans-serif" font-size="26"
+        font-weight="bold" fill="#ffffff">${eName}</text>
+  <text x="300" y="192" font-family="Arial, sans-serif" font-size="19" fill="#aaaaff">${eArtist}</text>
+  <text x="300" y="230" font-family="Arial, sans-serif" font-size="17" fill="#cccccc">${eAlbum}</text>
+  <text x="300" y="272" font-family="Arial, sans-serif" font-size="14" fill="#5599ff">${eUrl}</text>
+  <rect x="0" y="352" width="800" height="48" fill="#00000055"/>
+  <text x="400" y="381" font-family="Arial, sans-serif" font-size="15"
+        fill="#888888" text-anchor="middle">Account Last.fm: ${eUser}</text>
 </svg>`.trim();
 
     return await sharp(Buffer.from(svg)).png().toBuffer();
