@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'link',
-    aliases: [],
+    aliases: ['collegamento', 'codice'],
     description: "Link del gruppo. Gli admin decidono se anche i normali utenti possono generarlo. Il link viene inviato con un pulsante che lo copia (nessuna menzione).",
 
     async run(sock, msg, args, context) {

@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'ban',
-    aliases: [],
+    aliases: ['banna', 'espelli'],
     description: "Esegue il comando .ban.",
 
     async run(sock, msg, args, context) {

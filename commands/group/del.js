@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'del',
-    aliases: [],
+    aliases: ['cancella', 'eliminamsg'],
     description: "Esegue il comando .del.",
 
     async run(sock, msg, args, context) {

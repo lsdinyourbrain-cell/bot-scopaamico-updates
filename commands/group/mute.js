@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'mute',
-    aliases: ["unmute"],
+    aliases: ["unmute", "muta", "smuta", "riabilita"],
     description: "Silenzia un utente (permanente).",
 
     async run(sock, msg, args, context) {
@@ -26,7 +26,7 @@ module.exports = {
 
         const targetData = getUser(tgt, from);
 
-        if (command === 'unmute') {
+        if (command === 'unmute' || command === 'smuta' || command === 'riabilita') {
             targetData.isMuted = false;
             saveDB();
             return await sock.sendMessage(from, { text: `🔊 @${tgt.split('@')[0]} può scrivere di nuovo.`, mentions: [tgt] });

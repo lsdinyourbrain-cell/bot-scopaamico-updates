@@ -40,6 +40,7 @@ const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
 const { sendButtons, editButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
 const greetings = require('./lib/greetings');
+const { checkTrisWinner, renderTrisBoard: renderTrisBoardRaw } = require('./lib/tris');
 const { showProgress } = require('./lib/loading');
 const lastfm = require('./lib/lastfm');
 const config = require('./config');
@@ -1732,6 +1733,155 @@ async function startBot() {
             } catch (_) {}
         }
 
+        // ── IMPICCATO: tentativo di lettera/parola ──────────────────────
+        if (!body.startsWith('.') && db[from]?.impiccatoGame?.active) {
+            try {
+                const ig = db[from].impiccatoGame;
+                if (Date.now() - ig.timestamp > 120000) {
+                    ig.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, { text: `⏰ Tempo scaduto! La parola era *${ig.word}* (${ig.categoria}).` });
+                    return;
+                }
+                const input = body.trim().toUpperCase().replace(/[^A-ZÀ-ÿ]/g, '');
+                if (!input) return;
+
+                // Tentativo parola intera
+                if (input.length > 1) {
+                    if (input === ig.word) {
+                        ig.active = false;
+                        saveDB();
+                        await sock.sendMessage(from, {
+                            text: `🎉 *INDOVINATA!* La parola era *${ig.word}* (${ig.categoria}).\nBel lavoro, imparcato! 😏`,
+                        });
+                    } else {
+                        ig.wrong++;
+                        if (ig.wrong >= 6) {
+                            ig.active = false;
+                            saveDB();
+                            await sock.sendMessage(from, {
+                                text: `💀 *IMPICCATO!* Hai esaurito i tentativi.\nLa parola era *${ig.word}* (${ig.categoria}).`,
+                            });
+                        } else {
+                            saveDB();
+                            await sock.sendMessage(from, { text: `❌ Parola sbagliata! Prova ancora.` });
+                        }
+                    }
+                    return;
+                }
+
+                // Singola lettera
+                const letter = input[0];
+                if (ig.guessed.includes(letter)) {
+                    await sock.sendMessage(from, { text: `⚠️ La lettere *${letter}* è giata provata!` });
+                    return;
+                }
+                ig.guessed.push(letter);
+
+                if (ig.word.includes(letter)) {
+                    // Lettera corretta: controlla vittoria
+                    const masked = ig.word.split('').map((c) => ig.guessed.includes(c) ? c : '_').join('');
+                    if (!masked.includes('_')) {
+                        ig.active = false;
+                        saveDB();
+                        await sock.sendMessage(from, {
+                            text: `🎉 *COMPLIMENTI!* Hai indovinato *${ig.word}* (${ig.categoria})!\nSei salvo... per ora. 😈`,
+                        });
+                        return;
+                    }
+                    saveDB();
+                    await sock.sendMessage(from, { text: `✅ *${letter}* è nella parola!` });
+                } else {
+                    ig.wrong++;
+                    if (ig.wrong >= 6) {
+                        ig.active = false;
+                        saveDB();
+                        await sock.sendMessage(from, {
+                            text: `💀 *IMPICCATO!* Boia completo.\nLa parola era *${ig.word}* (${ig.categoria}).`,
+                        });
+                        return;
+                    }
+                    saveDB();
+                    await sock.sendMessage(from, { text: `❌ *${letter}* non c'è. Errori: ${ig.wrong}/6` });
+                }
+            } catch (_) {}
+        }
+
+        // ── TRIS: mossa (numero 1-9) ───────────────────────────────────
+        if (!body.startsWith('.') && db[from]?.trisGame?.active) {
+            try {
+                const game = db[from].trisGame;
+                if (Date.now() - game.timestamp > 180000) {
+                    game.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, { text: '⏰ Tempo scaduto per il tris! Partita annullata.' });
+                    return;
+                }
+
+                const num = parseInt(body.trim(), 10);
+                if (isNaN(num) || num < 1 || num > 9) return;
+
+                // Solo il giocatore che deve muovere può giocare
+                const currentPlayer = game.players[game.current];
+                if (!sameJid(sender, currentPlayer)) return;
+
+                const idx = num - 1;
+                if (game.board[idx] !== null) {
+                    await sock.sendMessage(from, { text: `⚠️ La cella ${num} è già occupata! Scegline un'altra.` });
+                    return;
+                }
+
+                // Mossa
+                const symbol = game.current === 0 ? 'X' : 'O';
+                game.board[idx] = symbol;
+
+                // Controlla vincitore
+                const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+                let winnerIdx = null;
+                for (const [a,b,c] of lines) {
+                    if (game.board[a] && game.board[a] === game.board[b] && game.board[a] === game.board[c]) {
+                        winnerIdx = game.current;
+                        break;
+                    }
+                }
+                const isFull = game.board.every((v) => v !== null);
+
+                // Cancella il messaggio precedente della board per liberare spazio
+                if (game.lastMsgKey) {
+                    try { await sock.sendMessage(from, { delete: game.lastMsgKey }); } catch (_) {}
+                }
+
+                let caption;
+                if (winnerIdx !== null) {
+                    game.active = false;
+                    saveDB();
+                    caption = `🏆 *VITTORIA!* @${game.players[winnerIdx].split('@')[0]} (${symbol}) vince il tris!`;
+                } else if (isFull) {
+                    game.active = false;
+                    saveDB();
+                    caption = `🤝 *PAREGGIO!* La board è piena, nessun vincitore.`;
+                } else {
+                    game.current = 1 - game.current;
+                    saveDB();
+                    const nextSymbol = game.current === 0 ? '❌' : '⭕';
+                    caption = `🎮 *TRIS* — Tocca a @${game.players[game.current].split('@')[0]} (${nextSymbol}).\nScrivi un numero *1-9*.`;
+                }
+
+                const boardBuffer = await renderTrisBoard(sharp, game.board);
+                const sent = await sock.sendMessage(from, {
+                    image: boardBuffer,
+                    caption,
+                    mentions: game.players,
+                }, { quoted: msg });
+
+                game.lastMsgKey = sent?.key || null;
+                game.timestamp = Date.now(); // reset timer dopo ogni mossa
+                saveDB();
+            } catch (e) {
+                console.error('[tris handler]', e.message);
+            }
+        }
+
         // ── MEMORIA: ripeti la sequenza ──────────────────────────────────
         if (!body.startsWith('.') && db[from]?.memGame?.active) {
             try {
@@ -1925,6 +2075,8 @@ async function startBot() {
                     getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS,
                     applyWarn, extractPollText, WARN_LIMIT,
                     setNukeActive, isNukeActive,
+                    checkTrisWinner,
+                    renderTrisBoard: (board) => renderTrisBoardRaw(sharp, board),
                 },
             });
 

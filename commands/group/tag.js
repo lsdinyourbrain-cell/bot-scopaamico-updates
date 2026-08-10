@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'tag',
-    aliases: [],
+    aliases: ['tagga', 'menziona'],
     description: "Tagga tutti nel gruppo. Se rispondi a un messaggio, lo rinvia con tag.",
 
     async run(sock, msg, args, context) {

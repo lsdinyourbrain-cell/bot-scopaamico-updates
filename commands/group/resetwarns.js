@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'resetwarns',
-    aliases: ['clearwarn', 'resetwarn'],
+    aliases: ['clearwarn', 'resetwarn', 'azzera', 'azzeraavvisi'],
     description: "Resetta i warning di un utente (admin).",
 
     async run(sock, msg, args, context) {

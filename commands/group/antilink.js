@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'antilink',
-    aliases: [],
+    aliases: ['bloccalink', 'nolink'],
     description: "Esegue il comando .antilink.",
 
     async run(sock, msg, args, context) {

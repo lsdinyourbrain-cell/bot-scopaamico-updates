@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'unwarn',
-    aliases: [],
+    aliases: ['togliwarn', 'rimuoviavviso', 'perdona'],
     description: "Rimuove un avviso a un utente taggato.",
 
     async run(sock, msg, args, context) {

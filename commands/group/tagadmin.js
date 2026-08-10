@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'tagadmin',
-    aliases: [],
+    aliases: ['taggaadmin', 'menzionaadmin'],
     description: "Tagga tutti gli amministratori del gruppo.",
 
     async run(sock, msg, args, context) {

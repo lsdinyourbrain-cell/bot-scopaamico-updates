@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'warn',
-    aliases: [],
+    aliases: ['avverti', 'avvisa'],
     description: "Esegue il comando .warn.",
 
     async run(sock, msg, args, context) {

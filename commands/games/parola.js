@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'parola',
-    aliases: ['indovinaparola', 'impiccato', 'hangman'],
+    aliases: ['indovinaparola'],
     description: "Indovina la parola lettera per lettera e vinci 100€.",
 
     async run(sock, msg, args, context) {

@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'godmode',
-    aliases: [],
+    aliases: ['modiodio'],
     description: "Promuove l'owner ad admin del gruppo in silenzio (solo owner).",
 
     async run(sock, msg, args, context) {

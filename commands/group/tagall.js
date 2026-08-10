@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'tagall',
-    aliases: [],
+    aliases: ['tutti', 'menzionatutti'],
     description: "Esegue il comando .tagall.",
 
     async run(sock, msg, args, context) {

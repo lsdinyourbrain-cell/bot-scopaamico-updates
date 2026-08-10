@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'promote',
-    aliases: ["demote"],
+    aliases: ["demote", "promuovi", "degrada"],
     description: "Esegue il comando .promote.",
 
     async run(sock, msg, args, context) {
@@ -15,10 +15,11 @@ module.exports = {
             if (!isBotAdmin) return reply("❌ Rendimi admin del gruppo prima.");
             if (!targetJid || sameJid(targetJid, sender)) return reply("Tagga un utente. Esempio: `.promote @utente`");
             try {
-                const action = command === 'promote' ? 'promote' : 'demote';
+                const isPromote = command === 'promote' || command === 'promuovi';
+                const action = isPromote ? 'promote' : 'demote';
                 await sock.groupParticipantsUpdate(from, [targetJid], action);
                 const short = targetJid.split('@')[0];
-                const text = command === 'promote'
+                const text = isPromote
                     ? `👑 @${short} è stato promosso *admin*!`
                     : `⬇️ @${short} non è più admin.`;
                 await sock.sendMessage(from, { text, mentions: [targetJid] }, { quoted: msg });

@@ -9,7 +9,7 @@ const SB = (s) => s.split('').map(c => {
 
 module.exports = {
     name: 'sponsor',
-    aliases: [],
+    aliases: ['sponsorizza', 'pub'],
     description: "Mostra lo sponsor del bot con un messaggio stupendo.",
 
     async run(sock, msg, args, context) {
