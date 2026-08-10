@@ -32,9 +32,6 @@ module.exports = {
         if (!stickerMsg) {
             return reply("Rispondi a uno sticker per clonarlo col nuovo nome.");
         }
-        if (stickerMsg.isAnimated) {
-            return reply("Sticker animati non supportati da questo comando.");
-        }
 
         const prog = await showProgress(sock, from, {
             label: 'CLONA STICKER',
@@ -64,7 +61,7 @@ module.exports = {
             const exifData = {
                 'sticker-pack-id': 'com.scopaamico.bot.wm',
                 'sticker-pack-name': newTitle,
-                'sticker-pack-publisher': sender.split('@')[0],
+                'sticker-pack-publisher': 'ScopaAmicoBot',
                 emojis: ['✨'],
             };
 
