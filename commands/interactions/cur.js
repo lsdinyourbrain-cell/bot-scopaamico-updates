@@ -20,6 +20,14 @@ function fmt(n) {
     return Number(n || 0).toLocaleString('it-IT');
 }
 
+function fmtDuration(sec) {
+    const s = Number(sec) || 0;
+    if (s <= 0) return '—';
+    const m = Math.floor(s / 60);
+    const r = Math.floor(s % 60);
+    return m + ':' + String(r).padStart(2, '0');
+}
+
 function mapLastfmError(err) {
     const msg = String(err?.message || '');
     if (msg === 'UTENTE_NON_TROVATO' || /404|not found|non trovato/i.test(msg))
@@ -55,24 +63,25 @@ function buildCardSvg(data) {
     const statTotal = fmt(userInfo.playcount);
     const statFreq  = fmt(trackInfo.userplaycount);
     const statWorld = fmt(trackInfo.playcount);
+    const durText   = fmtDuration(trackInfo.duration);
 
     const BX = 30, BY = 300, BH = 110, BGAP = 20;
     const BW = (W - 60 - BGAP * 2) / 3;
     const B1X = BX, B2X = BX + BW + BGAP, B3X = B2X + BW + BGAP;
 
-    const coverSvg = nowPlaying
-        ? (coverBase64
-            ? `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="2"/>
-               <image href="data:image/png;base64,${coverBase64}" x="30" y="80" width="180" height="180" clip-path="inset(0% 0% 0% 0% round 14px)"/>`
-            : `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="1.5"/>
+    const coverSvg = coverBase64
+        ? `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="2"/>
+           <image href="data:image/png;base64,${coverBase64}" x="30" y="80" width="180" height="180" clip-path="inset(0% 0% 0% 0% round 14px)"/>`
+        : (nowPlaying
+            ? `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="1.5"/>
                <circle cx="120" cy="170" r="55" fill="#1a1f30" stroke="#2a3040" stroke-width="1"/>
-               <circle cx="120" cy="170" r="15" fill="#0d101a"/>`)
-        : `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="1.5"/>
-           <circle cx="120" cy="170" r="45" fill="#1a1f2e" stroke="#2a3040" stroke-width="1"/>
-           <circle cx="120" cy="170" r="30" fill="none" stroke="#2a3040" stroke-width="1"/>
-           <circle cx="120" cy="170" r="14" fill="#0d101a"/>
-           <text x="120" y="178" font-family="Arial, sans-serif" font-size="10" fill="#666" text-anchor="middle">ULTIMO</text>
-           <text x="120" y="192" font-family="Arial, sans-serif" font-size="10" fill="#666" text-anchor="middle">ASCOLTO</text>`;
+               <circle cx="120" cy="170" r="15" fill="#0d101a"/>`
+            : `<rect x="30" y="80" width="180" height="180" rx="14" fill="#111520" stroke="#3a4055" stroke-width="1.5"/>
+               <circle cx="120" cy="170" r="45" fill="#1a1f2e" stroke="#2a3040" stroke-width="1"/>
+               <circle cx="120" cy="170" r="30" fill="none" stroke="#2a3040" stroke-width="1"/>
+               <circle cx="120" cy="170" r="14" fill="#0d101a"/>
+               <text x="120" y="178" font-family="Arial, sans-serif" font-size="10" fill="#666" text-anchor="middle">ULTIMO</text>
+               <text x="120" y="192" font-family="Arial, sans-serif" font-size="10" fill="#666" text-anchor="middle">ASCOLTO</text>`);
 
     const statBox = (bx, label, val) =>
         `<rect x="${bx}" y="${BY}" width="${BW}" height="${BH}" rx="12" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
@@ -106,7 +115,8 @@ function buildCardSvg(data) {
     <text x="${TX}" y="140" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#ffffff">${eName}</text>
     <text x="${TX}" y="182" font-family="Arial, sans-serif" font-size="18" fill="#8ab4f8">${eArtist}</text>
     <text x="${TX}" y="218" font-family="Arial, sans-serif" font-size="15" fill="#b0b6c9">${eAlbum}</text>
-    <text x="${TX}" y="254" font-family="Arial, sans-serif" font-size="12" fill="#6ea8fe">${eUrl}</text>
+    <text x="${TX}" y="246" font-family="Arial, sans-serif" font-size="13" fill="#8a90a3">⏱️ ${durText}</text>
+    <text x="${TX}" y="274" font-family="Arial, sans-serif" font-size="12" fill="#6ea8fe">${eUrl}</text>
 
     ${statBox(B1X, 'ASCOLTI TOTALI', statTotal)}
     ${statBox(B2X, 'FREQUENZA', statFreq)}
@@ -156,7 +166,7 @@ module.exports = {
         }
 
         let userInfo = { playcount: 0 };
-        let trackInfo = { playcount: 0, listeners: 0, userplaycount: 0 };
+        let trackInfo = { playcount: 0, listeners: 0, userplaycount: 0, duration: 0 };
         try {
             userInfo = await lastfm.getUserInfo(username);
         } catch (e) {
@@ -169,7 +179,7 @@ module.exports = {
         }
 
         let coverBase64 = '';
-        if (nowPlaying && track.cover) {
+        if (track.cover) {
             try {
                 const resp = await axios.get(track.cover, { responseType: 'arraybuffer', timeout: 8000 });
                 const buf = await sharp(Buffer.from(resp.data)).resize(180, 180, { fit: 'cover' }).png().toBuffer();
@@ -179,12 +189,20 @@ module.exports = {
             }
         }
 
-        const se = nowPlaying ? 'In riproduzione' : 'Ultimo ascolto';
+        const se = nowPlaying ? '🎧 *IN RIPRODUZIONE*' : '📼 *ULTIMO ASCOLTO*';
+        const durText = fmtDuration(trackInfo.duration);
         const caption =
-            se + ' - ' + track.name + ' (' + track.artist + ')\n' +
-            'Ascolti totali: ' + fmt(userInfo.playcount) + '\n' +
-            'Frequenza: ' + fmt(trackInfo.userplaycount) + '\n' +
-            'Ascolti mondiali: ' + fmt(trackInfo.playcount);
+            `${se}\n\n` +
+            `🎵 *${track.name}*\n` +
+            `👤 ${track.artist}\n` +
+            (track.album ? `💿 ${track.album}\n` : '') +
+            (durText !== '—' ? `⏱️ Durata: ${durText}\n` : '') +
+            `🔗 ${track.url}\n\n` +
+            `📊 Ascolti totali: ${fmt(userInfo.playcount)}\n` +
+            `🔁 Frequenza: ${fmt(trackInfo.userplaycount)}\n` +
+            `🌍 Ascolti mondiali: ${fmt(trackInfo.playcount)}\n` +
+            `👥 Ascoltatori: ${fmt(trackInfo.listeners)}\n\n` +
+            `_Account: ${username}_`;
 
         const svg = buildCardSvg({ nowPlaying, track, username, userInfo, trackInfo, coverBase64 });
 
