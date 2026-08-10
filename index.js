@@ -41,6 +41,7 @@ const gistBackup = require('./lib/gist-backup');
 const { sendButtons, editButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
 const greetings = require('./lib/greetings');
 const { checkTrisWinner, renderTrisBoard: renderTrisBoardRaw } = require('./lib/tris');
+const impiccatoCmd = require('./commands/games/impiccato');
 const { showProgress } = require('./lib/loading');
 const lastfm = require('./lib/lastfm');
 const config = require('./config');
@@ -478,10 +479,25 @@ const sameJid = (first, second) => {
     return Boolean(normalizedFirst && normalizedSecond && normalizedFirst === normalizedSecond);
 };
 
-// Verifica se un jid è owner. Gestisce sia PN (@s.whatsapp.net) sia LID (@lid):
-// ownerNumber può essere un LID, e gli owner aggiunti possono essere salvati
-// come LID o numero reale. Confrontiamo anche sock.user.id/lid perché il bot
-// gira sull'account dell'owner (stesso numero).
+// Helper per l'impiccato: costruisce il testo della board finale (sconfitta)
+// riutilizzando gli stadi ASCII e le funzioni esportate dal comando impiccato.
+const buildBoardLoseText = (ig) => {
+    const art = impiccatoCmd.HANGMAN_STAGES[ig.wrong] || impiccatoCmd.HANGMAN_STAGES[impiccatoCmd.HANGMAN_STAGES.length - 1];
+    return `╔════════════════════════════════╗
+║     💀 *IMPICCATO!* 💀          ║
+╠════════════════════════════════╣
+${art}
+
+🔤 Parola:  *${ig.word}*
+📂 Categoria: ${ig.categoria}
+❌ Errori: ${ig.wrong}/${impiccatoCmd.MAX_WRONG}
+📝 Lettere provate: ${impiccatoCmd.formatGuessed(ig.guessed)}
+
+La parola era *${ig.word}* (${ig.categoria}).
+╚════════════════════════════════╝`;
+};
+
+// ── VERIFICA SE UN JID È OWNER ─────────────────────────────────────
 const isOwnerJid = (sender, sock, db) => {
     const candidates = [
         ownerNumber,
@@ -1737,10 +1753,21 @@ async function startBot() {
         if (!body.startsWith('.') && db[from]?.impiccatoGame?.active) {
             try {
                 const ig = db[from].impiccatoGame;
+
+                // Helper: modifica il messaggio della board esistente, e se
+                // l'edit fallisce (messaggio troppo vecchio, permessi) manda
+                // un nuovo messaggio.
+                const show = async (text) => {
+                    if (ig.lastMsgKey) {
+                        try { await sock.sendMessage(from, { text, edit: ig.lastMsgKey }); return; } catch (_) {}
+                    }
+                    await sock.sendMessage(from, { text });
+                };
+
                 if (Date.now() - ig.timestamp > 120000) {
                     ig.active = false;
                     saveDB();
-                    await sock.sendMessage(from, { text: `⏰ Tempo scaduto! La parola era *${ig.word}* (${ig.categoria}).` });
+                    await show(`⏰ *Tempo scaduto!* La parola era *${ig.word}* (${ig.categoria}).`);
                     return;
                 }
                 const input = body.trim().toUpperCase().replace(/[^A-ZÀ-ÿ]/g, '');
@@ -1751,20 +1778,23 @@ async function startBot() {
                     if (input === ig.word) {
                         ig.active = false;
                         saveDB();
-                        await sock.sendMessage(from, {
-                            text: `🎉 *INDOVINATA!* La parola era *${ig.word}* (${ig.categoria}).\nBel lavoro, imparcato! 😏`,
-                        });
+                        await show(
+                            `╔════════════════════════════════╗\n` +
+                            `║     🎉 *INDOVINATA!* 🎉        ║\n` +
+                            `╠════════════════════════════════╣\n` +
+                            `${impiccatoCmd.buildBoardText(ig)}\n` +
+                            `Complimenti, sei salvo... per ora 😈` +
+                            `\n╚════════════════════════════════╝`
+                        );
                     } else {
                         ig.wrong++;
                         if (ig.wrong >= 6) {
                             ig.active = false;
                             saveDB();
-                            await sock.sendMessage(from, {
-                                text: `💀 *IMPICCATO!* Hai esaurito i tentativi.\nLa parola era *${ig.word}* (${ig.categoria}).`,
-                            });
+                            await show(buildBoardLoseText(ig));
                         } else {
                             saveDB();
-                            await sock.sendMessage(from, { text: `❌ Parola sbagliata! Prova ancora.` });
+                            await show(impiccatoCmd.buildBoardText(ig) + `\n\n❌ Parola sbagliata! Prova ancora.`);
                         }
                     }
                     return;
@@ -1773,7 +1803,7 @@ async function startBot() {
                 // Singola lettera
                 const letter = input[0];
                 if (ig.guessed.includes(letter)) {
-                    await sock.sendMessage(from, { text: `⚠️ La lettere *${letter}* è giata provata!` });
+                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n⚠️ La lettera *${letter}* è già provata!`);
                     return;
                 }
                 ig.guessed.push(letter);
@@ -1784,27 +1814,32 @@ async function startBot() {
                     if (!masked.includes('_')) {
                         ig.active = false;
                         saveDB();
-                        await sock.sendMessage(from, {
-                            text: `🎉 *COMPLIMENTI!* Hai indovinato *${ig.word}* (${ig.categoria})!\nSei salvo... per ora. 😈`,
-                        });
+                        await show(
+                            `╔════════════════════════════════╗\n` +
+                            `║     🎉 *INDOVINATA!* 🎉        ║\n` +
+                            `╠════════════════════════════════╣\n` +
+                            `${impiccatoCmd.buildBoardText(ig)}\n` +
+                            `Complimenti, sei salvo... per ora 😈` +
+                            `\n╚════════════════════════════════╝`
+                        );
                         return;
                     }
                     saveDB();
-                    await sock.sendMessage(from, { text: `✅ *${letter}* è nella parola!` });
+                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n✅ *${letter}* è nella parola!`);
                 } else {
                     ig.wrong++;
                     if (ig.wrong >= 6) {
                         ig.active = false;
                         saveDB();
-                        await sock.sendMessage(from, {
-                            text: `💀 *IMPICCATO!* Boia completo.\nLa parola era *${ig.word}* (${ig.categoria}).`,
-                        });
+                        await show(buildBoardLoseText(ig));
                         return;
                     }
                     saveDB();
-                    await sock.sendMessage(from, { text: `❌ *${letter}* non c'è. Errori: ${ig.wrong}/6` });
+                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n❌ *${letter}* non c'è. Errori: ${ig.wrong}/6`);
                 }
-            } catch (_) {}
+            } catch (e) {
+                console.error('[impiccato handler]', e.message);
+            }
         }
 
         // ── TRIS: mossa (numero 1-9) ───────────────────────────────────
@@ -1846,11 +1881,6 @@ async function startBot() {
                 }
                 const isFull = game.board.every((v) => v !== null);
 
-                // Cancella il messaggio precedente della board per liberare spazio
-                if (game.lastMsgKey) {
-                    try { await sock.sendMessage(from, { delete: game.lastMsgKey }); } catch (_) {}
-                }
-
                 let caption;
                 if (winnerIdx !== null) {
                     game.active = false;
@@ -1867,12 +1897,27 @@ async function startBot() {
                     caption = `🎮 *TRIS* — Tocca a @${game.players[game.current].split('@')[0]} (${nextSymbol}).\nScrivi un numero *1-9*.`;
                 }
 
-                const boardBuffer = await renderTrisBoard(sharp, game.board);
+                // Render NUOVA board e invia PRIMA, poi cancella il messaggio
+                // precedente. Così, se il delete fallisce, la board resta visibile.
+                let boardBuffer;
+                try {
+                    boardBuffer = await renderTrisBoard(sharp, game.board);
+                } catch (e) {
+                    console.error('[tris] render:', e.message);
+                    await sock.sendMessage(from, { text: '❌ Errore nel rendering della board.' });
+                    return;
+                }
+
                 const sent = await sock.sendMessage(from, {
                     image: boardBuffer,
                     caption,
                     mentions: game.players,
                 }, { quoted: msg });
+
+                // Ora cancella la vecchia board per liberare spazio
+                if (game.lastMsgKey) {
+                    try { await sock.sendMessage(from, { delete: game.lastMsgKey }); } catch (_) {}
+                }
 
                 game.lastMsgKey = sent?.key || null;
                 game.timestamp = Date.now(); // reset timer dopo ogni mossa

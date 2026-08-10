@@ -147,6 +147,24 @@ module.exports = {
         const pick = randomChoice(WORD_BANK);
         const word = pick.word.toUpperCase();
 
+        const boardText =
+            `╔════════════════════════════════╗\n` +
+            `║     🔴 *IMPICCATO* 🔴          ║\n` +
+            `╠════════════════════════════════╣\n` +
+            `${buildBoardText({ word, categoria: pick.categoria, wrong: 0, guessed: [] })}\n` +
+            `⏳ Tempo: 2 minuti` +
+            `\n╚════════════════════════════════╝`;
+
+        // Invio come messaggio "pulito" (senza pulsante Ripeti) per poterlo
+        // modificare dopo con l'edit di Baileys. Il key viene salvato nello
+        // stato di gioco in modo che l'handler possa fare edit successivi.
+        let sent;
+        try {
+            sent = await sock.sendMessage(from, { text: boardText }, { quoted: msg });
+        } catch (_) {
+            return reply(boardText);
+        }
+
         db[from] = db[from] || {};
         db[from].impiccatoGame = {
             active: true,
@@ -156,17 +174,9 @@ module.exports = {
             guessed: [],
             sender,
             timestamp: Date.now(),
+            lastMsgKey: sent?.key || null,
         };
         saveDB();
-
-        await reply(
-            `╔════════════════════════════════╗\n` +
-            `║     🔴 *IMPICCATO* 🔴          ║\n` +
-            `╠════════════════════════════════╣\n` +
-            `${buildBoardText(db[from].impiccatoGame)}\n` +
-            `⏳ Tempo: 2 minuti` +
-            `\n╚════════════════════════════════╝`
-        );
 
         // Timer di scadenza
         setTimeout(() => {
@@ -174,9 +184,12 @@ module.exports = {
             if (g?.active && Date.now() - g.timestamp >= GAME_TIMEOUT_MS) {
                 g.active = false;
                 saveDB();
-                sock.sendMessage(from, {
-                    text: `⏰ *Tempo scaduto!* La parola era *${g.word}* (${g.categoria}).`,
-                }).catch(() => {});
+                const text = `⏰ *Tempo scaduto!* La parola era *${g.word}* (${g.categoria}).`;
+                if (g.lastMsgKey) {
+                    sock.sendMessage(from, { text, edit: g.lastMsgKey }).catch(() => {});
+                } else {
+                    sock.sendMessage(from, { text }).catch(() => {});
+                }
             }
         }, GAME_TIMEOUT_MS);
     },
@@ -185,3 +198,6 @@ module.exports = {
 module.exports.MAX_WRONG = MAX_WRONG;
 module.exports.GAME_TIMEOUT_MS = GAME_TIMEOUT_MS;
 module.exports.buildBoardText = buildBoardText;
+module.exports.HANGMAN_STAGES = HANGMAN_STAGES;
+module.exports.maskWord = maskWord;
+module.exports.formatGuessed = formatGuessed;
