@@ -1901,7 +1901,7 @@ async function startBot() {
                 // precedente. Così, se il delete fallisce, la board resta visibile.
                 let boardBuffer;
                 try {
-                    boardBuffer = await renderTrisBoard(sharp, game.board);
+                    boardBuffer = await renderTrisBoardRaw(sharp, game.board);
                 } catch (e) {
                     console.error('[tris] render:', e.message);
                     await sock.sendMessage(from, { text: '❌ Errore nel rendering della board.' });
