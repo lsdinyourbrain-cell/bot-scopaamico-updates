@@ -22,7 +22,15 @@ module.exports = {
             await sock.sendMessage(from, { text: replyText }, { quoted: msg });
 
             const contextInfo = msg.message?.extendedTextMessage?.contextInfo || {};
-            const quotedMedia = contextInfo.quotedMessage?.imageMessage || contextInfo.quotedMessage?.videoMessage;
+            const quotedRaw = contextInfo.quotedMessage || {};
+            const quotedInner = quotedRaw.imageMessage || quotedRaw.videoMessage
+                || quotedRaw.ephemeralMessage?.message?.imageMessage
+                || quotedRaw.ephemeralMessage?.message?.videoMessage
+                || quotedRaw.viewOnceMessage?.message?.imageMessage
+                || quotedRaw.viewOnceMessage?.message?.videoMessage
+                || quotedRaw.viewOnceMessageV2?.message?.imageMessage
+                || quotedRaw.viewOnceMessageV2?.message?.videoMessage;
+            const quotedMedia = quotedInner;
             const directMedia = msg.message?.imageMessage || msg.message?.videoMessage;
 
             if (!directMedia && !quotedMedia) {
@@ -35,12 +43,25 @@ module.exports = {
                 const isVideo = media.mimetype?.includes('video');
                 const mediaType = isVideo ? 'video' : 'image';
                 
-                // 2. Scarichiamo il file in modo sicuro tramite stream (non si blocca mai)
-                const stream = await downloadContentFromMessage(media, mediaType);
-                let buffer = Buffer.from([]);
-                for await (const chunk of stream) {
-                    buffer = Buffer.concat([buffer, chunk]);
-                }
+                // 2. Scarichiamo il file usando downloadMediaMessage con
+                //    reuploadRequest: se l'URL del media quotato è scaduto,
+                //    Baileys chiede a WhatsApp di ri-caricarlo. Per il media
+                //    allegato direttamente usiamo il messaggio originale, per
+                //    quello quotato ricostruiamo un messaggio valido.
+                const mediaMsg = quotedMedia ? {
+                    key: {
+                        remoteJid  : from,
+                        fromMe     : false,
+                        id         : contextInfo.stanzaId,
+                        participant: contextInfo.participant || sender,
+                    },
+                    message: isVideo ? { videoMessage: quotedMedia } : { imageMessage: quotedMedia },
+                } : msg;
+
+                const buffer = await downloadMediaMessage(mediaMsg, 'buffer', {}, {
+                    logger         : console,
+                    reuploadRequest: sock.updateMediaMessage,
+                });
                 
                 const stamp = Date.now();
                 const tempPath = path.join(os.tmpdir(), `${stamp}.webp`);
