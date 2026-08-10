@@ -40,7 +40,11 @@ function mapLastfmError(err) {
 // Recupera la vera copertina della canzone. La copertina di Last.fm a volte
 // è il segnaposto "stella bianca": in quel caso (o quando manca) proviamo a
 // prendere l'artwork reale da iTunes (Apple Music), più affidabile.
+// Ritorna { cover, duration } — "duration" è la durata reale in secondi
+// presa dal metadata di iTunes (trackTimeMillis), se disponibile.
 async function fetchSongCover(axios, sharp, track) {
+    let itunesDuration = 0;
+
     // 1) iTunes / Apple Music: artwork reale, niente segnaposto
     try {
         const term = ((track.name || '') + ' ' + (track.artist || '')).trim().slice(0, 120);
@@ -48,12 +52,14 @@ async function fetchSongCover(axios, sharp, track) {
             params: { term, entity: 'song', limit: 1 },
             timeout: 8000,
         });
-        const artwork = search.data?.results?.[0]?.artworkUrl100;
+        const result = search.data?.results?.[0];
+        if (result?.trackTimeMillis) itunesDuration = Math.round(result.trackTimeMillis / 1000);
+        const artwork = result?.artworkUrl100;
         if (artwork) {
             const hi = artwork.replace(/100x100(bb)?/i, '600x600bb');
             const resp = await axios.get(hi, { responseType: 'arraybuffer', timeout: 10000 });
             const img = await sharp(Buffer.from(resp.data)).resize(500, 500, { fit: 'cover' }).png().toBuffer();
-            if (img && img.length > 1000) return img;
+            if (img && img.length > 1000) return { cover: img, duration: itunesDuration };
         }
     } catch (e) {
         console.error('[cur] itunes cover:', e.message);
@@ -66,14 +72,14 @@ async function fetchSongCover(axios, sharp, track) {
             try {
                 const resp = await axios.get(track.cover, { responseType: 'arraybuffer', timeout: 8000 });
                 const img = await sharp(Buffer.from(resp.data)).resize(500, 500, { fit: 'cover' }).png().toBuffer();
-                if (img && img.length > 1000) return img;
+                if (img && img.length > 1000) return { cover: img, duration: itunesDuration };
             } catch (e) {
                 console.error('[cur] lastfm cover:', e.message);
             }
         }
     }
 
-    return null;
+    return { cover: null, duration: itunesDuration };
 }
 
 module.exports = {
@@ -129,14 +135,17 @@ module.exports = {
         }
 
         let coverBuffer = null;
+        let durationSec = trackInfo.duration || 0;
         try {
-            coverBuffer = await fetchSongCover(axios, sharp, track);
+            const found = await fetchSongCover(axios, sharp, track);
+            coverBuffer = found.cover;
+            if (found.duration > 0) durationSec = found.duration;
         } catch (e) {
             console.error('[cur] cover:', e.message);
         }
 
         const se = nowPlaying ? '🎧 *IN RIPRODUZIONE*' : '📼 *ULTIMO ASCOLTO*';
-        const durText = fmtDuration(trackInfo.duration);
+        const durText = fmtDuration(durationSec);
         const caption =
             `${se}\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
