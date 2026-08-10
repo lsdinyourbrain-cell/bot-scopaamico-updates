@@ -39,6 +39,7 @@ const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBoun
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
 const { sendButtons, editButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
+const greetings = require('./lib/greetings');
 const { showProgress } = require('./lib/loading');
 const lastfm = require('./lib/lastfm');
 const config = require('./config');
@@ -52,6 +53,10 @@ let botStartTime = Math.floor(Date.now() / 1000); // Unix timestamp when bot con
 // Gruppi attualmente in "nuke" (dedsecregna): durante il nuke si sopprimono
 // i messaggi di addio/benvenuto e le reazioni agli eventi partecipanti.
 const nukingGroups = new Set();
+
+// Ultima risposta di saluto per JID (evita di spammare buongiorno/buonanotte
+// a ogni variante che qualcuno scrive nella stessa fascia).
+const greetingLastReply = new Map();
 
 const COMMANDS_DIRECTORY = path.join(__dirname, 'commands');
 const loadCommandRegistry = () => {
@@ -1806,6 +1811,32 @@ async function startBot() {
                             text: `🌙 *@${jid.split('@')[0]} è AFK*\n\n📝 Motivo: _${(afkEntry.reason || 'nessun motivo').slice(0, 200)}_\n\nNon aspettarti una risposta immediata.`,
                             mentions: [jid],
                         });
+                    }
+                }
+            } catch (_) {}
+        }
+
+        // ── SALUTI AUTOMATICI (buongiorno / buonanotte) ─────────────────────
+        // Se qualcuno scrive "buongiorno", "bg" o una qualsiasi variante nella
+        // fascia del mattino (o "buonanotte"/"bn" la sera), il bot risponde in
+        // modo simpatico con un insultino leggero. Cooldown per non spammare.
+        if (body && !body.startsWith('.')) {
+            try {
+                const kind = greetings.detectGreeting(body);
+                if (kind) {
+                    const now = Date.now();
+                    const lastKey = `${kind}:${sender}`;
+                    const lastTs = greetingLastReply.get(lastKey) || 0;
+                    if (now - lastTs >= 20 * 60 * 1000) {
+                        greetingLastReply.set(lastKey, now);
+                        // Il token @numero nel testo fa sì che WhatsApp evidenzi
+                        // il nome del contatto come vera menzione.
+                        const name = sender.split('@')[0];
+                        const text = greetings.pickGreeting(kind, name);
+                        await sock.sendMessage(from, {
+                            text,
+                            mentions: [sender],
+                        }, { quoted: msg }).catch(() => {});
                     }
                 }
             } catch (_) {}
