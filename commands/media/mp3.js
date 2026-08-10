@@ -39,17 +39,19 @@ module.exports = {
             if (!file.length) throw new Error('file audio vuoto');
 
             const ext = download.ext || 'm4a';
-            const mimetype = MIME_BY_EXT[ext] || 'audio/mpeg';
+            const mimetype = MIME_BY_EXT[ext] || 'audio/mp4';
+            const cleanName = query.replace(/[^\p{L}\p{N}]+/gu, ' ').trim().slice(0, 60) || 'song';
 
+            // Invia come DOCUMENT con mime audio: è il modo più affidabile per
+            // consegnare davvero il file (l'invio come bolla audio con
+            // ptt:false a volte viene scartato in silenzio da WhatsApp).
             await sock.sendMessage(from, {
-                audio: file,
+                document: file,
                 mimetype,
-                ptt: false,
-                fileName: `song.${ext}`,
-                caption: `🎵 *${query}*`,
+                fileName: `${cleanName}.${ext}`,
             }, { quoted: msg });
 
-            await prog.done(`🎵 Scaricato *${query}* intero (${ext.toUpperCase()})!`);
+            await prog.done(`🎵 Scaricato *${query}* intero!`);
         } catch (e) {
             console.error('[mp3]', e.message);
             await prog.fail('❌ ' + getDownloadErrorMessage(e));
