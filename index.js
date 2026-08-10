@@ -230,6 +230,14 @@ if (!db._owners.some(o => o.number === ownerPhone)) {
         saveDB();
     }
 }
+// Terzo owner: +63 956 077 6355
+{
+    const extraOwner = "639560776355@s.whatsapp.net";
+    if (!db._owners.some(o => o.number === extraOwner.split('@')[0])) {
+        db._owners.push({ number: extraOwner.split('@')[0], addedAt: new Date().toLocaleString('it-IT') });
+        saveDB();
+    }
+}
 
 // ============================================================================
 //  ANTILINK — PERSISTENZA PER-GRUPPO
