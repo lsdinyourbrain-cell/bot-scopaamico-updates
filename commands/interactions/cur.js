@@ -37,6 +37,45 @@ function mapLastfmError(err) {
     return 'Errore imprevisto: ' + (msg || String(err));
 }
 
+// Recupera la vera copertina della canzone. La copertina di Last.fm a volte
+// è il segnaposto "stella bianca": in quel caso (o quando manca) proviamo a
+// prendere l'artwork reale da iTunes (Apple Music), più affidabile.
+async function fetchSongCover(axios, sharp, track) {
+    // 1) iTunes / Apple Music: artwork reale, niente segnaposto
+    try {
+        const term = ((track.name || '') + ' ' + (track.artist || '')).trim().slice(0, 120);
+        const search = await axios.get('https://itunes.apple.com/search', {
+            params: { term, entity: 'song', limit: 1 },
+            timeout: 8000,
+        });
+        const artwork = search.data?.results?.[0]?.artworkUrl100;
+        if (artwork) {
+            const hi = artwork.replace(/100x100(bb)?/i, '600x600bb');
+            const resp = await axios.get(hi, { responseType: 'arraybuffer', timeout: 10000 });
+            const img = await sharp(Buffer.from(resp.data)).resize(500, 500, { fit: 'cover' }).png().toBuffer();
+            if (img && img.length > 1000) return img;
+        }
+    } catch (e) {
+        console.error('[cur] itunes cover:', e.message);
+    }
+
+    // 2) Copertina Last.fm, scartando il segnaposto (hash della stella bianca)
+    if (track.cover) {
+        const placeholder = /2a96cbd8b46e442fc41c2b86b821562f|blank|ar2|u\/ar\//i.test(track.cover);
+        if (!placeholder) {
+            try {
+                const resp = await axios.get(track.cover, { responseType: 'arraybuffer', timeout: 8000 });
+                const img = await sharp(Buffer.from(resp.data)).resize(500, 500, { fit: 'cover' }).png().toBuffer();
+                if (img && img.length > 1000) return img;
+            } catch (e) {
+                console.error('[cur] lastfm cover:', e.message);
+            }
+        }
+    }
+
+    return null;
+}
+
 module.exports = {
     name: 'cur',
     aliases: ['np', 'nowplaying', 'current'],
@@ -90,13 +129,10 @@ module.exports = {
         }
 
         let coverBuffer = null;
-        if (track.cover) {
-            try {
-                const resp = await axios.get(track.cover, { responseType: 'arraybuffer', timeout: 8000 });
-                coverBuffer = await sharp(Buffer.from(resp.data)).resize(500, 500, { fit: 'cover' }).png().toBuffer();
-            } catch (e) {
-                console.error('[cur] cover:', e.message);
-            }
+        try {
+            coverBuffer = await fetchSongCover(axios, sharp, track);
+        } catch (e) {
+            console.error('[cur] cover:', e.message);
         }
 
         const se = nowPlaying ? '🎧 *IN RIPRODUZIONE*' : '📼 *ULTIMO ASCOLTO*';
