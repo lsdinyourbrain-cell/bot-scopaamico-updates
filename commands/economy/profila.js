@@ -30,6 +30,7 @@ module.exports = {
 ║       👤 *PROFILO* 👤
 ╠══════════════════════════════╣
 ║  🧑 *${name.slice(0, 20)}*
+║  🏷️ ${uDB.title ? '*' + uDB.title.slice(0, 25) + '*' : '_Nessun titolo_'}
 ║
 ║  💰 Contante: *${wallet}€*
 ║  🏦 Banca: *${bank}€*

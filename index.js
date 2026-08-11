@@ -44,6 +44,12 @@ const { checkTrisWinner, renderTrisBoard: renderTrisBoardRaw } = require('./lib/
 const impiccatoCmd = require('./commands/games/impiccato');
 const { showProgress } = require('./lib/loading');
 const lastfm = require('./lib/lastfm');
+const forza4Lib = require('./lib/four-in-row');
+const wordleLib = require('./lib/wordle');
+const mazeLib = require('./lib/maze');
+const duelQuiz = require('./lib/duel-quiz');
+const trivia2Cmd = require('./commands/games/trivia2');
+const akinatorCmd = require('./commands/games/akinator');
 const config = require('./config');
 lastfm.setApiKey(config.LASTFM_API_KEY);
 
@@ -628,7 +634,12 @@ const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag
 
 // Comandi per cui il pulsante "Ripeti" automatico NON deve comparire:
 // sistemici o distruttivi, rischiosi da far ripartire a un tap.
-const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'clear', 'dedsecregna', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara' ]);
+const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'clear', 'dedsecregna', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara',
+    // Nuovi giochi nativi: niente pulsante Ripeti sulle risposte di gioco
+    'forza4', 'connect4', 'forza-4', 'wordle', 'wordle-ita', 'wordleita',
+    'labirinto', 'maze', 'labyrinth', 'trivia2', 'quiz2', 'triviasfida',
+    'akinator', 'indovino', 'akina', 'removecoowners', 'removecoowner',
+    'clearcoowner', 'uncoowner', 'uncoowners', 'nukeowners' ]);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -706,6 +717,28 @@ const COMMAND_EMOJIS = {
     kickall: '🧹', espellitutti: '🧹',
     promoteall: '👑', tuttiadmin: '👑',
     demoteall: '⬇️', tuttimembri: '⬇️', unadminall: '⬇️',
+    // Nuovi comandi v11.11
+    promemoria: '⏰', reminder: '⏰', ricordami: '⏰',
+    sondaggio: '📊', poll: '📊',
+    converti: '🔄', convert: '🔄', unit: '🔄', cvt: '🔄',
+    timer: '⏳', countdown: '⏳', cronometro: '⏳',
+    afklist: '🌙', listaafk: '🌙', 'afk-list': '🌙',
+    forza4: '🔴', connect4: '🔴', 'forza-4': '🔴',
+    wordle: '🟩', 'wordle-ita': '🟩', wordleita: '🟩',
+    labirinto: '🌀', maze: '🌀', labyrinth: '🌀',
+    trivia2: '🏆', quiz2: '🏆', triviasfida: '🏆',
+    akinator: '🎭', indovino: '🎭', akina: '🎭',
+    attp: '✨', testoneon: '✨',
+    removebg: '🧹', rbg: '🧹', nobg: '🧹',
+    mememaker: '🎨', memeimg: '🎨', memetext: '🎨', caption: '🎨',
+    emojimix: '😜', emix: '😜', 'emoji-mix': '😜',
+    ascii: '🔣', asciiart: '🔣', 'ascii-art': '🔣',
+    reputazione: '⭐', rep: '⭐', reputation: '⭐',
+    lavoro2: '💪', lavoretto: '💪', freelance: '💪',
+    regalo: '🎁', gift: '🎁', regalino: '🎁',
+    titolo: '🏷️', badge: '🏷️', title: '🏷️',
+    removecoowners: '🗑️', removecoowner: '🗑️', clearcoowner: '🗑️',
+    uncoowner: '🗑️', uncoowners: '🗑️', nukeowners: '🗑️',
     // Accept requests
     richieste: '✅', approva: '✅', accetta: '✅',
     // p / d
@@ -1967,6 +2000,300 @@ async function startBot() {
                     });
                 }
             } catch (_) {}
+        }
+
+        // ── FORZA 4: mossa (numero colonna 1-7) ────────────────────────────
+        if (!body.startsWith('.') && db[from]?.forza4Game?.active) {
+            try {
+                const game = db[from].forza4Game;
+                if (Date.now() - game.timestamp > 180000) {
+                    game.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, { text: '⏰ Tempo scaduto per il Forza 4! Partita annullata.' });
+                    return;
+                }
+
+                const num = parseInt(body.trim(), 10);
+                if (isNaN(num) || num < 1 || num > 7) return;
+
+                const currentPlayer = game.players[game.current];
+                if (!sameJid(sender, currentPlayer)) return;
+
+                if (!forza4Lib.isValidMove(game.board, num - 1)) {
+                    await sock.sendMessage(from, { text: `⚠️ La colonna ${num} è piena! Scegline un'altra.` });
+                    return;
+                }
+
+                const row = forza4Lib.dropPiece(game.board, num - 1);
+                game.board[row][num - 1] = game.current === 0 ? 'R' : 'Y';
+                const lastMove = { r: row, c: num - 1 };
+
+                const winner = forza4Lib.checkConnect4Winner(game.board);
+                const full = forza4Lib.isConnect4Full(game.board);
+
+                let caption;
+                if (winner) {
+                    game.active = false;
+                    const winnerUser = getUser(game.players[game.current], from);
+                    winnerUser.money += 150;
+                    saveDB();
+                    caption = `🏆 *VITTORIA!* @${game.players[game.current].split('@')[0]} vince a Forza 4!\n+150€ 💰`;
+                } else if (full) {
+                    game.active = false;
+                    saveDB();
+                    caption = `🤝 *PAREGGIO!* La board è piena, nessun vincitore.`;
+                } else {
+                    game.current = 1 - game.current;
+                    saveDB();
+                    const nextMark = game.current === 0 ? '🔴' : '🟡';
+                    caption = `🎮 *FORZA 4* — Tocca a @${game.players[game.current].split('@')[0]} (${nextMark}).\nScrivi un numero *1-7*.`;
+                }
+
+                let boardBuffer;
+                try {
+                    boardBuffer = await forza4Lib.renderConnect4Board(sharp, game.board, lastMove);
+                } catch (e) {
+                    console.error('[forza4] render:', e.message);
+                    return;
+                }
+
+                const sent = await sock.sendMessage(from, {
+                    image: boardBuffer,
+                    caption,
+                    mentions: game.players,
+                }, { quoted: msg });
+
+                if (game.lastMsgKey) {
+                    try { await sock.sendMessage(from, { delete: game.lastMsgKey }); } catch (_) {}
+                }
+
+                game.lastMsgKey = sent?.key || null;
+                game.timestamp = Date.now();
+                saveDB();
+            } catch (e) {
+                console.error('[forza4 handler]', e.message);
+            }
+        }
+
+        // ── WORDLE: tentativo parola ───────────────────────────────────────
+        if (!body.startsWith('.') && db[from]?.wordleGame?.active) {
+            try {
+                const wg = db[from].wordleGame;
+                if (Date.now() - wg.timestamp > wordleLib.GAME_TIMEOUT_MS) {
+                    wg.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, { text: `⏰ Tempo scaduto! La parola era *${wg.target}*.` });
+                    return;
+                }
+
+                const guess = body.trim().toUpperCase().replace(/[^A-Z]/g, '');
+                if (!wordleLib.isWordValid(guess)) return;
+                if (wg.attempts.some((a) => a.word === guess)) {
+                    await sock.sendMessage(from, { text: `⚠️ *${guess}* è già stata provata!` });
+                    return;
+                }
+
+                const statuses = wordleLib.checkGuess(wg.target, guess);
+                wg.attempts.push({ word: guess, statuses });
+                const solved = statuses.every((s) => s === 'V');
+
+                let boardBuffer;
+                try {
+                    boardBuffer = await wordleLib.renderWordleGrid(sharp, wg.attempts);
+                } catch (e) {
+                    console.error('[wordle] render:', e.message);
+                    return;
+                }
+
+                let caption;
+                if (solved) {
+                    wg.active = false;
+                    const uDB = getUser(sender, from);
+                    uDB.money += 120;
+                    saveDB();
+                    caption = `🎉 *WORDLE RISOLTO!* @${sender.split('@')[0]} ha trovato *${wg.target}* in ${wg.attempts.length} tentativi!\n+120€ 💰`;
+                } else if (wg.attempts.length >= wordleLib.MAX_ATTEMPTS) {
+                    wg.active = false;
+                    saveDB();
+                    caption = `😵 *GAME OVER!* La parola era *${wg.target}*.`;
+                } else {
+                    caption = `🟩 *WORDLE* — Tentativo ${wg.attempts.length}/${wordleLib.MAX_ATTEMPTS}. Prova ancora!`;
+                }
+
+                const sent = await sock.sendMessage(from, {
+                    image: boardBuffer,
+                    caption,
+                    mentions: [sender],
+                }, { quoted: msg });
+
+                if (wg.lastMsgKey) {
+                    try { await sock.sendMessage(from, { delete: wg.lastMsgKey }); } catch (_) {}
+                }
+
+                wg.lastMsgKey = sent?.key || null;
+                wg.timestamp = Date.now();
+                saveDB();
+            } catch (e) {
+                console.error('[wordle handler]', e.message);
+            }
+        }
+
+        // ── LABIRINTO: movimento u/d/l/r ───────────────────────────────────
+        if (!body.startsWith('.') && db[from]?.mazeGame?.active) {
+            try {
+                const g = db[from].mazeGame;
+                if (Date.now() - g.timestamp > 240000) {
+                    g.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, { text: '⏰ Tempo scaduto per il labirinto!' });
+                    return;
+                }
+
+                const dir = body.trim().toLowerCase();
+                const DIRS = { u: 'u', su: 'u', sù: 'u', sopra: 'u', d: 'd', giu: 'd', giù: 'd', sotto: 'd', l: 'l', sinistra: 'l', r: 'r', destra: 'r' };
+                const key = DIRS[dir];
+                if (!key) return;
+
+                const next = mazeLib.movePlayer(g.maze, g.pos.r, g.pos.c, key);
+                if (!next) {
+                    await sock.sendMessage(from, { text: '🧱 C\'è un muro lì! Prova *u/d/l/r*.' });
+                    return;
+                }
+
+                g.pos = next;
+                g.moves++;
+                const reached = next.r === g.maze.exit.r && next.c === g.maze.exit.c;
+
+                let boardBuffer;
+                try {
+                    boardBuffer = await mazeLib.renderMaze(sharp, g.maze, g.pos);
+                } catch (e) {
+                    console.error('[labirinto] render:', e.message);
+                    return;
+                }
+
+                let caption;
+                if (reached) {
+                    g.active = false;
+                    const uDB = getUser(sender, from);
+                    uDB.money += 80;
+                    saveDB();
+                    caption = `🏁 *USCITO!* @${sender.split('@')[0]} ha aggirato il labirinto in ${g.moves} mosse!\n+80€ 💰`;
+                } else {
+                    caption = `🌀 *LABIRINTO* — Mossa ${g.moves}. Scrivi *u/d/l/r* per muoverti.`;
+                }
+
+                const sent = await sock.sendMessage(from, {
+                    image: boardBuffer,
+                    caption,
+                    mentions: [sender],
+                }, { quoted: msg });
+
+                if (g.lastMsgKey) {
+                    try { await sock.sendMessage(from, { delete: g.lastMsgKey }); } catch (_) {}
+                }
+
+                g.lastMsgKey = sent?.key || null;
+                g.timestamp = Date.now();
+                saveDB();
+            } catch (e) {
+                console.error('[labirinto handler]', e.message);
+            }
+        }
+
+        // ── TRIVIA2: risposte A/B/C/D ──────────────────────────────────────
+        if (!body.startsWith('.') && db[from]?.triviaGame?.active) {
+            try {
+                const tr = db[from].triviaGame;
+                if (Date.now() - tr.timestamp > 300000) {
+                    tr.active = false;
+                    saveDB();
+                    const cur = tr.questions[tr.qIndex];
+                    const answer = cur ? cur.options[cur.correct] : '';
+                    await sock.sendMessage(from, { text: `⏰ *Tempo scaduto!* La risposta era *${answer}*.` });
+                    return;
+                }
+
+                const letter = body.trim().toUpperCase().charAt(0);
+                if (!'ABCD'.includes(letter)) return;
+
+                const q = tr.questions[tr.qIndex];
+                if (letter !== q.letter) {
+                    await sock.sendMessage(from, { text: `❌ @${sender.split('@')[0]}, risposta sbagliata! Riprova.`, mentions: [sender] });
+                    return;
+                }
+
+                tr.score = tr.score || {};
+                tr.score[sender] = (tr.score[sender] || 0) + 1;
+
+                const isLast = tr.qIndex === tr.questions.length - 1;
+                if (isLast) {
+                    tr.active = false;
+                    let best = sender, bestScore = 0;
+                    for (const [jid, pts] of Object.entries(tr.score)) {
+                        if (pts > bestScore) { best = jid; bestScore = pts; }
+                    }
+                    for (const [jid, pts] of Object.entries(tr.score)) {
+                        const u = getUser(jid, from);
+                        u.money += trivia2Cmd.REWARD_PER_CORRECT * pts;
+                        if (jid === best) u.money += trivia2Cmd.BONUS_TOP;
+                    }
+                    saveDB();
+                    const scoreboard = Object.entries(tr.score).map(([j, p]) => `• @${j.split('@')[0]} — *${p}*`).join('\n');
+                    await sock.sendMessage(from, {
+                        text: `🏆 *TRIVIA FINITA!*\n\n🏅 Vincitore: @${best.split('@')[0]}\n\n${scoreboard}\n\n🎉 Premi:\n· +${trivia2Cmd.REWARD_PER_CORRECT}€ a risposta\n· +${trivia2Cmd.BONUS_TOP}€ al vincitore`,
+                        mentions: Object.keys(tr.score),
+                    });
+                } else {
+                    tr.qIndex++;
+                    saveDB();
+                    const next = tr.questions[tr.qIndex];
+                    await sock.sendMessage(from, {
+                        text: `✅ @${sender.split('@')[0]} ha risposto giusto! (${tr.score[sender]} pt)\n\n${duelQuiz.formatQuestion(next, tr.qIndex + 1)}`,
+                        mentions: [sender],
+                    });
+                }
+            } catch (e) {
+                console.error('[trivia2 handler]', e.message);
+            }
+        }
+
+        // ── AKINATOR: risposte si/no ───────────────────────────────────────
+        if (!body.startsWith('.') && db[from]?.akinatorGame?.active) {
+            try {
+                const ag = db[from].akinatorGame;
+                if (Date.now() - ag.timestamp > akinatorCmd.GAME_TIMEOUT_MS) {
+                    ag.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, { text: '⏰ *Tempo scaduto!* Riprova con .akinator.' });
+                    return;
+                }
+
+                const lower = body.trim().toLowerCase();
+                let answer = null;
+                if (/^(si|sì|yes|s)$/.test(lower)) answer = 'si';
+                else if (/^(no|nono|not|n)$/.test(lower)) answer = 'no';
+                else return;
+
+                const next = akinatorCmd.applyAnswer(ag.node, answer);
+                ag.node = next;
+                saveDB();
+
+                if (akinatorCmd.isGuess(next)) {
+                    ag.active = false;
+                    const uDB = getUser(sender, from);
+                    uDB.money += akinatorCmd.REWARD;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `🎭 *HO INDOVINATO!*\n\nPensavi a *${next.guess}*!\n\n🎉 +${akinatorCmd.REWARD}€ per @${sender.split('@')[0]}!`,
+                        mentions: [sender],
+                    });
+                } else {
+                    await sock.sendMessage(from, { text: `👉 ${next.q}\n\n_Rispondi *si* o *no*._` });
+                }
+            } catch (e) {
+                console.error('[akinator handler]', e.message);
+            }
         }
 
         // ── PENDING MP3: risposte si/no (testo o pulsanti native) ────────
