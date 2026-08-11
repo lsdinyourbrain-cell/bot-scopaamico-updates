@@ -2481,6 +2481,57 @@ async function startBot() {
     });
 
     // ── GROUP PARTICIPANTS UPDATE (WELCOME / GOODBYE) ──────────────────────
+    // Buffer di debounce per i benvenuti: se WhatsApp manda più eventi "add"
+    // ravvicinati (es. accettazione di più richieste con .richieste), i nuovi
+    // arrivati vengono accumulati e salutati con UN SOLO messaggio combinato.
+    const pendingWelcome = new Map(); // groupJid -> { jids: [], timer }
+    const WELCOME_DEBOUNCE_MS = 1500;
+
+    const flushWelcome = async (groupJid) => {
+        const entry = pendingWelcome.get(groupJid);
+        if (!entry) return;
+        pendingWelcome.delete(groupJid);
+        clearTimeout(entry.timer);
+        const welcomedJids = entry.jids;
+        if (!welcomedJids.length) return;
+
+        try {
+            const meta = await sock.groupMetadata(groupJid);
+            const groupName = (meta?.subject) || 'Questo gruppo';
+            const names = welcomedJids.map(j => '@' + j.split('@')[0]).join(' ');
+            const welcomeText = welcomedJids.length === 1
+                ? `╭─── ☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖔 ☠️ ───╮\n│ 👤 ${names}\n│ 📍 *${groupName}*\n├─── 📜 𝕱𝖆𝖙𝖙𝖊́ ───┤\n│ ✦ _Regolamento in descrizione._\n│ ✦ _Altro da lasciare in chat._\n│ ✦ _Digita_ *".menu"* _per i comandi._\n╰────────────────────────╯`
+                : `╭─── ☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖎 ☠️ ───╮\n│ 👥 ${names}\n│ 📍 *${groupName}*\n├─── 📜 𝕱𝖆𝖙𝖙𝖊́ ───┤\n│ ✦ _Regolamento in descrizione._\n│ ✦ _Altro da lasciare in chat._\n│ ✦ _Digita_ *".menu"* _per i comandi._\n╰────────────────────────╯`;
+
+            let pfpUrl;
+            try { pfpUrl = await sock.profilePictureUrl(groupJid, 'image'); } catch (_) { pfpUrl = null; }
+
+            if (pfpUrl) {
+                await sock.sendMessage(groupJid, {
+                    image: { url: pfpUrl },
+                    caption: welcomeText,
+                    mentions: welcomedJids,
+                });
+            } else {
+                await sock.sendMessage(groupJid, {
+                    text: welcomeText,
+                    mentions: welcomedJids,
+                });
+            }
+
+            try {
+                await sendButtons(sock, groupJid, '🚀 *Cosa vuoi fare?*\n\nPremi un pulsante per iniziare:', [
+                    { label: '.menu', id: 'menu' },
+                    { label: '.ping', id: 'ping' },
+                ]);
+            } catch (e) {
+                console.error('[WELCOME] Errore pulsanti:', e.message);
+            }
+        } catch (err) {
+            console.error('[WELCOME] Errore flush:', err.message);
+        }
+    };
+
     sock.ev.on('group-participants.update', async (update) => {
         console.log('[group-participants.update] Evento ricevuto:', JSON.stringify(update, null, 2));
         try {
@@ -2549,6 +2600,13 @@ async function startBot() {
             const groupDesc = (meta.desc || '').trim().slice(0, 200) || 'Nessuna descrizione disponibile';
             const participantsList = Array.isArray(meta.participants) ? meta.participants : [];
             const admins = participantsList.filter(p => ['admin', 'superadmin'].includes(p.admin));
+
+            // Lista dei nuovi membri che supereranno i check d'ingresso e
+            // riceveranno davvero il benvenuto. Se un singolo evento 'add'
+            // porta più persone (es. accettazione di più richieste adesione
+            // con .richieste), si invia UN SOLO benvenuto che le tagga tutte:
+            // niente più spam di messaggi individuali.
+            const welcomedJids = [];
 
             for (const p of participants) {
                 // p è un oggetto: { id: '...@lid', phoneNumber: '...@s.whatsapp.net', admin: ... }
@@ -2640,43 +2698,7 @@ async function startBot() {
                     }
 
                     if (!welcomeConfig.welcome) continue; // Welcome disattivato per questo gruppo
-
-                    const welcomeText =
-
-`╭─── ☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖔 ☠️ ───╮
-│ 👤 @${short}
-│ 📍 *${groupName}*
-├─── 📜 𝕱𝖆𝖙𝖙𝖊́ ───┤
-│ ✦ _Regolamento in descrizione._
-│ ✦ _Altro da lasciare in chat._
-│ ✦ _Digita_ *".menu"* _per i comandi._
-╰────────────────────────╯`;
-
-                    let pfpUrl;
-                    try { pfpUrl = await sock.profilePictureUrl(groupJid, 'image'); } catch (_) { pfpUrl = null; }
-
-                    if (pfpUrl) {
-                        await sock.sendMessage(groupJid, {
-                            image: { url: pfpUrl },
-                            caption: welcomeText,
-                            mentions: [jid],
-                        });
-                    } else {
-                        await sock.sendMessage(groupJid, {
-                            text: welcomeText,
-                            mentions: [jid],
-                        });
-                    }
-
-                    // Pulsanti rapidi: menu comandi e ping di test.
-                    try {
-                        await sendButtons(sock, groupJid, '🚀 *Cosa vuoi fare?*\n\nPremi un pulsante per iniziare:', [
-                            { label: '.menu', id: 'menu' },
-                            { label: '.ping', id: 'ping' },
-                        ]);
-                    } catch (e) {
-                        console.error('[WELCOME] Errore pulsanti:', e.message);
-                    }
+                    welcomedJids.push(jid);
 
                 } else if (action === 'remove') {
                     if (!welcomeConfig.goodbye) continue; // Goodbye disattivato per questo gruppo
@@ -2699,6 +2721,23 @@ async function startBot() {
                         mentions: [jid],
                     });
                 }
+            }
+
+            // ── BENVENUTO COMBINATO (con debounce) ─────────────────────────
+            // I nuovi arrivati vengono accumulati e salutati tutti insieme con
+            // UN solo messaggio. Il timer consente di fondere più eventi "add"
+            // ravvicinati (es. .richieste accetta tutte) in un unico benvenuto.
+            if (action === 'add' && welcomedJids.length) {
+                let entry = pendingWelcome.get(groupJid);
+                if (!entry) {
+                    entry = { jids: [], timer: null };
+                    pendingWelcome.set(groupJid, entry);
+                }
+                for (const j of welcomedJids) {
+                    if (!entry.jids.includes(j)) entry.jids.push(j);
+                }
+                clearTimeout(entry.timer);
+                entry.timer = setTimeout(() => flushWelcome(groupJid), WELCOME_DEBOUNCE_MS);
             }
         } catch (err) {
             console.error('[group-participants.update] Errore:', err.message);
