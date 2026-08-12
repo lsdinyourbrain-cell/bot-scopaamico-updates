@@ -2,15 +2,16 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  LABIRINTO — ScopaAmico Bot
-//  Flusso in 3 passi con UI nativa WhatsApp:
+//  Flusso in 3 passi con UI nativa WhatsApp (carosello: come in .cerca, ogni
+//  card DEVE avere un'immagine o WhatsApp mostra "messaggio non supportato").
 //   1. `.labirinto`                      → scegli la DIFFICOLTÀ (pulsanti)
 //   2. premi una difficoltà              → CAROSELLO di 5 labirinti casuali
 //   3. premi *Gioca* su una card         → parte la partita
-//  In partita NIENTE scrittura in chat: i pulsanti "Muovi · Fine" (riquadro
-//  single_select) sotto la board muovono il giocatore. Rimosso dall'handler
-//  di testo è possibile usare anche le lettere u/d/l/r.
+//  In partita i pulsanti "Muovi · Fine" sotto la board muovono il giocatore,
+//  e si può giocare anche coi comandi di testo *u/d/l/r* e *fine*.
 //  Lo stato vive in db[from].mazeGame (partita) e db[from].mazePending
-//  (carosello in attesa di scelta, con TTL).
+//  (carosello in attesa di scelta, con TTL). Se il carosello non si può
+//  inviare, si parte comunque con un labirinto casuale della difficoltà.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { generateMaze, renderMaze, stepMaze, moveNavButton, MOVES_TEXT } = require('../../lib/maze');
@@ -46,36 +47,58 @@ const showDifficultyMenu = async (sock, msg, context) => {
 };
 
 // Passo 2: carosello di 5 labirinti casuali della difficoltà scelta.
+// IMPORTANTE: ogni card deve avere l'immagine, altrimenti WhatsApp mostra
+// "messaggio non supportato" (le card senza media rompono l'intero carosello).
 const showCarousel = async (sock, msg, context, diff) => {
     const { from, sender, services } = context;
     const { db, saveDB, sendCarousel, sendButtons, sharp } = services;
 
     const mazes = [];
     const buffers = [];
+    let fallbackImg = null;
     for (let i = 0; i < CAROUSEL_COUNT; i++) {
         const m = generateMaze(diff.rows, diff.cols);
         mazes.push(m);
         try {
-            buffers.push(await renderMaze(sharp, m, { r: 0, c: 0 }));
+            const b = await renderMaze(sharp, m, { r: 0, c: 0 });
+            buffers.push(b);
+            if (!fallbackImg) fallbackImg = b;
         } catch (e) {
             buffers.push(null);
         }
     }
 
-    const cards = mazes.map((m, i) => ({
-        title: `${diff.emoji} ${diff.label} · Lab ${i + 1}`,
-        subtitle: `${m.rows} × ${m.cols}`,
-        body: `Labirinto casuale #${i + 1}.\nPremi *Gioca* per provarlo!`,
-        imageBuffer: buffers[i],
-        buttons: [{ label: '🎮 Gioca', id: `labirinto gioca ${i}` }],
-    }));
-    // Ultima card: tornare a cambiare difficoltà (navigazione del carosello).
-    cards.push({
-        title: '⚙️ Altre difficoltà',
-        subtitle: 'Facile · Media · Difficile',
-        body: 'Vuoi cambiare livello?\nTorna alla scelta difficoltà.',
-        buttons: [{ label: '↩️ Cambia livello', id: 'labirinto dim' }],
-    });
+    // Ultima card: tornare a cambiare difficoltà (anch'essa con immagine).
+    let changeImg = fallbackImg;
+    if (!changeImg) {
+        try {
+            changeImg = await renderMaze(sharp, generateMaze(5, 7), { r: 0, c: 0 });
+        } catch (_) { changeImg = null; }
+    }
+
+    const cards = [];
+    for (let i = 0; i < mazes.length; i++) {
+        if (!buffers[i]) continue; // niente card senza immagine
+        cards.push({
+            title: `${diff.emoji} ${diff.label} · Lab ${i + 1}`,
+            subtitle: `${mazes[i].rows} × ${mazes[i].cols}`,
+            body: `Labirinto casuale #${i + 1}.\nPremi *Gioca* per provarlo!`,
+            imageBuffer: buffers[i],
+            buttons: [{ label: '🎮 Gioca', id: `labirinto gioca ${i}` }],
+        });
+    }
+    if (changeImg) {
+        cards.push({
+            title: '⚙️ Altre difficoltà',
+            subtitle: 'Facile · Media · Difficile',
+            body: 'Vuoi cambiare livello?\nTorna alla scelta difficoltà.',
+            imageBuffer: changeImg,
+            buttons: [{ label: '↩️ Cambia livello', id: 'labirinto dim' }],
+        });
+    }
+
+    // Nessuna immagine disponibile: non possiamo fare un carosello valido.
+    if (!cards.length) return false;
 
     db[from] = db[from] || {};
     db[from].mazePending = { mazes, difficulty: diff.key, sender, ts: Date.now() };
@@ -93,13 +116,12 @@ const showCarousel = async (sock, msg, context, diff) => {
         cards,
     }, msg);
 
-    // Se il carosello non si può inviare, ripiega sul semplice menu difficoltà.
+    // Carosello non inviato → niente messaggi "fantasma": si parte comunque
+    // con un labirinto casuale della difficoltà scelta.
     if (!sent) {
-        await sendButtons(sock, from,
-            '⚠️ Non riesco a mostrare\nqui i labirinti.\nTorna al menu difficoltà 👇',
-            DIFF_BUTTONS,
-            msg);
+        await startRandomGame(sock, msg, context, diff);
     }
+    return sent;
 };
 
 // Passo 3: avvia la partita sul labirinto scelto.
@@ -159,6 +181,14 @@ const startGame = async (sock, msg, context, { maze, difficulty }) => {
             sock.sendMessage(from, { text: '⏰ *Tempo scaduto!*\nNon sei riuscito a uscire\ndal labirinto.' }).catch(() => {});
         }
     }, GAME_TIMEOUT_MS);
+};
+
+// Ripiego: parte subito con un labirinto casuale della difficoltà scelta
+// (usato quando il carosello non riesce a essere inviato).
+const startRandomGame = async (sock, msg, context, diff) => {
+    const { from } = context;
+    const maze = generateMaze(diff.rows, diff.cols);
+    return startGame(sock, msg, context, { maze, difficulty: diff.key });
 };
 
 module.exports = {
