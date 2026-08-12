@@ -2,6 +2,7 @@
 
 const fs = require('fs/promises');
 const { searchVideos, downloadAudio, downloadVideo, getDownloadErrorMessage } = require('../../lib/mediaDownloader');
+const { sendCarousel } = require('../../lib/buttons');
 
 const MIME_BY_EXT = {
     mp3: 'audio/mpeg',
@@ -11,10 +12,12 @@ const MIME_BY_EXT = {
     ogg: 'audio/ogg',
 };
 
-// Stato per chat: risultati della ricerca + pagina corrente. Manteniamo qui i
-// dati tra una pressione di pulsante e l'altra (la quale arriva come comando).
+// Stato per chat: risultati della ricerca + pagina corrente (solo per il
+// fallback testuale). Manteniamo qui i dati tra una pressione di pulsante e
+// l'altra (la quale arriva come comando).
 const state = new Map(); // key: chatJid → { results, query, page, ts }
 const STATE_TTL = 10 * 60 * 1000; // 10 minuti
+const RESULTS_COUNT = 10; // max card del carosello (WhatsApp: 10)
 
 const getState = (from) => {
     const st = state.get(from);
@@ -29,9 +32,132 @@ const fmtDur = (s) => {
     return `${m}:${String(sec).padStart(2, '0')}`;
 };
 
+const fmtViews = (n) => {
+    n = Number(n) || 0;
+    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+    return String(n);
+};
+
 const totalPages = (results) => Math.max(1, Math.ceil(results.length / 2));
 
-// Schermata dei risultati (2 video per pagina).
+// ── UI PRINCIPALE: CAROSELLO (card orizzontali scorrevoli) ────────────────
+// Una card per video con thumbnail, titolo, canale e 3 pulsanti:
+// MP3 (download diretto), MP4 (download diretto), Info (dettagli).
+const buildCards = (results) => results.map((v, i) => {
+    const n = i + 1;
+    const dur = v.duration ? `⏱ ${fmtDur(v.duration)}` : '';
+    const views = v.views ? `👁 ${fmtViews(v.views)}` : '';
+    return {
+        title: (v.title || 'Video').slice(0, 80),
+        subtitle: (v.channel || 'YouTube').slice(0, 40),
+        body: `${dur}${dur && views ? ' · ' : ''}${views}`.trim() || ' ',
+        footer: `#${n}/${results.length}`,
+        imageUrl: v.thumbnail || '',
+        buttons: [
+            { label: '🎵 MP3', id: `cerca download ${n} audio` },
+            { label: '🎥 MP4', id: `cerca download ${n} video` },
+            { label: 'ⓘ Info', id: `cerca pick ${n}` },
+        ],
+    };
+});
+
+module.exports = {
+    name: 'cerca',
+    aliases: ['yt', 'search', 'trova'],
+    description: "Cerca video su YouTube: scorri le card e scarica subito l'audio in .mp3 o il video. Uso: .cerca <testo>",
+
+    async run(sock, msg, args, context) {
+        const { from, reply, services } = context;
+        const { sendButtons } = services;
+
+        const textArgs = (args || []).join(' ').trim();
+
+        // ── AGISCI SUI PULSANTI / SOTTOCOMANDI ────────────────────────────
+        const fn = String(textArgs).toLowerCase();
+        const st = getState(from);
+
+        if (fn === 'indietro' || fn === 'back') {
+            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
+            return renderCarousel(sock, from, st, msg, reply);
+        }
+
+        const pickMatch = fn.match(/^pick (\d+)$/);
+        if (pickMatch) {
+            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
+            const idx = parseInt(pickMatch[1], 10) - 1;
+            const video = st.results[idx];
+            if (!video) return reply('❌ Video non trovato. Riprova.');
+            return renderPick(sock, from, st, video, msg, sendButtons);
+        }
+
+        // Fallback testuale (solo se il carosello non è riuscito a partire)
+        const pageMatch = fn.match(/^pag ?(\d+)$/);
+        if (pageMatch) {
+            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
+            const p = parseInt(pageMatch[1], 10);
+            const pages = totalPages(st.results);
+            st.page = ((p - 1 + pages) % pages) + 1;
+            st.ts = Date.now();
+            return renderResultsFallback(sock, from, st, msg, sendButtons);
+        }
+
+        const dlMatch = fn.match(/^download (\d+) (audio|video)$/);
+        if (dlMatch) {
+            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
+            const idx = parseInt(dlMatch[1], 10) - 1;
+            const video = st.results[idx];
+            if (!video) return reply('❌ Video non trovato. Riprova.');
+            const kind = dlMatch[2];
+            return runDownload(sock, from, video, kind, msg, reply);
+        }
+
+        // ── NUOVA RICERCA ─────────────────────────────────────────────────
+        const query = textArgs;
+        if (!query) {
+            return sendButtons(sock, from,
+                "🔎 *Ricerca su YouTube*\n\nScrivi cosa cerchi. Esempio:\n`.cerca Blinding Lights The Weeknd`\n\nScorri le card, premi *MP3* (audio in .mp3) o *MP4* (video).",
+                [{ label: '.cerca Blinding Lights', id: 'cerca Blinding Lights The Weeknd' }],
+                msg);
+        }
+
+        await reply(`🔍 Cerco "*${query}*" su YouTube...`);
+        try {
+            const results = await searchVideos(query, RESULTS_COUNT);
+            const newState = { results, query, page: 1, ts: Date.now() };
+            state.set(from, newState);
+
+            const sent = await renderCarousel(sock, from, newState, msg, reply);
+            // Se il carosello non parte (vecchio client/problemi), si ripiega
+            // sulla UI testuale a pagine (NUOVO messaggio a ogni pressione,
+            // niente edit: sempre visibile).
+            if (!sent) {
+                return renderResultsFallback(sock, from, newState, msg, sendButtons);
+            }
+        } catch (e) {
+            console.error('[cerca]', e.message);
+            return reply('❌ ' + getDownloadErrorMessage(e));
+        }
+    },
+};
+
+// ── RENDER CAROSELLO ──────────────────────────────────────────────────────
+async function renderCarousel(sock, from, st, msg, reply) {
+    try {
+        const sent = await sendCarousel(sock, from, {
+            text: `🔎 *Risultati per "${st.query}"* — scorri ➡️`,
+            cards: buildCards(st.results),
+        }, msg);
+        return sent;
+    } catch (e) {
+        console.error('[cerca] carosello:', e.message);
+        return false;
+    }
+}
+
+// ── FALLBACK TESTUALE (pagine, 2 video per pagina) ─────────────────────────
+// Usa solo sendButtons con NUOVO messaggio: niente edit, quindi risponde
+// SEMPRE con qualcosa di visibile su ogni pulsante premuto.
 const resultsText = (st) => {
     const start = (st.page - 1) * 2;
     const items = st.results.slice(start, start + 2);
@@ -52,94 +178,12 @@ Pagina ${st.page}/${pages} · ${tot} video
 oppure naviga con i pulsanti.`);
 };
 
-// Conferma del video scelto.
-const pickText = (video) => (
-`🎬 *${video.title}*
-${video.duration ? `⏱ ${fmtDur(video.duration)}` : ''}${video.channel ? ` · 📺 ${video.channel}` : ''}
-${video.views ? `\n👁 ${Number(video.views).toLocaleString('it-IT')} visualizzazioni` : ''}
-
-Cosa vuoi scaricare?`);
-
-module.exports = {
-    name: 'cerca',
-    aliases: ['yt', 'search', 'trova'],
-    description: "Cerca video su YouTube, naviga tra i risultati coi pulsanti e scarica quello che vuoi (audio o video). Uso: .cerca <testo>",
-
-    async run(sock, msg, args, context) {
-        const { from, isButton, contextInfo, reply, services } = context;
-        const { sendButtons, editButtons } = services;
-
-        const textArgs = (args || []).join(' ').trim();
-
-        // ── AGISCI SUI PULSANTI / SOTTOCOMANDI ────────────────────────────
-        const fn = String(textArgs).toLowerCase();
-        const st = getState(from);
-
-        if (fn === 'indietro' || fn === 'back') {
-            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
-            return renderResults(sock, from, st, msg, isButton, contextInfo, editButtons, sendButtons);
-        }
-
-        const pickMatch = fn.match(/^pick (\d+)$/);
-        if (pickMatch) {
-            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
-            const idx = parseInt(pickMatch[1], 10) - 1;
-            const video = st.results[idx];
-            if (!video) return reply('❌ Video non trovato. Riprova.');
-            return renderPick(sock, from, st, video, msg, isButton, contextInfo, editButtons, sendButtons);
-        }
-
-        const pageMatch = fn.match(/^pag ?(\d+)$/);
-        if (pageMatch) {
-            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
-            const p = parseInt(pageMatch[1], 10);
-            const pages = totalPages(st.results);
-            st.page = ((p - 1 + pages) % pages) + 1;
-            st.ts = Date.now();
-            return renderResults(sock, from, st, msg, isButton, contextInfo, editButtons, sendButtons);
-        }
-
-        // download <N> audio|video
-        const dlMatch = fn.match(/^download (\d+) (audio|video)$/);
-        if (dlMatch) {
-            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
-            const idx = parseInt(dlMatch[1], 10) - 1;
-            const video = st.results[idx];
-            if (!video) return reply('❌ Video non trovato. Riprova.');
-            const kind = dlMatch[2];
-            return runDownload(sock, from, video, kind, msg, reply);
-        }
-
-        // ── NUOVA RICERCA ─────────────────────────────────────────────────
-        const query = textArgs;
-        if (!query) {
-            return sendButtons(sock, from,
-                "🔎 *Ricerca su YouTube*\n\nScrivi cosa cerchi. Esempio:\n`.cerca Blinding Lights The Weeknd`\n\nPoi scegli il video coi pulsanti e scaricalo come *audio* o *video*.",
-                [{ label: '.cerca Blinding Lights', id: 'cerca Blinding Lights The Weeknd' }],
-                msg);
-        }
-
-        await reply(`🔎 Cerco "*${query}*" su YouTube...`);
-        try {
-            const results = await searchVideos(query, 6);
-            const newState = { results, query, page: 1, ts: Date.now() };
-            state.set(from, newState);
-            return renderResults(sock, from, newState, msg, false, null, editButtons, sendButtons);
-        } catch (e) {
-            console.error('[cerca]', e.message);
-            return reply('❌ ' + getDownloadErrorMessage(e));
-        }
-    },
-};
-
-// ── RENDER RISULTATI (con navigazione) ─────────────────────────────────────
-async function renderResults(sock, from, st, msg, isButton, contextInfo, editButtons, sendButtons) {
+async function renderResultsFallback(sock, from, st, msg, sendButtons) {
     const pages = totalPages(st.results);
     const start = (st.page - 1) * 2;
     const onFirst = st.page === 1;
     const onLast = st.page === pages;
 
-    // 2 pulsanti di selezione + 1 di navigazione (max 3 per WhatsApp)
     const selButtons = [];
     for (let i = 0; i < 2; i++) {
         const v = st.results[start + i];
@@ -162,36 +206,29 @@ async function renderResults(sock, from, st, msg, isButton, contextInfo, editBut
         nav = { label: `⬅️⬆️ ${st.page - 1}-${st.page + 1}`, id: `cerca pag ${st.page + 1}` };
     }
 
-    const buttons = nav ? [...selButtons, nav] : selButtons;
-    const editKey = isButton && contextInfo?.stanzaId
-        ? { remoteJid: from, fromMe: true, id: contextInfo.stanzaId, participant: from.endsWith('@g.us') ? (sock.user?.id || sock.user?.lid) : undefined }
-        : null;
-
-    if (editKey?.id && buttons.length <= 3) {
-        return editButtons(sock, from, resultsText(st), buttons, editKey, msg);
-    }
-    return sendButtons(sock, from, resultsText(st), buttons, msg);
+    return sendButtons(sock, from, resultsText(st), nav ? [...selButtons, nav] : selButtons, msg);
 }
 
-// ── RENDER CONFERMA VIDEO ──────────────────────────────────────────────────
-async function renderPick(sock, from, st, video, msg, isButton, contextInfo, editButtons, sendButtons) {
+// ── RENDER INFO VIDEO ─────────────────────────────────────────────────────
+async function renderPick(sock, from, st, video, msg, sendButtons) {
     const idx = st.results.indexOf(video) + 1;
     const buttons = [
         { label: '🎵 Audio (mp3)', id: `cerca download ${idx} audio` },
         { label: '🎥 Video (mp4)', id: `cerca download ${idx} video` },
         { label: '⬅️ Indietro', id: 'cerca indietro' },
     ];
-    const editKey = isButton && contextInfo?.stanzaId
-        ? { remoteJid: from, fromMe: true, id: contextInfo.stanzaId, participant: from.endsWith('@g.us') ? (sock.user?.id || sock.user?.lid) : undefined }
-        : null;
-
-    if (editKey?.id) {
-        return editButtons(sock, from, pickText(video), buttons, editKey, msg);
-    }
     return sendButtons(sock, from, pickText(video), buttons, msg);
 }
 
-// ── DOWNLOAD ED INVIO ──────────────────────────────────────────────────────
+const pickText = (video) => (
+`🎬 *${video.title}*
+${video.duration ? `⏱ ${fmtDur(video.duration)}` : ''}${video.channel ? ` · 📺 ${video.channel}` : ''}
+${video.views ? `\n👁 ${fmtViews(video.views)} visualizzazioni` : ''}
+
+Cosa vuoi scaricare?`
+);
+
+// ── DOWNLOAD ED INVIO ─────────────────────────────────────────────────────
 async function runDownload(sock, from, video, kind, msg, reply) {
     await reply(kind === 'audio' ? '🎵 Scarico l’audio...' : '🎥 Scarico il video... (ci vuole un po\')');
     let download = null;
@@ -205,11 +242,11 @@ async function runDownload(sock, from, video, kind, msg, reply) {
         const cleanName = (video.title || 'video').replace(/[^\p{L}\p{N}]+/gu, ' ').trim().slice(0, 60) || 'video';
 
         if (kind === 'audio') {
-            const ext = download.ext || 'mp3';
+            // L'audio viene sempre convertito/consegnato come .mp3.
             await sock.sendMessage(from, {
                 document: file,
-                mimetype: MIME_BY_EXT[ext] || 'audio/mpeg',
-                fileName: `${cleanName}.${ext}`,
+                mimetype: MIME_BY_EXT.mp3,
+                fileName: `${cleanName}.mp3`,
             }, { quoted: msg });
             await reply(`🎵 *Audio pronto!*\n${video.title}`);
         } else {

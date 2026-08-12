@@ -178,7 +178,7 @@ const SECTIONS = [
         items: [
             ['🎧', 'lastfm', 'collega Last.fm'],
             ['🎶', 'cur', 'canzone su Last.fm'],
-            ['🔎', 'cerca', 'trova e scarica video'],
+            ['🔎', 'cerca', 'cerca e scarica video/audio mp3'],
             ['🎵', 'lyrics', 'testo canzone'],
             ['🔊', 'tts', 'testo in vocale'],
             ['🎵', 'mp3', 'scarica audio canzone'],
