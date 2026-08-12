@@ -109,7 +109,23 @@ module.exports = {
             const video = st.results[idx];
             if (!video) return reply('❌ Video non trovato. Riprova.');
             const kind = dlMatch[2];
-            return runDownload(sock, from, video, kind, msg, reply);
+            // Per il video si sceglie prima la qualità.
+            if (kind === 'video') {
+                return renderQualityMenu(sock, from, st, video, msg, sendButtons);
+            }
+            return runDownload(sock, from, video, 'audio', msg, reply);
+        }
+
+        // download video con qualità scelta: vq <N> <qualità (360|480|720|1080)>
+        const vqMatch = fn.match(/^vq (\d+) (\d+)$/);
+        if (vqMatch) {
+            if (!st) return reply('❌ La ricerca è scaduta. Riprova con `.cerca <testo>`');
+            const idx = parseInt(vqMatch[1], 10) - 1;
+            const video = st.results[idx];
+            if (!video) return reply('❌ Video non trovato. Riprova.');
+            const height = parseInt(vqMatch[2], 10);
+            if (![360, 480, 720, 1080].includes(height)) return reply('❌ Qualità non valida.');
+            return runDownload(sock, from, video, 'video', msg, reply, height);
         }
 
         // ── NUOVA RICERCA ─────────────────────────────────────────────────
@@ -220,6 +236,26 @@ async function renderPick(sock, from, st, video, msg, sendButtons) {
     return sendButtons(sock, from, pickText(video), buttons, msg);
 }
 
+// ── RENDER MENU QUALITÀ VIDEO ──────────────────────────────────────────────
+// Max 3 pulsanti per messaggio: 360p, 720p, 1080p (480p resta selezionabile
+// scrivendo ".cerca vq <n> 480").
+const QUALITY_OPTIONS = [
+    { label: '📺 360p', id: (n) => `cerca vq ${n} 360` },
+    { label: '📺 720p', id: (n) => `cerca vq ${n} 720` },
+    { label: '📺 1080p', id: (n) => `cerca vq ${n} 1080` },
+];
+
+async function renderQualityMenu(sock, from, st, video, msg, sendButtons) {
+    const idx = st.results.indexOf(video) + 1;
+    return sendButtons(
+        sock,
+        from,
+        `🎥 *${video.title}*\n\n📥 Scegli la qualità del video:`,
+        QUALITY_OPTIONS.map((o) => ({ label: o.label, id: o.id(idx) })),
+        msg
+    );
+}
+
 const pickText = (video) => (
 `🎬 *${video.title}*
 ${video.duration ? `⏱ ${fmtDur(video.duration)}` : ''}${video.channel ? ` · 📺 ${video.channel}` : ''}
@@ -229,32 +265,42 @@ Cosa vuoi scaricare?`
 );
 
 // ── DOWNLOAD ED INVIO ─────────────────────────────────────────────────────
-async function runDownload(sock, from, video, kind, msg, reply) {
-    await reply(kind === 'audio' ? '🎵 Scarico l’audio...' : '🎥 Scarico il video... (ci vuole un po\')');
+async function runDownload(sock, from, video, kind, msg, reply, height) {
+    if (kind === 'video' && height) {
+        await reply(`🎥 Scarico il video in ${height}p... (ci vuole un po')`);
+    } else {
+        await reply(kind === 'audio' ? '🎵 Scarico l’audio...' : '🎥 Scarico il video... (ci vuole un po\')');
+    }
     let download = null;
     try {
         download = kind === 'audio'
             ? await downloadAudio(video.url)
-            : await downloadVideo(video.url);
+            : await downloadVideo(video.url, { height });
         const file = await fs.readFile(download.filePath);
         if (!file.length) throw new Error('file scaricato vuoto');
 
         const cleanName = (video.title || 'video').replace(/[^\p{L}\p{N}]+/gu, ' ').trim().slice(0, 60) || 'video';
 
         if (kind === 'audio') {
-            // L'audio viene sempre convertito/consegnato come .mp3.
+            // L'audio viene sempre convertito/consegnato come .mp3. Se la
+            // conversione mp3 è fallita, l'estensione reale è in download.ext.
+            const ext = download.ext || 'mp3';
             await sock.sendMessage(from, {
                 document: file,
-                mimetype: MIME_BY_EXT.mp3,
-                fileName: `${cleanName}.mp3`,
+                mimetype: MIME_BY_EXT[ext] || 'audio/mpeg',
+                fileName: `${cleanName}.${ext}`,
             }, { quoted: msg });
             await reply(`🎵 *Audio pronto!*\n${video.title}`);
         } else {
+            // Il video è garantito in .mp4 (mediaDownloader converte
+            // .webm/.mkv): mimetype corretto = WhatsApp lo apre.
+            const quality = height ? ` (${height}p)` : '';
             await sock.sendMessage(from, {
                 video: file,
-                caption: `🎥 ${video.title}`,
+                mimetype: 'video/mp4',
+                caption: `🎥 ${video.title}${quality}`,
             }, { quoted: msg });
-            await reply('✅ *Video inviato!*');
+            await reply(`✅ *Video inviato!*${quality}`);
         }
     } catch (e) {
         console.error('[cerca]', e.message);
