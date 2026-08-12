@@ -293,13 +293,40 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
             await reply(`🎵 *Audio pronto!*\n${video.title}`);
         } else {
             // Il video è garantito in .mp4 (mediaDownloader converte
-            // .webm/.mkv): mimetype corretto = WhatsApp lo apre.
+            // .webm/.mkv e i codec non h264): mimetype corretto.
             const quality = height ? ` (${height}p)` : '';
-            await sock.sendMessage(from, {
-                video: file,
-                mimetype: 'video/mp4',
-                caption: `🎥 ${video.title}${quality}`,
-            }, { quoted: msg });
+            const caption = `🎥 ${video.title}${quality}`;
+            // WhatsApp rifiuta l'upload ("Media upload failed") se il video
+            // è troppo grande per un messaggio video: sopra i 50MB viene
+            // inviato come FILE .mp4 (limite file = 2GB), che si apre col
+            // player e si può salvare.
+            const tooBig = file.length > 50 * 1024 * 1024;
+            let sent = false;
+
+            if (!tooBig) {
+                try {
+                    await sock.sendMessage(from, {
+                        video: file,
+                        mimetype: 'video/mp4',
+                        caption,
+                    }, { quoted: msg });
+                    sent = true;
+                } catch (e) {
+                    const uploadError = /upload failed|media upload|upload.*host|429|413/i.test(String(e.message || ''));
+                    if (!uploadError) throw e;
+                    console.warn('[cerca] upload video fallito, invio come file:', e.message);
+                }
+            }
+
+            if (!sent) {
+                const mb = (file.length / 1048576).toFixed(1);
+                await sock.sendMessage(from, {
+                    document: file,
+                    mimetype: 'video/mp4',
+                    fileName: `${cleanName}.mp4`,
+                }, { quoted: msg });
+                await reply(`📦 Video da ${mb} MB: inviato come *file* .mp4 perché supera il limite dei video (scaricatelo e aprite dal player).`);
+            }
             await reply(`✅ *Video inviato!*${quality}`);
         }
     } catch (e) {
