@@ -266,10 +266,9 @@ Cosa vuoi scaricare?`
 
 // ── DOWNLOAD ED INVIO ─────────────────────────────────────────────────────
 async function runDownload(sock, from, video, kind, msg, reply, height) {
-    if (kind === 'video' && height) {
-        await reply(`🎥 Scarico il video in ${height}p... (ci vuole un po')`);
-    } else {
-        await reply(kind === 'audio' ? '🎵 Scarico l’audio...' : '🎥 Scarico il video... (ci vuole un po\')');
+    // Il video viene inviato SENZA messaggi di contorno: solo il video.
+    if (kind === 'audio') {
+        await reply('🎵 Scarico l’audio...');
     }
     let download = null;
     try {
@@ -298,8 +297,7 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
             const caption = `🎥 ${video.title}${quality}`;
             // WhatsApp rifiuta l'upload ("Media upload failed") se il video
             // è troppo grande per un messaggio video: sopra i 50MB viene
-            // inviato come FILE .mp4 (limite file = 2GB), che si apre col
-            // player e si può salvare.
+            // inviato come FILE .mp4 (limite file = 2GB).
             const tooBig = file.length > 50 * 1024 * 1024;
             let sent = false;
 
@@ -319,15 +317,12 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
             }
 
             if (!sent) {
-                const mb = (file.length / 1048576).toFixed(1);
                 await sock.sendMessage(from, {
                     document: file,
                     mimetype: 'video/mp4',
                     fileName: `${cleanName}.mp4`,
                 }, { quoted: msg });
-                await reply(`📦 Video da ${mb} MB: inviato come *file* .mp4 perché supera il limite dei video (scaricatelo e aprite dal player).`);
             }
-            await reply(`✅ *Video inviato!*${quality}`);
         }
     } catch (e) {
         console.error('[cerca]', e.message);
