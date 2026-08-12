@@ -18,3 +18,5 @@ welcome.json
 .auth_invalidated
 .restart-msg.json
 start.bat
+# Diario delle modifiche AI (nascosto, gitignorato: sopravvive a git clean -fd)
+.AGENT_CHANGES.txt

@@ -2146,7 +2146,18 @@ async function startBot() {
                     return;
                 }
 
-                const dir = body.trim().toLowerCase();
+                const raw = body.trim().toLowerCase();
+                // Parole di uscita: chiudi la partita senza dover premere nulla.
+                if (['fine', 'stop', 'esci', 'termina', 'basta', 'chiudi'].includes(raw)) {
+                    g.active = false;
+                    saveDB();
+                    if (g.lastMsgKey) {
+                        try { await sock.sendMessage(from, { delete: g.lastMsgKey }); } catch (_) {}
+                    }
+                    await sock.sendMessage(from, { text: '🏁 *Labirinto terminato!*\nTorna quando vuoi con `.labirinto`. 🌀' });
+                    return;
+                }
+                const dir = raw;
                 const DIRS = { u: 'u', su: 'u', sù: 'u', sopra: 'u', d: 'd', giu: 'd', giù: 'd', sotto: 'd', l: 'l', sinistra: 'l', r: 'r', destra: 'r' };
                 const key = DIRS[dir];
                 if (!key) return;
@@ -2175,9 +2186,9 @@ async function startBot() {
                     const uDB = getUser(sender, from);
                     uDB.money += 80;
                     saveDB();
-                    caption = `🏁 *USCITO!* @${sender.split('@')[0]} ha aggirato il labirinto in ${g.moves} mosse!\n+80€ 💰`;
+                    caption = `🏁 *USCITO!*\n@${sender.split('@')[0]} ha aggirato\nil labirinto in ${g.moves} mosse!\n💰 +80€`;
                 } else {
-                    caption = `🌀 *LABIRINTO* — Mossa ${g.moves}. Scrivi *u/d/l/r* per muoverti.`;
+                    caption = `🌀 *LABIRINTO* · Mossa ${g.moves}\n━━━━━━━━━━━━━━━━━━\n🔴 Tu · 🟢 Uscita\n━━━━━━━━━━━━━━━━━━\nComandi: *u* su · *d* giù\n*l* sinistra · *r* destra\n⏹️ Scrivi *fine* o premi\n*Termina partita*`;
                 }
 
                 const sent = await sock.sendMessage(from, {

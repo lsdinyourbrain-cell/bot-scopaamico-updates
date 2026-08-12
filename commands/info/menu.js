@@ -31,57 +31,57 @@ const SECTIONS = [
         items: [
             ['⛏️', 'scava', 'scava e guadagna'],
             ['🎰', 'casino', 'giochi da casinò'],
-            ['🎲', 'dadi', 'lancia i dadi con soldi'],
+            ['🎲', 'dadi', 'dadi con soldi'],
             ['🎰', 'slot', 'macchinetta slot'],
-            ['🔴', 'roulette', 'puntate alla roulette'],
+            ['🔴', 'roulette', 'fai una puntata'],
             ['🪨', 'sasso', 'sasso carta forbici'],
             ['📅', 'daily', 'bonus giornaliero'],
-            ['🏧', 'deposita', 'metti soldi in banca'],
-            ['💳', 'preleva', 'preleva dalla banca'],
+            ['🏧', 'deposita', 'soldi in banca'],
+            ['💳', 'preleva', 'dalla banca'],
             ['🦹', 'ruba', 'tenta un furto'],
             ['🔫', 'spara', 'incassa la taglia'],
-            ['🎟️', 'lotteria', 'biglietto da 50€'],
-            ['🏆', 'top', 'classifica più ricchi'],
+            ['🎟️', 'lotteria', 'biglietto 50€'],
+            ['🏆', 'top', 'i più ricchi'],
             ['🤑', 'ricchi', 'lista più ricchi'],
-            ['💝', 'famiglia', 'gestisci la famiglia'],
-            ['🎁', 'dona', 'dona soldi a un amico'],
+            ['💝', 'famiglia', 'la tua famiglia'],
+            ['🎁', 'dona', 'dona soldi'],
             ['📈', 'investi', 'azioni in borsa'],
             ['💼', 'work', 'lavora un turno'],
             ['🔥', 'streak', 'serie di giorni'],
             ['📦', 'cassaforte', 'proteggi i soldi'],
-            ['⭐', 'reputazione', '⭐ reputazione nel gruppo'],
-            ['💪', 'lavoro2', 'lavoretto freelance'],
-            ['🎁', 'regalo', 'manda soldi (max 3/g)'],
-            ['🏷️', 'titolo', 'titolo sul profilo'],
+            ['⭐', 'reputazione', 'dai ⭐ nel gruppo'],
+            ['💪', 'lavoro2', 'freelance'],
+            ['🎁', 'regalo', 'manda soldi'],
+            ['🏷️', 'titolo', 'titolo profilo'],
         ],
     },
     {
         key: 'giochi', emoji: '🎲', title: 'GIOCHI',
         items: [
             ['❓', 'quiz', 'rispondi e vinci'],
-            ['🏁', 'bandiera', 'indovina la nazione'],
-            ['💞', 'compatibilita', 'affinità di coppia'],
-            ['⚔️', 'duello', 'sfida con puntata'],
-            ['🎯', 'indovina', 'numero segreto 1-10'],
+            ['🏁', 'bandiera', 'indovina nazione'],
+            ['💞', 'compatibilita', 'affinità coppia'],
+            ['⚔️', 'duello', 'sfida a soldi'],
+            ['🎯', 'indovina', 'numero 1-10'],
             ['🪙', 'testa', 'testa o croce'],
             ['🎲', 'parita', 'pari o dispari'],
-            ['🃏', 'alta', 'carta alta o bassa'],
-            ['🃏', 'blackjack', '21 contro il bot'],
-            ['🎡', 'ruota', 'ruota della fortuna'],
-            ['🎟️', 'gratta', 'gratta e vinci'],
-            ['⚡', 'reazione', 'test di riflessi'],
-            ['🧩', 'parola', 'indovina la parola'],
-            ['🧠', 'memoria', 'ricorda i colori'],
-            ['🧩', 'enigma', 'indovinello a premi'],
+            ['🃏', 'alta', 'alta o bassa'],
+            ['🃏', 'blackjack', 'batti il banco'],
+            ['🎡', 'ruota', 'ruota fortuna'],
+            ['🎟️', 'gratta', 'gratta vinci'],
+            ['⚡', 'reazione', 'riflessi'],
+            ['🧩', 'parola', 'parola segreta'],
+            ['🧠', 'memoria', 'colori'],
+            ['🧩', 'enigma', 'indovinello premi'],
             ['🃏', 'poker', 'sfida a poker'],
             ['🔫', 'russia', 'roulette russa'],
-            ['🎱', 'tombola', 'estrazione tombola'],
-            ['🎯', 'impiccato', 'indovina o il boia'],
+            ['🎱', 'tombola', 'estrazione'],
+            ['🎯', 'impiccato', 'evita il boia'],
             ['⭕', 'tris', '3 in fila a 2'],
-            ['🔴', 'forza4', '4 in fila a 2'],
-            ['🟩', 'wordle', 'parola in 6 tentativi'],
+            ['🔴', 'forza4', '4 in fila'],
+            ['🟩', 'wordle', '6 tentativi'],
             ['🌀', 'labirinto', 'trova l\u2019uscita'],
-            ['🏆', 'trivia2', 'sfida 5 domande'],
+            ['🏆', 'trivia2', '5 domande'],
             ['🎭', 'akinator', 'indovino si/no'],
         ],
     },
@@ -106,71 +106,71 @@ const SECTIONS = [
     {
         key: 'interazioni', emoji: '🔥', title: 'INTERAZIONI',
         items: [
-            ['🖐️', 'schiaffo', 'dai uno schiaffo'],
-            ['😘', 'bacia', 'un bacio'],
-            ['🪙', 'flip', 'testa o croce'],
-            ['🎱', '8ball', 'la palla magica'],
-            ['📊', 'rate', 'vota da 1 a 10'],
-            ['🤔', 'wyr', 'preferiresti?'],
-            ['💭', 'quote', 'citazione random'],
-            ['🫂', 'abbraccia', 'un abbraccio'],
+            ['🖐️', 'schiaffo', 'uno schiaffo'],
+            ['😘', 'bacia', 'bacio'],
+            ['🪙', 'flip', 'testa/croce'],
+            ['🎱', '8ball', 'palla magica'],
+            ['📊', 'rate', 'vota 1-10'],
+            ['🤔', 'wyr', 'preferisci?'],
+            ['💭', 'quote', 'citazione'],
+            ['🫂', 'abbraccia', 'abbraccio'],
             ['💍', 'sposa', 'sposati'],
-            ['🍑', 'paccasulculo', 'una pacca'],
-            ['🔪', 'uccidi', 'finto omicidio'],
+            ['🍑', 'paccasulculo', 'pacca'],
+            ['🔪', 'uccidi', 'omicidio finto'],
             ['🤬', 'insulta', 'insulta'],
             ['🔞', 'scopa', 'ironico'],
             ['💦', 'sborra', 'ironico'],
             ['👉👌', 'ditalino', 'ironico'],
             ['🍆', 'sega', 'ironico'],
             ['💧', 'squirt', 'ironico'],
-            ['🤰', 'incinta', 'test gravidanza'],
-            ['🍒', 'tette', 'misura tette'],
-            ['😂', 'meme', 'audio random'],
-            ['🥊', 'rissa', 'fai a botte'],
-            ['🍆', 'cazzo', 'misura cazzo'],
-            ['🤪', 'sclero', 'sclero random'],
-            ['🍺', 'drink', 'offri un drink'],
-            ['🍀', 'fact', 'curiosità random'],
-            ['🗣️', 'gossip', 'gossip random'],
+            ['🤰', 'incinta', 'gravidanza?'],
+            ['🍒', 'tette', 'tette'],
+            ['😂', 'meme', 'audio'],
+            ['🥊', 'rissa', 'botte'],
+            ['🍆', 'cazzo', 'cazzo'],
+            ['🤪', 'sclero', 'sclero'],
+            ['🍺', 'drink', 'offri drink'],
+            ['🍀', 'fact', 'curiosità'],
+            ['🗣️', 'gossip', 'gossip'],
             ['😂', 'joke', 'barzelletta'],
-            ['🍆', 'palo', 'chi ti ha dato palo'],
-            ['🤖', 'pick', 'scegli una opzione'],
-            ['🙏', 'scusa', 'chiedi scusa'],
+            ['🍆', 'palo', 'palo'],
+            ['🤖', 'pick', 'scegli'],
+            ['🙏', 'scusa', 'scusa'],
         ],
     },
     {
         key: 'utility', emoji: '🛠️', title: 'UTILITY',
         items: [
-            ['👤', 'profilo', 'le tue statistiche'],
-            ['📡', 'ping', 'stato del bot'],
-            ['ℹ️', 'groupinfo', 'info sul gruppo'],
-            ['🌤️', 'weather', 'meteo di una città'],
+            ['👤', 'profilo', 'statistiche'],
+            ['📡', 'ping', 'stato bot'],
+            ['ℹ️', 'groupinfo', 'info gruppo'],
+            ['🌤️', 'weather', 'meteo'],
             ['🆔', 'id', 'il tuo ID'],
-            ['🧮', 'calc', 'calcola espressioni'],
-            ['🔢', 'base64', 'codifica/decodifica'],
-            ['🔣', 'hex', 'testo ↔ hex'],
-            ['📊', 'count', 'conta caratteri'],
-            ['🔐', 'password', 'genera password'],
-            ['▦', 'qr', 'genera QR code'],
-            ['🔑', 'uuid', 'genera UUID'],
-            ['🌐', 'translate', 'traduci testo'],
-            ['🪙', 'crypto', 'prezzo criptovalute'],
+            ['🧮', 'calc', 'calcola'],
+            ['🔢', 'base64', 'codifica'],
+            ['🔣', 'hex', 'hex'],
+            ['📊', 'count', 'conta'],
+            ['🔐', 'password', 'password'],
+            ['▦', 'qr', 'QR code'],
+            ['🔑', 'uuid', 'UUID'],
+            ['🌐', 'translate', 'traduci'],
+            ['🪙', 'crypto', 'prezzo crypto'],
             ['💱', 'currency', 'converte valute'],
-            ['🔗', 'tinyurl', 'accorcia URL'],
-            ['📚', 'wiki', 'riassunto Wikipedia'],
-            ['🕐', 'ora', 'ora di una città'],
-            ['🌙', 'afk', 'sei lontano?'],
-            ['📄', 'readmore', 'testo leggi di più'],
-            ['👑', 'owner', 'info sul creatore'],
-            ['🐛', 'report', 'segnala un bug'],
-            ['🌟', 'sponsor', 'sponsor del bot'],
-            ['🛡️', 'admin', 'info admin'],
-            ['⏰', 'promemoria', 'imposta un avviso'],
-            ['📊', 'sondaggio', 'sondaggio WhatsApp'],
-            ['🔄', 'converti', 'converte unità'],
-            ['⏳', 'timer', 'conto alla rovescia'],
-            ['🌙', 'afklist', 'utenti AFK'],
-            ['📘', 'aiuto', 'guida dei comandi'],
+            ['🔗', 'tinyurl', 'URL corti'],
+            ['📚', 'wiki', 'Wikipedia'],
+            ['🕐', 'ora', 'ora'],
+            ['🌙', 'afk', 'AFK'],
+            ['📄', 'readmore', 'testo nascosto'],
+            ['👑', 'owner', 'creatore'],
+            ['🐛', 'report', 'segnala bug'],
+            ['🌟', 'sponsor', 'sponsor'],
+            ['🛡️', 'admin', 'admin'],
+            ['⏰', 'promemoria', 'promemoria'],
+            ['📊', 'sondaggio', 'sondaggio'],
+            ['🔄', 'converti', 'converti unità'],
+            ['⏳', 'timer', 'timer'],
+            ['🌙', 'afklist', 'AFK list'],
+            ['📘', 'aiuto', 'guida'],
         ],
     },
     {
@@ -317,31 +317,6 @@ const SECTIONS = [
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 
-// Limiti per le schermate con pulsanti: il corpo interactive di WhatsApp
-// accetta ~1024 BYTE (non caratteri). Oltre, sendButtons invia testo semplice
-// senza pulsanti → quindi le sezioni lunghe vengono spezzate in pagine.
-const MAX_PAGE_BYTES = 800;
-const MAX_PAGE_ITEMS = 12;
-
-// Divide gli item di una sezione in pagine che stanno dentro il limite.
-const pageItems = (items) => {
-    const pages = [];
-    let cur = [];
-    let curBytes = 0;
-    for (const it of items) {
-        const lineBytes = Buffer.byteLength(L(...it), 'utf8') + 1;
-        if (cur.length && (curBytes + lineBytes > MAX_PAGE_BYTES || cur.length >= MAX_PAGE_ITEMS)) {
-            pages.push(cur);
-            cur = [];
-            curBytes = 0;
-        }
-        cur.push(it);
-        curBytes += lineBytes;
-    }
-    if (cur.length) pages.push(cur);
-    return pages;
-};
-
 // Trova una sezione per key o per numero (1-based). Ritorna { index, section }.
 const findSection = (query) => {
     const q = String(query || '').trim().toLowerCase();
@@ -428,20 +403,18 @@ ${SEP}
    oppure \`.menu <nome>\` per aprire`);
 };
 
-// Schermata di una singola sezione: elenco comandi con hint brevi.
-// Se la sezione ha più pagine, mostra solo quella richiesta.
-const sectionScreen = (section, index, total, page = 1) => {
-    const pages = pageItems(section.items);
-    const pageNo = Math.min(Math.max(1, page), pages.length);
-    const pg = pages[pageNo - 1];
-    const rows = pg.map(([e, cmd, hint]) => L(e, cmd, hint)).join('\n');
-    const pageInfo = pages.length > 1 ? ` · pag ${pageNo}/${pages.length}` : '';
+// Schermata di una singola sezione: mostra TUTTI i comandi della sezione in
+// UNA sola schermata (niente paginazione). Per restare dentro il limite dei
+// ~1024 byte del corpo interactive (oltre il quale sendButtons manderebbe
+// testo semplice senza pulsanti) gli hint sono stati accorciati.
+const sectionScreen = (section, index, total) => {
+    const rows = section.items.map(([e, cmd, hint]) => L(e, cmd, hint)).join('\n');
     return (
-`${section.emoji} *${section.title}* · ${index + 1}/${total}${pageInfo}
+`${section.emoji} *${section.title}* · ${index + 1}/${total}
 ${SEP}
 ${rows}
 ${SEP}
-💡 Dettagli di un comando: \`.aiuto <comando>\``);
+💡 Dettagli: \`.aiuto <comando>\``);
 };
 
 module.exports = {
@@ -511,10 +484,8 @@ module.exports = {
         const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
 
         // ── PARSE RICHIESTA ───────────────────────────────────────────────
-        // Sintassi: .menu <key|numero|sezioni|home> [p<numero>]  (p = pagina).
-        const qm = String(textArgs || '').trim().toLowerCase().match(/^(\S+?)(?:\s+(?:p|pag)\s*(\d+))?$/);
-        const q = qm ? qm[1] : '';
-        const wantPage = qm && qm[2] ? parseInt(qm[2], 10) : 1;
+        // Sintassi: .menu <key|numero|sezioni|home>
+        const q = String(textArgs || '').trim().toLowerCase().split(/\s+/)[0] || '';
 
         // ── ELENCO SEZIONI ────────────────────────────────────────────────
         if (q === 'sezioni' || q === 'lista' || q === 'indice') {
@@ -523,6 +494,8 @@ module.exports = {
         }
 
         // ── SEZIONE RICHIESTA ─────────────────────────────────────────────
+        // Ogni sezione ora è UNA pagina intera: i pulsanti Prec/Home/Succ
+        // navigano tra le sezioni, non tra pagine della stessa sezione.
         if (q && q !== 'home') {
             const found = findSection(q);
             if (found) {
@@ -531,18 +504,6 @@ module.exports = {
                     return reply('🔒 Sezione riservata: non hai i permessi per vederla.');
                 }
                 const n = SECTIONS.length;
-                const pageCount = pageItems(found.section.items).length;
-
-                // Sezione con più pagine → navigazione tra pagine.
-                // Sezione singola → navigazione tra sezioni (Prec/Succ).
-                if (pageCount > 1) {
-                    const btns = [];
-                    if (wantPage > 1) btns.push({ label: '⬅️ Pag', id: `menu ${found.section.key} p${wantPage - 1}` });
-                    btns.push({ label: '🏠 Home', id: 'menu' });
-                    if (wantPage < pageCount) btns.push({ label: '➡️ Pag', id: `menu ${found.section.key} p${wantPage + 1}` });
-                    return show(sectionScreen(found.section, found.index, n, wantPage), btns);
-                }
-
                 const prev = SECTIONS[(found.index - 1 + n) % n];
                 const next = SECTIONS[(found.index + 1) % n];
                 return show(sectionScreen(found.section, found.index, n), [
