@@ -66,7 +66,7 @@ module.exports = {
     description: "Cerca video su YouTube, naviga tra i risultati coi pulsanti e scarica quello che vuoi (audio o video). Uso: .cerca <testo>",
 
     async run(sock, msg, args, context) {
-        const { from, isGroup, isButton, contextInfo, reply, services } = context;
+        const { from, isButton, contextInfo, reply, services } = context;
         const { sendButtons, editButtons } = services;
 
         const textArgs = (args || []).join(' ').trim();
@@ -164,7 +164,7 @@ async function renderResults(sock, from, st, msg, isButton, contextInfo, editBut
 
     const buttons = nav ? [...selButtons, nav] : selButtons;
     const editKey = isButton && contextInfo?.stanzaId
-        ? { remoteJid: from, fromMe: true, id: contextInfo.stanzaId, participant: isGroup ? (sock.user?.id || sock.user?.lid) : undefined }
+        ? { remoteJid: from, fromMe: true, id: contextInfo.stanzaId, participant: from.endsWith('@g.us') ? (sock.user?.id || sock.user?.lid) : undefined }
         : null;
 
     if (editKey?.id && buttons.length <= 3) {
@@ -182,7 +182,7 @@ async function renderPick(sock, from, st, video, msg, isButton, contextInfo, edi
         { label: '⬅️ Indietro', id: 'cerca indietro' },
     ];
     const editKey = isButton && contextInfo?.stanzaId
-        ? { remoteJid: from, fromMe: true, id: contextInfo.stanzaId, participant: isGroup ? (sock.user?.id || sock.user?.lid) : undefined }
+        ? { remoteJid: from, fromMe: true, id: contextInfo.stanzaId, participant: from.endsWith('@g.us') ? (sock.user?.id || sock.user?.lid) : undefined }
         : null;
 
     if (editKey?.id) {
