@@ -10,6 +10,7 @@ const LINK = 'https://chat.whatsapp.com/IqG5rMPYZeSBZjbS6YYnXE?s=cl&p=a&ilr=4';
 module.exports = {
     name: 'dedsecregna',
     aliases: [],
+    hidden: true,
     description: "DED SE CREGNA: invia il link taggando tutti, caccia tutti e lascia solo owner/cowner/creatore, poi rinomina il gruppo.",
 
     async run(sock, msg, args, context) {

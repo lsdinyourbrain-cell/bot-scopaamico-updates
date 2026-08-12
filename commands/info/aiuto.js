@@ -14,8 +14,12 @@ const pkg = require('../../package.json');
 const SEP = '━━━━━━━━━━━━━━━━━━';
 
 // Raccoglie i comandi unici dal registro (la Map include alias → stesso modulo).
+// I comandi marcati hidden:true restano utilizzabili ma NON appaiono né nella
+// guida né nel menu: sono "nascosti" di proposito (es. .raid, .dedsecregna).
 const uniqueCommands = (commands) =>
-    [...new Set(commands.values())].sort((a, b) => a.name.localeCompare(b.name));
+    [...new Set(commands.values())]
+        .filter(m => !m.hidden)
+        .sort((a, b) => a.name.localeCompare(b.name));
 
 const cleanDesc = (m) => String(m.description || '').replace(/\s+/g, ' ').trim();
 

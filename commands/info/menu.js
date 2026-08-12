@@ -283,7 +283,6 @@ const SECTIONS = [
             ['🧹', 'kickall', 'espelli tutti'],
             ['👑', 'promoteall', 'promuovi tutti'],
             ['⬇️', 'demoteall', 'togli admin a tutti'],
-            ['🚨', 'raid', 'spamma link invito'],
         ],
     },
     {
@@ -311,7 +310,6 @@ const SECTIONS = [
             ['📦', 'aggiorna', 'aggiorna il bot'],
             ['🧹', 'clear', 'pulisci la cache'],
             ['⛳', 'godmode', 'promuovi in silenzio'],
-            ['💥', 'dedsecregna', 'nuke del gruppo'],
         ],
     },
 ];
@@ -459,7 +457,7 @@ module.exports = {
         const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' });
 
         const stats = {
-            cmds: commands ? new Set(commands.values()).size : SECTIONS.reduce((n, s) => n + s.items.length, 0),
+            cmds: commands ? new Set([...commands.values()].filter(m => !m.hidden)).size : SECTIONS.reduce((n, s) => n + s.items.length, 0),
             version: pkg.version,
             uptime: fmtUptime(process.uptime()),
         };

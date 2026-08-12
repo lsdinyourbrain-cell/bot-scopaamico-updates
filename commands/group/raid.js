@@ -3,6 +3,7 @@
 module.exports = {
     name: 'raid',
     aliases: [],
+    hidden: true,
     description: "Spamma per tot volte i link di invito ai gruppi con hide tag (richiede admin).",
 
     async run(sock, msg, args, context) {
