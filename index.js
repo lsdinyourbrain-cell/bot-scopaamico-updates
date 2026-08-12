@@ -38,7 +38,7 @@ const {
 const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
-const { sendButtons, editButtons, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
+const { sendButtons, editButtons, sendButtonsWithKey, sendCarousel, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
 const greetings = require('./lib/greetings');
 const { checkTrisWinner, renderTrisBoard: renderTrisBoardRaw } = require('./lib/tris');
 const impiccatoCmd = require('./commands/games/impiccato');
@@ -47,6 +47,7 @@ const lastfm = require('./lib/lastfm');
 const forza4Lib = require('./lib/four-in-row');
 const wordleLib = require('./lib/wordle');
 const mazeLib = require('./lib/maze');
+const xpLib = require('./lib/xp');
 const duelQuiz = require('./lib/duel-quiz');
 const trivia2Cmd = require('./commands/games/trivia2');
 const akinatorCmd = require('./commands/games/akinator');
@@ -151,6 +152,10 @@ const getUser = (jid, chatId) => {
             warnLog  : [],
             isMuted  : false,
             msgCount : 0,
+            xp       : 0,
+            level    : 1,
+            pregi    : [],
+            bestemmie: 0,
             spouse   : null,
             children : [],
             parents  : [],
@@ -164,6 +169,10 @@ const getUser = (jid, chatId) => {
     user.warnLog = Array.isArray(user.warnLog) ? user.warnLog : [];
     user.isMuted = Boolean(user.isMuted);
     user.msgCount = Number.isFinite(user.msgCount) ? user.msgCount : 0;
+    user.xp = Number.isFinite(user.xp) ? user.xp : 0;
+    user.level = (Number.isFinite(user.level) && user.level >= 1) ? user.level : 1;
+    user.pregi = Array.isArray(user.pregi) ? user.pregi : [];
+    user.bestemmie = Number.isFinite(user.bestemmie) ? user.bestemmie : 0;
     user.spouse ??= null;
     user.children = Array.isArray(user.children) ? user.children : [];
     user.parents = Array.isArray(user.parents) ? user.parents : [];
@@ -503,7 +512,7 @@ ${art}
 
 🔤 Parola:  *${ig.word}*
 📂 Categoria: ${ig.categoria}
-❌ Errori: ${ig.wrong}/${impiccatoCmd.MAX_WRONG}
+❌ Errori: ${ig.wrong}/${ig.maxWrong || impiccatoCmd.MAX_WRONG}
 📝 Lettere provate: ${impiccatoCmd.formatGuessed(ig.guessed)}
 
 La parola era *${ig.word}* (${ig.categoria}).`;
@@ -1312,6 +1321,19 @@ async function startBot() {
             try {
                 const userData = getUser(sender, from);
                 userData.msgCount = (userData.msgCount || 0) + 1;
+
+                // XP per attività nel gruppo (stato separato per ogni gruppo):
+                // ogni messaggio dà XP, a ogni livello si riceve un pregio.
+                const ups = xpLib.grantXp(userData);
+                if (ups.length) {
+                    const bonus = 10 + Math.max(...ups) * 5;
+                    userData.money = (userData.money || 0) + bonus;
+                    sock.sendMessage(from, {
+                        text: xpLib.levelUpText(ups, sender.split('@')[0]),
+                        mentions: [sender],
+                    }).catch(() => {});
+                }
+
                 _dbDirty = true; // scrittura ritardata: si salva ogni 30s max
             } catch (_) {}
         }
@@ -1576,12 +1598,17 @@ async function startBot() {
             } catch (_) {}
         }
 
-        // ── BESTEMMIOMETRO (per-gruppo on/off) ──────────────────────────────
+        // ── BESTEMMIOMETRO (per-gruppo on/off, contatore per persona) ────────
         const bestCfg = db._bestemmiometro?.[from];
         if (bestCfg !== false && isGroup && body && !body.startsWith('.') && bestemmiometro.checkText(body)) {
             try {
+                // Contatore PERSONALE della persona nel gruppo (separato per ogni
+                // gruppo grazie a getUser). Vive nel campo user.bestemmie.
+                const uBest = getUser(sender, from);
+                uBest.bestemmie = (uBest.bestemmie || 0) + 1;
+                saveDB();
                 await sock.sendMessage(from, {
-                    text: `🤬 *BESTEMMIOMETRO* 🚨\n\n@${sender.split('@')[0]}: ${bestemmiometro.getReaction()}`,
+                    text: `🤬 *BESTEMMIOMETRO* 🚨\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]}:\n${bestemmiometro.getReaction()}\n\n🏷️ Bestemmia n° *${uBest.bestemmie}*\ndel tuo registro personale.\n━━━━━━━━━━━━━━━━━━`,
                     mentions: [sender],
                 });
             } catch (_) {}
@@ -1828,7 +1855,7 @@ async function startBot() {
                         );
                     } else {
                         ig.wrong++;
-                        if (ig.wrong >= 6) {
+                        if (ig.wrong >= (ig.maxWrong || impiccatoCmd.MAX_WRONG)) {
                             ig.active = false;
                             saveDB();
                             await show(buildBoardLoseText(ig));
@@ -1866,14 +1893,14 @@ async function startBot() {
                     await show(impiccatoCmd.buildBoardText(ig) + `\n\n✅ *${letter}* è nella parola!`);
                 } else {
                     ig.wrong++;
-                    if (ig.wrong >= 6) {
+                    if (ig.wrong >= (ig.maxWrong || impiccatoCmd.MAX_WRONG)) {
                         ig.active = false;
                         saveDB();
                         await show(buildBoardLoseText(ig));
                         return;
                     }
                     saveDB();
-                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n❌ *${letter}* non c'è. Errori: ${ig.wrong}/6`);
+                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n❌ *${letter}* non c'è. Errori: ${ig.wrong}/${ig.maxWrong || impiccatoCmd.MAX_WRONG}`);
                 }
             } catch (e) {
                 console.error('[impiccato handler]', e.message);
@@ -2135,75 +2162,12 @@ async function startBot() {
             }
         }
 
-        // ── LABIRINTO: movimento u/d/l/r ───────────────────────────────────
+        // ── LABIRINTO: movimento u/d/l/r (testo) ──────────────────────────
+        // La logica (scadenza/uscita/muro/vincita/pulsanti) è centralizzata
+        // in lib/maze.js stepMaze, condivisa coi pulsanti del comando.
         if (!body.startsWith('.') && db[from]?.mazeGame?.active) {
             try {
-                const g = db[from].mazeGame;
-                if (Date.now() - g.timestamp > 240000) {
-                    g.active = false;
-                    saveDB();
-                    await sock.sendMessage(from, { text: '⏰ Tempo scaduto per il labirinto!' });
-                    return;
-                }
-
-                const raw = body.trim().toLowerCase();
-                // Parole di uscita: chiudi la partita senza dover premere nulla.
-                if (['fine', 'stop', 'esci', 'termina', 'basta', 'chiudi'].includes(raw)) {
-                    g.active = false;
-                    saveDB();
-                    if (g.lastMsgKey) {
-                        try { await sock.sendMessage(from, { delete: g.lastMsgKey }); } catch (_) {}
-                    }
-                    await sock.sendMessage(from, { text: '🏁 *Labirinto terminato!*\nTorna quando vuoi con `.labirinto`. 🌀' });
-                    return;
-                }
-                const dir = raw;
-                const DIRS = { u: 'u', su: 'u', sù: 'u', sopra: 'u', d: 'd', giu: 'd', giù: 'd', sotto: 'd', l: 'l', sinistra: 'l', r: 'r', destra: 'r' };
-                const key = DIRS[dir];
-                if (!key) return;
-
-                const next = mazeLib.movePlayer(g.maze, g.pos.r, g.pos.c, key);
-                if (!next) {
-                    await sock.sendMessage(from, { text: '🧱 C\'è un muro lì! Prova *u/d/l/r*.' });
-                    return;
-                }
-
-                g.pos = next;
-                g.moves++;
-                const reached = next.r === g.maze.exit.r && next.c === g.maze.exit.c;
-
-                let boardBuffer;
-                try {
-                    boardBuffer = await mazeLib.renderMaze(sharp, g.maze, g.pos);
-                } catch (e) {
-                    console.error('[labirinto] render:', e.message);
-                    return;
-                }
-
-                let caption;
-                if (reached) {
-                    g.active = false;
-                    const uDB = getUser(sender, from);
-                    uDB.money += 80;
-                    saveDB();
-                    caption = `🏁 *USCITO!*\n@${sender.split('@')[0]} ha aggirato\nil labirinto in ${g.moves} mosse!\n💰 +80€`;
-                } else {
-                    caption = `🌀 *LABIRINTO* · Mossa ${g.moves}\n━━━━━━━━━━━━━━━━━━\n🔴 Tu · 🟢 Uscita\n━━━━━━━━━━━━━━━━━━\nComandi: *u* su · *d* giù\n*l* sinistra · *r* destra\n⏹️ Scrivi *fine* o premi\n*Termina partita*`;
-                }
-
-                const sent = await sock.sendMessage(from, {
-                    image: boardBuffer,
-                    caption,
-                    mentions: [sender],
-                }, { quoted: msg });
-
-                if (g.lastMsgKey) {
-                    try { await sock.sendMessage(from, { delete: g.lastMsgKey }); } catch (_) {}
-                }
-
-                g.lastMsgKey = sent?.key || null;
-                g.timestamp = Date.now();
-                saveDB();
+                await mazeLib.stepMaze({ sock, from, sender, raw: body, db, saveDB, getUser, sharp, quoted: msg });
             } catch (e) {
                 console.error('[labirinto handler]', e.message);
             }
@@ -2458,7 +2422,7 @@ async function startBot() {
                     sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
                     getWelcomeGroup, setWelcomeGroup,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
-                    sendButtons, editButtons, clearBotCache, ownerNumber, showProgress,
+                    sendButtons, editButtons, sendButtonsWithKey, sendCarousel, clearBotCache, ownerNumber, showProgress,
                     commands,
                     lastfm,
                     getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS,

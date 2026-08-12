@@ -109,6 +109,14 @@ const HANGMAN_STAGES = [
 const MAX_WRONG = 6;
 const GAME_TIMEOUT_MS = 120000; // 2 minuti
 
+// Difficoltà: cambiano la lunghezza delle parole (min-max lettere) e quanti
+// errori sono ammessi prima che il boia sia completo.
+const DIFFICULTIES = {
+    facile:    { key: 'facile',    emoji: '🟢', label: 'FACILE',    maxWrong: 7, wordLen: [3, 5] },
+    media:     { key: 'media',     emoji: '🟡', label: 'MEDIA',     maxWrong: 6, wordLen: [5, 8] },
+    difficile: { key: 'difficile', emoji: '🔴', label: 'DIFFICILE', maxWrong: 4, wordLen: [8, 99] },
+};
+
 const maskWord = (word, guessed) => {
     const parts = word.split('').map((ch) => (guessed.includes(ch) ? ch : '_'));
     return parts.join(parts.length > 10 ? '' : ' ');
@@ -123,14 +131,16 @@ const formatGuessed = (guessed) => {
 };
 
 const buildBoardText = (game) => {
-    const art = HANGMAN_STAGES[game.wrong];
+    // Il livello "facile" può arrivare a maxWrong > stadi disegnati: clampa.
+    const art = HANGMAN_STAGES[Math.min(game.wrong, HANGMAN_STAGES.length - 1)];
     const masked = maskWord(game.word, game.guessed);
-    const remaining = MAX_WRONG - game.wrong;
+    const maxWrong = game.maxWrong || MAX_WRONG;
+    const remaining = Math.max(0, maxWrong - game.wrong);
     return `${art}
 
 🔤 Parola:  *${masked}*
 📂 Categoria: ${game.categoria}
-❌ Errori: ${game.wrong}/${MAX_WRONG}  (mancano ${remaining})
+❌ Errori: ${game.wrong}/${maxWrong}  (mancano ${remaining})
 📝 Lettere provate:
 ${formatGuessed(game.guessed)}
 
@@ -141,11 +151,11 @@ la *parola intera*!`;
 module.exports = {
     name: 'impiccato',
     aliases: ['hangman', 'boia'],
-    description: "Gioca all'impiccato: indovina la parola prima che il boia sia completo! Uso: .impiccato",
+    description: "Gioca all'impiccato: scegli la difficoltà e indovina la parola prima che il boia sia completo. Uso: .impiccato, .impiccato facile/media/difficile",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB, randomChoice } = services;
+        const { db, saveDB, randomChoice, sendButtons } = services;
 
         if (!isGroup) return reply("L'impiccato si gioca solo nei gruppi.");
 
@@ -153,13 +163,40 @@ module.exports = {
             return reply("C'è già una partita di impiccato in corso! Scrivi una lettera per partecipare.");
         }
 
-        const pick = randomChoice(WORD_BANK);
+        const diff = DIFFICULTIES[String(textArgs || '').trim().toLowerCase()];
+
+        // Nessuna difficoltà indicata → menu di scelta con i pulsanti.
+        if (!diff) {
+            return sendButtons(sock, from,
+`🔴 *IMPICCATO*
+━━━━━━━━━━━━━━━━━━
+Scegli la *difficoltà* della
+parola da far indovinare:
+
+🟢 Facile · parole corte
+🟡 Media · parole medie
+🔴 Difficile · parole
+lunghe e poche chances!
+━━━━━━━━━━━━━━━━━━`,
+                [
+                    { label: '🟢 Facile', id: 'impiccato facile' },
+                    { label: '🟡 Media', id: 'impiccato media' },
+                    { label: '🔴 Difficile', id: 'impiccato difficile' },
+                ],
+                msg);
+        }
+
+        // Parole della giusta lunghezza per la difficoltà scelta (fallback al
+        // pieno archivio se la difficoltà non trova parole del range).
+        const [minLen, maxLen] = diff.wordLen;
+        const pool = WORD_BANK.filter(w => w.word.length >= minLen && w.word.length <= maxLen);
+        const pick = randomChoice(pool.length ? pool : WORD_BANK);
         const word = pick.word.toUpperCase();
 
         const boardText =
-            `🔴 *IMPICCATO*\n` +
+            `${diff.emoji} *IMPICCATO* · ${diff.label}\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
-            `${buildBoardText({ word, categoria: pick.categoria, wrong: 0, guessed: [] })}\n` +
+            `${buildBoardText({ word, categoria: pick.categoria, wrong: 0, guessed: [], maxWrong: diff.maxWrong })}\n` +
             `⏳ Tempo: 2 minuti` +
             `\n━━━━━━━━━━━━━━━━━━`;
 
@@ -179,6 +216,7 @@ module.exports = {
             word,
             categoria: pick.categoria,
             wrong: 0,
+            maxWrong: diff.maxWrong,
             guessed: [],
             sender,
             timestamp: Date.now(),

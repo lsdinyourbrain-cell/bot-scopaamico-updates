@@ -1,5 +1,7 @@
 'use strict';
 
+const xpLib = require('../../lib/xp');
+
 module.exports = {
     name: 'profilo',
     aliases: ['profila', 'profile'],
@@ -22,6 +24,14 @@ module.exports = {
             const children = uDB.children?.length || 0;
             const parents = uDB.parents?.length || 0;
 
+            // Livelli/XP (per-gruppo come tutto il resto del profilo)
+            const level = uDB.level || 1;
+            const xp = uDB.xp || 0;
+            const xpNeed = xpLib.xpForNext(level);
+            const pregi = Array.isArray(uDB.pregi) ? uDB.pregi : [];
+            const lastPregi = pregi.slice(-3).map(p => (p && p.rank) || '☆').join(' · ');
+            const bestemmie = uDB.bestemmie || 0;
+
             let pfpUrl;
             try { pfpUrl = await sock.profilePictureUrl(target, 'image'); } catch (_) { pfpUrl = null; }
 
@@ -30,6 +40,13 @@ module.exports = {
 ━━━━━━━━━━━━━━━━━━
 🧑 *${name.slice(0, 20)}*
 🏷️ ${uDB.title ? '*' + uDB.title.slice(0, 25) + '*' : '_Nessun titolo_'}
+
+⭐ Livello: *${level}*
+🌟 Rango: ${xpLib.rankOf(level)}
+✨ XP: *${xp}* / *${xpNeed}*
+${xpLib.xpBar(xp, xpNeed)}
+🏅 Pregi (ultimi): ${lastPregi || '_Nessuno_'}
+🎓 Punti pregio: *${pregi.length}*
 
 💰 Contante: *${wallet}€*
 🏦 Banca: *${bank}€*
@@ -40,6 +57,7 @@ module.exports = {
 🍼 Figli: *${children}*
 
 💬 Messaggi: *${msgCount}*
+🤬 Bestemmie: *${bestemmie}*
 ━━━━━━━━━━━━━━━━━━`;
 
             if (pfpUrl) {

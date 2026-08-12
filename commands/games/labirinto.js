@@ -1,97 +1,228 @@
 'use strict';
 
-const { generateMaze, renderMaze } = require('../../lib/maze');
+// ─────────────────────────────────────────────────────────────────────────────
+//  LABIRINTO — ScopaAmico Bot
+//  Flusso in 3 passi con UI nativa WhatsApp:
+//   1. `.labirinto`                      → scegli la DIFFICOLTÀ (pulsanti)
+//   2. premi una difficoltà              → CAROSELLO di 5 labirinti casuali
+//   3. premi *Gioca* su una card         → parte la partita
+//  In partita NIENTE scrittura in chat: i pulsanti "Muovi · Fine" (riquadro
+//  single_select) sotto la board muovono il giocatore. Rimosso dall'handler
+//  di testo è possibile usare anche le lettere u/d/l/r.
+//  Lo stato vive in db[from].mazeGame (partita) e db[from].mazePending
+//  (carosello in attesa di scelta, con TTL).
+// ─────────────────────────────────────────────────────────────────────────────
+
+const { generateMaze, renderMaze, stepMaze, moveNavButton, MOVES_TEXT } = require('../../lib/maze');
 
 const GAME_TIMEOUT_MS = 240000;
+const CAROUSEL_COUNT = 5;
+const CAROUSEL_TTL_MS = 120000;
 
-// Parole che chiudono la partita in corso (scritte a mano o via pulsante).
+// Parole che chiudono una partita in corso (scritte a mano o via pulsante).
 const QUIT_WORDS = ['fine', 'stop', 'esci', 'termina', 'basta', 'chiudi'];
+
+// Difficoltà → dimensioni della griglia (più celle = più facile perdersi).
+const DIFFICULTIES = {
+    facile:    { key: 'facile',    emoji: '🟢', label: 'FACILE',    rows: 5,  cols: 7 },
+    media:     { key: 'media',     emoji: '🟡', label: 'MEDIA',     rows: 9,  cols: 13 },
+    difficile: { key: 'difficile', emoji: '🔴', label: 'DIFFICILE', rows: 13, cols: 19 },
+};
+
+const DIFF_BUTTONS = [
+    { label: '🟢 Facile', id: 'labirinto dim facile' },
+    { label: '🟡 Media', id: 'labirinto dim media' },
+    { label: '🔴 Difficile', id: 'labirinto dim difficile' },
+];
+
+// Passo 1: menu con le tre difficoltà.
+const showDifficultyMenu = async (sock, msg, context) => {
+    const { from, services } = context;
+    const { sendButtons } = services;
+    await sendButtons(sock, from,
+        `🌀 *LABIRINTO*\n━━━━━━━━━━━━━━━━━━\nScegli la *difficoltà*:\nti mostro 5 labirinti\ncasuali tra cui scegliere.\n\n🟢 facile · reticolo piccolo\n🟡 media · intermedio\n🔴 difficile · labirinto grande\n━━━━━━━━━━━━━━━━━━`,
+        DIFF_BUTTONS,
+        msg);
+};
+
+// Passo 2: carosello di 5 labirinti casuali della difficoltà scelta.
+const showCarousel = async (sock, msg, context, diff) => {
+    const { from, sender, services } = context;
+    const { db, saveDB, sendCarousel, sendButtons, sharp } = services;
+
+    const mazes = [];
+    const buffers = [];
+    for (let i = 0; i < CAROUSEL_COUNT; i++) {
+        const m = generateMaze(diff.rows, diff.cols);
+        mazes.push(m);
+        try {
+            buffers.push(await renderMaze(sharp, m, { r: 0, c: 0 }));
+        } catch (e) {
+            buffers.push(null);
+        }
+    }
+
+    const cards = mazes.map((m, i) => ({
+        title: `${diff.emoji} ${diff.label} · Lab ${i + 1}`,
+        subtitle: `${m.rows} × ${m.cols}`,
+        body: `Labirinto casuale #${i + 1}.\nPremi *Gioca* per provarlo!`,
+        imageBuffer: buffers[i],
+        buttons: [{ label: '🎮 Gioca', id: `labirinto gioca ${i}` }],
+    }));
+    // Ultima card: tornare a cambiare difficoltà (navigazione del carosello).
+    cards.push({
+        title: '⚙️ Altre difficoltà',
+        subtitle: 'Facile · Media · Difficile',
+        body: 'Vuoi cambiare livello?\nTorna alla scelta difficoltà.',
+        buttons: [{ label: '↩️ Cambia livello', id: 'labirinto dim' }],
+    });
+
+    db[from] = db[from] || {};
+    db[from].mazePending = { mazes, difficulty: diff.key, sender, ts: Date.now() };
+    saveDB();
+
+    setTimeout(() => {
+        if (db[from]?.mazePending) {
+            delete db[from].mazePending;
+            saveDB();
+        }
+    }, CAROUSEL_TTL_MS);
+
+    const sent = await sendCarousel(sock, from, {
+        text: `🌀 *LABIRINTO · ${diff.emoji} ${diff.label}*\nScorri e scegli il labirinto 👇`,
+        cards,
+    }, msg);
+
+    // Se il carosello non si può inviare, ripiega sul semplice menu difficoltà.
+    if (!sent) {
+        await sendButtons(sock, from,
+            '⚠️ Non riesco a mostrare\nqui i labirinti.\nTorna al menu difficoltà 👇',
+            DIFF_BUTTONS,
+            msg);
+    }
+};
+
+// Passo 3: avvia la partita sul labirinto scelto.
+const startGame = async (sock, msg, context, { maze, difficulty }) => {
+    const { from, sender, reply, services } = context;
+    const { db, saveDB, sendButtonsWithKey, sharp } = services;
+
+    if (db[from]?.mazePending) {
+        delete db[from].mazePending;
+        saveDB();
+    }
+
+    db[from] = db[from] || {};
+    db[from].mazeGame = {
+        active: true,
+        maze,
+        difficulty,
+        pos: { r: 0, c: 0 },
+        moves: 0,
+        sender,
+        timestamp: Date.now(),
+        lastMsgKey: null,
+        btnKey: null,
+    };
+    saveDB();
+
+    let boardBuffer;
+    try {
+        boardBuffer = await renderMaze(sharp, maze, { r: 0, c: 0 });
+    } catch (e) {
+        console.error('[labirinto] render iniziale:', e.message);
+        delete db[from].mazeGame;
+        saveDB();
+        return reply('❌ Errore nella generazione del labirinto.');
+    }
+
+    const diff = DIFFICULTIES[difficulty] ? DIFFICULTIES[difficulty] : DIFFICULTIES.media;
+
+    const sent = await sock.sendMessage(from, {
+        image: boardBuffer,
+        caption: `🌀 *LABIRINTO · ${diff.emoji} ${diff.label}*\n━━━━━━━━━━━━━━━━━━\n🔴 Tu · 🟢 Uscita\n\n🎮 Muoviti con i pulsanti\nqui sotto, oppure scrivi\n*u/d/l/r* in chat.`,
+    }, { quoted: msg });
+
+    const btnKey = await sendButtonsWithKey(sock, from, MOVES_TEXT, [moveNavButton()], msg);
+
+    db[from].mazeGame.lastMsgKey = sent?.key || null;
+    db[from].mazeGame.btnKey = btnKey;
+    saveDB();
+
+    setTimeout(() => {
+        const gg = db[from]?.mazeGame;
+        if (gg?.active && Date.now() - gg.timestamp >= GAME_TIMEOUT_MS) {
+            delete db[from].mazeGame;
+            saveDB();
+            if (gg.lastMsgKey) { try { sock.sendMessage(from, { delete: gg.lastMsgKey }); } catch (_) {} }
+            if (gg.btnKey) { try { sock.sendMessage(from, { delete: gg.btnKey }); } catch (_) {} }
+            sock.sendMessage(from, { text: '⏰ *Tempo scaduto!*\nNon sei riuscito a uscire\ndal labirinto.' }).catch(() => {});
+        }
+    }, GAME_TIMEOUT_MS);
+};
 
 module.exports = {
     name: 'labirinto',
     aliases: ['maze', 'labyrinth'],
-    description: "Esci dal labirinto muovendoti con u/d/l/r (su/giù/sinistra/destra). Uso: .labirinto, poi invia le direzioni per muoverti o premi il pulsante Termina partita.",
+    description: "Esci dal labirinto: scegli la difficoltà, scorri i 5 labirinti casuali e gioca con i pulsanti (o con u/d/l/r). Uso: .labirinto",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB, sendButtons, sharp } = services;
+        const { db, saveDB, sendButtons, sendCarousel, sendButtonsWithKey, sharp, getUser } = services;
 
         if (!isGroup) return reply("Il labirinto si gioca solo nei gruppi.");
 
+        const t = String(textArgs || '').trim().toLowerCase();
+        const [w1, w2] = t.split(/\s+/);
         const g = db[from]?.mazeGame;
-        const wantQuit = QUIT_WORDS.includes(String(textArgs || '').trim().toLowerCase());
 
-        // Già in corso → se l'utente chiede di smettere (pulsante o testo),
-        // chiudi il gioco; altrimenti invita a muoversi.
+        // ── PARTITA IN CORSO ──────────────────────────────────────────────
         if (g?.active) {
-            if (wantQuit) {
-                g.active = false;
+            if (QUIT_WORDS.includes(w1)) {
                 delete db[from].mazeGame;
                 saveDB();
-                if (g.lastMsgKey) {
-                    try { await sock.sendMessage(from, { delete: g.lastMsgKey }); } catch (_) {}
-                }
+                if (g.lastMsgKey) { try { await sock.sendMessage(from, { delete: g.lastMsgKey }); } catch (_) {} }
+                if (g.btnKey) { try { await sock.sendMessage(from, { delete: g.btnKey }); } catch (_) {} }
                 return reply('🏁 *Labirinto terminato!*\nTorna quando vuoi con `.labirinto`. 🌀');
             }
-            return reply("C'è già un labirinto in corso!\nScrivi *u/d/l/r* per muoverti\npremi *Termina partita* per\nchiuderlo.");
+            if (w1 === 'muovi') {
+                // Pulsante di movimento premuto → stessa logica dell'handler testo.
+                try {
+                    await stepMaze({ sock, from, sender, raw: w2 || '', db, saveDB, getUser, sharp, quoted: msg });
+                } catch (e) {
+                    console.error('[labirinto] muovi:', e.message);
+                }
+                return;
+            }
+            return reply("C'è già un labirinto in corso!\nUsa i pulsanti sotto la\nboard o scrivi *u/d/l/r*.");
         }
 
-        // Pulsante premuto quando NON c'è partita → rispondi gentilmente.
-        if (wantQuit) {
+        // ── PAROLE DI USCITA SENZA PARTITA ────────────────────────────────
+        if (QUIT_WORDS.includes(w1)) {
             return reply('Non c\u2019è nessun labirinto in corso.\nAvviane uno con `.labirinto`! 🌀');
         }
 
-        // Griglia più piccola = partita più facile da risolvere.
-        const maze = generateMaze(5, 7);
-
-        db[from] = db[from] || {};
-        db[from].mazeGame = {
-            active: true,
-            maze,
-            pos: { r: 0, c: 0 },
-            moves: 0,
-            sender,
-            timestamp: Date.now(),
-            lastMsgKey: null,
-        };
-        saveDB();
-
-        let boardBuffer;
-        try {
-            boardBuffer = await renderMaze(sharp, maze, { r: 0, c: 0 });
-        } catch (e) {
-            console.error('[labirinto] render iniziale:', e.message);
-            delete db[from].mazeGame;
-            saveDB();
-            return reply("❌ Errore nella generazione del labirinto.");
+        // ── SCELTA DEL LABIRINTO DAL CAROSELLO ────────────────────────────
+        if (w1 === 'gioca') {
+            const pending = db[from]?.mazePending;
+            const n = parseInt(w2, 10);
+            if (!pending || !Array.isArray(pending.mazes) || !Number.isFinite(n) ||
+                n < 0 || n >= pending.mazes.length) {
+                return reply('⚠️ Scelta non valida o scaduta.\nRifai `.labirinto`.');
+            }
+            return startGame(sock, msg, context, {
+                maze: pending.mazes[n],
+                difficulty: pending.difficulty,
+            });
         }
 
-        const sent = await sock.sendMessage(from, {
-            image: boardBuffer,
-            caption: `🌀 *LABIRINTO*\n━━━━━━━━━━━━━━━━━━\n🔴 Sei il pallino rosso,\n🟢 il verde è l'uscita.\n\nMuoviti con:\n• *u* = su    *d* = giù\n• *l* = sinistra  *r* = destra\n\n_Non puoi attraversare i muri!_\n_Raggiungi la V verde._\n━━━━━━━━━━━━━━━━━━`,
-        }, { quoted: msg });
+        // ── CAROSELLO PER DIFFICOLTÀ (id "labirinto dim <x>" o ".labirinto <x>")
+        const diffKey = w1 === 'dim' ? w2 : (DIFFICULTIES[w1] ? w1 : null);
+        if (diffKey && DIFFICULTIES[diffKey]) {
+            return showCarousel(sock, msg, context, DIFFICULTIES[diffKey]);
+        }
 
-        db[from].mazeGame.lastMsgKey = sent?.key || null;
-        saveDB();
-
-        // Pulsante per chiudere la partita senza scrivere nulla.
-        sendButtons(sock, from,
-            '🌀 *LABIRINTO*\nScrivi *u/d/l/r* per muoverti.\nPremi sotto quando vuoi smettere.',
-            [{ label: '🏁 Termina partita', id: 'labirinto fine' }],
-            msg).catch(() => {});
-
-        setTimeout(() => {
-            const g = db[from]?.mazeGame;
-            if (g?.active && Date.now() - g.timestamp >= GAME_TIMEOUT_MS) {
-                g.active = false;
-                delete db[from].mazeGame;
-                saveDB();
-                if (g.lastMsgKey) {
-                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nNon sei riuscito a uscire\ndal labirinto.`, edit: g.lastMsgKey }).catch(() => {});
-                } else {
-                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nNon sei riuscito a uscire\ndal labirinto.` }).catch(() => {});
-                }
-            }
-        }, GAME_TIMEOUT_MS);
+        // ── MENU DIFFICOLTÀ (default: nessun argomento) ───────────────────
+        return showDifficultyMenu(sock, msg, context);
     },
 };
