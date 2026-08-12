@@ -9,17 +9,6 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { downloadContentFromMessage, downloadMediaMessage, sharp, fs, os, path, ffmpeg, webpmux } = services;
 
-            const replyText = `╭──── 🤖 *ScopaAmicoBot* ────╮\n` +
-                              `│\n` +
-                              `│ ⏳ *Elaborazione in corso...*\n` +
-                              `│ ⚙️ *Conversione multimediale avviata.*\n` +
-                              `│ \n` +
-                              `│ 💡 *Nota:* Per sticker animati perfetti,\n` +
-                              `│ tieni i video sotto i 6 secondi!\n` +
-                              `│\n` +
-                              `╰────────────────────────────╯`;
-            await sock.sendMessage(from, { text: replyText }, { quoted: msg });
-
             // Individua il media: allegato direttamente o quotato
             // (gestisce anche ephemeral e view-once).
             const quotedRaw = contextInfo?.quotedMessage || {};
