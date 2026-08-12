@@ -11,7 +11,28 @@ module.exports = {
 
 
             if (!textArgs) return reply("Fammi una domanda! Esempio: `.ai Qual è la capitale della Francia?`");
-            if (!AI_API_KEY || AI_API_KEY === 'INSERISCI_QUI_LA_TUA_API_KEY') return reply("❌ API Key non configurata. Aggiungi `AI_API_KEY=...` nel file *.env*.");
+
+            // ── SALVA LA API KEY (.ai set "sk-or-v1-...") ──────────────────
+            // La key viene conservata nel database del bot (persistente, e
+            // sincronizzata col backup Gist), quindi non serve modificare .env.
+            const setMatch = textArgs.trim().match(/^set\s+(.+)$/i);
+            if (setMatch) {
+                const rawKey = setMatch[1].trim();
+                const apiKey = rawKey.replace(/^["']|["']$/g, '');
+                if (!apiKey || apiKey.length < 10) {
+                    return reply("❌ Chiave non valida. Usa: `.ai set \"sk-or-v1-...\"`");
+                }
+                if (!db._ai) db._ai = {};
+                db._ai.apiKey = apiKey;
+                saveDB();
+                return reply("✅ API Key salvata! Ora puoi usare `.ai <domanda>`. Per cambiarla, usa di nuovo `.ai set \"...\"`.");
+            }
+
+            // La key effettiva: quella salvata con .ai set, altrimenti .env
+            const activeKey = (db?._ai?.apiKey) || AI_API_KEY;
+            if (!activeKey || activeKey === 'INSERISCI_QUI_LA_TUA_API_KEY') {
+                return reply("❌ API Key non configurata. Usa `.ai set \"sk-or-v1-...\"` (chiave di openrouter.ai) oppure aggiungi `AI_API_KEY=...` nel file *.env*.");
+            }
             try {
                 const prog = await showProgress(sock, from, { label: 'INTELLIGENZA ARTIFICIALE', duration: 5000, quoted: msg });
                 const response = await axios.post(AI_API_URL, {
@@ -23,7 +44,7 @@ module.exports = {
                     max_tokens: 1024,
                 }, {
                     headers: {
-                        'Authorization': `Bearer ${AI_API_KEY}`,
+                        'Authorization': `Bearer ${activeKey}`,
                         'Content-Type': 'application/json',
                         'HTTP-Referer': 'https://github.com/ScopaAmicoBot',
                         'X-Title': 'ScopaAmico Bot',
