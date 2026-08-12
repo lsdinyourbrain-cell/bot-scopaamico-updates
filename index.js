@@ -675,6 +675,7 @@ const COMMAND_EMOJIS = {
     sticker: '🎨', vv: '📹', hack: '💻', clona: '👥', tts: '🔊',
     rubato: '🏃', lyrics: '🎵', weather: '🌤️', ig: '📸',
     wasted: '💀', pokedex: '📖', clown: '🤡',
+    play: '🎵', musica: '🎵', song: '🎵',
     cur: '🎶', nowplaying: '🎶', np: '🎶',
     lastfm: '🎧', setfm: '🎧', setlastfm: '🎧',
     deep: '🎙️', reverse: '🔄', echo: '🗣️', robot: '🤖', drunk: '🥴',

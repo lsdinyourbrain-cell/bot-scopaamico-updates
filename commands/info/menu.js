@@ -178,6 +178,7 @@ const SECTIONS = [
         items: [
             ['🎧', 'lastfm', 'collega Last.fm'],
             ['🎶', 'cur', 'canzone su Last.fm'],
+            ['🎵', 'play', 'scarica e invia la canzone'],
             ['🎵', 'lyrics', 'testo canzone'],
             ['🔊', 'tts', 'testo in vocale'],
             ['🎵', 'mp3', 'scarica audio canzone'],
