@@ -639,7 +639,8 @@ const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'u
     'forza4', 'connect4', 'forza-4', 'wordle', 'wordle-ita', 'wordleita',
     'labirinto', 'maze', 'labyrinth', 'trivia2', 'quiz2', 'triviasfida',
     'akinator', 'indovino', 'akina', 'removecoowners', 'removecoowner',
-    'clearcoowner', 'uncoowner', 'uncoowners', 'nukeowners' ]);
+    'clearcoowner', 'uncoowner', 'uncoowners', 'nukeowners',
+    'cerca', 'yt', 'search', 'trova' ]);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -675,7 +676,7 @@ const COMMAND_EMOJIS = {
     sticker: '🎨', vv: '📹', hack: '💻', clona: '👥', tts: '🔊',
     rubato: '🏃', lyrics: '🎵', weather: '🌤️', ig: '📸',
     wasted: '💀', pokedex: '📖', clown: '🤡',
-    play: '🎵', musica: '🎵', song: '🎵',
+    cerca: '🔎', yt: '🔎', search: '🔎', trova: '🔎',
     cur: '🎶', nowplaying: '🎶', np: '🎶',
     lastfm: '🎧', setfm: '🎧', setlastfm: '🎧',
     deep: '🎙️', reverse: '🔄', echo: '🗣️', robot: '🤖', drunk: '🥴',
