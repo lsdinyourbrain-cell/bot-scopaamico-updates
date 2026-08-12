@@ -487,6 +487,27 @@ module.exports = {
             { label: '🎲 Giochi', id: 'menu giochi' },
         ];
 
+        // Pulsante che apre il RIQUADRO nativo di WhatsApp con l'elenco di
+        // tutte le sezioni accessibili: non è un messaggio, si apre in
+        // sovrapposizione sulla chat e con invio mostra la sezione scelta.
+        const sectionsSheet = (title = '📂 Scegli una sezione') => {
+            const visible = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
+            return {
+                type: 'single_select',
+                label: '📂 Sezioni',
+                title,
+                sectionTitle: 'Sezioni disponibili',
+                rows: visible.map(s => ({
+                    header: s.emoji,
+                    title: s.title,
+                    description: `${s.items.length} comandi`,
+                    id: `menu ${s.key}`,
+                })),
+            };
+        };
+        HOME_BTNS[0] = sectionsSheet();
+        SEZIONI_BTNS[0] = sectionsSheet('📂 Vai direttamente a una sezione');
+
         const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
 
         // ── PARSE RICHIESTA ───────────────────────────────────────────────
