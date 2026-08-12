@@ -39,17 +39,15 @@ module.exports = {
         saveDB();
 
         const resultText =
-`╔══════════════════════════════╗
-║        💼 *WORK* 💼
-╠══════════════════════════════╣
-║  ${lavoro.emoji} Hai lavorato ${lavoro.nome}!
-║
-║  💰 Guadagno: *+${formatMoney(paga)}€*
-║
-║  💳 Saldo attuale: *${formatMoney(uDB.money)}€*
-╠══════════════════════════════╣
-║  ⏳ Nuovo turno tra 20 minuti
-╚══════════════════════════════╝`;
+`💼 *WORK*
+━━━━━━━━━━━━━━━━━━
+${lavoro.emoji} Hai lavorato ${lavoro.nome}!
+
+💰 Guadagno: *+${formatMoney(paga)}€*
+
+💳 Saldo attuale: *${formatMoney(uDB.money)}€*
+⏳ Nuovo turno tra 20 minuti
+━━━━━━━━━━━━━━━━━━`;
 
         await sendButtons(sock, from, resultText, [
             { label: `💼 Nuovo turno`, id: `.${command}` },

@@ -15,12 +15,11 @@ module.exports = {
         const lines = textArgs.split('\n').length;
 
         await reply(
-`╭─── ✦ *COUNT* ✦ ───╮
-│                     │
-│ 📝 Caratteri: ${chars}
-│ 📖 Parole: ${words}
-│ 📃 Righe: ${lines}
-│                     │
-╰─────────────────────╯`);
+`🔢 *COUNT*
+━━━━━━━━━━━━━━━━━━
+📝 Caratteri: ${chars}
+📖 Parole: ${words}
+📃 Righe: ${lines}
+━━━━━━━━━━━━━━━━━━`);
     },
 };

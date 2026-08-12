@@ -32,7 +32,7 @@ module.exports = {
             if ((sameJid(user1, ownerJid) && sameJid(user2, alessiaJid)) ||
                 (sameJid(user2, ownerJid) && sameJid(user1, alessiaJid))) {
                 percent = 100;
-                frase = "💞 *AMORE VERO* 💞\n\nQuesto è speciale! L'algoritmo ha riconosciuto un'amore unico, quello tra il creatore e la sua Alessia. Il destino ha già deciso: *100%* sempre e per sempre. ✨💕";
+                frase = "💞 *AMORE VERO* 💞\n\nQuesto è speciale! L'algoritmo\nha riconosciuto un amore unico:\nquello tra il creatore e la sua\nAlessia. Il destino ha deciso:\n*100%* sempre e per sempre. ✨💕";
             } else {
                 percent = randomInt(1, 100);
                 const frasiFile = path.join(projectDir, 'data', 'compatibilita_frasi.txt');
@@ -46,7 +46,7 @@ module.exports = {
             const bar = '█'.repeat(Math.round(percent / 10)) + '░'.repeat(10 - Math.round(percent / 10));
 
             await sock.sendMessage(from, {
-                text: `╔══════════════════════════════════════╗\n║      💘 *COMPATIBILITÀ* 💘\n╠══════════════════════════════════════╣\n║  @${user1.split('@')[0]} ❤️ @${user2.split('@')[0]}\n║\n║  ${bar}  *${percent}%*\n║\n║  _${frase}_\n╚══════════════════════════════════════╝`,
+                text: `💘 *COMPATIBILITÀ*\n━━━━━━━━━━━━━━━━━━\n@${user1.split('@')[0]} ❤️ @${user2.split('@')[0]}\n\n${bar} *${percent}%*\n\n_${frase}_\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [user1, user2],
             });
     },

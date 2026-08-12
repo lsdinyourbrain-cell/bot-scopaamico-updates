@@ -26,22 +26,21 @@ module.exports = {
             try { pfpUrl = await sock.profilePictureUrl(target, 'image'); } catch (_) { pfpUrl = null; }
 
             const profileText =
-`╔══════════════════════════════╗
-║       👤 *PROFILO* 👤
-╠══════════════════════════════╣
-║  🧑 *${name.slice(0, 20)}*
-║  🏷️ ${uDB.title ? '*' + uDB.title.slice(0, 25) + '*' : '_Nessun titolo_'}
-║
-║  💰 Contante: *${wallet}€*
-║  🏦 Banca: *${bank}€*
-║  💵 Totale: *${wallet + bank}€*
-║
-║  💍 Sposato: ${spouse ? `@${spouse.split('@')[0]}` : '_No_'}
-║  👴 Genitori: *${parents}*
-║  🍼 Figli: *${children}*
-║
-║  💬 Messaggi: *${msgCount}*
-╚══════════════════════════════╝`;
+`👤 *PROFILO*
+━━━━━━━━━━━━━━━━━━
+🧑 *${name.slice(0, 20)}*
+🏷️ ${uDB.title ? '*' + uDB.title.slice(0, 25) + '*' : '_Nessun titolo_'}
+
+💰 Contante: *${wallet}€*
+🏦 Banca: *${bank}€*
+💵 Totale: *${wallet + bank}€*
+
+💍 Sposato: ${spouse ? `@${spouse.split('@')[0]}` : '_No_'}
+👴 Genitori: *${parents}*
+🍼 Figli: *${children}*
+
+💬 Messaggi: *${msgCount}*
+━━━━━━━━━━━━━━━━━━`;
 
             if (pfpUrl) {
                 await sock.sendMessage(from, { image: { url: pfpUrl }, caption: profileText, mentions: spouse ? [spouse] : [] });

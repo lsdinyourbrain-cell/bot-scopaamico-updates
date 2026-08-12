@@ -12,12 +12,11 @@ module.exports = {
 
             if (!isGroup) {
                 return reply(
-`╭──────────────────────────────────────╮
-│  ℹ️  *GROUPINFO*
-├──────────────────────────────────────┤
-│  Questo comando funziona solo
-│  all'interno di un *gruppo*. 👥
-╰──────────────────────────────────────╯`
+`ℹ️ *GROUPINFO*
+━━━━━━━━━━━━━━━━━━
+Questo comando funziona solo
+all'interno di un *gruppo*. 👥
+━━━━━━━━━━━━━━━━━━`
                 );
             }
 
@@ -32,7 +31,7 @@ module.exports = {
 
                 // Costruisce le righe degli admin con icona di ruolo
                 const buildAdminLine = (p, icon) =>
-                    `│  ${icon} @${(p.id || p.jid || '').split('@')[0]}`;
+                    `${icon} @${(p.id || p.jid || '').split('@')[0]}`;
 
                 const superAdminLines = superAdmins.map(p => buildAdminLine(p, '👑')).join('\n');
                 const adminLines      = admins.map(p => buildAdminLine(p, '⚙️')).join('\n');
@@ -40,7 +39,7 @@ module.exports = {
                 // Descrizione: tronca se troppo lunga, placeholder se assente
                 const rawDesc  = meta.desc || '';
                 const desc     = rawDesc.trim()
-                    ? rawDesc.trim().slice(0, 120) + (rawDesc.length > 120 ? '…' : '')
+                    ? rawDesc.trim().slice(0, 30) + (rawDesc.length > 30 ? '…' : '')
                     : '_Nessuna descrizione_';
 
                 // Timestamp di creazione gruppo (Unix epoch → data leggibile)
@@ -56,23 +55,19 @@ module.exports = {
                     .filter(Boolean);
 
                 const txt =
-`╭──────────────────────────────────────╮
-│  🏷️  *INFORMAZIONI GRUPPO*
-├──────────────────────────────────────┤
-│  📛 *Nome:*  ${meta.subject || 'N/D'}
-│  🆔 *ID:*    ${from}
-│  📅 *Creato:* ${creation}
-│  👥 *Membri:* ${totalMembers}
-├──────────────────────────────────────┤
-│  📝 *Descrizione:*
-│  _${desc}_
-├──────────────────────────────────────┤
-│  👑 *Fondatore/SuperAdmin*
-${superAdminLines || '│  _Nessuno_'}
-│
-│  ⚙️  *Amministratori*
-${adminLines || '│  _Nessuno_'}
-╰──────────────────────────────────────╯`;
+`🏷️ *INFORMAZIONI GRUPPO*
+━━━━━━━━━━━━━━━━━━
+📛 Nome: ${meta.subject || 'N/D'}
+🆔 ID: ${from}
+📅 Creato: ${creation}
+👥 Membri: ${totalMembers}
+📝 *Descrizione:*
+_${desc}_
+👑 *Fondatore/SuperAdmin*
+${superAdminLines || '_(nessuno)_'}
+⚙️ *Amministratori*
+${adminLines || '_(nessuno)_'}
+━━━━━━━━━━━━━━━━━━`;
 
                 // PFP del gruppo come allegato (fallback: solo testo)
                 let pfpUrl;

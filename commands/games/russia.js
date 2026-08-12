@@ -34,17 +34,16 @@ module.exports = {
         saveDB();
 
         const resultText =
-`╔══════════════════════════════╗
-║      🔫 *ROULETTE RUSSA*     ║
-╠══════════════════════════════╣
-║  🎯 Carichi il revolver e
-║  premi il grilletto...
-║
-║  ${fatale ? '💥 *BANG!* Colpito!' : '😅 *CLACK!* Sei vivo!'}
-╠══════════════════════════════╣
-║  ${fatale ? `❌ Perduti: -${formatMoney(puntata)}€` : `✅ Vincita: +${formatMoney(puntata * 5)}€`}
-║  💰 *Saldo:* ${formatMoney(uDB.money)}€
-╚══════════════════════════════╝`;
+`🔫 *ROULETTE RUSSA*
+━━━━━━━━━━━━━━━━━━
+🎯 Carichi il revolver e
+premi il grilletto...
+
+${fatale ? '💥 *BANG!* Colpito!' : '😅 *CLACK!* Sei vivo!'}
+
+${fatale ? `❌ Perduti: -${formatMoney(puntata)}€` : `✅ Vincita: +${formatMoney(puntata * 5)}€`}
+💰 *Saldo:* ${formatMoney(uDB.money)}€
+━━━━━━━━━━━━━━━━━━`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

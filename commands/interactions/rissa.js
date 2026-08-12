@@ -18,7 +18,7 @@ module.exports = {
                 .replace(/X/g, `@${vincitore.split('@')[0]}`)
                 .replace(/Y/g, `@${perdente.split('@')[0]}`);
             await sock.sendMessage(from, {
-                text: `╭━━━ 〈 🥊 *RISSA* 〉 ━━━╮\n\n⚔️ @${sender.split('@')[0]}  vs  @${targetJid.split('@')[0]}\n\n_💬 ${frase}_\n\n🏆 Vincitore: @${vincitore.split('@')[0]}\n\n╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+                text: `🥊 *RISSA*\n━━━━━━━━━━━━━━━━━━\n⚔️ @${sender.split('@')[0]} vs\n@${targetJid.split('@')[0]}\n_💬 ${frase}_\n🏆 Vincitore: @${vincitore.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender, targetJid],
             });
     },

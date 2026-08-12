@@ -30,14 +30,13 @@ module.exports = {
                 thiefData.money = Math.max(0, thiefData.money - penalty);
                 saveDB();
                 return reply(
-`╔══════════════════════════════╗
-║       🚔 *BECCATO!* 🚔
-╠══════════════════════════════╣
-║  Il proprietario ti ha fatto
-║  una multa di *${penalty}€*!
-║
-║  💰 Saldo: *${thiefData.money}€*
-╚══════════════════════════════╝`);
+`🚔 *BECCATO!*
+━━━━━━━━━━━━━━━━━━
+Il proprietario ti ha fatto
+una multa di *${penalty}€*!
+
+💰 Saldo: *${thiefData.money}€*
+━━━━━━━━━━━━━━━━━━`);
             }
 
             const stolen = Math.min(targetData.money, Math.floor(Math.random() * 100) + 20);
@@ -46,7 +45,7 @@ module.exports = {
             saveDB();
 
             await sock.sendMessage(from, {
-                text: `╔══════════════════════════════╗\n║     🕵️ *FURTO!* 🕵️\n╠══════════════════════════════╣\n║  @${sender.split('@')[0]} ha rubato\n║  *${stolen}€* a @${targetJid.split('@')[0]}! 💀\n║\n║  💰 Il tuo saldo: *${thiefData.money}€*\n╚══════════════════════════════╝`,
+                text: `🕵️ *FURTO!*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha rubato\n*${stolen}€* a @${targetJid.split('@')[0]}! 💀\n\n💰 Il tuo saldo: *${thiefData.money}€*\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender, targetJid],
             });
     },

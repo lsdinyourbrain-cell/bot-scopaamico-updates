@@ -50,13 +50,14 @@ module.exports = {
             saveDB();
 
             const resultText =
-`╭────〔 🪙 *TESTA O CROCE* 〕───╮
-│ 🧑 Hai scelto: *${picked}*
-│ 🪙 Risultato: *${flip}*
-├──────────────────────────────
-│ ${esito}
-│ 💰 *Saldo attuale:* ${formatMoney(uDB.money)}
-╰──────────────────────────────╯`;
+`🪙 *TESTA O CROCE*
+━━━━━━━━━━━━━━━━━━
+🧑 Hai scelto: *${picked}*
+🪙 Risultato: *${flip}*
+
+${esito}
+💰 Saldo attuale: *${formatMoney(uDB.money)}*
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

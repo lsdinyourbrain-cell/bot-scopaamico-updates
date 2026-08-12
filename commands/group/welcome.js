@@ -18,14 +18,12 @@ module.exports = {
         if (!arg || (arg !== 'on' && arg !== 'off' && arg !== 'true' && arg !== 'false' && arg !== 'si' && arg !== 'no' && arg !== 'attivo' && arg !== 'disattivo')) {
             const status = config.welcome ? '🟢 ATTIVO' : '🔴 DISATTIVO';
             return reply(
-`╭──────────────────────────────────────╮
-│  🎉  *BENVENUTO GRUPPO*
-├──────────────────────────────────────┤
-│  Stato attuale: ${status}
-│
-│  Uso: .welcome <on|off>
-│  Es:  .welcome on
-╰──────────────────────────────────────╯`
+`🎉 *BENVENUTO GRUPPO*
+━━━━━━━━━━━━━━━━━━
+Stato attuale: ${status}
+Uso: .welcome <on|off>
+Es: .welcome on
+━━━━━━━━━━━━━━━━━━`
             );
         }
 
@@ -33,12 +31,12 @@ module.exports = {
         setWelcomeGroup(from, 'welcome', enable);
 
         await reply(
-`╭──────────────────────────────────────╮
-│  🎉  *BENVENUTO ${enable ? 'ATTIVATO' : 'DISATTIVATO'}*
-├──────────────────────────────────────┤
-│  Il messaggio di benvenuto è ora
-│  ${enable ? '🟢 ATTIVO' : '🔴 DISATTIVATO'} in questo gruppo.
-╰──────────────────────────────────────╯`
+`🎉 *BENVENUTO ${enable ? 'ATTIVATO' : 'DISATTIVATO'}*
+━━━━━━━━━━━━━━━━━━
+Il messaggio di benvenuto è ora
+${enable ? '🟢 ATTIVO' : '🔴 DISATTIVATO'}
+in questo gruppo.
+━━━━━━━━━━━━━━━━━━`
         );
     },
 };

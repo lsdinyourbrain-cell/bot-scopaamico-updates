@@ -181,14 +181,14 @@ const resultsText = (st) => {
     const pages = totalPages(st.results);
     return (
 `🔎 *Risultati per "${st.query}"*
-${'─'.repeat(20)}
+━━━━━━━━━━━━━━━━━━
 ${items.map((v, i) => {
     const n = start + i + 1;
     const dur = v.duration ? ` · ⏱ ${fmtDur(v.duration)}` : '';
-    const ch = v.channel ? `\n   📺 ${v.channel}` : '';
+    const ch = v.channel ? `\n📺 ${v.channel}` : '';
     return `${n}. ${v.title}${dur}${ch}`;
 }).join('\n')}
-${'─'.repeat(20)}
+━━━━━━━━━━━━━━━━━━
 Pagina ${st.page}/${pages} · ${tot} video
 👇 Premi *1* o *2* per scegliere,
 oppure naviga con i pulsanti.`);

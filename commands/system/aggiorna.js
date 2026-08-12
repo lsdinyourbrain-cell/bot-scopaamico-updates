@@ -27,7 +27,7 @@ module.exports = {
         const projectDir = context.services.projectDir;
 
         if (!context.isOwner) {
-            return reply("╭────〔 ⛔ ACCESSO NEGATO 〕────╮\n│ Comando riservato all'Owner del bot.\n╰──────────────────────────────╯");
+            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
         }
 
         // 1) Verifica che la cartella sia un repo git
@@ -74,18 +74,16 @@ module.exports = {
                 await runGit(execFileAsync, projectDir, ['clean', '-fd', '-e', 'node_modules', '-e', '.env', '-e', 'auth_info_baileys', '-e', 'data', '-e', 'temp', '-e', 'logs']);
             } catch (_) {}
             return reply(
-`╭────〔 ✨ *TUTTO AGGIORNATO* 〕────╮
-│                              │
-│ ✅ Il bot è già alla         │
-│    versione più recente!     │
-│                              │
-│ 🔖 Build attuale:            │
-│    \`${localHead.slice(0, 7)}\`             │
-│                              │
-│ 🚀 Non c'è nulla di nuovo,   │
-│    ma la qualità è sempre    │
-│    al massimo. 💎            │
-╰──────────────────────────────╯`);
+`✨ *TUTTO AGGIORNATO*
+━━━━━━━━━━━━━━━━━━
+✅ Il bot è già alla
+versione più recente!
+🔖 Build attuale:
+\`${localHead.slice(0, 7)}\`
+🚀 Non c'è nulla di nuovo,
+ma la qualità è sempre
+al massimo. 💎
+━━━━━━━━━━━━━━━━━━`);
         }
 
         // 4) Changelog dei nuovi commit

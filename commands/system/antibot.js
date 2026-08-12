@@ -46,14 +46,13 @@ module.exports = {
         const status = cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         const wlList = cfg.whitelist.length ? cfg.whitelist.map(w => `• ${w}`).join('\n') : 'Nessuno.';
         return reply(
-`╭─── ✦ *ANTIBOT* ✦ ───╮
-│ ${status}
-│                       │
-│ 📋 *Whitelist:*
-│ ${wlList}
-│                       │
-│ .antibot on/off       │
-│ .antibot whitelist <n>│
-╰───────────────────────╯`);
+`🤖 *ANTIBOT*
+━━━━━━━━━━━━━━━━━━
+${status}
+📋 *Whitelist:*
+${wlList}
+.antibot on/off
+.antibot whitelist <n>
+━━━━━━━━━━━━━━━━━━`);
     },
 };

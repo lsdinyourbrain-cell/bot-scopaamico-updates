@@ -18,28 +18,25 @@ module.exports = {
             db[from]._muted = true;
             saveDB();
             await sendButtons(sock, from,
-`╭━━━━━━━━━━━━━━━━━━╮
-┃   ⏸️ *BOT IN PAUSA*   ┃
-┃                     ┃
-┃ Il bot non risponde ┃
-┃ più in questo       ┃
-┃ gruppo. Premi il    ┃
-┃ pulsante per         ┃
-┃ riattivarlo.        ┃
-╰━━━━━━━━━━━━━━━━━━╯`,
+`⏸️ *BOT IN PAUSA*
+━━━━━━━━━━━━━━━━━━
+Il bot non risponde
+più in questo gruppo.
+Premi il pulsante
+per riattivarlo.
+━━━━━━━━━━━━━━━━━━`,
                 [{ label: '.riprendi', id: 'riprendi' }],
                 msg);
         } else {
             db[from]._muted = false;
             saveDB();
             await reply(
-`╭━━━━━━━━━━━━━━━━━━╮
-┃  ▶️ *BOT RIPRESO*   ┃
-┃                     ┃
-┃ Il bot è di nuovo   ┃
-┃ attivo in questo    ┃
-┃ gruppo! 🚀          ┃
-╰━━━━━━━━━━━━━━━━━━╯`);
+`▶️ *BOT RIPRESO*
+━━━━━━━━━━━━━━━━━━
+Il bot è di nuovo
+attivo in questo
+gruppo! 🚀
+━━━━━━━━━━━━━━━━━━`);
         }
     },
 };

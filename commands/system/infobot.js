@@ -140,12 +140,12 @@ module.exports = {
 
         // Frasi casuali
         const phrases = [
-            "✨ SCOPAAMICO BOT — Potenza e controllo totale! 🫶",
-            "🔥 Creato per gestire e animare i gruppi WhatsApp!",
-            "🤖 Sistema avanzato di gestione e moderazione 💪",
-            "⚡ Sempre attivo e pronto all'uso 🍝",
-            "🛡️ Protezione gruppo, comandi audio e divertimento.",
-            "🚀 Versione 11.0 — Massime prestazioni."
+            "✨ SCOPAAMICO BOT —\nPotenza e controllo totale! 🫶",
+            "🔥 Creato per gestire e\nanimare i gruppi WhatsApp!",
+            "🤖 Sistema avanzato di\ngestione e moderazione 💪",
+            "⚡ Sempre attivo e\npronto all'uso 🍝",
+            "🛡️ Protezione gruppo,\ncomandi audio e divertimento.",
+            "🚀 Versione 11.0 —\nMassime prestazioni."
         ];
         const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
 
@@ -157,40 +157,29 @@ module.exports = {
         const dbSize = (JSON.stringify(db).length / 1024).toFixed(1);
 
         // Layout grafico elegante e pulito
-        let txt = `╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮\n`;
-        txt += `┃ 🤖 ✦ ${SB('INFO SYSTEM BOT')} ✦\n`;
-        txt += `┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\n`;
-        txt += `┃\n`;
-        txt += `┃ 💬 ${randomPhrase}\n`;
-        txt += `┃\n`;
-        txt += `┃ 📅 ${SB('Data')}: ${dateStr} │ 🕒 ${timeStr}\n`;
-        txt += `┃ 👤 ${SB('Richiesto da')}: ${pushName || 'Utente'}\n`;
-        txt += `┃\n`;
-        txt += `┣━━━ 👑 ${BF('STAFF & CREATORI')} ━━━\n`;
-        txt += `┃\n`;
-        txt += `┃ 👑 ${SB('OWNER')}: ${mainOwnerDisplay}\n`;
+        let txt = `🤖 *INFO SYSTEM BOT*\n`;
+        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `💬 ${randomPhrase}\n`;
+        txt += `📅 Data: ${dateStr} │ 🕒 ${timeStr}\n`;
+        txt += `👤 Richiesto da: ${pushName || 'Utente'}\n`;
+        txt += `👑 *STAFF & CREATORI*\n`;
+        txt += `👑 Owner: ${mainOwnerDisplay}\n`;
 
         if (processedCoOwners.length > 0) {
-            txt += `┃\n`;
-            txt += `┃ ⚔️ ${SB('CO-OWNER')} (${processedCoOwners.length}):\n`;
+            txt += `⚔️ Co-owner (${processedCoOwners.length}):\n`;
             for (const co of processedCoOwners) {
-                txt += `┃   ▫️ ${co.text}\n`;
+                txt += `▫️ ${co.text}\n`;
             }
         } else {
-            txt += `┃ ⚔️ ${SB('CO-OWNER')}: Nessuno impostato\n`;
+            txt += `⚔️ Co-owner: Nessuno impostato\n`;
         }
 
-        txt += `┃\n`;
-        txt += `┣━━━ 📊 ${BF('STATISTICHE')} ━━━\n`;
-        txt += `┃\n`;
-        txt += `┃ 👥 ${SB('Chat attive')}: ${totalUsers}\n`;
-        txt += `┃ 💾 ${SB('Database')}: ${dbSize} KB\n`;
-        txt += `┃\n`;
-        txt += `┣━━━ 🚀 ${BF('COMANDI')} ━━━\n`;
-        txt += `┃\n`;
-        txt += `┃ Scrivi ${SB('.menu')} per la lista completa!\n`;
-        txt += `┃\n`;
-        txt += `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
+        txt += `📊 *STATISTICHE*\n`;
+        txt += `👥 Chat attive: ${totalUsers}\n`;
+        txt += `💾 Database: ${dbSize} KB\n`;
+        txt += `🚀 *COMANDI*\n`;
+        txt += `Scrivi .menu per\nla lista completa!\n`;
+        txt += `━━━━━━━━━━━━━━━━━━`;
 
         await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });
     },

@@ -4,12 +4,12 @@
 // più alta (cooldown di 45 minuti). Storia della carriera in userData.lavoro2.
 
 const GIGS = [
-    { emoji: '🛠️', nome: 'da idraulico', tip: () => ['hai riparato una tubatura in tilt', 'hai sostituito un rubinetto trappola', 'hai sistemato lo scaldabagno esploso'] },
-    { emoji: '🎨', nome: 'da grafico', tip: () => ['hai rifatto la grafica di una pizzeria', 'hai disegnato una mascotte indecente', 'hai creato un logo con troppo neon'] },
-    { emoji: '🧹', nome: 'da pulizia straordinaria', tip: () => ['hai pulito un ufficio al limite del biohazard', 'hai smacchiato un tappeto misterioso', 'hai lucidato una vetrina grattandola'] },
-    { emoji: '🚚', nome: 'da corriere notturno', tip: () => ['hai consegnato 47 pacchi in 2 ore', 'hai trasportato un divano per 12 piani senza ascensore', 'hai guidato un furgone con la radio rotta'] },
-    { emoji: '👨‍🍳', nome: 'da chef al volante', tip: () => ['hai preparato 80 panini per un matrimonio', 'hai grigliato 10 kg di stracchino (non chiedere)', 'hai inventato un piatto che nessuno ha capito ma era buono'] },
-    { emoji: '🪴', nome: 'da giardiniere', tip: () => ['hai potato una siepe ribelle', 'hai trapiantato un albero di 3 metri', 'hai creato un orto in un poggiolo minuscolo'] },
+    { emoji: '🛠️', nome: 'da idraulico', tip: () => ['hai riparato un tubo in tilt', 'hai tolto un rubinetto trappola', 'hai sistemato lo scaldabagno'] },
+    { emoji: '🎨', nome: 'da grafico', tip: () => ['hai rifatto la grafica del bar', 'hai disegnato la mascotte pazza', 'hai creato un logo troppo neon'] },
+    { emoji: '🧹', nome: 'da pulizia straordinaria', tip: () => ['hai pulito un ufficio biohazard', 'hai smacchiato un bel tappeto', 'hai lucidato una vetrina sporca'] },
+    { emoji: '🚚', nome: 'da corriere notturno', tip: () => ['hai consegnato 47 pacchi in 2 ore', 'hai portato un divano a braccia', 'hai guidato un furgone scassato'] },
+    { emoji: '👨‍🍳', nome: 'da chef al volante', tip: () => ['hai preparato 80 panini al volo', 'hai grigliato 10 kg di cacio', 'hai inventato un piatto strano'] },
+    { emoji: '🪴', nome: 'da giardiniere', tip: () => ['hai potato una siepe ribelle', 'hai trapiantato un albero alto', 'hai creato un orto in miniatura'] },
 ];
 
 module.exports = {
@@ -44,22 +44,20 @@ module.exports = {
         saveDB();
 
         const text =
-`╔══════════════════════════════╗
-║       💪 *LAVORETTO* 💪
-╠══════════════════════════════╣
-║  ${gig.emoji} Oggi ${gig.nome}:
-║  _${randomChoice(gig.tip())}._
-║
-║  ${bonus ? '🔥 *CRITICO!* Paga massima!' : ''}
-║  💰 Guadagno: *+${formatMoney(guadagno)}*
-║
-║  💳 Saldo: *${formatMoney(userData.money)}*
-║
-║  🧾 Carriera: ${userData.lavoro2.giorni} lavoretti,
-║     ${formatMoney(userData.lavoro2.guadagnato)} accumulati
-╠══════════════════════════════╣
-║  ⏳ Nuovo lavoretto tra 45 minuti
-╚══════════════════════════════╝`;
+`💪 *LAVORETTO*
+━━━━━━━━━━━━━━━━━━
+${gig.emoji} Oggi ${gig.nome}:
+_${randomChoice(gig.tip())}._
+
+${bonus ? '🔥 *CRITICO!* Paga massima!' : ''}
+💰 Guadagno: *+${formatMoney(guadagno)}*
+
+💳 Saldo: *${formatMoney(userData.money)}*
+
+🧾 Carriera: ${userData.lavoro2.giorni} lavoretti,
+${formatMoney(userData.lavoro2.guadagnato)} accumulati
+⏳ Nuovo lavoretto tra 45 minuti
+━━━━━━━━━━━━━━━━━━`;
 
         await sendButtons(sock, from, text, [
             { label: `💪 Altro lavoretto`, id: `.${command}` },

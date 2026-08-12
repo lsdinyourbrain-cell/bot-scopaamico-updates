@@ -52,14 +52,13 @@ module.exports = {
         const displayNum = (removed.number || removed.lid || target).split('@')[0];
         await sock.sendMessage(from, {
             text:
-`╭─── ✦ ${SB('UNOWNER')} ✦ ───╮
-│                          │
-│ 🚫 @${displayNum}         │
-│    non è più owner.      │
-│                          │
-│ 😔 I privilegi sono      │
-│    stati revocati.       │
-╰──────────────────────────╯`,
+`🚫 *UNOWNER*
+━━━━━━━━━━━━━━━━━━
+@${displayNum} non è più
+owner. 😔
+I privilegi sono
+stati revocati.
+━━━━━━━━━━━━━━━━━━`,
             mentions: [removed.number || removed.lid].filter(Boolean),
         }, { quoted: msg });
     },

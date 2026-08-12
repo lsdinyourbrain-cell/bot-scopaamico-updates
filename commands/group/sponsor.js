@@ -19,18 +19,15 @@ module.exports = {
         const link = db._config?.sponsorLink || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo?s=cl&p=a&ilr=0';
         await sock.sendMessage(from, {
             text:
-`╭─ ✦ ${SB('SPONSOR')} ✦ ─╮
-│                          │
-│  Ciao, sono il           │
-│  *ScopaAmico Bot* 🤖    │
-│                          │
-│  Unisciti al gruppo      │
-│  ufficiale! 🫶          │
-│                          │
-│  👇 *CLICCA QUI* 👇     │
-│  ${link}
-│                          │
-╰──────────────────────────╯`,
+`✨ *SPONSOR*
+━━━━━━━━━━━━━━━━━━
+Ciao, sono il
+*ScopaAmico Bot* 🤖
+Unisciti al gruppo
+ufficiale! 🫶
+👇 *CLICCA QUI* 👇
+${link}
+━━━━━━━━━━━━━━━━━━`,
         }, { quoted: msg });
     },
 };

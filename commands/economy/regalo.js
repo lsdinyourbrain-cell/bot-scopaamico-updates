@@ -48,17 +48,16 @@ module.exports = {
 
         return sock.sendMessage(from, {
             text:
-`╔══════════════════════════════╗
-║       🎁 *REGALO!* 🎁
-╠══════════════════════════════╣
-║  🎀 @${sender.split('@')[0]} ha regalato
-║  *${formatMoney(amount)}* a @${targetJid.split('@')[0]}!
-║
-║  _${randomChoice(GIFT_LINES)}_
-║
-║  💳 Il tuo saldo: *${formatMoney(me.money)}*
-║  📦 Regali dati oggi: ${me.regali.n}/3
-╚══════════════════════════════╝`,
+`🎁 *REGALO!*
+━━━━━━━━━━━━━━━━━━
+🎀 @${sender.split('@')[0]} ha regalato
+*${formatMoney(amount)}* a @${targetJid.split('@')[0]}!
+
+_${randomChoice(GIFT_LINES)}_
+
+💳 Il tuo saldo: *${formatMoney(me.money)}*
+📦 Regali dati oggi: ${me.regali.n}/3
+━━━━━━━━━━━━━━━━━━`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

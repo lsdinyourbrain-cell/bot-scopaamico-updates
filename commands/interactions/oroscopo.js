@@ -11,7 +11,7 @@ module.exports = {
 
 
             await sock.sendMessage(from, {
-                text: `╭━━━ 〈 🔮 *OROSCOPO* 〉 ━━━╮\n\n👤 @${sender.split('@')[0]}\n\n✨ _${randomChoice(ARRAYS.oroscopo)}_\n\n╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+                text: `🔮 *OROSCOPO*\n━━━━━━━━━━━━━━━━━━\n👤 @${sender.split('@')[0]}\n✨ _${randomChoice(ARRAYS.oroscopo)}_\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender],
             });
     },

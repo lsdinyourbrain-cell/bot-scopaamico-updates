@@ -14,7 +14,7 @@ module.exports = {
             const valore = Math.floor(Math.random() * 30) + 1;
             const tipo   = valore < 5 ? 'Microscopico' : valore < 15 ? 'Sotto la media' : valore < 25 ? 'Nella media' : 'Illegale 🚨';
             await sock.sendMessage(from, {
-                text: `╭━━━ 〈 🍆 *MISURAZIONE* 〉 ━━━╮\n\n👤 Utente: @${target.split('@')[0]}\n📏 Lunghezza: *${valore} cm* _(${tipo})_\n\n_💬 ${randomChoice(ARRAYS.cazzo)}_\n\n╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+                text: `🍆 *MISURAZIONE*\n━━━━━━━━━━━━━━━━━━\n👤 @${target.split('@')[0]}\n📏 *${valore} cm* _(${tipo})_\n━━━━━━━━━━━━━━━━━━\n_💬 ${randomChoice(ARRAYS.cazzo)}_`,
                 mentions: [target],
             });
     },

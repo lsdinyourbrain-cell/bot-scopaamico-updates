@@ -16,7 +16,7 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, reply, services } = context;
         if (!context.isOwner) {
-            return reply("╭────〔 ⛔ ACCESSO NEGATO 〕────╮\n│ Comando riservato all'Owner del bot.\n╰──────────────────────────────╯");
+            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
         }
 
         await reply('🩺 *Diagnostica in corso...* (un attimo)');

@@ -19,12 +19,12 @@ module.exports = {
 
             if (sorted.length === 0) return reply("📭 Nessun dato disponibile.");
 
-            let txt = `╭────〔 🏆 *TOP 5 ATTIVI* 〕────╮\n`;
+            let txt = `🏆 *TOP 5 ATTIVI*\n━━━━━━━━━━━━━━━━━━\n`;
             sorted.forEach(([jid, data], i) => {
                 const medals = ['🥇', '🥈', '🥉', '４', '５'];
-                txt += `│ ${medals[i]} @${jid.split('@')[0]} ➔ *${data.msgCount || 0}* msg\n`;
+                txt += `${medals[i]} @${jid.split('@')[0]} ➔ *${data.msgCount || 0}* msg\n`;
             });
-            txt += `╰─────────────────────────────╯`;
+            txt += `━━━━━━━━━━━━━━━━━━`;
             await sock.sendMessage(from, { text: txt, mentions: sorted.map(([jid]) => jid) });
     },
 };

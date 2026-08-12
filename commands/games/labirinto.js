@@ -45,7 +45,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🌀 *LABIRINTO*\n\n🔴 sei il pallino rosso, il verde è l'uscita.\n\nMuoviti con:\n• *u* = su     *d* = giù\n• *l* = sinistra   *r* = destra\n\n_Non puoi attraversare i muri! Raggiungi la V verde._`,
+            caption: `🌀 *LABIRINTO*\n━━━━━━━━━━━━━━━━━━\n🔴 Sei il pallino rosso,\n🟢 il verde è l'uscita.\n\nMuoviti con:\n• *u* = su    *d* = giù\n• *l* = sinistra  *r* = destra\n\n_Non puoi attraversare i muri!_\n_Raggiungi la V verde._\n━━━━━━━━━━━━━━━━━━`,
         }, { quoted: msg });
 
         db[from].mazeGame.lastMsgKey = sent?.key || null;
@@ -57,9 +57,9 @@ module.exports = {
                 g.active = false;
                 saveDB();
                 if (g.lastMsgKey) {
-                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!* Non sei riuscito a uscire dal labirinto.`, edit: g.lastMsgKey }).catch(() => {});
+                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nNon sei riuscito a uscire\ndal labirinto.`, edit: g.lastMsgKey }).catch(() => {});
                 } else {
-                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!* Non sei riuscito a uscire dal labirinto.` }).catch(() => {});
+                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nNon sei riuscito a uscire\ndal labirinto.` }).catch(() => {});
                 }
             }
         }, GAME_TIMEOUT_MS);

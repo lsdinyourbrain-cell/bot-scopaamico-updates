@@ -17,12 +17,11 @@ module.exports = {
             const code = await sock.groupInviteCode(from);
             const link = `https://chat.whatsapp.com/${code}`;
             await reply(
-`╭━━━━━ 🔗 *LINK GRUPPO* 🔗 ━━━━━╮
-┃                              ┃
-┃  ${link}
-┃                              ┃
-┃  Condividilo con chi vuoi!   ┃
-╰──────────────────────────────╯`);
+`🔗 *LINK GRUPPO*
+━━━━━━━━━━━━━━━━━━
+${link}
+Condividilo con chi vuoi!
+━━━━━━━━━━━━━━━━━━`);
         } catch (e) {
             await reply("❌ Non riesco a generare il link. Controlla i permessi.");
         }

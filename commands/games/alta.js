@@ -51,14 +51,15 @@ module.exports = {
             saveDB();
 
             const resultText =
-`╭────〔 🃏 *ALTA O BASSA* 〕───╮
-│ 🎴 Carta mostrata: *${symbols[cardOne]}*
-│ 🎴 Carta successiva: *${symbols[cardTwo]}*
-│ 🧑 Avevi detto: *${picked}*
-├──────────────────────────────
-│ ${esito}
-│ 💰 *Saldo attuale:* ${formatMoney(uDB.money)}
-╰──────────────────────────────╯`;
+`🃏 *ALTA O BASSA*
+━━━━━━━━━━━━━━━━━━
+🎴 Carta mostrata: *${symbols[cardOne]}*
+🎴 Carta successiva: *${symbols[cardTwo]}*
+🧑 Avevi detto: *${picked}*
+
+${esito}
+💰 Saldo attuale: *${formatMoney(uDB.money)}*
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

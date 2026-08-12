@@ -42,7 +42,7 @@ module.exports = {
                     const a = AZIENDE.find(x => x.code === code.toUpperCase());
                     if (!a) return null;
                     const valore = a.price * qty;
-                    return `│ ${code.toUpperCase().padEnd(5)} x${qty}  @ ${a.price}€  = ${valore}€`;
+                    return `${code.padEnd(5)} x${qty} @ ${a.price}€ = ${valore}€`;
                 })
                 .filter(Boolean);
             const tot = linee.length
@@ -53,14 +53,12 @@ module.exports = {
                 : 0;
 
             const text =
-`╔══════════════════════════════╗
-║        📈 *BORSA* 📈
-╠══════════════════════════════╣
-${linee.length ? linee.join('\n') : '│  📭 Portafoglio vuoto.\n│  Compra azioni con:\n│  *.investi compra GOOG*'}
-╠══════════════════════════════╣
-║  💶 Valore azioni: *${tot}€*
-║  💳 Contante: *${uDB.money}€*
-╚══════════════════════════════╝`;
+`📈 *BORSA*
+━━━━━━━━━━━━━━━━━━
+${linee.length ? linee.join('\n') : '📭 Portafoglio vuoto.\nCompra azioni con:\n*.investi compra GOOG*'}
+💶 Valore azioni: *${tot}€*
+💳 Contante: *${uDB.money}€*
+━━━━━━━━━━━━━━━━━━`;
             return await sendButtons(sock, from, text, [
                 { label: '📝 Listino', id: 'investi listino' },
             ], msg);
@@ -68,13 +66,11 @@ ${linee.length ? linee.join('\n') : '│  📭 Portafoglio vuoto.\n│  Compra a
 
         if (azione === 'LISTINO') {
             const listino =
-`╔══════════════════════════════╗
-║     📝 *LISTINO AZIONI*      ║
-╠══════════════════════════════╣
-${AZIENDE.map(a => `│  ${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`).join('\n')}
-╠══════════════════════════════╣
-║  *.investi compra <CODICE> [n]*
-╚══════════════════════════════╝`;
+`📝 *LISTINO AZIONI*
+━━━━━━━━━━━━━━━━━━
+${AZIENDE.map(a => `${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`).join('\n')}
+━━━━━━━━━━━━━━━━━━
+*.investi compra <CODICE> [n]*`;
             return await sendButtons(sock, from, listino, [
                 { label: '📊 Il tuo portafoglio', id: 'investi' },
             ], msg);
@@ -83,29 +79,29 @@ ${AZIENDE.map(a => `│  ${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`
         if (azione === 'COMPRA' || azione === 'VENDI') {
             const target = (parts[1] || '').toUpperCase();
             const azienda = AZIENDE.find(a => a.code === target);
-            if (!azienda) return reply(`❌ Azione *${target}* non trovata. Usa *.investi listino*.`);
+            if (!azienda) return reply(`❌ Azione *${target}* non trovata.\nUsa *.investi listino*.`);
 
             if (azione === 'COMPRA') {
                 const qty = parseInt(parts[2]) || 1;
                 const costo = azienda.price * qty;
-                if (uDB.money < costo) return reply(`❌ Non ti bastano i soldi: servono *${costo}€*.`);
+                if (uDB.money < costo) return reply(`❌ Non ti bastano i soldi.\nServono *${costo}€*.`);
                 uDB.money -= costo;
                 uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + qty;
                 saveDB();
-                return reply(`✅ Comprate *${qty}* azioni di *${azienda.name}* per *${costo}€*.\n💰 Saldo: *${uDB.money}€*.`);
+                return reply(`✅ Comprate *${qty}* azioni\ndi *${azienda.name}* per *${costo}€*\n💰 Saldo: *${uDB.money}€*`);
             }
 
             const q = parseInt(parts[2]) || (uDB.azioni[target.toUpperCase()] || 1);
-            if (q <= 0 || (uDB.azioni[target.toUpperCase()] || 0) < 1) return reply(`❌ Non possiedi azioni di *${azienda.name}*.`);
+            if (q <= 0 || (uDB.azioni[target.toUpperCase()] || 0) < 1) return reply(`❌ Non possiedi azioni\ndi *${azienda.name}*.`);
             if (q > uDB.azioni[target.toUpperCase()]) return reply(`Ne possiedi solo *${uDB.azioni[target.toUpperCase()]}*.`);
             const ricavo = azienda.price * q;
             uDB.azioni[target.toUpperCase()] -= q;
             if (uDB.azioni[target.toUpperCase()] <= 0) delete uDB.azioni[target.toUpperCase()];
             uDB.money += ricavo;
             saveDB();
-            return reply(`💰 Vendute *${q}* azioni di *${azienda.name}* per *${ricavo}€*.\n💳 Saldo: *${uDB.money}€*.`);
+            return reply(`💰 Vendute *${q}* azioni\ndi *${azienda.name}* per *${ricavo}€*\n💳 Saldo: *${uDB.money}€*`);
         }
 
-        reply("⚠️ Uso:\n• *.investi* — il tuo portafoglio\n• *.investi listino* — prezzi azioni\n• *.investi compra <codice> [n]*\n• *.investi vendi <codice> [n]*");
+        reply("⚠️ *USO:*\n• *.investi* — portafoglio\n• *.investi listino* — prezzi\n• *.investi compra <codice> [n]*\n• *.investi vendi <codice> [n]*");
     },
 };

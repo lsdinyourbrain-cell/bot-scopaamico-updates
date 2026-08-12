@@ -37,7 +37,7 @@ module.exports = {
                 : '🫶 Meglio amici.';
 
             await sock.sendMessage(from, {
-                text: `╔══════════════════════════════════════╗\n║         💘 *SHIP!* 💘\n╠══════════════════════════════════════╣\n║  @${user1.split('@')[0]} + @${user2.split('@')[0]}\n║\n║  Compatibilità: *${percent}%*\n║  _${mood}_\n╚══════════════════════════════════════╝`,
+                text: `💘 *SHIP!*\n━━━━━━━━━━━━━━━━━━\n@${user1.split('@')[0]} +\n@${user2.split('@')[0]}\nCompatibilità: *${percent}%*\n_${mood}_\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [user1, user2],
             }, { quoted: msg });
     },

@@ -14,22 +14,21 @@ module.exports = {
             db[from]._muted = true;
             saveDB();
             return sendButtons(sock, from,
-`╭━━━━━ ⏸️ *BOT IN PAUSA* ━━━━━╮
-┃                            ┃
-┃ Il bot è stato disattivato ┃
-┃ in questo gruppo da un     ┃
-┃ amministratore.            ┃
-┃                            ┃
-┃ Premi il pulsante per      ┃
-┃ riattivarlo.               ┃
-╰────────────────────────────╯`,
+`⏸️ *BOT IN PAUSA*
+━━━━━━━━━━━━━━━━━━
+Il bot è stato disattivato
+in questo gruppo
+da un amministratore.
+Premi il pulsante per
+riattivarlo.
+━━━━━━━━━━━━━━━━━━`,
                 [{ label: '.accendi', id: 'accendi' }],
                 msg);
         }
 
-        if (!isOwner) return reply("╭────〔 ⛔ ACCESSO NEGATO 〕────╮\n│ Comando riservato all'Owner del bot.\n╰──────────────────────────────╯");
+        if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
 
         setBotActive(false);
-        await reply("╭────〔 ⚙️ SISTEMA 〕────╮\n│ 🛑 Bot in modalità SOSPENSIONE.\n│ Non risponderò a nessuno,\n│  tranne che all'Owner.\n╰──────────────────────╯");
+        await reply("⚙️ *SISTEMA*\n━━━━━━━━━━━━━━━━━━\n🛑 Bot in modalità\nSOSPENSIONE.\nNon risponderò a nessuno,\ntranne che all'Owner.\n━━━━━━━━━━━━━━━━━━");
     },
 };

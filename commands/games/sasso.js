@@ -22,7 +22,7 @@ module.exports = {
             const botChoice = randomChoice(choices);
             const beats = { sasso: 'forbici', carta: 'sasso', forbici: 'carta' };
             const result = userChoice === botChoice
-                ? '🤝 Pari, ci avete pensato allo stesso modo.'
+                ? '🤝 Pari! Stessi pensieri.'
                 : beats[userChoice] === botChoice
                     ? '🥳 Hai vinto, easy.'
                     : '😅 Stavolta vince il bot.';

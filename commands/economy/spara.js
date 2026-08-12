@@ -19,13 +19,12 @@ module.exports = {
             userData.money += result;
             saveDB();
             await reply(
-`╔══════════════════════════════╗
-║     🎯 *TAGLIASSA!* 🎯
-╠══════════════════════════════╣
-║  Hai centrato il bersaglio!
-║  Intascato: *${result}€* 💰
-║
-║  💰 Saldo: *${userData.money}€*
-╚══════════════════════════════╝`);
+`🎯 *TAGLIASSA!*
+━━━━━━━━━━━━━━━━━━
+Hai centrato il bersaglio!
+Intascato: *${result}€* 💰
+
+💰 Saldo: *${userData.money}€*
+━━━━━━━━━━━━━━━━━━`);
     },
 };

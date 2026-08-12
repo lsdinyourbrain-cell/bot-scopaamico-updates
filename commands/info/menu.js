@@ -479,11 +479,11 @@ module.exports = {
         const HOME_BTNS = [
             { label: '📂 Sezioni', id: 'menu sezioni' },
             { label: '📖 Guida', id: 'aiuto' },
-            { label: '💰 Economia', id: 'menu economia' },
+            { label: '⚡ Ping', id: 'ping' },
         ];
         const SEZIONI_BTNS = [
             { label: '🏠 Home', id: 'menu' },
-            { label: '💰 Economia', id: 'menu economia' },
+            { label: '⚡ Ping', id: 'ping' },
             { label: '🎲 Giochi', id: 'menu giochi' },
         ];
 

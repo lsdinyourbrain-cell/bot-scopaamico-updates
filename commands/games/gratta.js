@@ -52,22 +52,23 @@ module.exports = {
                 esito = `🎉 *TRIS DI ${grid[winLine[0]]}!* Vinci ${formatMoney(prize)}!`;
             } else {
                 uDB.money -= cost;
-                esito = `😞 Niente tris questa volta. Hai speso ${formatMoney(cost)}.`;
+                esito = `😞 Niente tris questa volta.\nHai speso ${formatMoney(cost)}.`;
             }
 
             const render = (grid) => {
-                return `│ ${grid[0]} ${grid[1]} ${grid[2]}\n│ ${grid[3]} ${grid[4]} ${grid[5]}\n│ ${grid[6]} ${grid[7]} ${grid[8]}`;
+                return `${grid[0]} ${grid[1]} ${grid[2]}\n${grid[3]} ${grid[4]} ${grid[5]}\n${grid[6]} ${grid[7]} ${grid[8]}`;
             };
 
             saveDB();
 
             const resultText =
-`╭────〔 🎟️ *GRATTA E VINCI* 〕───╮
+`🎟️ *GRATTA E VINCI*
+━━━━━━━━━━━━━━━━━━
 ${render(grid)}
-├──────────────────────────────
-│ ${esito}
-│ 💰 *Saldo attuale:* ${formatMoney(uDB.money)}
-╰──────────────────────────────╯`;
+
+${esito}
+💰 *Saldo attuale:* ${formatMoney(uDB.money)}
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

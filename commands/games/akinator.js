@@ -33,7 +33,7 @@ module.exports = {
         let sent;
         try {
             sent = await sock.sendMessage(from, {
-                text: `🎭 *AKINATOR*\n\nPensa a un personaggio (animale, cibo, persona…).\nTi farò delle domande: rispondi con *si* o *no*.\n\n👉 *${db[from].akinatorGame.node.q}*`,
+                text: `🎭 *AKINATOR*\n━━━━━━━━━━━━━━━━━━\nPensa a un personaggio\n(animale, cibo, persona…).\nTi farò delle domande:\nrispondi con *si* o *no*.\n\n👉 *${db[from].akinatorGame.node.q}*\n━━━━━━━━━━━━━━━━━━`,
             }, { quoted: msg });
         } catch (_) {
             return reply("❌ Non riesco a iniziare la partita.");

@@ -44,14 +44,12 @@ module.exports = {
             }
 
             const txt =
-`╔══════════════════════════════╗
-║       🧹 *KICK ALL* 🧹
-╠══════════════════════════════╣
-║  👥 Espulsi: *${total}* membri
-║  👑 Restano solo admin e owner
-║
-║  ✅ Operazione completata!
-╚══════════════════════════════╝`;
+`🧹 *KICK ALL*
+━━━━━━━━━━━━━━━━━━
+👥 Espulsi: *${total}* membri
+👑 Restano solo admin e owner
+✅ Operazione completata!
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },
             ], msg);

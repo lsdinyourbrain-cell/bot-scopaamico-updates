@@ -12,7 +12,7 @@ module.exports = {
 
             if (!targetJid) return reply("Tagga chi ti ha dato palo. Esempio: .palo @nome");
             await sock.sendMessage(from, {
-                text: `╭━━━ 〈 🛑 *PALO* 〉 ━━━╮\n\n💔 @${sender.split('@')[0]} ha provato con @${targetJid.split('@')[0]}\n\n_💬 ${randomChoice(ARRAYS.palo)}_\n\n╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+                text: `🛑 *PALO*\n━━━━━━━━━━━━━━━━━━\n💔 @${sender.split('@')[0]}\nha provato con\n@${targetJid.split('@')[0]}\n_💬 ${randomChoice(ARRAYS.palo)}_\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender, targetJid],
             });
     },

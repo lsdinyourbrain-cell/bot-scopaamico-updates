@@ -22,11 +22,12 @@ module.exports = {
             saveDB();
 
             const resultText =
-`╭────〔 🎡 *ROULETTE* 〕────╮
-│ Puntata: *${formatMoney(puntata)}*
-│ ${win ? '✨ È uscito il tuo numero. Hai vinto!' : '🫠 Giro storto, questa volta è andata male.'}
-│ Saldo: *${formatMoney(uDB.money)}*
-╰───────────────────────────╯`;
+`🎡 *ROULETTE*
+━━━━━━━━━━━━━━━━━━
+Puntata: *${formatMoney(puntata)}*
+${win ? '✨ È uscito il tuo numero!' : '🫠 Giro storto, andata male.'}
+Saldo: *${formatMoney(uDB.money)}*
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

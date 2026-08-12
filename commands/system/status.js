@@ -25,18 +25,19 @@ module.exports = {
         const nodeVer = process.version;
 
         const txt =
-`╭── ✦ *BOT STATUS* ✦ ──╮
-│                    
-│ ⏱️ Uptime: *${uptimeStr}*
-│ 📦 Gruppi: *${groupCount}*
-│ 👥 Utenti: *${totalMem}*
-│ 🖥️ CPU sistema: *${cpu === null ? 'N/D' : cpu.toFixed(1) + '%'}*
-│ 🔧 CPU processo: *${procCpu === null ? 'N/D' : procCpu + '%'}*
-│ 💾 RAM: *${memUsage}MB*
-│ 🟢 Node: *${nodeVer}*
-│ 🔋 PID: *${process.pid}*
-│                    
-╰──────────────────────╯`;
+`⚡ *BOT STATUS*
+━━━━━━━━━━━━━━━━━━
+⏱️ Uptime: *${uptimeStr}*
+📦 Gruppi: *${groupCount}*
+👥 Utenti: *${totalMem}*
+🖥️ CPU sistema:
+*${cpu === null ? 'N/D' : cpu.toFixed(1) + '%'}*
+🔧 CPU processo:
+*${procCpu === null ? 'N/D' : procCpu + '%'}*
+💾 RAM: *${memUsage}MB*
+🟢 Node: *${nodeVer}*
+🔋 PID: *${process.pid}*
+━━━━━━━━━━━━━━━━━━`;
 
         await sendButtons(sock, from, txt, [
             { label: '.status', id: 'status' },

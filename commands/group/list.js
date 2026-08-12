@@ -18,12 +18,12 @@ module.exports = {
             const normal = parts.filter(p => !p.admin);
             const total = parts.length;
 
-            let txt = `╭─── ✦ *MEMBRI* ✦ ───╮\n│ 👥 *${total}* partecipanti\n│ 👑 *${admins.length}* admin\n│ 👤 *${normal.length}* utenti\n│\n`;
+            let txt = `👥 *MEMBRI*\n━━━━━━━━━━━━━━━━━━\n👥 *${total}* partecipanti\n👑 *${admins.length}* admin\n👤 *${normal.length}* utenti\n`;
             if (admins.length > 0) {
-                txt += `│ 👑 *Admin:*\n`;
-                txt += admins.map(a => `│   @${(a.id || a.jid).split('@')[0]}`).join('\n') + '\n';
+                txt += `👑 *Admin:*\n`;
+                txt += admins.map(a => `@${(a.id || a.jid).split('@')[0]}`).join('\n') + '\n';
             }
-            txt += `╰────────────────────╯`;
+            txt += `━━━━━━━━━━━━━━━━━━`;
 
             const mentions = parts.map(p => p.id || p.jid).filter(Boolean);
             await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });

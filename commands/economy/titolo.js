@@ -14,7 +14,7 @@ module.exports = {
 
         if (!text) {
             const current = me.title ? `*${me.title.slice(0, 25)}*` : '_nessun titolo_';
-            return reply(`🏷️ *IL TUO TITOLO*\n\n${current}\n\n_Impostane uno con .titolo <testo>!_\n_(max 25 caratteri)_`);
+            return reply(`🏷️ *IL TUO TITOLO*\n━━━━━━━━━━━━━━━━━━\n${current}\n\n_Impostane uno con .titolo!_\n_(max 25 caratteri)_\n━━━━━━━━━━━━━━━━━━`);
         }
 
         if (text === '-') {

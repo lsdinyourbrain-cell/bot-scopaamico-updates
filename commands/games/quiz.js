@@ -36,14 +36,14 @@ module.exports = {
             const optionsText = pick.a.map((opt, i) => `${optLetters[i]}) ${opt}`).join('\n');
 
             await sock.sendMessage(from, {
-                text: `╔══════════════════════════════════════════╗\n║        ❓ *QUIZ TIME!* ❓\n╠══════════════════════════════════════════╣\n║  ${("❓ " + pick.q)}\n║\n║  ${optionsText.split('\n').join('\n║  ')}\n║\n║  ⚡ Rispondi A/B/C/D o col testo!\n║  ⏳ Hai 30 secondi!\n╚══════════════════════════════════════════╝`,
+                text: `❓ *QUIZ TIME!*\n━━━━━━━━━━━━━━━━━━\n❓ ${pick.q}\n\n${optionsText}\n\n⚡ Rispondi A/B/C/D\n⏳ Hai 30 secondi!\n━━━━━━━━━━━━━━━━━━`,
             }, { quoted: msg });
 
             setTimeout(() => {
                 if (db[from]?.quizGame?.active) {
                     db[from].quizGame.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `⏰ Tempo scaduto! La risposta giusta era: *${pick.a[pick.c]}*` }).catch(() => {});
+                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa risposta giusta era:\n*${pick.a[pick.c]}*` }).catch(() => {});
                 }
             }, 30000);
     },

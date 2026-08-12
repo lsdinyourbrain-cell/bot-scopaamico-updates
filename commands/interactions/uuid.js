@@ -13,6 +13,6 @@ module.exports = {
         const lines = [];
         for (let i = 0; i < n; i++) lines.push('`' + crypto.randomUUID() + '`');
 
-        await reply(`╔════════════════════════════════╗\n║        🔑 *UUID* 🔑\n╠════════════════════════════════╣\n║  Generati *${n}*:\n║  ${lines.join('\n║  ')}\n╚════════════════════════════════╝`);
+        await reply(`🔑 *UUID*\n━━━━━━━━━━━━━━━━━━\nGenerati *${n}*:\n${lines.join('\n')}\n━━━━━━━━━━━━━━━━━━`);
     },
 };

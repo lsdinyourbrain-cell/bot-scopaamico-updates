@@ -45,13 +45,14 @@ module.exports = {
             saveDB();
 
             const resultText =
-`╭────〔 🎲 *LANCIO DADI* 〕────╮
-│ 🧑 Tu: *${userRoll}*
-│ 🤖 Bot: *${botRoll}*
-├──────────────────────────────
-│ ${esito}
-│ 💰 *Saldo attuale:* ${uDB.money}€
-╰──────────────────────────────╯`;
+`🎲 *LANCIO DADI*
+━━━━━━━━━━━━━━━━━━
+🧑 Tu: *${userRoll}*
+🤖 Bot: *${botRoll}*
+
+${esito}
+💰 Saldo attuale: *${uDB.money}€*
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

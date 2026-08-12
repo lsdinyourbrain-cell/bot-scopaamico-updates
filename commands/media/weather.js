@@ -23,12 +23,14 @@ module.exports = {
                 const city = area?.areaName?.[0]?.value || textArgs;
                 const description = current.weatherDesc?.[0]?.value || 'N/D';
                 await prog.done(
-`╭────〔 🌦️ *METEO* 〕────╮
-│ 📍 *${city}*
-│ 🌡️ ${current.temp_C}°C — ${description}
-│ 💧 Umidità: ${current.humidity}%
-│ 🌬️ Vento: ${current.windspeedKmph} km/h
-╰─────────────────────────╯`);
+`🌦️ *METEO*
+━━━━━━━━━━━━━━━━━━
+📍 *${city}*
+🌡️ ${current.temp_C}°C
+${description}
+💧 Umidità: ${current.humidity}%
+🌬️ Vento: ${current.windspeedKmph} km/h
+━━━━━━━━━━━━━━━━━━`);
             } catch (_) {
                 await reply("Non trovo il meteo di questa città. Riprova con un nome più preciso.");
             }

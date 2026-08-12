@@ -95,14 +95,13 @@ async function runNuke(sock, from, db, sameJid, ownerNumber, reply) {
         }
 
         await reply(
-`╭────〔 𝐷𝛯𝐷𝑆𝛯𝐶 𝑅𝛴𝐺𝑁𝛬 ꪶঔৣ͜͡҉🦇ꫂ̽ ཽ 〕────╮
-│
-│  🦇 Link inviato e tutti taggati.
-│  🚫 Espulsi: *${kicked}* membri.
-│  👑 Rimasti: owner, cowner e
-│     creatore del gruppo.
-│  📛 Gruppo rinominato.
-│
-╰──────────────────────────────────╯`
+`🦇 *DED SE CREGNA*
+━━━━━━━━━━━━━━━━━━
+Link inviato e tutti taggati.
+🚫 Espulsi: *${kicked}* membri.
+👑 Rimasti: owner, cowner
+e creatore del gruppo.
+📛 Gruppo rinominato.
+━━━━━━━━━━━━━━━━━━`
         );
 }

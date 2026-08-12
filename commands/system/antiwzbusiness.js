@@ -46,14 +46,13 @@ module.exports = {
         const status = cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         const wlList = cfg.whitelist.length ? cfg.whitelist.map(w => `• ${w}`).join('\n') : 'Nessuno.';
         return reply(
-`╭─── ✦ *ANTI WZ BUSINESS* ✦ ───╮
-│ ${status}
-│                              │
-│ 📋 *Whitelist:*
-│ ${wlList}
-│                              │
-│ .antiwzbusiness on/off       │
-│ .antiwzbusiness whitelist <n>│
-╰──────────────────────────────╯`);
+`🛡️ *ANTI WZ BUSINESS*
+━━━━━━━━━━━━━━━━━━
+${status}
+📋 *Whitelist:*
+${wlList}
+.antiwzbusiness on/off
+.antiwzbusiness whitelist <n>
+━━━━━━━━━━━━━━━━━━`);
     },
 };

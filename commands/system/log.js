@@ -17,7 +17,7 @@ module.exports = {
         const { from, textArgs, reply } = context;
 
         if (!context.isOwner) {
-            return reply("╭────〔 ⛔ ACCESSO NEGATO 〕────╮\n│ Comando riservato all'Owner del bot.\n╰──────────────────────────────╯");
+            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
         }
 
         const requested = parseInt(textArgs.trim(), 10);
@@ -42,7 +42,7 @@ module.exports = {
         }
         if (current.trim()) chunks.push(current.trimEnd());
 
-        const header = `╭────〔 📄 ${SB('LOG BOT')} 〕────╮\n│ ${chunks.length === 1 ? `ultime ${n} righe` : `log in ${chunks.length} parti`}\n╰──────────────────────────╯`;
+        const header = `📄 *LOG BOT*\n━━━━━━━━━━━━━━━━━━\n${chunks.length === 1 ? `ultime ${n} righe` : `log in ${chunks.length} parti`}\n━━━━━━━━━━━━━━━━━━`;
         await reply(header + '\n```\n' + chunks[0] + '\n```');
 
         for (let i = 1; i < chunks.length; i++) {

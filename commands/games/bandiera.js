@@ -53,7 +53,7 @@ module.exports = {
 
             try {
                 const flagUrl = `https://flagcdn.com/w320/${pick.code.toLowerCase()}.png`;
-                const caption = `╔══════════════════════════════════╗\n║    🏁 *INDOVINA LA BANDIERA* 🏁\n╠══════════════════════════════════╣\n║  ${optionsText.split('\n').join('\n║  ')}\n║\n║  ⚡ Rispondi con A/B/C/D!\n║  ⏳ Hai 30 secondi!\n╚══════════════════════════════════╝`;
+                const caption = `🏁 *INDOVINA LA BANDIERA*\n━━━━━━━━━━━━━━━━━━\n${optionsText}\n\n⚡ Rispondi con A/B/C/D!\n⏳ Hai 30 secondi!\n━━━━━━━━━━━━━━━━━━`;
                 await sock.sendMessage(from, {
                     image: { url: flagUrl },
                     caption,
@@ -63,7 +63,7 @@ module.exports = {
                     if (db[from]?.flagGame?.active && db[from]?.flagGame?.code === pick.code) {
                         db[from].flagGame.active = false;
                         saveDB();
-                        sock.sendMessage(from, { text: `⏰ Tempo scaduto! Era *${pick.name}* 🇺🇳` }).catch(() => {});
+                        sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nEra *${pick.name}* 🇺🇳` }).catch(() => {});
                     }
                 }, 30000);
             } catch (e) {

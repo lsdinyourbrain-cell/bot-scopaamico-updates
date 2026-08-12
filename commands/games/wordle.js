@@ -42,7 +42,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🟩 *WORDLE* — Partita iniziata!\n\n🎯 Parola segreta di *${WORD_LEN}* lettere.\n🟩 verde = lettera giusta al posto giusto\n🟨 giallo = lettera giusta ma spostata\n⬛ grigio = lettera assente\n\n_Hai ${MAX_ATTEMPTS} tentativi! Scrivi una parola._`,
+            caption: `🟩 *WORDLE*\n━━━━━━━━━━━━━━━━━━\n🎉 Partita iniziata!\n🎯 Parola segreta di *${WORD_LEN}* lettere.\n🟩 verde = giusta, posto giusto\n🟨 giallo = giusta, ma spostata\n⬛ grigio = lettera assente\n\n_Hai ${MAX_ATTEMPTS} tentativi!_ \n_Scrivi una parola._\n━━━━━━━━━━━━━━━━━━`,
         }, { quoted: msg });
 
         db[from].wordleGame.lastMsgKey = sent?.key || null;
@@ -54,9 +54,9 @@ module.exports = {
                 g.active = false;
                 saveDB();
                 if (g.lastMsgKey) {
-                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!* La parola era *${g.target}*.`, edit: g.lastMsgKey }).catch(() => {});
+                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa parola era *${g.target}*.`, edit: g.lastMsgKey }).catch(() => {});
                 } else {
-                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!* La parola era *${g.target}*.` }).catch(() => {});
+                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa parola era *${g.target}*.` }).catch(() => {});
                 }
             }
         }, GAME_TIMEOUT_MS);

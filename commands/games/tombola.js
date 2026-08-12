@@ -60,20 +60,19 @@ module.exports = {
         }
 
         const resultText =
-`╔══════════════════════════════╗
-║       🎱 *TOMBIOLA* 🎱
-╠══════════════════════════════╣
-║  ${righe[0]}
-║  ${righe[1]}
-║  ${righe[2]}
-╠══════════════════════════════╣
-║  🎟️ Numeri estratti:
-║  ${estratti.join(' ')}
-╠══════════════════════════════╣
-║  ✅ In cartella: *${inCartella.length}*
-║  ${vincita > 0 ? `🎉 *Vincita: +${vincita}€!*` : '😿 Nessuna vincita.'}
-║  💰 *Saldo:* ${uDB.money}€
-╚══════════════════════════════╝`;
+`🎱 *TOMBIOLA*
+━━━━━━━━━━━━━━━━━━
+${righe[0]}
+${righe[1]}
+${righe[2]}
+
+🎟️ Numeri estratti:
+${estratti.join(' ')}
+
+✅ In cartella: *${inCartella.length}*
+${vincita > 0 ? `🎉 *Vincita: +${vincita}€!*` : '😿 Nessuna vincita.'}
+💰 *Saldo:* ${uDB.money}€
+━━━━━━━━━━━━━━━━━━`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

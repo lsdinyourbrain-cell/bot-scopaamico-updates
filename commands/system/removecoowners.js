@@ -48,13 +48,12 @@ module.exports = {
         }
 
         return reply(
-`╭─── ✦ ${SB('REMOVECOOWNERS')} ✦ ───╮
-│                            │
-│ 🗑️ *${removed}* co-owner rimossi!│
-│                            │
-│ 🔐 Restano solo gli owner  │
-│    principali.             │
-╰────────────────────────────╯`
+`🗑️ *CO-OWNER RIMOSSI*
+━━━━━━━━━━━━━━━━━━
+*${removed}* co-owner rimossi! 🗑️
+🔐 Restano solo
+gli owner principali.
+━━━━━━━━━━━━━━━━━━`
         );
     },
 };

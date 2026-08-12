@@ -1,51 +1,55 @@
 'use strict';
 
+const { flagForJid } = require('../../lib/flag');
+
+const SEP = '━━━━━━━━━━━━━━━━━━';
+
 module.exports = {
     name: 'tagall',
     aliases: ['tutti', 'menzionatutti'],
-    description: "Esegue il comando .tagall.",
+    description: "Tagga tutti i membri del gruppo, uno per riga, ognuno con la bandiera del suo paese.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { textArgs, from, isGroup, isSenderAdmin, reply } = context;
 
+        if (!isGroup) {
+            return reply(
+`📢 *TAGALL*
+${SEP}
+Funziona solo nei *gruppi* 👥
+${SEP}`
+            );
+        }
+        if (!isSenderAdmin) {
+            return reply(
+`⛔ *ACCESSO NEGATO*
+${SEP}
+Solo gli *admin del gruppo*
+possono usare *.tagall* 👑
+${SEP}`
+            );
+        }
 
-            if (!isGroup) {
-                return reply(
-`╭──────────────────────────────────────╮
-│  📢  *TAGALL*
-├──────────────────────────────────────┤
-│  Funziona solo nei *gruppi*. 👥
-╰──────────────────────────────────────╯`
-                );
-            }
-            if (!isSenderAdmin) {
-                return reply(
-`╭──────────────────────────────────────╮
-│  ⛔  *ACCESSO NEGATO*
-├──────────────────────────────────────┤
-│  Solo gli *admin del gruppo*
-│  possono usare *.tagall*. 👑
-╰──────────────────────────────────────╯`
-                );
-            }
-            try {
-                const meta         = await sock.groupMetadata(from);
-                const participants = Array.isArray(meta.participants) ? meta.participants : [];
-                const allJids      = participants.map(p => p.id || p.jid).filter(Boolean);
-                const mentions     = allJids;
-                // Scrive esplicitamente tutti i @handle nel testo
-                const handles      = allJids.map(id => `@${id.split('@')[0]}`).join('  ');
-                const header       = textArgs.trim() || '👀 Attenzione a tutti!';
+        try {
+            const meta = await sock.groupMetadata(from);
+            const participants = Array.isArray(meta.participants) ? meta.participants : [];
+            const allJids = participants.map(p => p.id || p.jid).filter(Boolean);
+            const header = textArgs.trim() || '👀 Attenzione a tutti!';
+            const lines = allJids.map(id => `${flagForJid(id)} @${id.split('@')[0]}`);
 
-                await sock.sendMessage(from, {
-                    text    : `╭──────────────────────────────────────╮\n│  📢  *ANNUNCIO DI GRUPPO*\n├──────────────────────────────────────┤\n│  ${header}\n╰──────────────────────────────────────╯\n\n${handles}`,
-                    mentions,
-                }, { quoted: msg });
+            await sock.sendMessage(from, {
+                text:
+`📢 *ANNUNCIO DI GRUPPO*
+${SEP}
+${header}
+${SEP}
+${lines.join('\n')}`,
+                mentions: allJids,
+            }, { quoted: msg });
 
-            } catch (e) {
-                console.error('[tagall]', e.message);
-                await reply("❌ Non riesco a leggere i partecipanti del gruppo.");
-            }
+        } catch (e) {
+            console.error('[tagall]', e.message);
+            await reply("❌ Non riesco a leggere i partecipanti del gruppo.");
+        }
     },
 };

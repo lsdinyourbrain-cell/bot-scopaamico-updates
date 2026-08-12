@@ -19,14 +19,14 @@ module.exports = {
 
             if (!isButton && now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`⏳ Scava e respira! Riposa *${remain}s* prima di riscavare.`);
+                return reply(`⏳ Scava e respira!\nRiposa *${remain}s* prima di riscavare.`);
             }
 
             userData.cooldowns[cooldownKey] = now;
             const guadagno = Math.floor(Math.random() * 50) + 10;
             userData.money += guadagno;
             saveDB();
-            await sendButtons(sock, from, `⛏️ Hai scavato come un minatore e trovato *${guadagno}€*!\n💰 Saldo: *${userData.money}€*`, [
+            await sendButtons(sock, from, `⛏️ *MINIERA*\n━━━━━━━━━━━━━━━━━━\nHai scavato come un minatore\ne trovato *${guadagno}€*!\n\n💰 Saldo: *${userData.money}€*\n━━━━━━━━━━━━━━━━━━`, [
                 { label: `.${command}`, id: `${command}` },
             ], msg);
     },

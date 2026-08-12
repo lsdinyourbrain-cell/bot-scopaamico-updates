@@ -46,18 +46,16 @@ module.exports = {
         const status = cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         const wlList = cfg.whitelist.length ? cfg.whitelist.map(w => `• ${w}`).join('\n') : 'Nessun numero in whitelist.';
         return reply(
-`╭─── ✦ *ANTIVOIP* ✦ ───╮
-│ ${status}
-│                        │
-│ 📋 *Whitelist:*
-│ ${wlList}
-│                        │
-│ 🇮🇹 Blocca numeri non   │
-│    italiani (+39).     │
-│                        │
-│ *Comandi:*             │
-│ .antivoip on/off       │
-│ .antivoip whitelist <n>│
-╰────────────────────────╯`);
+`🛡️ *ANTIVOIP*
+━━━━━━━━━━━━━━━━━━
+${status}
+📋 *Whitelist:*
+${wlList}
+🇮🇹 Blocca numeri non
+italiani (+39).
+*Comandi:*
+.antivoip on/off
+.antivoip whitelist <n>
+━━━━━━━━━━━━━━━━━━`);
     },
 };

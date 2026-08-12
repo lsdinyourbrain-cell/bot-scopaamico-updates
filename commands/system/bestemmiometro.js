@@ -28,10 +28,10 @@ module.exports = {
 
         const status = db._bestemmiometro[from] !== false ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         return reply(
-`╭─── ✦ *BESTEMMIOMETRO* ✦ ───╮
-│ ${status}
-│                              │
-│ .bestemmiometro on/off       │
-╰──────────────────────────────╯`);
+`🤬 *BESTEMMIOMETRO*
+━━━━━━━━━━━━━━━━━━
+${status}
+.bestemmiometro on/off
+━━━━━━━━━━━━━━━━━━`);
     },
 };

@@ -497,9 +497,8 @@ const sameJid = (first, second) => {
 // riutilizzando gli stadi ASCII e le funzioni esportate dal comando impiccato.
 const buildBoardLoseText = (ig) => {
     const art = impiccatoCmd.HANGMAN_STAGES[ig.wrong] || impiccatoCmd.HANGMAN_STAGES[impiccatoCmd.HANGMAN_STAGES.length - 1];
-    return `╔════════════════════════════════╗
-║     💀 *IMPICCATO!* 💀          ║
-╠════════════════════════════════╣
+    return `💀 *IMPICCATO!* 💀
+━━━━━━━━━━━━━━━━━━
 ${art}
 
 🔤 Parola:  *${ig.word}*
@@ -507,8 +506,7 @@ ${art}
 ❌ Errori: ${ig.wrong}/${impiccatoCmd.MAX_WRONG}
 📝 Lettere provate: ${impiccatoCmd.formatGuessed(ig.guessed)}
 
-La parola era *${ig.word}* (${ig.categoria}).
-╚════════════════════════════════╝`;
+La parola era *${ig.word}* (${ig.categoria}).`;
 };
 
 // ── VERIFICA SE UN JID È OWNER ─────────────────────────────────────
@@ -1823,12 +1821,10 @@ async function startBot() {
                         ig.active = false;
                         saveDB();
                         await show(
-                            `╔════════════════════════════════╗\n` +
-                            `║     🎉 *INDOVINATA!* 🎉        ║\n` +
-                            `╠════════════════════════════════╣\n` +
+                            `🎉 *INDOVINATA!* 🎉\n` +
+                            `━━━━━━━━━━━━━━━━━━\n` +
                             `${impiccatoCmd.buildBoardText(ig)}\n` +
-                            `Complimenti, sei salvo... per ora 😈` +
-                            `\n╚════════════════════════════════╝`
+                            `Complimenti, sei salvo... per ora 😈`
                         );
                     } else {
                         ig.wrong++;
@@ -1859,12 +1855,10 @@ async function startBot() {
                         ig.active = false;
                         saveDB();
                         await show(
-                            `╔════════════════════════════════╗\n` +
-                            `║     🎉 *INDOVINATA!* 🎉        ║\n` +
-                            `╠════════════════════════════════╣\n` +
+                            `🎉 *INDOVINATA!* 🎉\n` +
+                            `━━━━━━━━━━━━━━━━━━\n` +
                             `${impiccatoCmd.buildBoardText(ig)}\n` +
-                            `Complimenti, sei salvo... per ora 😈` +
-                            `\n╚════════════════════════════════╝`
+                            `Complimenti, sei salvo... per ora 😈`
                         );
                         return;
                     }
@@ -2430,7 +2424,7 @@ async function startBot() {
             } catch (error) {
                 console.error('[admin] Impossibile leggere i permessi del gruppo:', error.message);
                 if (command === 'godmode') return; // godmode resta invisibile
-                return reply("╭────〔 ⚠️ ERRORE 〕────╮\n│ Non riesco a verificare i permessi\n│ del gruppo. Riprova tra poco.\n╰──────────────────────╯");
+                return reply("⚠️ *ERRORE*\n━━━━━━━━━━━━━━━━━━\nNon riesco a verificare i\npermessi del gruppo.\nRiprova tra poco.");
             }
         }
 
@@ -2477,7 +2471,7 @@ async function startBot() {
             // rate-overlimit: ignora silenziosamente per non spammare
             if (error.data === 429 || error.message === 'rate-overlimit') return;
             await sock.sendMessage(from, { 
-                text: `╭────〔 ⚠️ ERRORE DI SISTEMA 〕────╮\n│ Si è verificato un problema:\n│ _${error.message}_\n╰──────────────────────────────────╯`
+                text: `⚠️ *ERRORE DI SISTEMA*\n━━━━━━━━━━━━━━━━━━\nSi è verificato un problema:\n_${error.message}_`
             }, { quoted: msg }).catch(() => {});
         }
     });
@@ -2502,8 +2496,8 @@ async function startBot() {
             const groupName = (meta?.subject) || 'Questo gruppo';
             const names = welcomedJids.map(j => '@' + j.split('@')[0]).join(' ');
             const welcomeText = welcomedJids.length === 1
-                ? `╭─── ☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖔 ☠️ ───╮\n│ 👤 ${names}\n│ 📍 *${groupName}*\n├─── 📜 𝕱𝖆𝖙𝖙𝖊́ ───┤\n│ ✦ _Regolamento in descrizione._\n│ ✦ _Altro da lasciare in chat._\n│ ✦ _Digita_ *".menu"* _per i comandi._\n╰────────────────────────╯`
-                : `╭─── ☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖎 ☠️ ───╮\n│ 👥 ${names}\n│ 📍 *${groupName}*\n├─── 📜 𝕱𝖆𝖙𝖙𝖊́ ───┤\n│ ✦ _Regolamento in descrizione._\n│ ✦ _Altro da lasciare in chat._\n│ ✦ _Digita_ *".menu"* _per i comandi._\n╰────────────────────────╯`;
+                ? `☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖔 ☠️\n━━━━━━━━━━━━━━━━━━\n👤 ${names}\n📍 *${groupName}*\n━━━━━━━━━━━━━━━━━━\n📜 *Fatté*\n✦ _Regolamento in descrizione._\n✦ _Altro da lasciare in chat._\n✦ _Digita_ *".menu"* _per i comandi._`
+                : `☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖎 ☠️\n━━━━━━━━━━━━━━━━━━\n👥 ${names}\n📍 *${groupName}*\n━━━━━━━━━━━━━━━━━━\n📜 *Fatté*\n✦ _Regolamento in descrizione._\n✦ _Altro da lasciare in chat._\n✦ _Digita_ *".menu"* _per i comandi._`;
 
             let pfpUrl;
             try { pfpUrl = await sock.profilePictureUrl(groupJid, 'image'); } catch (_) { pfpUrl = null; }
@@ -2706,17 +2700,16 @@ async function startBot() {
                     if (!welcomeConfig.goodbye) continue; // Goodbye disattivato per questo gruppo
                     
                     const goodbyeText =
-`╭━━━━━ 👋 *ARRIVEDERCI* 👋 ━━━━━╮
-┃
-┃ 👤 @${short} 
-┃ ha appena lasciato il gruppo.
-┃
-┃ 📉 *${groupName}* perde un membro,
-┃ ma i ricordi restano. 🫂
-┃
-┃ _Chissà se tornerà..._ 🌈
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+`👋 *ARRIVEDERCI* 👋
+━━━━━━━━━━━━━━━━━━
+👤 @${short}
+ha appena lasciato il gruppo.
+━━━━━━━━━━━━━━━━━━
+📉 *${groupName}*
+perde un membro,
+ma i ricordi restano. 🫂
+
+_Chissà se tornerà..._ 🌈`;
 
                     await sock.sendMessage(groupJid, {
                         text: goodbyeText,

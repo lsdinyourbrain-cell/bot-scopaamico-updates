@@ -27,13 +27,12 @@ module.exports = {
             saveDB();
 
             await reply(
-`╔══════════════════════════════╗
-║      🎁 *DAILY BONUS* 🎁
-╠══════════════════════════════╣
-║  📅 Bonus ritirato: *+${bonus}€*
-║  🤑 Che giornata fortunata!
-║
-║  💰 Saldo: *${userData.money}€*
-╚══════════════════════════════╝`);
+`🎁 *DAILY BONUS*
+━━━━━━━━━━━━━━━━━━
+📅 Bonus ritirato: *+${bonus}€*
+🤑 Che giornata fortunata!
+
+💰 Saldo: *${userData.money}€*
+━━━━━━━━━━━━━━━━━━`);
     },
 };

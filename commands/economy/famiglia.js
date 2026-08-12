@@ -19,38 +19,35 @@ module.exports = {
                 let partnerLine, parentsLine, childrenLine;
 
                 if (uDB.spouse) {
-                    partnerLine = `┃  💍 *Coniuge:* @${uDB.spouse.split('@')[0]}`;
+                    partnerLine = `💍 *Coniuge:* @${uDB.spouse.split('@')[0]}`;
                     familyMentions.push(uDB.spouse);
                 } else {
-                    partnerLine = '┃  💍 *Coniuge:* _Nessuno_';
+                    partnerLine = '💍 *Coniuge:* _Nessuno_';
                 }
 
                 if (uDB.parents.length > 0) {
-                    parentsLine = `┃  👴 *Genitori:* ${uDB.parents.map(p => `@${p.split('@')[0]}`).join(', ')}`;
+                    parentsLine = `👴 *Genitori:*\n${uDB.parents.map(p => `🧑 @${p.split('@')[0]}`).join('\n')}`;
                     familyMentions.push(...uDB.parents);
                 } else {
-                    parentsLine = '┃  👴 *Genitori:* _Nessuno_';
+                    parentsLine = '👴 *Genitori:* _Nessuno_';
                 }
 
                 if (uDB.children.length > 0) {
-                    childrenLine = `┃  🍼 *Figli:* ${uDB.children.map(c => `@${c.split('@')[0]}`).join(', ')}`;
+                    childrenLine = `🍼 *Figli:*\n${uDB.children.map(c => `🧑 @${c.split('@')[0]}`).join('\n')}`;
                     familyMentions.push(...uDB.children);
                 } else {
-                    childrenLine = '┃  🍼 *Figli:* _Nessuno_';
+                    childrenLine = '🍼 *Figli:* _Nessuno_';
                 }
 
                 const albero =
-`╭━━━━ 🌳 *𝑭𝒂𝒎𝒊𝒈𝒍𝒊𝒂* 🌳 ━━━━╮
-┃
-┃  👤 *${pushName.slice(0, 20)}*
-┃
+`🌳 *FAMIGLIA*
+━━━━━━━━━━━━━━━━━━
+👤 *${pushName.slice(0, 20)}*
+
 ${partnerLine}
-┃
 ${parentsLine}
-┃
 ${childrenLine}
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━━━━━`;
 
                 await sock.sendMessage(from, { text: albero, mentions: familyMentions });
             }
@@ -64,7 +61,7 @@ ${childrenLine}
                 tDB.spouse = sender;
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `╭━━━━ 💒 *𝑴𝒂𝒕𝒓𝒊𝒎𝒐𝒏𝒊𝒐* 💒 ━━━━╮\n┃\n┃  @${sender.split('@')[0]} 💞 @${target.split('@')[0]}\n┃  _Vi siete appena sposati!_\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                    text: `💒 *MATRIMONIO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} 💞 @${target.split('@')[0]}\n_Vi siete appena sposati!_\n━━━━━━━━━━━━━━━━━━`,
                     mentions: [sender, target],
                 });
             }
@@ -76,7 +73,7 @@ ${childrenLine}
                 exDB.spouse = null;
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `╭━━━━ 💔 *𝑫𝒊𝒗𝒐𝒓𝒛𝒊𝒐* 💔 ━━━━╮\n┃\n┃  @${sender.split('@')[0]} ha divorziato\n┃  da @${ex.split('@')[0]}\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                    text: `💔 *DIVORZIO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha divorziato\nda @${ex.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
                     mentions: [sender, ex],
                 });
             }
@@ -90,7 +87,7 @@ ${childrenLine}
                 if (!tDB.parents.includes(sender)) tDB.parents.push(sender);
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `╭━━━━ 🍼 *𝑨𝒅𝒐𝒛𝒊𝒐𝒏𝒆* 🍼 ━━━━╮\n┃\n┃  @${sender.split('@')[0]} ha adottato\n┃  @${target.split('@')[0]}\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                    text: `🍼 *ADOZIONE*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha adottato\n@${target.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
                     mentions: [sender, target],
                 });
             }
@@ -103,7 +100,7 @@ ${childrenLine}
                 tDB.parents = tDB.parents.filter(parent => parent !== sender);
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `╭━━━━ 🚪 *𝑪𝒂𝒄𝒄𝒊𝒂𝒕𝒂* 🚪 ━━━━╮\n┃\n┃  @${target.split('@')[0]} non è più\n┃  nella famiglia di @${sender.split('@')[0]}\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                    text: `🚪 *CACCIATA*\n━━━━━━━━━━━━━━━━━━\n@${target.split('@')[0]} non è più\nnella famiglia di @${sender.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
                     mentions: [sender, target],
                 });
             }
@@ -117,12 +114,12 @@ ${childrenLine}
                 uDB.parents = [];
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `╭━━━━ 🚶 *𝑨𝒃𝒃𝒂𝒏𝒅𝒐𝒏𝒐* 🚶 ━━━━╮\n┃\n┃  @${sender.split('@')[0]} ha scelto\n┃  di andare per la sua strada\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                    text: `🚶 *ABBANDONO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha scelto\ndi andare per la sua strada\n━━━━━━━━━━━━━━━━━━`,
                     mentions: [sender],
                 });
             }
             else {
-                await reply("╭━━━━ ❓ *𝑨𝒊𝒖𝒕𝒐* ❓ ━━━━╮\n┃\n┃  .famiglia\n┃  .famiglia sposa @u\n┃  .famiglia adotta @u\n┃  .famiglia divorzia\n┃  .famiglia caccia @u\n┃  .famiglia abbandona\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                await reply("❓ *AIUTO FAMIGLIA*\n━━━━━━━━━━━━━━━━━━\n.famiglia\n.famiglia sposa @u\n.famiglia adotta @u\n.famiglia divorzia\n.famiglia caccia @u\n.famiglia abbandona\n━━━━━━━━━━━━━━━━━━");
             }
     },
 };

@@ -56,12 +56,11 @@ module.exports = {
         const displayNum = resolved.number.split('@')[0];
         await sock.sendMessage(from, {
             text:
-`╭─── ✦ ${SB('ADDOWNER')} ✦ ───╮
-│                          │
-│ 👑 @${displayNum} è ora owner! │
-│                          │
-│ aggiunto alle: ${now}     │
-╰──────────────────────────╯`,
+`👑 *ADDOWNER*
+━━━━━━━━━━━━━━━━━━
+@${displayNum} è ora owner!
+aggiunto alle: ${now}
+━━━━━━━━━━━━━━━━━━`,
             mentions: [resolved.number],
         }, { quoted: msg });
     },

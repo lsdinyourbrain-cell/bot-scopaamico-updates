@@ -18,7 +18,7 @@ module.exports = {
         const { clearBotCache } = services;
 
         if (!context.isOwner) {
-            return reply("╭────〔 ⛔ ACCESSO NEGATO 〕────╮\n│ Comando riservato all'Owner del bot.\n╰──────────────────────────────╯");
+            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
         }
 
         const before = Date.now();
@@ -30,25 +30,23 @@ module.exports = {
         const logKB = (result.logBytes / 1024).toFixed(1);
 
         await reply(
-`╭────〔 🧹 ${SB('CACHE PULITA')} 〕────╮
-│                              │
-│ ✨ Operazione completata in  │
-│    ${elapsed} ms.               │
-│                              │
-│ 🗑️ File temporanei rimossi:  │
-│    ${result.deletedFiles}                │
-│ 💾 Spazio liberato:          │
-│    ${freedMB} KB              │
-│ 📦 Cache gruppi azzerata:    │
-│    ${result.groupEntries}                │
-│                              │
-│ 📊 Stato attuale:            │
-│    💾 DB: ${dbKB} KB          │
-│    📄 Log: ${logKB} KB        │
-│    🗂️ Temp (prima): ${tempBeforeMB} KB│
-│                              │
-│ ⚡ Il bot ora risponde più   │
-│    veloce! 🚀                │
-╰──────────────────────────────╯`);
+`🧹 *CACHE PULITA*
+━━━━━━━━━━━━━━━━━━
+✨ Operazione completata
+in ${elapsed} ms.
+🗑️ File temporanei rimossi:
+${result.deletedFiles}
+💾 Spazio liberato:
+${freedMB} KB
+📦 Cache gruppi azzerata:
+${result.groupEntries}
+📊 Stato attuale:
+💾 DB: ${dbKB} KB
+📄 Log: ${logKB} KB
+🗂️ Temp (prima):
+${tempBeforeMB} KB
+⚡ Il bot ora risponde
+più veloce! 🚀
+━━━━━━━━━━━━━━━━━━`);
     },
 };

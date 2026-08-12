@@ -14,12 +14,13 @@ module.exports = {
             const wallet = uDB.money || 0;
             const bank = uDB.bank || 0;
             await reply(
-`╭────〔 🏦 *CASSAFORTE* 〕────╮
-│ 👤 *Titolare:* ${pushName}
-│ 💰 *Contante:* ${wallet}€
-│ 🏦 *Banca:* ${bank}€
-│ 💵 *Totale:* ${wallet + bank}€
-╰─────────────────────────────╯`
+`🏦 *CASSAFORTE*
+━━━━━━━━━━━━━━━━━━
+👤 *Titolare:* ${pushName}
+💰 *Contante:* ${wallet}€
+🏦 *Banca:* ${bank}€
+💵 *Totale:* ${wallet + bank}€
+━━━━━━━━━━━━━━━━━━`
             );
     },
 };

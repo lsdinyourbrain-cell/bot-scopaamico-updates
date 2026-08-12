@@ -28,14 +28,13 @@ module.exports = {
             const risultato = win > 0 ? `🎊 *HAI VINTO ${win}€!* 🎊` : `💀 *HAI PERSO ${puntata}€*`;
 
             const resultText =
-`╭────〔 🎰 *SLOT MACHINE* 〕────╮
-│
-│    [ ${r[0]} | ${r[1]} | ${r[2]} ]
-│
-├───────────────────────────────
-│ ${risultato}
-│ 💰 *Saldo attuale:* ${uDB.money}€
-╰───────────────────────────────╯`;
+`🎰 *SLOT MACHINE*
+━━━━━━━━━━━━━━━━━━
+[ ${r[0]} | ${r[1]} | ${r[2]} ]
+
+${risultato}
+💰 Saldo attuale: *${uDB.money}€*
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

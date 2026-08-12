@@ -22,13 +22,12 @@ module.exports = {
             saveDB();
 
             await reply(
-`╔══════════════════════════════╗
-║      🏦 *DEPOSITO* 🏦
-╠══════════════════════════════╣
-║  📥 Deposito: *${amount}€*
-║
-║  💰 Contante: *${userData.money}€*
-║  🏦 Banca: *${userData.bank}€*
-╚══════════════════════════════╝`);
+`🏦 *DEPOSITO*
+━━━━━━━━━━━━━━━━━━
+📥 Depositato: *${amount}€*
+
+💰 Contante: *${userData.money}€*
+🏦 Banca: *${userData.bank}€*
+━━━━━━━━━━━━━━━━━━`);
     },
 };

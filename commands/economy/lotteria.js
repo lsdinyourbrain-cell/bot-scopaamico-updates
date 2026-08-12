@@ -24,7 +24,7 @@ module.exports = {
                 delete db[from].lotteria;
                 saveDB();
                 return await sock.sendMessage(from, {
-                    text: `🎉 *LOTTERIA — VINCITORE!* 🎉\n\n🏆 @${winner.split('@')[0]} vince *${premio}€*!\n🎟️ Biglietti: ${lotto.tickets[winner]}`,
+                    text: `🎉 *VINCITORE LOTTERIA!*\n━━━━━━━━━━━━━━━━━━\n🏆 @${winner.split('@')[0]} vince *${premio}€*!\n🎟️ Biglietti: ${lotto.tickets[winner]}\n━━━━━━━━━━━━━━━━━━`,
                     mentions: [winner],
                 });
             }
@@ -45,7 +45,7 @@ module.exports = {
             saveDB();
 
             const poolFinale = Math.floor(lotto.pool);
-            await sendButtons(sock, from, `🎟️ *LOTTERIA!*\n\nHai comprato un biglietto! (${lotto.tickets[sender]} totale)\n💰 Montepremi: *${poolFinale}€*`, [
+            await sendButtons(sock, from, `🎟️ *LOTTERIA*\n━━━━━━━━━━━━━━━━━━\nHai comprato un biglietto!\n🎟️ Totale tuoi: ${lotto.tickets[sender]}\n💰 Montepremi: *${poolFinale}€*\n━━━━━━━━━━━━━━━━━━`, [
                 { label: '.lotteria', id: 'lotteria' },
                 { label: '.lotteria estrai', id: 'lotteria estrai' },
             ], msg);

@@ -44,7 +44,7 @@ module.exports = {
             for (const a of admins) {
                 const short = (a.id || a.jid || '').split('@')[0];
                 const isSuper = a.admin === 'superadmin';
-                const line = `│ 👤 @${short}`;
+                const line = `👤 @${short}`;
                 if (isSuper) ownerList += line + ' 👑\n';
                 else adminList += line + '\n';
             }
@@ -54,43 +54,40 @@ module.exports = {
             const owners = db._owners || [];
             const coowners = db._coowners || [];
             if (owners.length > 0) {
-                botAdmins += owners.map(o => `│ 👑 ${o.number}`).join('\n') + '\n';
+                botAdmins += owners.map(o => `👑 ${o.number}`).join('\n') + '\n';
             }
             if (coowners.length > 0) {
-                botAdmins += coowners.map(c => `│ 🤝 ${c.number}`).join('\n');
+                botAdmins += coowners.map(c => `🤝 ${c.number}`).join('\n');
             }
-            if (!botAdmins) botAdmins = '│ *(nessuno)*';
+            if (!botAdmins) botAdmins = '(nessuno)';
 
             const txt =
-`╭─── 👑 ${BF('ADMIN GRUPPO')} 👑 ───╮
-│                              │
-│ 📛 ${groupName}
-│ 👥 ${total} partecipanti     │
-│ 🛡️ ${admins.length} admin    │
-│                              │
-${ownerList ? `│ ${SB('FONDATORI')}\n${ownerList}│\n` : ''}${adminList ? `│ ${MS('ADMIN')}\n${adminList}│\n` : ''}│
-├── 🤖 ${BF('BOT ADMIN')} ─────┤
-│ ${botAdmins}
-│
-├── ⚙️ ${MS('COMANDI ADMIN')} ──┤
-│ 📢 .tag   📣 .tagall        │
-│ 🔒 .chiudi  🔓 .apri        │
-│ 🚫 .ban   🔗 .link           │
-│ 🗑️ .del  🔇 .mute/.unmute   │
-│ ⚠️ .warn  ✅ .unwarn          │
-│ 👑 .promote/.demote (.p/.d) │
-│ ✅ .richieste accetta/rifiuta │
-│ 🗣️ .say  🔗 .invito          │
-│ ⏸️ .pausa  ▶️ .riprendi      │
-│ 🛡️ .antivoip  🤖 .antibot    │
-│ 🔥 .antiflame  📋 .antilink  │
-│ 💼 .antiwzbusiness           │
-│ 🤬 .bestemmiometro on/off    │
-├── 🛡️ ${BF('COMANDI OWNER')} ──┤
-│ ⏻ .spegni  ⏼ .accendi       │
-│ 🔄 .riavvia  🤝 .cowner      │
-│ 🔗 .setlink  📋 .infobot      │
-╰──────────────────────────────╯`;
+`👑 *ADMIN GRUPPO*
+━━━━━━━━━━━━━━━━━━
+📛 ${groupName}
+👥 ${total} partecipanti
+🛡️ ${admins.length} admin
+${ownerList ? `*FONDATORI*\n${ownerList}\n` : ''}${adminList ? `*ADMIN*\n${adminList}\n` : ''}🤖 *BOT ADMIN*
+${botAdmins}
+⚙️ *COMANDI ADMIN*
+📢 .tag  📣 .tagall
+🔒 .chiudi  🔓 .apri
+🚫 .ban  🔗 .link
+🗑️ .del  🔇 .mute/.unmute
+⚠️ .warn  ✅ .unwarn
+👑 .promote/.demote (.p/.d)
+✅ .richieste accetta/rifiuta
+🗣️ .say  🔗 .invito
+⏸️ .pausa  ▶️ .riprendi
+🛡️ .antivoip  🤖 .antibot
+🔥 .antiflame  📋 .antilink
+💼 .antiwzbusiness
+🤬 .bestemmiometro on/off
+🛡️ *COMANDI OWNER*
+⏻ .spegni  ⏼ .accendi
+🔄 .riavvia  🤝 .cowner
+🔗 .setlink  📋 .infobot
+━━━━━━━━━━━━━━━━━━`;
 
             const adminMentions = admins.map(a => a.id || a.jid).filter(Boolean);
             await sock.sendMessage(from, {

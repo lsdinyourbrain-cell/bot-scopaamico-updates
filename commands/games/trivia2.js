@@ -40,12 +40,11 @@ module.exports = {
         const q = questions[0];
         await sock.sendMessage(from, {
             text:
-                `╔══════════════════════════════════════╗\n` +
-                `║        🏆 *TRIVIA SFIDA* 🏆\n` +
-                `╠══════════════════════════════════════╣\n` +
-                `║ ${formatQuestion(q, 1).split('\n').join('\n║ ')}\n` +
-                `║\n║ ⚡ Rispondi con *A/B/C/D*!\n` +
-                `╚══════════════════════════════════════╝`,
+                `🏆 *TRIVIA SFIDA*\n` +
+                `━━━━━━━━━━━━━━━━━━\n` +
+                `${formatQuestion(q, 1)}\n` +
+                `⚡ Rispondi con *A/B/C/D*!\n` +
+                `━━━━━━━━━━━━━━━━━━`,
         }, { quoted: msg });
 
         setTimeout(() => {
@@ -55,7 +54,7 @@ module.exports = {
                 saveDB();
                 const cur = g.questions[g.qIndex];
                 const answer = cur ? cur.options[cur.correct] : '';
-                sock.sendMessage(from, { text: `⏰ *Tempo scaduto!* La risposta era *${answer}*.` }).catch(() => {});
+                sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa risposta era *${answer}*.` }).catch(() => {});
             }
         }, GAME_TIMEOUT_MS);
     },

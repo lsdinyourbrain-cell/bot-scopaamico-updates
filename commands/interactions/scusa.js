@@ -12,7 +12,7 @@ module.exports = {
 
             if (!targetJid) return reply("Tagga chi vuoi chiedere scusa. Esempio: .scusa @nome");
             await sock.sendMessage(from, {
-                text: `╭━━━ 〈 🙏 *SCUSE* 〉 ━━━╮\n\n@${sender.split('@')[0]} → @${targetJid.split('@')[0]}\n\n_💬 ${randomChoice(ARRAYS.scusa)}_\n\n╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+                text: `🙏 *SCUSE*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} →\n@${targetJid.split('@')[0]}\n_💬 ${randomChoice(ARRAYS.scusa)}_\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender, targetJid],
             });
     },

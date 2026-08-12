@@ -17,16 +17,15 @@ module.exports = {
             const total = meta.participants.length;
 
             await reply(
-`╭─── ✦ *ADMIN COUNT* ✦ ───╮
-│ 📊 *${meta.subject}*
-│                       
-│ 👥 Membri: *${total}*
-│ 👑 Admin: *${admins.length}*
-│   ├ 🟣 Super: *${superAdmins.length}*
-│   └ 🔵 Normal: *${regularAdmins.length}*
-│                       
-│ 📱 Utenti: *${total - admins.length}*
-╰────────────────────────╯`);
+`📊 *ADMIN COUNT*
+━━━━━━━━━━━━━━━━━━
+${meta.subject}
+👥 Membri: *${total}*
+👑 Admin: *${admins.length}*
+🟣 Super: *${superAdmins.length}*
+🔵 Normal: *${regularAdmins.length}*
+📱 Utenti: *${total - admins.length}*
+━━━━━━━━━━━━━━━━━━`);
         } catch (_) {
             await reply("❌ Errore nel recuperare info gruppo.");
         }

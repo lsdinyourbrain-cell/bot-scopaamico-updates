@@ -13,7 +13,7 @@ module.exports = {
             if (!targetJid) return reply("Tagga una persona oppure rispondi a un suo messaggio.");
             const percent = randomInt(1, 100);
             await sock.sendMessage(from, {
-                text: `╔════════════════════════════════╗\n║    🍼 *TEST DI FANTASIA* 🍼\n╠════════════════════════════════╣\n║  @${targetJid.split('@')[0]}\n║\n║  oggi risulta al *${percent}%*\n║  incinta/o. È solo un gioco eh 😭\n╚════════════════════════════════╝`,
+                text: `🍼 *TEST DI FANTASIA*\n━━━━━━━━━━━━━━━━━━\n@${targetJid.split('@')[0]}\noggi risulta al *${percent}%*\nincinta/o. È solo un gioco eh 😭\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [targetJid],
             });
     },

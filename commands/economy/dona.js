@@ -25,7 +25,7 @@ module.exports = {
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `╔══════════════════════════════════╗\n║       🎁 *DONAZIONE!* 🎁\n╠══════════════════════════════════╣\n║  @${sender.split('@')[0]} ha donato\n║  *${amount}€* a @${targetJid.split('@')[0]}! 🫶\n║\n║  💰 Il tuo saldo: *${formatMoney(senderData.money)}*\n╚══════════════════════════════════╝`,
+            text: `🎁 *DONAZIONE!*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha donato\n*${amount}€* a @${targetJid.split('@')[0]}! 🫶\n\n💰 Il tuo saldo: *${formatMoney(senderData.money)}*\n━━━━━━━━━━━━━━━━━━`,
             mentions: [sender, targetJid],
         });
     },

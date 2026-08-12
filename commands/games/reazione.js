@@ -36,7 +36,7 @@ module.exports = {
             };
             saveDB();
 
-            await reply("╔════════════════════════════════╗\n║      🧠 *TEST DI REAZIONE* 🧠\n╠════════════════════════════════╣\n║  Quando il bot manda il segnale,\n║  scrivi *GO* il più veloce!\n║\n║  👀 Ti avviserò tra poco...\n╚════════════════════════════════╝");
+            await reply("🧠 *TEST DI REAZIONE*\n━━━━━━━━━━━━━━━━━━\nQuando il bot manda il segnale,\nscrivi *GO* il più veloce!\n\n👀 Ti avviserò tra poco...\n━━━━━━━━━━━━━━━━━━");
 
             const delay = randomInt(3000, 7000);
             setTimeout(() => {
@@ -45,13 +45,13 @@ module.exports = {
                 game.phase = 'go';
                 game.deadline = Date.now() + 3000;
                 saveDB();
-                sock.sendMessage(from, { text: "⚡ *GO GO GO!* Scrivi *GO* adesso! ⚡" }).catch(() => {});
+                sock.sendMessage(from, { text: "⚡ *GO GO GO!*\nScrivi GO adesso! ⚡" }).catch(() => {});
                 setTimeout(() => {
                     const g2 = db[from]?.reactionGame;
                     if (g2?.active && g2.phase === 'go') {
                         g2.active = false;
                         saveDB();
-                        sock.sendMessage(from, { text: "⏰ *TROPPO LENTO!* Tempo scaduto 😴" }).catch(() => {});
+                        sock.sendMessage(from, { text: "⏰ *TROPPO LENTO!*\nTempo scaduto 😴" }).catch(() => {});
                     }
                 }, 3000);
             }, delay);

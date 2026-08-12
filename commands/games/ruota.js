@@ -48,7 +48,7 @@ module.exports = {
             let esito;
             if (win.mult === 0) {
                 uDB.money -= puntata;
-                esito = `💸 *PERDONA TUTTO!* Hai perso ${formatMoney(puntata)}.`;
+                esito = `💸 *PERDONA TUTTO!*\nHai perso ${formatMoney(puntata)}.`;
             } else if (win.mult < 1) {
                 const lose = Math.round(puntata * (1 - win.mult));
                 uDB.money -= lose;
@@ -63,13 +63,14 @@ module.exports = {
             saveDB();
 
             const resultText =
-`╭────〔 🎡 *RUOTA DELLA FORTUNA* 〕──╮
-│ 🎡 La ruota gira...
-│ 🎯 Settore: *${win.name}* ${win.emoji}
-├──────────────────────────────
-│ ${esito}
-│ 💰 *Saldo attuale:* ${formatMoney(uDB.money)}
-╰──────────────────────────────╯`;
+`🎡 *RUOTA DELLA FORTUNA*
+━━━━━━━━━━━━━━━━━━
+🎡 La ruota gira...
+🎯 Settore: *${win.name}* ${win.emoji}
+
+${esito}
+💰 Saldo attuale: *${formatMoney(uDB.money)}*
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

@@ -12,22 +12,23 @@ module.exports = {
 
             if (!isGroup) {
                 return reply(
-`╭────〔 🔗 *ANTILINK* 〕────╮
-│ ℹ️ Questo sistema funziona
-│ solo nei *gruppi*.
-│
-│ In chat privata non ci sono
-│ link da filtrare. 😊
-╰──────────────────────────╯`
+`🔗 *ANTILINK*
+━━━━━━━━━━━━━━━━━━
+ℹ️ Questo sistema funziona
+solo nei *gruppi*.
+In chat privata non ci sono
+link da filtrare. 😊
+━━━━━━━━━━━━━━━━━━`
                 );
             }
 
             if (!isOwner) {
                 return reply(
-`╭────〔 ⛔ *ACCESSO NEGATO* 〕────╮
-│ Il comando *.antilink* è
-│ riservato all'*Owner del bot*.
-╰────────────────────────────────╯`
+`⛔ *ACCESSO NEGATO*
+━━━━━━━━━━━━━━━━━━
+Il comando *.antilink* è
+riservato all'*Owner del bot*.
+━━━━━━━━━━━━━━━━━━`
                 );
             }
 
@@ -40,21 +41,19 @@ module.exports = {
                 const statusLines = platformNames.map(p => {
                     const icon = alConfig[p] ? '🟢' : '🔴';
                     const label = alConfig[p] ? 'ON ' : 'OFF';
-                    return `│ ${icon} *${p.padEnd(10)}* ➔ ${label}`;
+                    return `${icon} *${p}* ➔ ${label}`;
                 }).join('\n');
 
                 return reply(
-`╭────〔 🔗 *ANTILINK — STATO GRUPPO* 〕────╮
-│
+`🔗 *ANTILINK — STATO*
+━━━━━━━━━━━━━━━━━━
 ${statusLines}
-│
-├──────────────────────────────────────────
-│ 💡 *Uso:*
-│  .antilink [piattaforma] [on/off]
-│  .antilink tutti on/off
-│
-│ *Piattaforme:* ${platformNames.filter(p => p !== 'altri').join(', ')}, altri
-╰──────────────────────────────────────────╯`
+💡 *Uso:*
+.antilink [piattaforma] [on/off]
+.antilink tutti on/off
+*Piattaforme:*
+${platformNames.filter(p => p !== 'altri').join(', ')}, altri
+━━━━━━━━━━━━━━━━━━`
                 );
             }
 
@@ -64,13 +63,13 @@ ${statusLines}
             // Validazione argomento on/off
             if (stateArg !== 'on' && stateArg !== 'off') {
                 return reply(
-`╭────〔 ⚠️ *ANTILINK — ERRORE* 〕────╮
-│ Specifica *on* o *off*.
-│
-│ Esempio:
-│  *.antilink instagram on*
-│  *.antilink tutti off*
-╰────────────────────────────────────╯`
+`⚠️ *ANTILINK — ERRORE*
+━━━━━━━━━━━━━━━━━━
+Specifica *on* o *off*.
+Esempio:
+*.antilink instagram on*
+*.antilink tutti off*
+━━━━━━━━━━━━━━━━━━`
                 );
             }
 
@@ -85,24 +84,26 @@ ${statusLines}
 
                 const icon = newState ? '🟢' : '🔴';
                 return reply(
-`╭────〔 🔗 *ANTILINK AGGIORNATO* 〕────╮
-│ ${icon} Tutti i filtri → *${stateArg.toUpperCase()}*
-│
-│ Ogni link sarà ${newState ? 'bloccato 🚫' : 'permesso ✅'}.
-│ (Gli admin del gruppo sono esentati.)
-╰──────────────────────────────────────╯`
+`🔗 *ANTILINK AGGIORNATO*
+━━━━━━━━━━━━━━━━━━
+${icon} Tutti i filtri → *${stateArg.toUpperCase()}*
+Ogni link sarà ${newState ? 'bloccato 🚫' : 'permesso ✅'}.
+(Gli admin del gruppo
+sono esentati.)
+━━━━━━━━━━━━━━━━━━`
                 );
             }
 
             // Verifica che la piattaforma esista
             if (!platformNames.includes(sub)) {
                 return reply(
-`╭────〔 ⚠️ *ANTILINK — PIATTAFORMA SCONOSCIUTA* 〕────╮
-│ "*${sub}*" non è una piattaforma valida.
-│
-│ Piattaforme disponibili:
-│ ${platformNames.join(', ')}
-╰──────────────────────────────────────────────────────╯`
+`⚠️ *ANTILINK — ERRORE*
+━━━━━━━━━━━━━━━━━━
+"*${sub}*" non è una
+piattaforma valida.
+Piattaforme disponibili:
+${platformNames.join(', ')}
+━━━━━━━━━━━━━━━━━━`
                 );
             }
 
@@ -111,16 +112,16 @@ ${statusLines}
 
             const icon = newState ? '🟢' : '🔴';
             await reply(
-`╭────〔 🔗 *ANTILINK AGGIORNATO* 〕────╮
-│ Piattaforma: *${sub}*
-│ Stato: ${icon} *${stateArg.toUpperCase()}*
-│
-│ ${newState
-    ? `I link *${sub}* verranno eliminati\n│ automaticamente. 🚫`
-    : `I link *${sub}* sono ora *permessi*\n│ in questo gruppo. ✅`}
-│
-│ (Admins del gruppo sempre esentati.)
-╰──────────────────────────────────────╯`
+`🔗 *ANTILINK AGGIORNATO*
+━━━━━━━━━━━━━━━━━━
+Piattaforma: *${sub}*
+Stato: ${icon} *${stateArg.toUpperCase()}*
+${newState
+    ? `I link *${sub}* verranno eliminati\nautomaticamente. 🚫`
+    : `I link *${sub}* sono ora *permessi*\nin questo gruppo. ✅`}
+(Admins del gruppo
+sempre esentati.)
+━━━━━━━━━━━━━━━━━━`
             );
     },
 };

@@ -22,7 +22,15 @@ module.exports = {
             const rep = Number(u.rep) || 0;
             const badge = rep >= 100 ? '👑' : rep >= 50 ? '🌟' : rep >= 20 ? '⭐' : rep >= 5 ? '👍' : '🐣';
             return reply(
-`🏷️ *REPUTAZIONE*\n\n${badge} @${sender.split('@')[0]}\n\n⭐ *${rep}* punti\n${repBar(rep)}\n\n_Usa .rep @utente per votare qualcuno! (max 1 voto a utente ogni 6h)_`);
+`🏷️ *REPUTAZIONE*
+━━━━━━━━━━━━━━━━━━
+${badge} @${sender.split('@')[0]}
+⭐ *${rep}* punti
+${repBar(rep)}
+
+_._rep @utente per votare_
+_(1 voto ogni 6 ore)_
+━━━━━━━━━━━━━━━━━━`);
         }
 
         if (sameJid(targetJid, sender)) return reply("Non puoi votare te stesso!");
@@ -43,7 +51,7 @@ module.exports = {
         saveDB();
 
         return sock.sendMessage(from, {
-            text: `✅ @${sender.split('@')[0]} ha dato +1⭐ a @${targetJid.split('@')[0]}!\n\n📊 La sua reputazione ora è *${target.rep}* punti.`,
+            text: `✅ @${sender.split('@')[0]} ha dato +1⭐\na @${targetJid.split('@')[0]}!\n\n📊 La sua reputazione\nora è *${target.rep}* punti.`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

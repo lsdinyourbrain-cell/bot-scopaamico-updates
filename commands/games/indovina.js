@@ -45,13 +45,14 @@ module.exports = {
             saveDB();
 
             const resultText =
-`╭────〔 🎯 *INDOVINA* 〕─────╮
-│ 🔢 Hai scelto: *${guess}*
-│ 🕵️ Numero segreto: *${secret}*
-├──────────────────────────────
-│ ${esito}
-│ 💰 *Saldo attuale:* ${formatMoney(uDB.money)}
-╰──────────────────────────────╯`;
+`🎯 *INDOVINA*
+━━━━━━━━━━━━━━━━━━
+🔢 Hai scelto: *${guess}*
+🕵️ Numero segreto: *${secret}*
+
+${esito}
+💰 Saldo attuale: *${formatMoney(uDB.money)}*
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

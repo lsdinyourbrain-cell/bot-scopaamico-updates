@@ -21,17 +21,23 @@ module.exports = {
             const info = await getSysInfo(sysPromise, procPromise);
 
             const txt =
-`╭────〔 ⚡ ${'BOT STATUS'} 〕────╮
-│ ⏱️ *Latenza:* ${latency} ms
-│ 🖥️ *Processore:* ${info.cpuModel}
-│ 🧠 *Core:* ${info.cpuCores} | *Uso sistema:* ${info.cpu}
-│ 🔧 *CPU processo bot:* ${info.cpuProcess}
-│ 💾 *RAM sistema:* ${info.ramUsed} GB / ${info.ramTotal} GB (${info.ramPercent}%)
-│ 🤖 *Processo bot:* ${info.processRam} MB RAM | Heap ${info.heapUsed} MB
-│ ⏳ *Uptime bot:* ${info.uptime}
-│ 🧩 *Sistema:* ${info.platform}
-│ 🟢 *Node.js:* ${info.node}
-╰──────────────────────────╯`;
+`⚡ *BOT STATUS*
+━━━━━━━━━━━━━━━━━━
+⏱️ Latenza: ${latency} ms
+🖥️ Processore: ${info.cpuModel}
+🧠 Core: ${info.cpuCores}
+💻 Uso sistema: ${info.cpu}
+🔧 CPU processo bot:
+${info.cpuProcess}
+💾 RAM sistema:
+${info.ramUsed} GB / ${info.ramTotal} GB (${info.ramPercent}%)
+🤖 Processo bot:
+${info.processRam} MB RAM
+📚 Heap: ${info.heapUsed} MB
+⏳ Uptime bot: ${info.uptime}
+🧩 Sistema: ${info.platform}
+🟢 Node.js: ${info.node}
+━━━━━━━━━━━━━━━━━━`;
 
             try { await sock.sendMessage(from, { delete: pingMsg.key }); } catch (_) {}
 

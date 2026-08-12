@@ -109,11 +109,18 @@ const HANGMAN_STAGES = [
 const MAX_WRONG = 6;
 const GAME_TIMEOUT_MS = 120000; // 2 minuti
 
-const maskWord = (word, guessed) =>
-    word.split('').map((ch) => (guessed.includes(ch) ? ch : ' _ ')).join('');
+const maskWord = (word, guessed) => {
+    const parts = word.split('').map((ch) => (guessed.includes(ch) ? ch : '_'));
+    return parts.join(parts.length > 10 ? '' : ' ');
+};
 
-const formatGuessed = (guessed) =>
-    guessed.length ? guessed.sort().join('  ') : '—';
+const formatGuessed = (guessed) => {
+    if (!guessed.length) return '—';
+    const arr = guessed.slice().sort();
+    const lines = [];
+    for (let i = 0; i < arr.length; i += 10) lines.push(arr.slice(i, i + 10).join(' '));
+    return lines.join('\n');
+};
 
 const buildBoardText = (game) => {
     const art = HANGMAN_STAGES[game.wrong];
@@ -124,9 +131,11 @@ const buildBoardText = (game) => {
 🔤 Parola:  *${masked}*
 📂 Categoria: ${game.categoria}
 ❌ Errori: ${game.wrong}/${MAX_WRONG}  (mancano ${remaining})
-📝 Lettere provate: ${formatGuessed(game.guessed)}
+📝 Lettere provate:
+${formatGuessed(game.guessed)}
 
-Scrivi una *lettera* o tenta la *parola intera*!`;
+Scrivi una *lettera* o tenta
+la *parola intera*!`;
 };
 
 module.exports = {
@@ -148,12 +157,11 @@ module.exports = {
         const word = pick.word.toUpperCase();
 
         const boardText =
-            `╔════════════════════════════════╗\n` +
-            `║     🔴 *IMPICCATO* 🔴          ║\n` +
-            `╠════════════════════════════════╣\n` +
+            `🔴 *IMPICCATO*\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
             `${buildBoardText({ word, categoria: pick.categoria, wrong: 0, guessed: [] })}\n` +
             `⏳ Tempo: 2 minuti` +
-            `\n╚════════════════════════════════╝`;
+            `\n━━━━━━━━━━━━━━━━━━`;
 
         // Invio come messaggio "pulito" (senza pulsante Ripeti) per poterlo
         // modificare dopo con l'edit di Baileys. Il key viene salvato nello
@@ -184,7 +192,7 @@ module.exports = {
             if (g?.active && Date.now() - g.timestamp >= GAME_TIMEOUT_MS) {
                 g.active = false;
                 saveDB();
-                const text = `⏰ *Tempo scaduto!* La parola era *${g.word}* (${g.categoria}).`;
+                const text = `⏰ *Tempo scaduto!*\nLa parola era *${g.word}*.\n📂 Categoria: ${g.categoria}`;
                 if (g.lastMsgKey) {
                     sock.sendMessage(from, { text, edit: g.lastMsgKey }).catch(() => {});
                 } else {

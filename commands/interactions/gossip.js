@@ -12,7 +12,7 @@ module.exports = {
 
             const frase = randomChoice(ARRAYS.gossip).replace('[sender]', `@${sender.split('@')[0]}`);
             await sock.sendMessage(from, {
-                text: `╭━━━ 〈 🤫 *GOSSIP* 〉 ━━━╮\n\n_💬 ${frase}_\n\n╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+                text: `🤫 *GOSSIP*\n━━━━━━━━━━━━━━━━━━\n_💬 ${frase}_\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender],
             });
     },

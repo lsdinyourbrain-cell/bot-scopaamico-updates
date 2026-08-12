@@ -43,15 +43,13 @@ module.exports = {
 
             const rows = requests.map((r, i) => {
                 const num = (r.jid || '').split('@')[0] || r.phoneNumber || 'sconosciuto';
-                return `│ ${String(i + 1).padStart(2, '0')} │ ☎️ +${num}`;
+                return `${String(i + 1).padStart(2, '0')} ☎️ +${num}`;
             }).join('\n');
 
             const text =
-`╔═══════════════════════════════╗
-║   📥 *RICHIESTE DI ADESIONE* 📥
-╠═══════════════════════════════╣
+`📥 *RICHIESTE DI ADESIONE*
+━━━━━━━━━━━━━━━━━━
 ${rows}
-╚═══════════════════════════════╝
 
 Cosa vuoi fare?`;
 

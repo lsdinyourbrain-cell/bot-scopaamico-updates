@@ -27,7 +27,7 @@ module.exports = {
 
             await sleep(1000);
             await sock.sendMessage(from, {
-                text: `╔══════════════════════════════════╗\n║      ⚔️ *DUELLO* ⚔️\n╠══════════════════════════════════╣\n║  @${sender.split('@')[0]} sfida\n║  @${targetJid.split('@')[0]} a duello!\n║\n║  💰 Puntata: *${puntata}€*\n╚══════════════════════════════════╝`,
+                text: `⚔️ *DUELLO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} sfida\n@${targetJid.split('@')[0]} a duello!\n\n💰 Puntata: *${puntata}€*\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender, targetJid],
             });
             await sleep(2000);
@@ -36,18 +36,18 @@ module.exports = {
             if (tiro1 > tiro2) {
                 uDB.money += puntata;
                 tDB.money -= puntata;
-                msgText = `🏆 @${sender.split('@')[0]} vince il duello! (${tiro1} vs ${tiro2})\n+${puntata}€ 💰`;
+                msgText = `🏆 @${sender.split('@')[0]} ha vinto!\n🎲 ${tiro1} vs ${tiro2}\n+${puntata}€ 💰`;
             } else if (tiro2 > tiro1) {
                 uDB.money -= puntata;
                 tDB.money += puntata;
-                msgText = `🏆 @${targetJid.split('@')[0]} vince il duello! (${tiro2} vs ${tiro1})\n+${puntata}€ 💰`;
+                msgText = `🏆 @${targetJid.split('@')[0]} ha vinto!\n🎲 ${tiro2} vs ${tiro1}\n+${puntata}€ 💰`;
             } else {
-                msgText = `🤝 Pareggio! Entrambi hanno fatto ${tiro1}. Nessuno perde soldi.`;
+                msgText = `🤝 Pareggio!\n🎲 Entrambi su ${tiro1}.\nNessuno perde soldi.`;
             }
             saveDB();
 
             await sock.sendMessage(from, {
-                text: `╔══════════════════════════════════╗\n╠════ *RISULTATO DUELIO* ════╣\n║  🎲 @${sender.split('@')[0]} tira *${tiro1}*\n║  🎲 @${targetJid.split('@')[0]} tira *${tiro2}*\n║\n║  ${msgText.split('\n').join('\n║  ')}\n╚══════════════════════════════════╝`,
+                text: `⚔️ *RISULTATO DUELIO*\n━━━━━━━━━━━━━━━━━━\n🎲 @${sender.split('@')[0]} tira *${tiro1}*\n🎲 @${targetJid.split('@')[0]} tira *${tiro2}*\n\n${msgText}\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender, targetJid],
             });
     },

@@ -42,17 +42,16 @@ module.exports = {
             const display = sequence.map(k => `${COLOR_MAP[k]} ${k}`).join(' ');
 
             await reply(
-`╔════════════════════════════════╗
-║       🧠 *MEMORIA!* 🧠
-╠════════════════════════════════╣
-║  Memorizza questa sequenza:
-║
-║  ${display}
-║
-║  ✏️ Ripetila scrivendo le
-║  *lettere* (es: \`R G B Y\`)
-║  ⏳ Hai 60 secondi.
-╚════════════════════════════════╝`
+`🧠 *MEMORIA!*
+━━━━━━━━━━━━━━━━━━
+Memorizza questa sequenza:
+
+${display}
+
+✏️ Ripetila scrivendo le
+*lettere* (es: \`R G B Y\`)
+⏳ Hai 60 secondi.
+━━━━━━━━━━━━━━━━━━`
             );
 
             setTimeout(() => {
@@ -60,7 +59,7 @@ module.exports = {
                 if (mg?.active && Date.now() - mg.timestamp >= 60000) {
                     mg.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `⏰ Tempo scaduto! La sequenza era *${mg.sequence.join(' ')}*.` }).catch(() => {});
+                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa sequenza era *${mg.sequence.join(' ')}*.` }).catch(() => {});
                 }
             }, 60000);
     },

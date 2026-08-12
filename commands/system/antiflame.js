@@ -28,6 +28,6 @@ module.exports = {
         }
 
         const status = db._antiflame[from].enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
-        return reply(`╭─── ✦ *ANTIFLAME* ✦ ───╮\n│ ${status}\n│\n│ Blocca frasi come:     │\n│ "ucciditi", "ammazzati",│\n│ "fucilati" e simili.   │\n│\n│ .antiflame on/off      │\n╰────────────────────────╯`);
+        return reply(`🔥 *ANTIFLAME*\n━━━━━━━━━━━━━━━━━━\n${status}\nBlocca frasi come:\n"ucciditi", "ammazzati",\n"fucilati" e simili.\n.antiflame on/off\n━━━━━━━━━━━━━━━━━━`);
     },
 };

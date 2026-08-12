@@ -12,7 +12,7 @@ module.exports = {
 
             const target = targetJid || sender;
             await sock.sendMessage(from, {
-                text: `╭━━━ 〈 🍹 *DRINK* 〉 ━━━╮\n\n@${sender.split('@')[0]} offre a @${target.split('@')[0]}:\n\n🥂 *${randomChoice(ARRAYS.drink)}*\n\n_Cin cin! 🎉_\n\n╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+                text: `🍹 *DRINK*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} offre a\n@${target.split('@')[0]}:\n🥂 *${randomChoice(ARRAYS.drink)}*\n_Cin cin! 🎉_\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender, target],
             });
     },

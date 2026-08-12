@@ -72,18 +72,17 @@ module.exports = {
 
         const carta = (c) => `[${c.carta}${c.seme}]`;
         const resultText =
-`╔══════════════════════════════╗
-║        🃏 *POKER* 🃏
-╠══════════════════════════════╣
-║  🧑 *Tu:*  ${manoUtente.map(carta).join(' ')}
-║  ${vu.nome}
-║
-║  🤖 *Bot:* ${manoBot.map(carta).join(' ')}
-║  ${vb.nome}
-╠══════════════════════════════╣
-║  ${esito}
-║  💰 *Saldo:* ${uDB.money}€
-╚══════════════════════════════╝`;
+`🃏 *POKER*
+━━━━━━━━━━━━━━━━━━
+🧑 *Tu:* ${manoUtente.map(carta).join(' ')}
+${vu.nome}
+
+🤖 *Bot:* ${manoBot.map(carta).join(' ')}
+${vb.nome}
+
+${esito}
+💰 *Saldo:* ${uDB.money}€
+━━━━━━━━━━━━━━━━━━`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

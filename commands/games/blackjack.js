@@ -73,15 +73,16 @@ module.exports = {
             saveDB();
 
             const resultText =
-`╭────〔 🃏 *BLACKJACK* 〕─────╮
-│ 🧑 Le tue carte: ${playerCards.join(' | ')}
-│ 🧮 Il tuo totale: *${playerTotal}*
-│ 🤖 Carte bot: ${dealerCards.join(' | ')}
-│ 🧮 Totale bot: *${dealerTotal}*
-├──────────────────────────────
-│ ${esito}
-│ 💰 *Saldo attuale:* ${formatMoney(uDB.money)}
-╰──────────────────────────────╯`;
+`🃏 *BLACKJACK*
+━━━━━━━━━━━━━━━━━━
+🧑 Le tue carte: ${playerCards.join(' | ')}
+🧮 Il tuo totale: *${playerTotal}*
+🤖 Carte bot: ${dealerCards.join(' | ')}
+🧮 Totale bot: *${dealerTotal}*
+
+${esito}
+💰 *Saldo attuale:* ${formatMoney(uDB.money)}
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

@@ -39,12 +39,11 @@ try {
             }
 
             const txt =
-`╔══════════════════════════════╗
-║     👑 *PROMOTE ALL* 👑
-╠══════════════════════════════╣
-║  🎉 Promossi: *${target.length}* membri
-║  ✅ Tutti ora sono admin!
-╚══════════════════════════════╝`;
+`👑 *PROMOTE ALL*
+━━━━━━━━━━━━━━━━━━
+🎉 Promossi: *${target.length}* membri
+✅ Tutti ora sono admin!
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },
             ], msg);

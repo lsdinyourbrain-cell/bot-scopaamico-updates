@@ -13,10 +13,11 @@ module.exports = {
 
         if (!isOwner) {
             return reply(
-`╭────〔 ⛔ *ACCESSO NEGATO* 〕────╮
-│ Il comando *.antinuke* è
-│ riservato all'*Owner del bot*.
-╰────────────────────────────────╯`
+`⛔ *ACCESSO NEGATO*
+━━━━━━━━━━━━━━━━━━
+Il comando *.antinuke* è
+riservato all'*Owner del bot*.
+━━━━━━━━━━━━━━━━━━`
             );
         }
 
@@ -32,34 +33,32 @@ module.exports = {
                 .map(([key, label]) => {
                     const active = enabled && cfg.controls[key];
                     const icon = active ? '🟢' : '🔴';
-                    return `│ ${icon} ${key.padEnd(10)} ➔ ${active ? 'ON' : 'OFF'}`;
+                    return `${icon} ${key} ➔ ${active ? 'ON' : 'OFF'}`;
                 })
                 .join('\n');
 
             const wlLines = cfg.whitelist.length
-                ? cfg.whitelist.map(w => `│   • @${w.replace(/[^0-9]/g, '')}`).join('\n')
-                : '│   (nessuno)';
+                ? cfg.whitelist.map(w => `• @${w.replace(/[^0-9]/g, '')}`).join('\n')
+                : '(nessuno)';
 
             const txt =
-`╭────〔 🛡️ *ANTINUKE* 〕────╮
-│ Stato: ${enabled ? '🟢 *ATTIVO*' : '🔴 *DISATTIVO*'}
-│
-│ ── *CONTROLLI* ──
+`🛡️ *ANTINUKE*
+━━━━━━━━━━━━━━━━━━
+Stato: ${enabled ? '🟢 *ATTIVO*' : '🔴 *DISATTIVO*'}
+*CONTROLLI:*
 ${controlsLines}
-│
-│ ── *WHITELIST* ──
-│ Utenti fidati esenti da tutto:
+*WHITELIST:*
+Utenti fidati esenti da tutto:
 ${wlLines}
-│
-│ 💡 *Uso:*
-│  .antinuke on/off
-│  .antinuke <controllo> on/off
-│  .antinuke all on/off
-│  .antinuke whitelist <numero>
-│  .antinuke whitelist list
-│
-│ *Controlli:* ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
-╰──────────────────────────────────╯`;
+💡 *Uso:*
+.antinuke on/off
+.antinuke <controllo> on/off
+.antinuke all on/off
+.antinuke whitelist <numero>
+.antinuke whitelist list
+*Controlli:*
+${Object.keys(ANTINUKE_CONTROLS).join(', ')}
+━━━━━━━━━━━━━━━━━━`;
 
             try {
                 await sendButtons(sock, from, txt, [
@@ -90,13 +89,13 @@ ${wlLines}
             }
             saveDB();
             return reply(
-`╭────〔 🛡️ *ANTINUKE* 〕────╮
-│ Stato: ${cfg.enabled ? '🟢 *ATTIVO*' : '🔴 *DISATTIVO*'}
-│
-│ ${cfg.enabled
-    ? 'Il gruppo è ora protetto. Solo owner\n│ e whitelist hanno i pieni poteri.\n│ Per aggiungere fidati:\n│  .antinuke whitelist <numero>'
-    : 'Protezione disattivata. Chiunque può\n│ agire normalmente.'}
-╰──────────────────────────────────╯`
+`🛡️ *ANTINUKE*
+━━━━━━━━━━━━━━━━━━
+Stato: ${cfg.enabled ? '🟢 *ATTIVO*' : '🔴 *DISATTIVO*'}
+${cfg.enabled
+    ? 'Il gruppo è ora protetto.\nSolo owner e whitelist\nhanno i pieni poteri.\nPer aggiungere fidati:\n.antinuke whitelist <numero>'
+    : 'Protezione disattivata.\nChiunque può agire normalmente.'}
+━━━━━━━━━━━━━━━━━━`
             );
         }
 
@@ -111,8 +110,8 @@ ${wlLines}
         // ── WHITELIST ─────────────────────────────────────────────────────
         if (sub === 'whitelist list' || sub === 'wl list') {
             if (!cfg.whitelist.length) return reply("📋 *Whitelist antinuke:* (vuota)");
-            const lines = cfg.whitelist.map(w => `│ ${w.replace(/[^0-9]/g, '')}`).join('\n');
-            return reply(`╭── 📋 *WHITELIST ANTINUKE* ──╮\n${lines}\n╰────────────────────────╯`);
+            const lines = cfg.whitelist.map(w => `${w.replace(/[^0-9]/g, '')}`).join('\n');
+            return reply(`📋 *WHITELIST ANTINUKE*\n━━━━━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━━━━━`);
         }
         if (/^(whitelist|wl)\s+/.test(sub)) {
             const raw = sub.replace(/^(whitelist|wl)\s+/, '').trim();
@@ -148,18 +147,18 @@ ${wlLines}
         }
 
         return reply(
-`╭────〔 ⚠️ *ANTINUKE — ERRORE* 〕────╮
-│ Sottocomando non riconosciuto.
-│
-│ 💡 *Uso:*
-│  .antinuke on/off
-│  .antinuke <controllo> on/off
-│  .antinuke whitelist <numero>
-│  .antinuke whitelist list
-│  .antinuke all on/off
-│
-│ *Controlli:* ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
-╰──────────────────────────────────────╯`
+`⚠️ *ANTINUKE — ERRORE*
+━━━━━━━━━━━━━━━━━━
+Sottocomando non riconosciuto.
+💡 *Uso:*
+.antinuke on/off
+.antinuke <controllo> on/off
+.antinuke whitelist <numero>
+.antinuke whitelist list
+.antinuke all on/off
+*Controlli:*
+${Object.keys(ANTINUKE_CONTROLS).join(', ')}
+━━━━━━━━━━━━━━━━━━`
         );
     },
 };

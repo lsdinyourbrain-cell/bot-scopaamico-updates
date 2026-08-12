@@ -11,7 +11,7 @@ module.exports = {
 
 
             await sock.sendMessage(from, {
-                text: `╭━━━ 〈 🤯 *SCLERO* 〉 ━━━╮\n\n👤 @${sender.split('@')[0]}\n\n💢 _${randomChoice(ARRAYS.sclero)}_\n\n╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+                text: `🤯 *SCLERO*\n━━━━━━━━━━━━━━━━━━\n👤 @${sender.split('@')[0]}\n💢 _${randomChoice(ARRAYS.sclero)}_\n━━━━━━━━━━━━━━━━━━`,
                 mentions: [sender],
             });
     },

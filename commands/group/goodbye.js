@@ -19,14 +19,12 @@ module.exports = {
             if (!arg || (arg !== 'on' && arg !== 'off' && arg !== 'true' && arg !== 'false' && arg !== 'si' && arg !== 'no' && arg !== 'attivo' && arg !== 'disattivo')) {
                 const status = config.goodbye ? '🟢 ATTIVO' : '🔴 DISATTIVO';
                 return reply(
-`╭──────────────────────────────────────╮
-│  👋  *ARRIVEDERCI GRUPPO*
-├──────────────────────────────────────┤
-│  Stato attuale: ${status}
-│
-│  Uso: .goodbye <on|off>
-│  Es:  .goodbye on
-╰──────────────────────────────────────╯`
+`👋 *ARRIVEDERCI GRUPPO*
+━━━━━━━━━━━━━━━━━━
+Stato attuale: ${status}
+Uso: .goodbye <on|off>
+Es: .goodbye on
+━━━━━━━━━━━━━━━━━━`
                 );
             }
 
@@ -34,12 +32,13 @@ module.exports = {
             setWelcomeGroup(from, 'goodbye', enable);
 
             await reply(
-`╭──────────────────────────────────────╮
-│  👋  *ARRIVEDERCI GRUPPO*
-├──────────────────────────────────────┤
-│  ${enable ? '✅ Attivato' : '❌ Disattivato'}
-│  Il messaggio di arrivederci ${enable ? 'verrà inviato' : 'NON verrà più inviato'} quando qualcuno esce.
-╰──────────────────────────────────────╯`
+`👋 *ARRIVEDERCI GRUPPO*
+━━━━━━━━━━━━━━━━━━
+${enable ? '✅ Attivato' : '❌ Disattivato'}
+Il messaggio di arrivederci
+${enable ? 'verrà inviato' : 'NON verrà più inviato'}
+quando qualcuno esce.
+━━━━━━━━━━━━━━━━━━`
             );
     },
 };

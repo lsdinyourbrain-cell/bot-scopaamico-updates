@@ -40,15 +40,15 @@ module.exports = {
         saveDB();
 
         const text =
-`╭────〔 🧩 *ENIGMA* 〕────╮
-│
-│  *${pick.q}*
-│
-│  🤔 Scrivi la risposta qui in
-│  chat entro 45 secondi!
-│
-│  💰 Premio: *50€*
-╰──────────────────────────╯`;
+`🧩 *ENIGMA*
+━━━━━━━━━━━━━━━━━━
+*${pick.q}*
+
+🤔 Scrivi la risposta qui in
+chat entro 45 secondi!
+
+💰 Premio: *50€*
+━━━━━━━━━━━━━━━━━━`;
 
         await sendButtons(sock, from, text, [
             { label: '💡 Suggerimento', id: `suggerimento ${sender.split('@')[0]}` },
@@ -59,7 +59,7 @@ module.exports = {
             if (db[from]?.enigma?.active) {
                 db[from].enigma.active = false;
                 saveDB();
-                sock.sendMessage(from, { text: `⏰ Tempo scaduto! La risposta era: *${pick.a}*` }).catch(() => {});
+                sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa risposta era: *${pick.a}*` }).catch(() => {});
             }
         }, 45000);
     },

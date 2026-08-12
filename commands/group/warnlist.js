@@ -22,15 +22,15 @@ module.exports = {
 
         if (!warned.length) return reply("✅ Nessun utente con warning.");
 
-        let txt = `╭─── ✦ *WARN LIST* ✦ ───╮\n│ ⚠️ *${warned.length}* utenti warnati\n│\n`;
+        let txt = `⚠️ *WARN LIST*\n━━━━━━━━━━━━━━━━━━\n⚠️ *${warned.length}* utenti warnati\n`;
         warned.forEach((w, i) => {
             const short = w.jid.split('@')[0];
-            txt += `│ ${i+1}. @${short} — ${w.warnings} warn\n`;
+            txt += `${i+1}. @${short} — ${w.warnings} warn\n`;
             w.warnLog.forEach((entry, j) => {
-                txt += `│   ${j+1}. ${String(entry.reason || '—').slice(0, 40)}\n`;
+                txt += `${j+1}. ${String(entry.reason || '—').slice(0, 28)}\n`;
             });
         });
-        txt += `╰───────────────────────╯`;
+        txt += `━━━━━━━━━━━━━━━━━━`;
 
         const mentions = warned.map(w => w.jid).filter(Boolean);
         await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });

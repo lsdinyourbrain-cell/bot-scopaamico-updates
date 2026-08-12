@@ -42,13 +42,13 @@ module.exports = {
             }
 
             const txt =
-`╔══════════════════════════════╗
-║      ⬇️ *DEMOTE ALL* ⬇️
-╠══════════════════════════════╣
-║  🔄 Retrocessi: *${target.length}* admin
-║  👑 Restano il creatore e l'owner
-║  ✅ Operazione completata!
-╚══════════════════════════════╝`;
+`⬇️ *DEMOTE ALL*
+━━━━━━━━━━━━━━━━━━
+🔄 Retrocessi: *${target.length}* admin
+👑 Restano il creatore
+e l'owner
+✅ Operazione completata!
+━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },
             ], msg);

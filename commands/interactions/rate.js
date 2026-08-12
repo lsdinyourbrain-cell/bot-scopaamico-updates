@@ -17,14 +17,12 @@ module.exports = {
         const comment = score <= 2 ? "Penoso." : score <= 4 ? "Meh." : score <= 6 ? "Niente male." : score <= 8 ? "Bello!" : score <= 9 ? "Eccellente!" : "🎯 PERFETTO!";
 
         await reply(
-`╭─── ✦ *RATE* ✦ ───╮
-│                   │
-│ 📌 ${textArgs}
-│                   │
-│ ${bar}
-│ ${emojis[score]} *${score}/10*
-│                   │
-│ 💬 ${comment}
-╰───────────────────╯`);
+`⭐ *RATE*
+━━━━━━━━━━━━━━━━━━
+📌 ${textArgs}
+${bar}
+${emojis[score]} *${score}/10*
+💬 ${comment}
+━━━━━━━━━━━━━━━━━━`);
     },
 };
