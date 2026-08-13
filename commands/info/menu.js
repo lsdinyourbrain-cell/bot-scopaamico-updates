@@ -27,6 +27,24 @@ const L = (emoji, cmd, hint = '') =>
 // items = [emoji, comando, breve hint]. Sezioni admin/owner segnate per filtro.
 const SECTIONS = [
     {
+        key: 'novita', emoji: '🆕', title: 'NOVITÀ',
+        items: [
+            ['🛍️', 'shop', 'negozio oggetti'],
+            ['⛏️', 'mine', 'miniera con zaino'],
+            ['🍽️', 'ricette', '10 ricette random'],
+            ['🌤️', 'meteo7', 'meteo 7 giorni'],
+            ['🎬', 'film', '10 film trending'],
+            ['🔮', 'indovina_emoji', 'rebus a emoji'],
+            ['🏁', 'corsa', 'sfida di corsa'],
+            ['🔫', 'banda', 'mafia a ruoli'],
+            ['📖', 'storia', 'storia con l\u2019IA'],
+            ['🧞', 'genio', 'oracolo IA'],
+            ['📰', 'fakenews', 'notizia falsa satirica'],
+            ['🏅', 'certificato', 'certificato su misura'],
+            ['📊', 'nastro', 'riepilogo del gruppo'],
+        ],
+    },
+    {
         key: 'economia', emoji: '💰', title: 'ECONOMIA',
         items: [
             ['⛏️', 'scava', 'scava e guadagna'],

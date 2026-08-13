@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'scava',
-    aliases: ['mine'],
+    aliases: [],
     description: "Scava per guadagnare soldi.",
 
     async run(sock, msg, args, context) {

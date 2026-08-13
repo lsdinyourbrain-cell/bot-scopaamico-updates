@@ -1609,12 +1609,23 @@ async function startBot() {
                 // Contatore PERSONALE della persona nel gruppo (separato per ogni
                 // gruppo grazie a getUser). Vive nel campo user.bestemmie.
                 const uBest = getUser(sender, from);
-                uBest.bestemmie = (uBest.bestemmie || 0) + 1;
-                saveDB();
-                await sock.sendMessage(from, {
-                    text: `🤬 *BESTEMMIOMETRO* 🚨\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]}:\n${bestemmiometro.getReaction()}\n\n🏷️ Bestemmia n° *${uBest.bestemmie}*\ndel tuo registro personale.\n━━━━━━━━━━━━━━━━━━`,
-                    mentions: [sender],
-                });
+                // Pass anti-bestemmia: perdona questa bestemmia senza alzare il
+                // contatore (acquistato allo shop con .shop usa pass).
+                if ((uBest.passAntiBestemmia || 0) > 0) {
+                    uBest.passAntiBestemmia -= 1;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `🛡️ *PASS ANTI-BESTEMMIA* 🛡️\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]}, ti perdono\nquesto scivolone... questa volta.\n\nPass rimasti: ${uBest.passAntiBestemmia}\n━━━━━━━━━━━━━━━━━━`,
+                        mentions: [sender],
+                    }).catch(() => {});
+                } else {
+                    uBest.bestemmie = (uBest.bestemmie || 0) + 1;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `🤬 *BESTEMMIOMETRO* 🚨\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]}:\n${bestemmiometro.getReaction()}\n\n🏷️ Bestemmia n° *${uBest.bestemmie}*\ndel tuo registro personale.\n━━━━━━━━━━━━━━━━━━`,
+                        mentions: [sender],
+                    });
+                }
             } catch (_) {}
         }
 
