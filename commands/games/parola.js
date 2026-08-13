@@ -1,14 +1,15 @@
 'use strict';
 
+const { pickWord } = require('../../lib/words');
+
 module.exports = {
     name: 'parola',
     aliases: ['indovinaparola'],
-    description: "Indovina la parola lettera per lettera e vinci 100€.",
+    description: "Indovina la parola lettera per lettera e vinci 100€. Ogni volta una parola nuova, mai ripetuta per te. Uso: .parola",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
-
+        const { db, saveDB, randomChoice, getUser } = services;
 
             const cooldownKey = 'parola';
             const userData = getUser(sender, from);
@@ -26,14 +27,10 @@ module.exports = {
                 return reply("⏳ C'è già una partita di parola in corso! Scrivi una lettera o la parola intera.");
             }
 
-            const WORDS = [
-                'casa', 'cane', 'gatto', 'sole', 'luna', 'mare', 'monte', 'pane',
-                'vino', 'acqua', 'fuoco', 'terra', 'vento', 'treno', 'libro',
-                'penna', 'scuola', 'gioco', 'pizza', 'pasta', 'caffe', 'amico',
-                'stella', 'notte', 'giorno', 'tempo', 'cuore', 'anima', 'felice', 'sorriso',
-            ];
-
-            const word = randomChoice(WORDS);
+            // Anti-ripetizione: parole già usate da questo giocatore.
+            const used = db[from]?.wordUsed?.[sender] || [];
+            const picked = pickWord({ minLen: 3, maxLen: 20, exclude: used, random: Math.random });
+            const word = picked.word.toLowerCase();
 
             if (!db[from]) db[from] = {};
             db[from].wordGame = {
@@ -44,6 +41,9 @@ module.exports = {
                 sender,
                 timestamp: Date.now(),
             };
+            // Persiste l'elenco parole già usate dal giocatore.
+            db[from].wordUsed = db[from].wordUsed || {};
+            db[from].wordUsed[sender] = picked.used;
             saveDB();
 
             const mask = (wg) => wg.word.split('').map(ch => wg.guessed.includes(ch) ? ch : ' _ ').join('');

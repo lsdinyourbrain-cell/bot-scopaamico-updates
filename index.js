@@ -1796,6 +1796,14 @@ async function startBot() {
                 const guess = body.trim().toLowerCase().replace(/[^a-z]/g, '');
                 if (!guess) return;
 
+                // Parole per abbandonare la partita.
+                if (/^(stop|esci|fine|basta|abbandona|mollo|smetto|ritiro)$/.test(guess)) {
+                    wg.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, { text: `🛑 Partita terminata. La parola era *${wg.word}*.` });
+                    return;
+                }
+
                 // Indovinata con la parola intera
                 if (guess === wg.word) {
                     wg.active = false;
@@ -1833,10 +1841,11 @@ async function startBot() {
             } catch (_) {}
         }
 
-        // ── IMPICCATO: tentativo di lettera/parola ──────────────────────
-        if (!body.startsWith('.') && db[from]?.impiccatoGame?.active) {
+        // ── IMPICCATO: tentativo di lettera/parola (single-player) ──────
+        const impGame = db[from]?.impiccatoGames?.[sender];
+        if (!body.startsWith('.') && impGame?.active) {
             try {
-                const ig = db[from].impiccatoGame;
+                const ig = impGame;
 
                 // Helper: modifica il messaggio della board esistente, e se
                 // l'edit fallisce (messaggio troppo vecchio, permessi) manda
@@ -1850,6 +1859,7 @@ async function startBot() {
 
                 if (Date.now() - ig.timestamp > 120000) {
                     ig.active = false;
+                    delete db[from].impiccatoGames[sender];
                     saveDB();
                     await show(`⏰ *Tempo scaduto!* La parola era *${ig.word}* (${ig.categoria}).`);
                     return;
@@ -1857,10 +1867,20 @@ async function startBot() {
                 const input = body.trim().toUpperCase().replace(/[^A-ZÀ-ÿ]/g, '');
                 if (!input) return;
 
+                // Parole per abbandonare la partita.
+                if (/^(stop|esci|fine|basta|abbandona|lascia|smetto|smetti|ritiro|mollo)$/.test(input)) {
+                    ig.active = false;
+                    delete db[from].impiccatoGames[sender];
+                    saveDB();
+                    await show(`🛑 Partita di impiccato terminata.\nLa parola era *${ig.word}* (${ig.categoria}).`);
+                    return;
+                }
+
                 // Tentativo parola intera
                 if (input.length > 1) {
                     if (input === ig.word) {
                         ig.active = false;
+                        delete db[from].impiccatoGames[sender];
                         saveDB();
                         await show(
                             `🎉 *INDOVINATA!* 🎉\n` +
@@ -1872,6 +1892,7 @@ async function startBot() {
                         ig.wrong++;
                         if (ig.wrong >= (ig.maxWrong || impiccatoCmd.MAX_WRONG)) {
                             ig.active = false;
+                            delete db[from].impiccatoGames[sender];
                             saveDB();
                             await show(buildBoardLoseText(ig));
                         } else {
@@ -1895,6 +1916,7 @@ async function startBot() {
                     const masked = ig.word.split('').map((c) => ig.guessed.includes(c) ? c : '_').join('');
                     if (!masked.includes('_')) {
                         ig.active = false;
+                        delete db[from].impiccatoGames[sender];
                         saveDB();
                         await show(
                             `🎉 *INDOVINATA!* 🎉\n` +
@@ -1910,6 +1932,7 @@ async function startBot() {
                     ig.wrong++;
                     if (ig.wrong >= (ig.maxWrong || impiccatoCmd.MAX_WRONG)) {
                         ig.active = false;
+                        delete db[from].impiccatoGames[sender];
                         saveDB();
                         await show(buildBoardLoseText(ig));
                         return;
@@ -2125,8 +2148,25 @@ async function startBot() {
                     return;
                 }
 
-                const guess = body.trim().toUpperCase().replace(/[^A-Z]/g, '');
-                if (!wordleLib.isWordValid(guess)) return;
+                // Parole/etichette per abbandonare la partita.
+                if (/^(stop|esci|fine|basta|abbandona|mollo|smetto|ritiro)$/.test(body.trim().toLowerCase())) {
+                    wg.active = false;
+                    saveDB();
+                    await sock.sendMessage(from, { text: `🛑 Wordle terminato. La parola era *${wg.target}*.` });
+                    return;
+                }
+
+                // Normalizza l'ingresso (MAIUSCOLO + accenti base) in modo che
+                // "perché" → PERCHE conti come tentativo valido.
+                const raw = body.trim().replace(/\s+/g, '');
+                const guess = wordleLib.normalizeGuess(raw);
+
+                if (!wordleLib.isWordValid(guess)) {
+                    await sock.sendMessage(from, {
+                        text: `⚠️ Scrivi una parola di *${wordleLib.WORD_LEN}* lettere (es. "CASA" → 4 no, serve una parola da 5).\n*Il tuo:* "${raw}"`,
+                    });
+                    return;
+                }
                 if (wg.attempts.some((a) => a.word === guess)) {
                     await sock.sendMessage(from, { text: `⚠️ *${guess}* è già stata provata!` });
                     return;
@@ -2135,6 +2175,7 @@ async function startBot() {
                 const statuses = wordleLib.checkGuess(wg.target, guess);
                 wg.attempts.push({ word: guess, statuses });
                 const solved = statuses.every((s) => s === 'V');
+                const maxAttempts = wg.maxAttempts || wordleLib.MAX_ATTEMPTS;
 
                 let boardBuffer;
                 try {
@@ -2151,12 +2192,12 @@ async function startBot() {
                     uDB.money += 120;
                     saveDB();
                     caption = `🎉 *WORDLE RISOLTO!* @${sender.split('@')[0]} ha trovato *${wg.target}* in ${wg.attempts.length} tentativi!\n+120€ 💰`;
-                } else if (wg.attempts.length >= wordleLib.MAX_ATTEMPTS) {
+                } else if (wg.attempts.length >= maxAttempts) {
                     wg.active = false;
                     saveDB();
                     caption = `😵 *GAME OVER!* La parola era *${wg.target}*.`;
                 } else {
-                    caption = `🟩 *WORDLE* — Tentativo ${wg.attempts.length}/${wordleLib.MAX_ATTEMPTS}. Prova ancora!`;
+                    caption = `🟩 *WORDLE* — Tentativo ${wg.attempts.length}/${maxAttempts}. Prova ancora!`;
                 }
 
                 const sent = await sock.sendMessage(from, {

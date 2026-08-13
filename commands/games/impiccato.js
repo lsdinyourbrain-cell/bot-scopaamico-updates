@@ -1,50 +1,11 @@
 'use strict';
 
-// Impiccato (hangman) — versione curata con arte ASCII del boia, suggerimento
-// di categoria, tracciamento lettere e timer. Lo stato vive in
-// db[from].impiccatoGame e un handler in index.js processa i tentativi.
+// Impiccato (hangman) — versione SINGLE-PLAYER: ogni persona ha la propria
+// partita (stato per-sender), con parole pescate dall'archivio gigante di
+// lib/words.js e senza ripetere parole già usate dal singolo giocatore.
+// Arte ASCII del boia, categoria, lettere provate e timer.
 
-const WORD_BANK = [
-    { word: 'ELEFANTE', categoria: 'Animali' },
-    { word: 'COMPUTER', categoria: 'Tecnologia' },
-    { word: 'GIUNGLA', categoria: 'Natura' },
-    { word: 'PIZZA', categoria: 'Cibo' },
-    { word: 'MONTAGNA', categoria: 'Geografia' },
-    { word: 'BIBLIOTECA', categoria: 'Luoghi' },
-    { word: 'ASTRONAUTA', categoria: 'Mestieri' },
-    { word: 'CHITARRA', categoria: 'Musica' },
-    { word: 'ARCOBALENO', categoria: 'Natura' },
-    { word: 'CAVALLO', categoria: 'Animali' },
-    { word: 'TELEFONO', categoria: 'Tecnologia' },
-    { word: 'GELATO', categoria: 'Cibo' },
-    { word: 'STELLA', categoria: 'Spazio' },
-    { word: 'FERRARI', categoria: 'Auto' },
-    { word: 'OCEANO', categoria: 'Geografia' },
-    { word: 'DENTISTA', categoria: 'Mestieri' },
-    { word: 'BICICLETTA', categoria: 'Sport' },
-    { word: 'VULCANO', categoria: 'Geografia' },
-    { word: 'CROISSANT', categoria: 'Cibo' },
-    { word: 'PIPISTRELLO', categoria: 'Animali' },
-    { word: 'ORDINATORE', categoria: 'Tecnologia' },
-    { word: 'CAMPIONE', categoria: 'Sport' },
-    { word: 'FANTASMA', categoria: 'Altro' },
-    { word: 'TRENO', categoria: 'Mezzi' },
-    { word: 'FIORE', categoria: 'Natura' },
-    { word: 'PESCE', categoria: 'Animali' },
-    { word: 'GUITARRA', categoria: 'Musica' },  // accetteremo anche CHITARRA
-    { word: 'SOLE', categoria: 'Spazio' },
-    { word: 'LUNA', categoria: 'Spazio' },
-    { word: 'MAESTRA', categoria: 'Mestieri' },
-    { word: 'POMODORO', categoria: 'Cibo' },
-    { word: 'DRAGO', categoria: 'Mitologia' },
-    { word: 'CASTELLO', categoria: 'Luoghi' },
-    { word: 'TIGRE', categoria: 'Animali' },
-    { word: 'ROSA', categoria: 'Natura' },
-    { word: 'SAHARA', categoria: 'Geografia' },
-    { word: 'MUMIA', categoria: 'Mitologia' },
-    { word: 'POETA', categoria: 'Mestieri' },
-    { word: 'BARCA', categoria: 'Mezzi' },
-];
+const { pickWord } = require('../../lib/words');
 
 // 7 stadi del boia (0 = solo forca, 6 = boia completo = game over).
 const HANGMAN_STAGES = [
@@ -55,7 +16,7 @@ const HANGMAN_STAGES = [
   │
   │
   │
-──┴──`,
+───┴──`,
     // 1 errore (testa)
     `  ┌───┐
   │   │
@@ -63,7 +24,7 @@ const HANGMAN_STAGES = [
   │
   │
   │
-──┴──`,
+───┴──`,
     // 2 errori (testa + corpo)
     `  ┌───┐
   │   │
@@ -71,7 +32,7 @@ const HANGMAN_STAGES = [
   │   │
   │
   │
-──┴──`,
+───┴──`,
     // 3 errore (testa + corpo + braccio sx)
     `  ┌───┐
   │   │
@@ -79,7 +40,7 @@ const HANGMAN_STAGES = [
   │  /│
   │
   │
-──┴──`,
+───┴──`,
     // 4 errori (testa + corpo + 2 braccia)
     `  ┌───┐
   │   │
@@ -87,7 +48,7 @@ const HANGMAN_STAGES = [
   │  /│\\
   │
   │
-──┴──`,
+───┴──`,
     // 5 errori (testa + corpo + 2 braccia + gamba sx)
     `  ┌───┐
   │   │
@@ -95,7 +56,7 @@ const HANGMAN_STAGES = [
   │  /│\\
   │  /
   │
-──┴──`,
+───┴──`,
     // 6 errori (boia completo)
     `  ┌───┐
   │   │
@@ -103,7 +64,7 @@ const HANGMAN_STAGES = [
   │  /│\\
   │  / \\
   │
-──┴──`,
+───┴──`,
 ];
 
 const MAX_WRONG = 6;
@@ -151,19 +112,35 @@ la *parola intera*!`;
 module.exports = {
     name: 'impiccato',
     aliases: ['hangman', 'boia'],
-    description: "Gioca all'impiccato: scegli la difficoltà e indovina la parola prima che il boia sia completo. Uso: .impiccato, .impiccato facile/media/difficile",
+    description: "Gioca all'impiccato da solo: scegli la difficoltà e indovina la parola prima che il boia sia completo. Ogni giocatore ha la sua partita. Uso: .impiccato, .impiccato facile/media/difficile, .impiccato stop",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB, randomChoice, sendButtons } = services;
+        const { db, saveDB, sendButtons } = services;
 
         if (!isGroup) return reply("L'impiccato si gioca solo nei gruppi.");
 
-        if (db[from]?.impiccatoGame?.active) {
-            return reply("C'è già una partita di impiccato in corso! Scrivi una lettera per partecipare.");
+        const args2 = String(textArgs || '').trim().toLowerCase();
+
+        // Ferma la partita del giocatore che la invoca (o di tutti con 'stop tutti').
+        if (['stop', 'esci', 'fine', 'basta', 'abbandona', 'lascia'].includes(args2) || args2.startsWith('stop ')) {
+            db[from] = db[from] || {};
+            const games = db[from].impiccatoGames || {};
+            if (args2.includes('tutti')) {
+                const n = Object.keys(games).length;
+                db[from].impiccatoGames = {};
+                saveDB();
+                return reply(n ? `🛑 Ho fermato le *${n}* partite di impiccato in corso.` : "Nessuna partita di impiccato in corso.");
+            }            if (games[sender]) {
+                games[sender].active = false;
+                delete games[sender];
+                saveDB();
+                return reply("🛑 Partita di impiccato terminata. La parola era: *(abbandono)*");
+            }
+            return reply("Non hai una partita di impiccato attiva.");
         }
 
-        const diff = DIFFICULTIES[String(textArgs || '').trim().toLowerCase()];
+        const diff = DIFFICULTIES[args2];
 
         // Nessuna difficoltà indicata → menu di scelta con i pulsanti.
         if (!diff) {
@@ -171,7 +148,7 @@ module.exports = {
 `🔴 *IMPICCATO*
 ━━━━━━━━━━━━━━━━━━
 Scegli la *difficoltà* della
-parola da far indovinare:
+parola da indovinare:
 
 🟢 Facile · parole corte
 🟡 Media · parole medie
@@ -186,17 +163,29 @@ lunghe e poche chances!
                 msg);
         }
 
-        // Parole della giusta lunghezza per la difficoltà scelta (fallback al
-        // pieno archivio se la difficoltà non trova parole del range).
+        db[from] = db[from] || {};
+        const games = db[from].impiccatoGames || (db[from].impiccatoGames = {});
+
+        // Una partita per giocatore: se ne ha già una attiva, niente doppioni.
+        if (games[sender]?.active) {
+            return reply("Hai già una partita di impiccato in corso! Scrivi una lettera per continuare o `.impiccato stop` per fermarla.");
+        }
+
+        // Parole della giusta lunghezza per la difficoltà scelta, evitando
+        // quelle già usate dal giocatore (anti-ripetizione).
+        const used = db[from].impiccatoUsed?.[sender] || [];
         const [minLen, maxLen] = diff.wordLen;
-        const pool = WORD_BANK.filter(w => w.word.length >= minLen && w.word.length <= maxLen);
-        const pick = randomChoice(pool.length ? pool : WORD_BANK);
-        const word = pick.word.toUpperCase();
+        const picked = pickWord({ minLen, maxLen, exclude: used, random: Math.random });
+        const word = picked.word;
+
+        // Aggiorna l'elenco parole già usate (persistito) per non ripeterle.
+        db[from].impiccatoUsed = db[from].impiccatoUsed || {};
+        db[from].impiccatoUsed[sender] = picked.used;
 
         const boardText =
             `${diff.emoji} *IMPICCATO* · ${diff.label}\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
-            `${buildBoardText({ word, categoria: pick.categoria, wrong: 0, guessed: [], maxWrong: diff.maxWrong })}\n` +
+            `${buildBoardText({ word, categoria: picked.categoria, wrong: 0, guessed: [], maxWrong: diff.maxWrong })}\n` +
             `⏳ Tempo: 2 minuti` +
             `\n━━━━━━━━━━━━━━━━━━`;
 
@@ -210,11 +199,10 @@ lunghe e poche chances!
             return reply(boardText);
         }
 
-        db[from] = db[from] || {};
-        db[from].impiccatoGame = {
+        games[sender] = {
             active: true,
             word,
-            categoria: pick.categoria,
+            categoria: picked.categoria,
             wrong: 0,
             maxWrong: diff.maxWrong,
             guessed: [],
@@ -226,7 +214,7 @@ lunghe e poche chances!
 
         // Timer di scadenza
         setTimeout(() => {
-            const g = db[from]?.impiccatoGame;
+            const g = db[from]?.impiccatoGames?.[sender];
             if (g?.active && Date.now() - g.timestamp >= GAME_TIMEOUT_MS) {
                 g.active = false;
                 saveDB();

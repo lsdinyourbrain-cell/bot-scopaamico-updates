@@ -7,12 +7,67 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
 
 
             const subCmd = args[0]?.toLowerCase();
             const target = mentioned[0];
             const uDB    = getUser(sender, from);
+
+            // ── Gestione proposta pendente: il bersaglio risponde con si/no ─
+            const proposalId = args[1];
+            if ((subCmd === 'si' || subCmd === 'sì' || subCmd === 'no') && proposalId) {
+                const proposals = db[from]?.familyProposals || {};
+                const prop = proposals[proposalId];
+                if (!prop) return reply("❌ Proposta scaduta o non più valida.");
+                // Solo la persona designata può accettare/rifiutare.
+                if (!sameJid(sender, prop.target)) return reply("❌ Questa proposta non è per te.");
+                if (Date.now() - prop.timestamp > 120000) {
+                    delete proposals[proposalId];
+                    saveDB();
+                    return reply("⏰ Proposta scaduta (2 minuti). Rifai la richiesta.");
+                }
+
+                const isAccept = subCmd === 'si' || subCmd === 'sì';
+                delete proposals[proposalId];
+                saveDB();
+
+                if (!isAccept) {
+                    await sock.sendMessage(from, {
+                        text: `❌ *RIFIUTATO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha rifiutato\nla proposta di @${prop.proposer.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
+                        mentions: [sender, prop.proposer],
+                    });
+                    return;
+                }
+
+                const proposerDB = getUser(prop.proposer, from);
+                const targetDB = getUser(prop.target, from);
+
+                if (prop.type === 'sposa') {
+                    if (proposerDB.spouse || targetDB.spouse) {
+                        return reply("❌ Uno dei due è già sposato/a: la proposta è annullata.");
+                    }
+                    proposerDB.spouse = prop.target;
+                    targetDB.spouse = prop.proposer;
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `💒 *MATRIMONIO*\n━━━━━━━━━━━━━━━━━━\n@${prop.proposer.split('@')[0]} 💞 @${prop.target.split('@')[0]}\n_Vi siete appena sposati!_\n━━━━━━━━━━━━━━━━━━`,
+                        mentions: [prop.proposer, prop.target],
+                    });
+                } else if (prop.type === 'adotta') {
+                    if (proposerDB.children.includes(prop.target)) {
+                        return reply("❌ Fa già parte della famiglia.");
+                    }
+                    proposerDB.children.push(prop.target);
+                    if (!targetDB.parents.includes(prop.proposer)) targetDB.parents.push(prop.proposer);
+                    saveDB();
+                    await sock.sendMessage(from, {
+                        text: `🍼 *ADOZIONE*\n━━━━━━━━━━━━━━━━━━\n@${prop.proposer.split('@')[0]} ha adottato\n@${prop.target.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
+                        mentions: [prop.proposer, prop.target],
+                    });
+                }
+                return;
+            }
 
             if (!subCmd) {
                 let familyMentions = [];
@@ -57,13 +112,26 @@ ${childrenLine}
                 if (uDB.spouse) return reply("❌ Sei già sposato/a in questo gruppo.");
                 if (tDB.spouse) return reply("❌ Questo utente è già sposato/a.");
 
-                uDB.spouse = target;
-                tDB.spouse = sender;
+                // Creo una proposta: serve il consenso dell'altra persona.
+                const proposals = db[from]?.familyProposals || (db[from].familyProposals = {});
+                const proposalId = 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+                proposals[proposalId] = { type: 'sposa', proposer: sender, target, timestamp: Date.now() };
                 saveDB();
-                await sock.sendMessage(from, {
-                    text: `💒 *MATRIMONIO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} 💞 @${target.split('@')[0]}\n_Vi siete appena sposati!_\n━━━━━━━━━━━━━━━━━━`,
-                    mentions: [sender, target],
-                });
+
+                return sendButtons(sock, from,
+`💍 *PROPOSTA DI MATRIMONIO*
+━━━━━━━━━━━━━━━━━━
+@${sender.split('@')[0]} ti chiede
+di sposarlo/a! 💞
+
+_Accetti?_
+(2 minuti di tempo)
+━━━━━━━━━━━━━━━━━━`,
+                    [
+                        { label: '💍 Sì, accetto!', id: `famiglia si ${proposalId}` },
+                        { label: '❌ No, grazie', id: `famiglia no ${proposalId}` },
+                    ],
+                    msg);
             }
             else if (subCmd === 'divorzia') {
                 if (!uDB.spouse) return reply("❌ Non sei sposato/a.");
@@ -82,14 +150,26 @@ ${childrenLine}
                 if (sameJid(target, sender)) return reply("Non puoi adottare te stesso/a, dai.");
                 if (uDB.children.includes(target)) return reply("Questa persona fa già parte della tua famiglia.");
 
-                const tDB = getUser(target, from);
-                uDB.children.push(target);
-                if (!tDB.parents.includes(sender)) tDB.parents.push(sender);
+                // Creo una proposta: serve il consenso dell'altra persona.
+                const proposals = db[from]?.familyProposals || (db[from].familyProposals = {});
+                const proposalId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+                proposals[proposalId] = { type: 'adotta', proposer: sender, target, timestamp: Date.now() };
                 saveDB();
-                await sock.sendMessage(from, {
-                    text: `🍼 *ADOZIONE*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha adottato\n@${target.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
-                    mentions: [sender, target],
-                });
+
+                return sendButtons(sock, from,
+`🍼 *PROPOSTA DI ADOZIONE*
+━━━━━━━━━━━━━━━━━━
+@${sender.split('@')[0]} vuole
+adottarti! 👨‍👧
+
+_Accetti?_
+(2 minuti di tempo)
+━━━━━━━━━━━━━━━━━━`,
+                    [
+                        { label: '🍼 Sì, accetto!', id: `famiglia si ${proposalId}` },
+                        { label: '❌ No, grazie', id: `famiglia no ${proposalId}` },
+                    ],
+                    msg);
             }
             else if (subCmd === 'caccia') {
                 if (!target) return reply("Tagga la persona da rimuovere dalla famiglia.");
