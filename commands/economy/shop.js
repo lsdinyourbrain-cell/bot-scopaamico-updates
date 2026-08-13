@@ -46,6 +46,30 @@ const ITEMS = [
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
 
+// Renderizza la card di un oggetto come immagine SVG → PNG (le card del
+// carosello WhatsApp DEVONO avere un'immagine, altrimenti il messaggio
+// viene rifiutato con "versione non supportata").
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').slice(0, 80);
+const renderItemCard = async (sharp, it, priceStr) => {
+    const svg = `<svg width="360" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fdf6e3"/>
+      <stop offset="100%" stop-color="#f5e6c8"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="440" fill="url(#bg)" rx="16"/>
+  <rect x="14" y="14" width="332" height="412" fill="none" stroke="#c9a227" stroke-width="3" rx="12"/>
+  <text x="180" y="150" text-anchor="middle" font-family="sans-serif" font-size="88">${it.emoji}</text>
+  <text x="180" y="235" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="bold" fill="#4a3400">${esc(it.name)}</text>
+  <text x="180" y="285" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#8a6d1f">💰 ${esc(priceStr)}</text>
+  <line x1="70" y1="315" x2="290" y2="315" stroke="#c9a227" stroke-width="2"/>
+  <text x="180" y="355" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#6b4d00">${esc(it.effect)}</text>
+  <text x="180" y="395" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#b08d1f">ScopaAmico Shop</text>
+</svg>`;
+    return sharp(Buffer.from(svg)).png().toBuffer();
+};
+
 module.exports = {
     name: 'shop',
     aliases: ['negozio', 'store'],
@@ -164,16 +188,25 @@ Usalo subito: \`.shop usa ${it.id}\``,
         }
 
         // ── NEGOZIO (carosello) ──────────────────────────────────────────
-        const cards = ITEMS.map(it => ({
-            title: `${it.emoji} ${it.name}`,
-            subtitle: `${formatMoney(it.price)}€`,
-            body: `${it.desc}\n\n✨ ${it.effect}`,
-            footer: 'ScopaAmico Shop',
-            buttons: [
-                { label: `🛒 Compra · ${it.price}€`, id: `shop compra ${it.id}` },
-                { label: 'ℹ️ Info', id: `shop info ${it.id}` },
-            ],
-        }));
+        const cards = [];
+        for (const it of ITEMS) {
+            try {
+                const img = await renderItemCard(sharp, it, formatMoney(it.price));
+                cards.push({
+                    title: `${it.emoji} ${it.name}`,
+                    subtitle: `${formatMoney(it.price)}€`,
+                    body: `${it.desc}\n\n✨ ${it.effect}`,
+                    footer: 'ScopaAmico Shop',
+                    imageBuffer: img,
+                    buttons: [
+                        { label: `🛒 Compra · ${it.price}€`, id: `shop compra ${it.id}` },
+                        { label: 'ℹ️ Info', id: `shop info ${it.id}` },
+                    ],
+                });
+            } catch (e) {
+                console.error('[shop] render card:', e.message);
+            }
+        }
 
         const sent = await sendCarousel(sock, from, {
             text: `🛍️ *NEGOZIO SCOPAMICO*

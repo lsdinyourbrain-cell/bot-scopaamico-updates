@@ -24,6 +24,29 @@ const iconFor = (desc, isDay) => {
 
 const DAY_IT = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
 
+// Renderizza una card giornaliera come immagine (le card del carosello
+// WhatsApp DEVONO avere un'immagine, altrimenti il messaggio viene rifiutato).
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').slice(0, 60);
+const renderDayCard = async (sharp, { icon, dow, dateStr, desc, max, min, rain, precip }) => {
+    const svg = `<svg width="360" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8f4fd"/>
+      <stop offset="100%" stop-color="#d4ecfb"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="440" fill="url(#bg)" rx="16"/>
+  <rect x="14" y="14" width="332" height="412" fill="none" stroke="#5dade2" stroke-width="3" rx="12"/>
+  <text x="180" y="95" text-anchor="middle" font-family="sans-serif" font-size="38" font-weight="bold" fill="#1a5276">${esc(dow)}</text>
+  <text x="180" y="135" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#5d6d7e">${esc(dateStr)}</text>
+  <text x="180" y="270" text-anchor="middle" font-family="sans-serif" font-size="96">${icon}</text>
+  <text x="180" y="330" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#2c3e50">${esc(desc)}</text>
+  <text x="180" y="375" text-anchor="middle" font-family="sans-serif" font-size="30" font-weight="bold" fill="#c0392b">${esc(max)}°<tspan fill="#2471a3" font-size="24"> / ${esc(min)}°</tspan></text>
+  <text x="180" y="410" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#2c3e50">🌧️ ${rain}% · ${precip}mm</text>
+</svg>`;
+    return sharp(Buffer.from(svg)).png().toBuffer();
+};
+
 module.exports = {
     name: 'meteo7',
     aliases: ['meteosettimana', 'weather7', 'previsioni'],
@@ -31,7 +54,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { textArgs, from, reply, services } = context;
-        const { axios, sendButtons, sendCarousel } = services;
+        const { axios, sendButtons, sendCarousel, sharp } = services;
 
         const city = String(textArgs || '').trim();
         if (!city) {
@@ -76,12 +99,21 @@ Esempio: \`.meteo7 Milano\``,
                 };
             });
 
-            const cards = consolidated.map(day => ({
-                title: `${day.icon} ${day.dow}`,
-                subtitle: `${day.dateStr}`,
-                body: `${day.desc}\n🌡️ ${day.max}° / ${day.min}°\n🌧️ ${day.rain}% (${day.precip}mm)`,
-                footer: cityName,
-            }));
+            const cards = [];
+            for (const day of consolidated) {
+                try {
+                    const img = await renderDayCard(sharp, day);
+                    cards.push({
+                        title: `${day.icon} ${day.dow}`,
+                        subtitle: `${day.dateStr}`,
+                        body: `${day.desc}\n🌡️ ${day.max}° / ${day.min}°\n🌧️ ${day.rain}% (${day.precip}mm)`,
+                        footer: cityName,
+                        imageBuffer: img,
+                    });
+                } catch (e) {
+                    console.error('[meteo7] render card:', e.message);
+                }
+            }
 
             const sent = await sendCarousel(sock, from, {
                 text: `🌤️ *PREVISIONI 7 GIORNI*\n${SEP}\n📍 ${cityName}\n${SEP}\nScorri per vedere la\nsettimana giorno per giorno 👇\n${SEP}`,
