@@ -3,7 +3,7 @@
 module.exports = {
     name: 'antibot',
     aliases: [],
-    description: "Attiva/disattiva filtro antibot (caccia altri bot).",
+    description: "Attiva/disattiva filtro antibot: quando qualcuno esegue un comando, caccia gli altri bot che rispondono.",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
@@ -22,7 +22,7 @@ module.exports = {
         if (sub === 'on' || sub === 'true' || sub === '1') {
             cfg.enabled = true;
             saveDB();
-            return reply("🤖 *Antibot ATTIVATO* — i bot verranno rimossi.");
+            return reply("🤖 *Antibot ATTIVATO* — quando qualcuno usa un comando, gli altri bot che rispondono verranno rimossi.");
         }
         if (sub === 'off' || sub === 'false' || sub === '0') {
             cfg.enabled = false;
@@ -49,6 +49,10 @@ module.exports = {
 `🤖 *ANTIBOT*
 ━━━━━━━━━━━━━━━━━━
 ${status}
+📋 *Come funziona:* quando un
+membro usa un comando (es. .menu),
+gli altri bot che rispondono con
+output automatico vengono cacciati.
 📋 *Whitelist:*
 ${wlList}
 .antibot on/off

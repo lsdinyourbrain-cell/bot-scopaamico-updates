@@ -48,6 +48,7 @@ const forza4Lib = require('./lib/four-in-row');
 const wordleLib = require('./lib/wordle');
 const mazeLib = require('./lib/maze');
 const xpLib = require('./lib/xp');
+const antibotLib = require('./lib/antibot');
 const duelQuiz = require('./lib/duel-quiz');
 const trivia2Cmd = require('./commands/games/trivia2');
 const akinatorCmd = require('./commands/games/akinator');
@@ -1452,6 +1453,43 @@ async function startBot() {
             }
         } catch (_) {}
 
+        // ── ANTIBOT "CACCIA BOT" (reazione ai comandi) ────────────────────
+        // Se la chat ha .antibot attivo e c'è una finestra armata (qualcuno
+        // ha appena eseguito un comando del bot), osserva se un ALTRO account
+        // risponde con output da bot e in tal caso lo rimuove subito.
+        (async () => {
+            try {
+                const abCfg = db._antibot?.[from];
+                if (!(isGroup && abCfg?.enabled)) return;
+                if (!antibotLib.isArmed(from)) return;
+                const numClean = String(sender || '').replace(/[^0-9]/g, '');
+                if (abCfg.whitelist?.some(w => numClean.includes(String(w).replace(/[^0-9]/g, '')))) return;
+                // L'input durante la finestra può essere un comando o testo.
+                const quotedStanzaId = getContextInfo(msg.message)?.quotedMessage ? getContextInfo(msg.message)?.stanzaId : null;
+                const res = antibotLib.scan(from, {
+                    sender,
+                    quotedStanzaId,
+                    isCommand: body?.startsWith('.') === true,
+                    isKnownCommand: body?.startsWith('.') ? commands.has(body.slice(1).trim().split(/\s+/)[0].toLowerCase()) : false,
+                    body: body || '',
+                });
+                if (!res.hit) return;
+                // Non toccare mai admin/whitelist antinuke.
+                const anCfgSc = getAntinukeGroup(db, from);
+                if (anCfgSc.enabled && isAntinukeWhitelisted(anCfgSc, sender)) return;
+                const { isSenderAdmin } = await getGroupAdminState(sock, from, [sender]).catch(() => ({ isSenderAdmin: false }));
+                if (isSenderAdmin) return;
+                await sock.groupParticipantsUpdate(from, [res.jid], 'remove');
+                console.log(`[ANTIBOT] Rimosso ${res.jid.split('@')[0]} (${res.reason})`);
+                await sock.sendMessage(from, {
+                    text: `🤖 *ANTIBOT*\n━━━━━━━━━━━━━━━━━━\n@${res.jid.split('@')[0]} sembra un bot e\nè stato rimosso dal gruppo.\n_Rilevato: ${res.reason}_\n━━━━━━━━━━━━━━━━━━`,
+                    mentions: [res.jid],
+                }).catch(() => {});
+            } catch (e) {
+                console.error('[ANTIBOT] Errore scan:', e.message);
+            }
+        })();
+
         // ── ANTILINK MIDDLEWARE ───────────────────────────────────────────
         //
         //  Logica:
@@ -2496,6 +2534,13 @@ async function startBot() {
                 if (emoji) {
                     sock.sendMessage(from, { react: { key: msg.key, text: emoji } }).catch(() => {});
                 }
+            }
+
+            // Arma la finestra antibot: un comando appena eseguito è l'esca
+            // perfetta per far rispondere altri bot presenti nel gruppo.
+            if (isGroup && db._antibot?.[from]?.enabled && sender) {
+                antibotLib.arm(from, { msgId: msg.key?.id || null, triggerBy: sender });
+                antibotLib.prune();
             }
         } catch (error) {
             console.error('[handler] Errore critico:', error.message);
