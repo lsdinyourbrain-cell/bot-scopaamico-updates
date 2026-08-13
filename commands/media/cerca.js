@@ -12,6 +12,42 @@ const MIME_BY_EXT = {
     ogg: 'audio/ogg',
 };
 
+// Un upload verso i server media di WhatsApp può fallire in modo transitorio
+// (host occupati, connessione appena riconnessa, limiti temporanei). Questi
+// errori si riprovano con piccole attese, mentre gli altri vanno in errore.
+const UPLOAD_RETRYABLE = /media upload|upload failed|upload\.\*host|cannot process empty|null response|ECONNRESET|ETIMEDOUT|EPIPE|429|413|EMPTY_FILE/i;
+const UPLOAD_ATTEMPTS = 3;
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function sendUploadWithRetry(send) {
+    let lastErr;
+    for (let attempt = 1; attempt <= UPLOAD_ATTEMPTS; attempt++) {
+        try {
+            return await send();
+        } catch (e) {
+            lastErr = e;
+            const msg = String(e?.message || '');
+            if (!UPLOAD_RETRYABLE.test(msg)) throw e;
+            if (attempt === UPLOAD_ATTEMPTS) break;
+            console.warn(`[cerca] upload media fallito (${attempt}/${UPLOAD_ATTEMPTS}):`, msg.slice(0, 120));
+            await wait(1500 * attempt);
+        }
+    }
+    throw lastErr;
+}
+
+const describeUploadError = (error) => {
+    const msg = String(error?.message || '');
+    if (/media upload|upload failed|upload.*host|429|413|EMPTY_FILE/i.test(msg)) {
+        return '⚠️ WhatsApp non ha accettato il file\n(server media occupati o file troppo\ngrande). Riprova tra un minuto, oppure\nscegli una qualità più bassa per i video.';
+    }
+    if (/cannot process empty|null response/i.test(msg)) {
+        return '⚠️ WhatsApp ha ricevuto un file vuoto.\nRiprova: a volte basta un nuovo tentativo.';
+    }
+    return null;
+};
+
 // Stato per chat: risultati della ricerca + pagina corrente (solo per il
 // fallback testuale). Manteniamo qui i dati tra una pressione di pulsante e
 // l'altra (la quale arriva come comando).
@@ -284,11 +320,14 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
             // L'audio viene sempre convertito/consegnato come .mp3. Se la
             // conversione mp3 è fallita, l'estensione reale è in download.ext.
             const ext = download.ext || 'mp3';
-            await sock.sendMessage(from, {
+            await sendUploadWithRetry(() => sock.sendMessage(from, {
                 document: file,
                 mimetype: MIME_BY_EXT[ext] || 'audio/mpeg',
                 fileName: `${cleanName}.${ext}`,
-            }, { quoted: msg });
+            }, {
+                quoted: msg,
+                mediaUploadTimeoutMs: 120000,
+            }));
             await reply(`🎵 *Audio pronto!*\n${video.title}`);
         } else {
             // Il video è garantito in .mp4 (mediaDownloader converte
@@ -303,30 +342,41 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
 
             if (!tooBig) {
                 try {
-                    await sock.sendMessage(from, {
+                    await sendUploadWithRetry(() => sock.sendMessage(from, {
                         video: file,
                         mimetype: 'video/mp4',
                         caption,
-                    }, { quoted: msg });
+                    }, {
+                        quoted: msg,
+                        mediaUploadTimeoutMs: 120000,
+                    }));
                     sent = true;
                 } catch (e) {
-                    const uploadError = /upload failed|media upload|upload.*host|429|413/i.test(String(e.message || ''));
+                    const uploadError = /upload failed|media upload|upload.*host|429|413|EMPTY_FILE|cannot process empty/i.test(String(e.message || ''));
                     if (!uploadError) throw e;
                     console.warn('[cerca] upload video fallito, invio come file:', e.message);
                 }
             }
 
             if (!sent) {
-                await sock.sendMessage(from, {
+                await sendUploadWithRetry(() => sock.sendMessage(from, {
                     document: file,
                     mimetype: 'video/mp4',
                     fileName: `${cleanName}.mp4`,
-                }, { quoted: msg });
+                }, {
+                    quoted: msg,
+                    mediaUploadTimeoutMs: 120000,
+                }));
             }
         }
     } catch (e) {
         console.error('[cerca]', e.message);
-        await reply('❌ ' + getDownloadErrorMessage(e));
+        const uploadErr = describeUploadError(e);
+        if (uploadErr) {
+            await reply(uploadErr);
+        } else {
+            await reply('❌ ' + getDownloadErrorMessage(e));
+        }
     } finally {
         await download?.cleanup();
     }
