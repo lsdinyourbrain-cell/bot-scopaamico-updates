@@ -160,6 +160,8 @@ const getUser = (jid, chatId) => {
             children : [],
             parents  : [],
             inventory: [],
+            cards: {},
+            cardsOpened: 0,
         };
         saveDB();
     }
@@ -177,6 +179,8 @@ const getUser = (jid, chatId) => {
     user.children = Array.isArray(user.children) ? user.children : [];
     user.parents = Array.isArray(user.parents) ? user.parents : [];
     user.inventory = Array.isArray(user.inventory) ? user.inventory : [];
+    user.cards = (user.cards && typeof user.cards === 'object') ? user.cards : {};
+    user.cardsOpened = Number.isFinite(user.cardsOpened) ? user.cardsOpened : 0;
     return user;
 };
 
