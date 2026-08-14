@@ -11,7 +11,7 @@ module.exports = {
         const person = targetJid || sender;
         const percent = randomInt(1, 100);
         await sock.sendMessage(from, {
-            text: `🌈 *GAY O METRO*\n━━━━━━━━━━━━━━━━━━\n@${person.split('@')[0]} è gay\nal *${percent}%*! 🏳️‍🌈\n━━━━━━━━━━━━━━━━━━`,
+            text: `🌈 *_GAY O METRO_*\n━━━━━━━━━━━━━━\n▸ @${person.split('@')[0]} è gay al _*${percent}%*_! 🏳️‍🌈\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
             mentions: [person],
         });
     },

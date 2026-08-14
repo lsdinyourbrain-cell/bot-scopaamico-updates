@@ -20,14 +20,14 @@ module.exports = {
         await sock.sendMessage(from, {
             text:
 `✨ *SPONSOR*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 Ciao, sono il
 *Vex Bot* 🤖
 Unisciti al gruppo
 ufficiale! 🫶
 👇 *CLICCA QUI* 👇
 ${link}
-━━━━━━━━━━━━━━━━━━`,
+━━━━━━━━━━━━━━`,
         }, { quoted: msg });
     },
 };

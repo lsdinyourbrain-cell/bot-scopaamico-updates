@@ -13,6 +13,6 @@ module.exports = {
         const lines = [];
         for (let i = 0; i < n; i++) lines.push('`' + crypto.randomUUID() + '`');
 
-        await reply(`🔑 *UUID*\n━━━━━━━━━━━━━━━━━━\nGenerati *${n}*:\n${lines.join('\n')}\n━━━━━━━━━━━━━━━━━━`);
+        await reply(`🔑 *_UUID_*\n━━━━━━━━━━━━━━\n▸ *Generati:* _${n}_\n▸ ${lines.join('\n')}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
     },
 };

@@ -13,22 +13,22 @@ module.exports = {
             if (!isGroup) {
                 return reply(
 `🔗 *ANTILINK*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 ℹ️ Questo sistema funziona
 solo nei *gruppi*.
 In chat privata non ci sono
 link da filtrare. 😊
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
                 );
             }
 
             if (!isOwner) {
                 return reply(
 `⛔ *ACCESSO NEGATO*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 Il comando *.antilink* è
 riservato all'*Owner del bot*.
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
                 );
             }
 
@@ -46,14 +46,14 @@ riservato all'*Owner del bot*.
 
                 return reply(
 `🔗 *ANTILINK — STATO*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 ${statusLines}
 💡 *Uso:*
 .antilink [piattaforma] [on/off]
 .antilink tutti on/off
 *Piattaforme:*
 ${platformNames.filter(p => p !== 'altri').join(', ')}, altri
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
                 );
             }
 
@@ -64,12 +64,12 @@ ${platformNames.filter(p => p !== 'altri').join(', ')}, altri
             if (stateArg !== 'on' && stateArg !== 'off') {
                 return reply(
 `⚠️ *ANTILINK — ERRORE*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 Specifica *on* o *off*.
 Esempio:
 *.antilink instagram on*
 *.antilink tutti off*
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
                 );
             }
 
@@ -85,12 +85,12 @@ Esempio:
                 const icon = newState ? '🟢' : '🔴';
                 return reply(
 `🔗 *ANTILINK AGGIORNATO*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 ${icon} Tutti i filtri → *${stateArg.toUpperCase()}*
 Ogni link sarà ${newState ? 'bloccato 🚫' : 'permesso ✅'}.
 (Gli admin del gruppo
 sono esentati.)
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
                 );
             }
 
@@ -98,12 +98,12 @@ sono esentati.)
             if (!platformNames.includes(sub)) {
                 return reply(
 `⚠️ *ANTILINK — ERRORE*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 "*${sub}*" non è una
 piattaforma valida.
 Piattaforme disponibili:
 ${platformNames.join(', ')}
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
                 );
             }
 
@@ -113,7 +113,7 @@ ${platformNames.join(', ')}
             const icon = newState ? '🟢' : '🔴';
             await reply(
 `🔗 *ANTILINK AGGIORNATO*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 Piattaforma: *${sub}*
 Stato: ${icon} *${stateArg.toUpperCase()}*
 ${newState
@@ -121,7 +121,7 @@ ${newState
     : `I link *${sub}* sono ora *permessi*\nin questo gruppo. ✅`}
 (Admins del gruppo
 sempre esentati.)
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
             );
     },
 };

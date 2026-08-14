@@ -9,8 +9,8 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, services } = context;
         const { sameJid } = services;
 
-        if (!isGroup) return reply("Funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("Solo gli admin.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
 
         try {
             const meta = await sock.groupMetadata(from);
@@ -94,17 +94,20 @@ module.exports = {
                     });
                 }
 
-                return reply("Tipo di messaggio non supportato per il reinvio.");
+                return reply("⚠️ _[uso]:_ tipo di messaggio non supportato per il reinvio.");
             }
 
             // Nessun messaggio quotato — tag normale
             const customText = textArgs.trim();
-            const tagBody = customText || `📢 *Attenzione a tutti!*\n${meta.subject ? `\n_Messaggio nel gruppo: ${meta.subject}_` : ''}`;
+            const tagBody = customText || `📢 *_TAG_*
+━━━━━━━━━━━━━━
+*Attenzione a tutti!*${meta.subject ? `\n_Messaggio nel gruppo: ${meta.subject}_` : ''}
+━━━━━━━━━━━━━━`;
 
             await sock.sendMessage(from, { text: tagBody, mentions }, { quoted: msg });
         } catch (e) {
             console.error('[tag] error:', e);
-            await reply(`❌ Errore: ${e.message}`);
+            await reply(`⚠️ _[uso]:_ errore: ${e.message}`);
         }
     },
 };

@@ -12,7 +12,7 @@ module.exports = {
         const quoted = isReply ? (contextInfo?.quotedMessage?.conversation || contextInfo?.quotedMessage?.extendedTextMessage?.text || '') : '';
         const input = String(quoted || textArgs || '').trim();
         if (!input) {
-            return reply('⚠️ Scrivi il testo da tradurre.\n👉 *Uso:* `.translate it hello world` (o cita un messaggio)');
+            return reply('⚠️ _[uso]: Scrivi il testo da tradurre._\n▸ *Uso:* \`.translate it hello world\` _(o cita un messaggio)_');
         }
 
         // Se il primo token è un codice lingua (es. it, en, es), lo usa come target.
@@ -33,11 +33,11 @@ module.exports = {
                 timeout: 10000,
             });
             const translated = (data?.[0] || []).map(seg => seg?.[0] || '').join('').trim();
-            if (!translated) return prog.done('❌ Non riesco a tradurre questo testo.');
+            if (!translated) return prog.done('⚠️ _Non riesco a tradurre questo testo._');
             const detected = data?.[2] || '?';
-            await prog.done(`🌐 *Traduzione* (${detected} → ${target.toUpperCase()})\n\n${translated}`);
+            await prog.done(`🌐 *_TRADUZIONE_*\n━━━━━━━━━━━━━━\n▸ _Da ${detected} a ${target.toUpperCase()}_\n▸ ${translated}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
         } catch (_) {
-            await reply('❌ Errore nella traduzione. Riprova più tardi.');
+            await reply('⚠️ _Errore nella traduzione. Riprova più tardi._');
         }
     },
 };

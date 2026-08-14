@@ -14,12 +14,12 @@ module.exports = {
         const { db, saveDB, lastfm } = services;
 
         if (!lastfm.isConfigured()) {
-            return reply('⚠️ *Last.fm non configurato.*\n\nL\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).');
+            return reply('⚠️ _Last.fm non configurato._\n▸ L\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).');
         }
 
         const username = String(textArgs || '').trim();
         if (!username) {
-            return reply('⚠️ Scrivi il nome utente Last.fm da collegare.\n👉 *Uso:* `.lastfm <nomeutente>`\n\nEsempio: `.lastfm mia_musica`\n\nPer scollegare: `.lastfm off`');
+            return reply('⚠️ _[uso]: \`.lastfm <nomeutente>\`_\n▸ _Scrivi il nome utente Last.fm da collegare._\n▸ _Esempio: \`.lastfm mia_musica\`_\n▸ _Per scollegare: \`.lastfm off\`_');
         }
 
         // Scollegamento
@@ -27,9 +27,9 @@ module.exports = {
             if (db._lastfm && db._lastfm[sender]) {
                 delete db._lastfm[sender];
                 saveDB();
-                return reply('👋 Account Last.fm scollegato.');
+                return reply('👋 _Account Last.fm scollegato._');
             }
-            return reply('ℹ️ Non avevi nessun account Last.fm collegato.');
+            return reply('ℹ️ _Non avevi nessun account Last.fm collegato._');
         }
 
         // Valida il nome sull'API prima di salvarlo
@@ -41,21 +41,22 @@ module.exports = {
 
             const playcount = info.playcount.toLocaleString('it-IT');
             return reply(
-`✅ *Account Last.fm collegato!*
-
-👤 *${info.realName}*
-🎧 ${playcount} ascolti totali
-
-Ora usa \`.cur\` per vedere la canzone in riproduzione.`
+`✅ *_ACCOUNT COLLEGATO_*
+━━━━━━━━━━━━━━
+▸ 👤 *Nome:* _${info.realName}_
+▸ 🎧 *Ascolti totali:* _${playcount}_
+━━━━━━━━━━━━━━
+▸ _Ora usa \`.cur\` per vedere la canzone in riproduzione._
+◈ _Vex Bot_`
             );
         } catch (e) {
             const msgMap = {
-                UTENTE_NON_TROVATO: '❌ Utente Last.fm non trovato. Controlla che il nome sia esatto.',
-                API_KEY_INVALIDA: '❌ API key Last.fm non valida. Verifica config.js.',
-                TROPPE_RICHIESTE: '⏳ Troppe richieste a Last.fm. Riprova tra poco.',
-                API_ERROR: '❌ Errore di Last.fm. Riprova più tardi.',
-                RETE: '❌ Non riesco a contattare Last.fm. Controlla la connessione.',
-                API_KEY_MANCA: '⚠️ *Last.fm non configurato.*\n\nL\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).',
+                UTENTE_NON_TROVATO: '⚠️ _Utente Last.fm non trovato. Controlla che il nome sia esatto._',
+                API_KEY_INVALIDA: '⚠️ _API key Last.fm non valida. Verifica config.js._',
+                TROPPE_RICHIESTE: '⚠️ _Troppe richieste a Last.fm. Riprova tra poco._',
+                API_ERROR: '⚠️ _Errore di Last.fm. Riprova più tardi._',
+                RETE: '⚠️ _Non riesco a contattare Last.fm. Controlla la connessione._',
+                API_KEY_MANCA: '⚠️ _Last.fm non configurato._\n▸ L\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).',
             };
             // Traduce anche gli errori grezzi di axios (caso "user not found"):
             // in certe versioni la chiamata fallisce con "Request failed with
@@ -63,13 +64,13 @@ Ora usa \`.cur\` per vedere la canzone in riproduzione.`
             const raw = String(e.message || '');
             let fallback;
             if (/404|not found|non trovato/i.test(raw)) {
-                fallback = '❌ Utente Last.fm non trovato. Controlla che il nome sia esatto.';
+                fallback = '⚠️ _Utente Last.fm non trovato. Controlla che il nome sia esatto._';
             } else if (/403|invalid.*key|key.*invalid/i.test(raw)) {
-                fallback = '❌ API key Last.fm non valida. Verifica config.js.';
+                fallback = '⚠️ _API key Last.fm non valida. Verifica config.js._';
             } else if (/timeout|timed out|ECONN|ENOTFOUND|network/i.test(raw)) {
-                fallback = '❌ Non riesco a contattare Last.fm. Controlla la connessione.';
+                fallback = '⚠️ _Non riesco a contattare Last.fm. Controlla la connessione._';
             } else {
-                fallback = '❌ Errore imprevisto. Riprova più tardi.';
+                fallback = '⚠️ _Errore imprevisto. Riprova più tardi._';
             }
             console.error('[lastfm] Errore:', e.message, e.stack || '');
             await reply(msgMap[e.message] || fallback);

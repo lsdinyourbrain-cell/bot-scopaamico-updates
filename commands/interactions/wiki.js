@@ -10,7 +10,7 @@ module.exports = {
         const { axios, showProgress } = services;
 
         const term = String(textArgs || '').trim();
-        if (!term) return reply('⚠️ Scrivi la voce da cercare.\n👉 *Uso:* `.wiki torre eiffel`');
+        if (!term) return reply('⚠️ _[uso]: Scrivi la voce da cercare._\n▸ *Uso:* \`.wiki torre eiffel\`');
 
         try {
             const prog = await showProgress(sock, from, { label: 'WIKIPEDIA', duration: 3000, quoted: msg });
@@ -21,13 +21,13 @@ module.exports = {
             if (!data || data.type === 'disambiguation' || !data.extract) {
                 const title = data?.title || term;
                 if (data?.type === 'disambiguation') {
-                    return prog.done(`⚠️ *${title}* è una pagina di disambiguazione. Sii più specifico.\n👉 ${data?.content_urls?.desktop?.page || ''}`);
+                    return prog.done(`⚠️ _${title} è una pagina di disambiguazione._\n▸ _Sii più specifico._\n▸ 🔗 _${data?.content_urls?.desktop?.page || ''}_`);
                 }
-                return prog.done('❌ Voce non trovata. Controlla l\'ortografia o prova un termine diverso.');
+                return prog.done('⚠️ _Voce non trovata. Controlla l\'ortografia o prova un termine diverso._');
             }
 
             const ext = data.extract;
-            const txt = `📚 *${data.title}*\n\n${ext.length > 900 ? ext.slice(0, 900) + '…' : ext}\n\n🔗 ${data.content_urls?.desktop?.page || ''}`;
+            const txt = `📚 *_${data.title}_*\n━━━━━━━━━━━━━━\n▸ ${ext.length > 900 ? ext.slice(0, 900) + '…' : ext}\n▸ 🔗 _${data.content_urls?.desktop?.page || ''}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
             const thumb = data.thumbnail?.source || null;
 
             if (thumb) {
@@ -37,7 +37,7 @@ module.exports = {
                 await prog.done(txt);
             }
         } catch (_) {
-            await reply('❌ Errore nella ricerca. Riprova più tardi.');
+            await reply('⚠️ _Errore nella ricerca. Riprova più tardi._');
         }
     },
 };

@@ -15,11 +15,12 @@ module.exports = {
         const lines = textArgs.split('\n').length;
 
         await reply(
-`🔢 *COUNT*
-━━━━━━━━━━━━━━━━━━
-📝 Caratteri: ${chars}
-📖 Parole: ${words}
-📃 Righe: ${lines}
-━━━━━━━━━━━━━━━━━━`);
+`🔢 *_COUNT_*
+━━━━━━━━━━━━━━
+▸ 📝 *Caratteri:* _${chars}_
+▸ 📖 *Parole:* _${words}_
+▸ 📃 *Righe:* _${lines}_
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
     },
 };

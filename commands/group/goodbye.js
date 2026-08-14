@@ -10,8 +10,8 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, getWelcomeGroup, setWelcomeGroup } = services;
 
 
-            if (!isGroup) return reply("❌ Questo comando funziona solo nei gruppi.");
-            if (!isOwner) return reply("⛔ Solo l'owner del bot può modificare questa impostazione.");
+            if (!isGroup) return reply("⚠️ _[uso]:_ questo comando funziona solo nei gruppi.");
+            if (!isOwner) return reply("⚠️ _[uso]:_ solo l'owner del bot può modificare questa impostazione.");
 
             const config = getWelcomeGroup(from);
             const arg = textArgs.toLowerCase().trim();
@@ -20,11 +20,11 @@ module.exports = {
                 const status = config.goodbye ? '🟢 ATTIVO' : '🔴 DISATTIVO';
                 return reply(
 `👋 *ARRIVEDERCI GRUPPO*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 Stato attuale: ${status}
 Uso: .goodbye <on|off>
 Es: .goodbye on
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
                 );
             }
 
@@ -33,12 +33,12 @@ Es: .goodbye on
 
             await reply(
 `👋 *ARRIVEDERCI GRUPPO*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 ${enable ? '✅ Attivato' : '❌ Disattivato'}
 Il messaggio di arrivederci
 ${enable ? 'verrà inviato' : 'NON verrà più inviato'}
 quando qualcuno esce.
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
             );
     },
 };

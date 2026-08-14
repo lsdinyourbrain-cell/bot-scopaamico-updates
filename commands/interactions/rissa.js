@@ -10,7 +10,7 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
 
-            if (!targetJid) return reply("Tagga qualcuno con cui fare a botte. Esempio: .rissa @nome");
+            if (!targetJid) return reply("⚠️ _Tagga qualcuno con cui fare a botte. Esempio: .rissa @nome_");
             const vincitore  = Math.random() > 0.5 ? sender : targetJid;
             const perdente   = vincitore === sender ? targetJid : sender;
             // Sostituisce i placeholder X/Y con i nomi reali
@@ -18,7 +18,7 @@ module.exports = {
                 .replace(/X/g, `@${vincitore.split('@')[0]}`)
                 .replace(/Y/g, `@${perdente.split('@')[0]}`);
             await sock.sendMessage(from, {
-                text: `🥊 *RISSA*\n━━━━━━━━━━━━━━━━━━\n⚔️ @${sender.split('@')[0]} vs\n@${targetJid.split('@')[0]}\n_💬 ${frase}_\n🏆 Vincitore: @${vincitore.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
+                text: `🥊 *_RISSA_*\n━━━━━━━━━━━━━━\n▸ ⚔️ @${sender.split('@')[0]} vs @${targetJid.split('@')[0]}\n▸ _💬 ${frase}_\n━━━━━━━━━━━━━━\n▸ 🏆 *Vincitore:* @${vincitore.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                 mentions: [sender, targetJid],
             });
     },

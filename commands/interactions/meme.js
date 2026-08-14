@@ -13,14 +13,14 @@ module.exports = {
             const audioDir = path.join(projectDir, 'audio');
             
             if (!fs.existsSync(audioDir)) {
-                return reply("❌ *Errore:* La cartella `/audio` non esiste nel sistema.");
+                return reply("⚠️ _Errore: La cartella \`/audio\` non esiste nel sistema._");
             }
             
             const files = fs.readdirSync(audioDir)
                 .filter(file => path.extname(file).toLowerCase() === '.mp3');
             
             if (files.length === 0) {
-                return reply("📭 *Errore:* Nessun file `.mp3` trovato nella cartella `/audio`.");
+                return reply("⚠️ _Errore: Nessun file \`.mp3\` trovato nella cartella \`/audio\`._");
             }
             
             const randomAudio = files[Math.floor(Math.random() * files.length)];
@@ -38,7 +38,7 @@ module.exports = {
                 }, { quoted: msg });
             } catch (e) {
                 console.error('[orgasmo]', e.message);
-                await reply("❌ *Errore:* Impossibile inviare l'audio.");
+                await reply("⚠️ _Errore: Impossibile inviare l'audio._");
             }
     },
 };

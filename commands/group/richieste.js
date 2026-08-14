@@ -9,9 +9,9 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
         const { sendButtons } = services;
 
-        if (!isGroup) return reply("Funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("Solo gli admin possono usare questo comando.");
-        if (!isBotAdmin) return reply("Rendimi admin prima.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin possono usare questo comando.");
+        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
 
         // Se il comando arriva da un pulsante premuto, textArgs contiene
         // l'azione scelta: "accetta" oppure "rifiuta".
@@ -20,26 +20,29 @@ module.exports = {
         if (isButton && (action === 'accetta' || action === 'rifiuta')) {
             try {
                 const requests = await sock.groupRequestParticipantsList(from);
-                if (!requests || requests.length === 0) return reply("Nessuna richiesta in sospeso.");
+                if (!requests || requests.length === 0) return reply("⚠️ _[uso]:_ nessuna richiesta in sospeso.");
                 const jids = requests.map(r => r.jid).filter(Boolean);
-                if (!jids.length) return reply("Nessuna richiesta valida da processare.");
+                if (!jids.length) return reply("⚠️ _[uso]:_ nessuna richiesta valida da processare.");
 
                 const results = await sock.groupRequestParticipantsUpdate(from, jids, action === 'accetta' ? 'approve' : 'reject');
                 const ok = results.filter(r => !r.status || r.status === '200').length;
                 const verb = action === 'accetta' ? 'accolte' : 'rifiutate';
                 return reply(
-`✅ *Richieste ${verb.toUpperCase()}!*\n\nHai ${action === 'accetta' ? 'accettato' : 'rifiutato'} *${ok}* su *${jids.length}* richieste di adesione.`
+`✅ *_RICHIESTE ${verb.toUpperCase()}_*
+━━━━━━━━━━━━━━
+▸ Hai ${action === 'accetta' ? 'accettato' : 'rifiutato'} *${ok}* su *${jids.length}* richieste di adesione.
+━━━━━━━━━━━━━━`
                 );
             } catch (e) {
                 console.error('[richieste]', e.message);
-                return reply("❌ Errore durante l'operazione. Il bot è admin?");
+                return reply("⚠️ _[uso]:_ errore durante l'operazione. Il bot è admin?");
             }
         }
 
         // ── Lista richieste ──────────────────────────────────────────────
         try {
             const requests = await sock.groupRequestParticipantsList(from);
-            if (!requests || requests.length === 0) return reply("Nessuna richiesta in sospeso.");
+            if (!requests || requests.length === 0) return reply("⚠️ _[uso]:_ nessuna richiesta in sospeso.");
 
             const rows = requests.map((r, i) => {
                 const num = (r.jid || '').split('@')[0] || r.phoneNumber || 'sconosciuto';
@@ -47,11 +50,11 @@ module.exports = {
             }).join('\n');
 
             const text =
-`📥 *RICHIESTE DI ADESIONE*
-━━━━━━━━━━━━━━━━━━
+`📥 *_RICHIESTE DI ADESIONE_*
+━━━━━━━━━━━━━━
 ${rows}
-
-Cosa vuoi fare?`;
+━━━━━━━━━━━━━━
+▸ Cosa vuoi fare?`;
 
             await sendButtons(sock, from, text, [
                 { label: '✅ Accetta tutte', id: 'richieste accetta' },
@@ -59,7 +62,7 @@ Cosa vuoi fare?`;
             ], msg);
         } catch (e) {
             console.error('[richieste]', e.message);
-            await reply("❌ Errore nel recupero delle richieste. Il bot è admin?");
+            await reply("⚠️ _[uso]:_ errore nel recupero delle richieste. Il bot è admin?");
         }
     },
 };

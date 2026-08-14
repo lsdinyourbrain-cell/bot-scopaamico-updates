@@ -8,15 +8,15 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, isGroup, reply } = context;
 
-        if (!isGroup) return reply("Non sei in un gruppo.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ non sei in un gruppo.");
         try {
             const url = await sock.profilePictureUrl(from, 'image');
             await sock.sendMessage(from, {
                 image: { url },
-                caption: `🖼️ *Foto del gruppo*`,
+                caption: `🖼️ *_FOTO DEL GRUPPO_*`,
             }, { quoted: msg });
         } catch (_) {
-            await reply("❌ Nessuna foto profilo trovata.");
+            await reply("⚠️ _[uso]:_ nessuna foto profilo trovata.");
         }
     },
 };

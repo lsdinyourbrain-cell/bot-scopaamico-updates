@@ -12,7 +12,7 @@ module.exports = {
         const percent = randomInt(1, 100);
         const note = percent >= 80 ? 'spacca davvero' : percent >= 50 ? 'promosso/a' : 'può fare di meglio';
         await sock.sendMessage(from, {
-            text: `😄 *SIMPATOMETRO*\n━━━━━━━━━━━━━━━━━━\n@${person.split('@')[0]}\nSimpatia: *${percent}%*\n⭐ ${note}\n━━━━━━━━━━━━━━━━━━`,
+            text: `😄 *_SIMPATOMETRO_*\n━━━━━━━━━━━━━━\n▸ @${person.split('@')[0]}\n▸ *Simpatia:* _*${percent}%*_\n▸ ⭐ _${note}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
             mentions: [person],
         });
     },

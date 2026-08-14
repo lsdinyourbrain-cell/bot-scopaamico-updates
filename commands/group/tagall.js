@@ -2,7 +2,7 @@
 
 const { flagForJid } = require('../../lib/flag');
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '━━━━━━━━━━━━━━';
 
 module.exports = {
     name: 'tagall',

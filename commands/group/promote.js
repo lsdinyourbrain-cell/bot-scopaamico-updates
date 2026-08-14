@@ -10,22 +10,22 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
 
-            if (!isGroup) return reply("❌ Funziona solo nei gruppi.");
-            if (!isSenderAdmin) return reply("⛔ Comando riservato agli admin del gruppo.");
-            if (!isBotAdmin) return reply("❌ Rendimi admin del gruppo prima.");
-            if (!targetJid || sameJid(targetJid, sender)) return reply("Tagga un utente. Esempio: `.promote @utente`");
+            if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+            if (!isSenderAdmin) return reply("⚠️ _[uso]:_ comando riservato agli admin del gruppo.");
+            if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin del gruppo prima.");
+            if (!targetJid || sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ tagga un utente. Esempio: `.promote @utente`");
             try {
                 const isPromote = command === 'promote' || command === 'promuovi';
                 const action = isPromote ? 'promote' : 'demote';
                 await sock.groupParticipantsUpdate(from, [targetJid], action);
                 const short = targetJid.split('@')[0];
                 const text = isPromote
-                    ? `👑 @${short} è stato promosso *admin*!`
-                    : `⬇️ @${short} non è più admin.`;
+                    ? `👑 *_PROMOTE_*\n━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`
+                    : `⬇️ *_DEMOTE_*\n━━━━━━━━━━━━━━\n▸ @${short} non è più admin.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
                 await sock.sendMessage(from, { text, mentions: [targetJid] }, { quoted: msg });
             } catch (e) {
                 console.error('[promote/demote]', e.message);
-                await reply("❌ Impossibile cambiare i privilegi. Controlla i permessi del bot.");
+                await reply("⚠️ _[uso]:_ impossibile cambiare i privilegi. Controlla i permessi del bot.");
             }
     },
 };

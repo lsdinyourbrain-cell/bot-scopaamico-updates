@@ -14,7 +14,7 @@ module.exports = {
         let pass = '';
         for (let i = 0; i < len; i++) pass += chars[Math.floor(Math.random() * chars.length)];
 
-        await sendButtons(sock, from, `🔐 *Password* (${len} caratteri):\n\`${pass}\``, [
+        await sendButtons(sock, from, `🔐 *_PASSWORD_*\n━━━━━━━━━━━━━━\n▸ *Lunghezza:* _${len} caratteri_\n▸ \`${pass}\`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`, [
             { label: '.password', id: 'password ' + len },
         ], msg);
     },

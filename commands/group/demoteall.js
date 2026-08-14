@@ -9,9 +9,9 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, sameJid, sendButtons } = services;
 
-        if (!isGroup) return reply("❌ Funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⛔ Solo gli admin del gruppo possono usarlo.");
-        if (!isBotAdmin) return reply("❌ Prima rendimi admin, così posso retrocedere.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin del gruppo possono usarlo.");
+        if (!isBotAdmin) return reply("⚠️ _[uso]:_ prima rendimi admin, così posso retrocedere.");
 
         try {
             const meta = await sock.groupMetadata(from);
@@ -43,18 +43,18 @@ module.exports = {
 
             const txt =
 `⬇️ *DEMOTE ALL*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 🔄 Retrocessi: *${target.length}* admin
 👑 Restano il creatore
 e l'owner
 ✅ Tutto fatto, fra!
-━━━━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },
             ], msg);
         } catch (e) {
             console.error('[demoteall]', e.message);
-            await reply("❌ Errore: " + e.message);
+            await reply("⚠️ _[uso]:_ errore: " + e.message);
         }
     },
 };

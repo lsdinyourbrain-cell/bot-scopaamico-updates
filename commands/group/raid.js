@@ -15,8 +15,8 @@ module.exports = {
             'https://chat.whatsapp.com/LYLaslLp2DWHARp2hvITQB?s=cl&p=a&mlu=1&amv=0',
         ];
 
-        if (!isGroup) return reply('❌ Funziona solo nei gruppi.');
-        if (!isSenderAdmin && !isOwner) return reply('⛔ Solo gli admin del gruppo possono usarlo.');
+        if (!isGroup) return reply('⚠️ _[uso]:_ funziona solo nei gruppi.');
+        if (!isSenderAdmin && !isOwner) return reply('⚠️ _[uso]:_ solo gli admin del gruppo possono usarlo.');
 
         let times = parseInt(textArgs.trim(), 10);
         if (isNaN(times) || times < 1) times = 3;
@@ -29,16 +29,15 @@ module.exports = {
             const mentions = allJids;
 
             const body =
-`🚨 *RAID!* 🚨
-
+`🚨 *_RAID!_*
+━━━━━━━━━━━━━━
 🔥 Entrate subito nei nostri gruppi:
-
-1️⃣ *GRUPPO 1*
+━━━━━━━━━━━━━━
+▸ 1️⃣ *GRUPPO 1*
 ${GROUP_LINKS[0]}
-
-2️⃣ *GRUPPO 2*
+▸ 2️⃣ *GRUPPO 2*
 ${GROUP_LINKS[1]}
-
+━━━━━━━━━━━━━━
 💣 Non perdete l'occasione!`;
 
             for (let i = 0; i < times; i++) {
@@ -47,10 +46,13 @@ ${GROUP_LINKS[1]}
                 await sock.sendMessage(from, { text, mentions }, { quoted: msg });
             }
 
-            await reply(`✅ Raid completato: inviato *${times}* volte con hide tag a *${allJids.length}* membri.`);
+            await reply(`✅ *_RAID_*
+━━━━━━━━━━━━━━
+▸ *Raid completato:* inviato *${times}* volte con hide tag a *${allJids.length}* membri.
+━━━━━━━━━━━━━━`);
         } catch (e) {
             console.error('[raid]', e.message);
-            await reply('❌ Errore in raid: ' + e.message);
+            await reply('⚠️ _[uso]:_ errore in raid: ' + e.message);
         }
     },
 };

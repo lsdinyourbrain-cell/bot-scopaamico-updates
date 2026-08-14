@@ -9,7 +9,7 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, saveDB } = services;
 
-        if (!isGroup) return reply('⚠️ Il comando .afk funziona solo nei gruppi.');
+        if (!isGroup) return reply('⚠️ _[uso]:_ il comando .afk funziona solo nei gruppi.');
 
         const reason = String(textArgs || '').trim() || 'nessun motivo specificato';
 
@@ -17,6 +17,11 @@ module.exports = {
         db.afk[sender] = { reason, ts: Date.now(), from };
         saveDB();
 
-        return reply(`🌙 *AFK attivo*\n\n@${sender.split('@')[0]} è ora AFK.\n📝 Motivo: _${reason.slice(0, 200)}_\n\nTorna scrivendo un messaggio in chat.`);
+        return reply(`🌙 *_AFK_*
+━━━━━━━━━━━━━━
+▸ @${sender.split('@')[0]} è ora *AFK*.
+▸ *Motivo:* _${reason.slice(0, 200)}_
+━━━━━━━━━━━━━━
+_Torna scrivendo un messaggio in chat._`);
     },
 };

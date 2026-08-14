@@ -19,15 +19,15 @@ module.exports = {
                 try {
                     const meta = await sock.groupMetadata(from);
                     const parts = (meta?.participants || []).filter(p => !sameJid(p.id || p.jid, sock.user?.id));
-                    if (parts.length < 2) return reply("Non ci sono abbastanza membri nel gruppo per fare ship!");
+                    if (parts.length < 2) return reply("⚠️ _Non ci sono abbastanza membri nel gruppo per fare ship!_");
                     const shuffled = parts.sort(() => Math.random() - 0.5).slice(0, 2);
                     user1 = shuffled[0].id || shuffled[0].jid || shuffled[0].phoneNumber;
                     user2 = shuffled[1].id || shuffled[1].jid || shuffled[1].phoneNumber;
                 } catch (e) {
-                    return reply("Non riesco a leggere i membri del gruppo.");
+                    return reply("⚠️ _Non riesco a leggere i membri del gruppo._");
                 }
             } else {
-                return reply("Tagga qualcuno o usa questo comando in un gruppo!");
+                return reply("⚠️ _Tagga qualcuno o usa questo comando in un gruppo!_");
             }
 
             const percent = randomInt(1, 100);
@@ -37,7 +37,7 @@ module.exports = {
                 : '🫶 Meglio amici.';
 
             await sock.sendMessage(from, {
-                text: `💘 *SHIP!*\n━━━━━━━━━━━━━━━━━━\n@${user1.split('@')[0]} +\n@${user2.split('@')[0]}\nCompatibilità: *${percent}%*\n_${mood}_\n━━━━━━━━━━━━━━━━━━`,
+                text: `💘 *_SHIP!_*\n━━━━━━━━━━━━━━\n▸ @${user1.split('@')[0]} + @${user2.split('@')[0]}\n▸ *Compatibilità:* _*${percent}%*_\n▸ _${mood}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                 mentions: [user1, user2],
             }, { quoted: msg });
     },

@@ -23,18 +23,18 @@ function fmtDuration(sec) {
 function mapLastfmError(err) {
     const msg = String(err?.message || '');
     if (msg === 'UTENTE_NON_TROVATO' || /404|not found|non trovato/i.test(msg))
-        return 'Utente Last.fm non trovato. Controlla il nome account.';
+        return '⚠️ _Utente Last.fm non trovato. Controlla il nome account._';
     if (msg === 'API_KEY_INVALIDA' || /403|invalid.*key|key.*invalid/i.test(msg))
-        return 'Chiave API Last.fm non valida. Contatta l\'amministratore.';
+        return '⚠️ _Chiave API Last.fm non valida. Contatta l\'amministratore._';
     if (msg === 'TROPPE_RICHIESTE' || /429|rate.?limit/i.test(msg))
-        return 'Troppe richieste a Last.fm. Riprova tra qualche secondo.';
+        return '⚠️ _Troppe richieste a Last.fm. Riprova tra qualche secondo._';
     if (msg === 'API_KEY_MANCA')
-        return 'API key Last.fm non configurata.';
+        return '⚠️ _API key Last.fm non configurata._';
     if (msg === 'RETE' || /timeout|timed out|ECONN|ENOTFOUND|network/i.test(msg))
-        return 'Errore di rete raggiungendo Last.fm. Riprova.';
+        return '⚠️ _Errore di rete raggiungendo Last.fm. Riprova._';
     if (msg === 'API_ERROR')
-        return 'Errore Last.fm: ' + msg;
-    return 'Errore imprevisto: ' + (msg || String(err));
+        return '⚠️ _Errore Last.fm: ' + msg + '_';
+    return '⚠️ _Errore imprevisto: ' + (msg || String(err)) + '_';
 }
 
 // Recupera la vera copertina della canzone. La copertina di Last.fm a volte
@@ -92,7 +92,7 @@ module.exports = {
         const { db, lastfm, axios, sharp, sendButtons } = context.services;
 
         if (!lastfm.isConfigured()) {
-            return reply('Last.fm non configurato. L\'owner deve impostare una API key in config.js.');
+            return reply('⚠️ _Last.fm non configurato._\n▸ L\'owner deve impostare una API key in config.js.');
         }
 
         let username = null;
@@ -100,13 +100,13 @@ module.exports = {
             username = textArgs.trim().split(/\s+/)[0];
         } else if (mentioned && mentioned.length > 0) {
             username = db._lastfm?.[mentioned[0]] ?? null;
-            if (!username) return reply('Questo utente non ha collegato un account Last.fm.');
+            if (!username) return reply('⚠️ _Questo utente non ha collegato un account Last.fm._');
         } else {
             username = db._lastfm?.[sender] ?? null;
         }
 
         if (!username) {
-            return reply('Nessun account Last.fm collegato. Collegalo con: .lastfm <nomeutente>');
+            return reply('⚠️ _Nessun account Last.fm collegato._ Collegalo con: .lastfm <nomeutente>');
         }
 
         let npData;
@@ -118,7 +118,7 @@ module.exports = {
 
         const { nowPlaying, track } = npData;
         if (!track) {
-            return reply(username + ' non ha ancora ascoltato nulla.');
+            return reply('⚠️ _' + username + ' non ha ancora ascoltato nulla._');
         }
 
         let userInfo = { playcount: 0 };
@@ -144,20 +144,23 @@ module.exports = {
             console.error('[cur] cover:', e.message);
         }
 
-        const se = nowPlaying ? '🎧 *IN RIPRODUZIONE*' : '📼 *ULTIMO ASCOLTO*';
+        const se = nowPlaying ? '🎧 *_IN RIPRODUZIONE_*' : '📼 *_ULTIMO ASCOLTO_*';
         const durText = fmtDuration(durationSec);
         const caption =
             `${se}\n` +
-            `━━━━━━━━━━━━━━━━━━\n` +
-            `🎵 *${track.name}*\n` +
-            `👤 ${track.artist}\n` +
-            (track.album ? `💿 ${track.album}\n` : '') +
-            (durText !== '—' ? `⏱️ Durata: ${durText}\n` : '') +
-            `🔗 ${track.url}\n\n` +
-            `📊 Ascolti totali: ${fmt(userInfo.playcount)}\n` +
-            `🔁 Frequenza: ${fmt(trackInfo.userplaycount)}\n` +
-            `🌍 Ascolti mondiali: ${fmt(trackInfo.playcount)}\n` +
-            `👥 Ascoltatori: ${fmt(trackInfo.listeners)}\n\n` +
+            `━━━━━━━━━━━━━━\n` +
+            `▸ 🎵 _${track.name}_\n` +
+            `▸ 👤 _${track.artist}_\n` +
+            (track.album ? `▸ 💿 _${track.album}_\n` : '') +
+            (durText !== '—' ? `▸ ⏱️ *Durata:* _${durText}_\n` : '') +
+            `▸ 🔗 _${track.url}_\n` +
+            `━━━━━━━━━━━━━━\n` +
+            `▸ 📊 *Ascolti totali:* _${fmt(userInfo.playcount)}_\n` +
+            `▸ 🔁 *Frequenza:* _${fmt(trackInfo.userplaycount)}_\n` +
+            `▸ 🌍 *Ascolti mondiali:* _${fmt(trackInfo.playcount)}_\n` +
+            `▸ 👥 *Ascoltatori:* _${fmt(trackInfo.listeners)}_\n` +
+            `━━━━━━━━━━━━━━\n` +
+            `◈ _Vex Bot_\n` +
             `_Account Last.fm: ${username}_`;
 
         const searchTerm = (track.name + ' ' + track.artist).trim();

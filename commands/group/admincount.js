@@ -8,7 +8,7 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, isGroup, reply } = context;
 
-        if (!isGroup) return reply("Non sei in un gruppo.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ non sei in un gruppo.");
         try {
             const meta = await sock.groupMetadata(from);
             const admins = meta.participants.filter(p => p.admin);
@@ -18,16 +18,16 @@ module.exports = {
 
             await reply(
 `📊 *ADMIN COUNT*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 ${meta.subject}
 👥 Membri: *${total}*
 👑 Admin: *${admins.length}*
 🟣 Super: *${superAdmins.length}*
 🔵 Normal: *${regularAdmins.length}*
 📱 Utenti: *${total - admins.length}*
-━━━━━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━`);
         } catch (_) {
-            await reply("❌ Errore nel recuperare info gruppo.");
+            await reply("⚠️ _[uso]:_ errore nel recuperare info gruppo.");
         }
     },
 };

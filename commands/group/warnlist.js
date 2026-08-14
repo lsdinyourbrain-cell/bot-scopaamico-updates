@@ -9,11 +9,11 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, getUser } = services;
 
-        if (!isGroup) return reply("Funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("Solo gli admin.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
 
         const chatData = db[from];
-        if (!chatData) return reply("Nessun dato trovato per questo gruppo.");
+        if (!chatData) return reply("⚠️ _[uso]:_ nessun dato trovato per questo gruppo.");
 
         const warned = Object.entries(chatData)
             .filter(([jid, data]) => (data.warnings || 0) > 0)
@@ -22,7 +22,7 @@ module.exports = {
 
         if (!warned.length) return reply("✅ Nessun utente con warning.");
 
-        let txt = `⚠️ *WARN LIST*\n━━━━━━━━━━━━━━━━━━\n⚠️ *${warned.length}* utenti warnati\n`;
+        let txt = `⚠️ *WARN LIST*\n━━━━━━━━━━━━━━\n⚠️ *${warned.length}* utenti warnati\n`;
         warned.forEach((w, i) => {
             const short = w.jid.split('@')[0];
             txt += `${i+1}. @${short} — ${w.warnings} warn\n`;
@@ -30,7 +30,7 @@ module.exports = {
                 txt += `${j+1}. ${String(entry.reason || '—').slice(0, 28)}\n`;
             });
         });
-        txt += `━━━━━━━━━━━━━━━━━━`;
+        txt += `━━━━━━━━━━━━━━`;
 
         const mentions = warned.map(w => w.jid).filter(Boolean);
         await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });

@@ -8,10 +8,13 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, isGroup, isSenderAdmin, reply } = context;
 
-        if (!isGroup) return reply("Non sono in un gruppo qui.");
-        if (!isSenderAdmin) return reply("Solo gli admin possono cacciarmi.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ non sono in un gruppo qui.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin possono cacciarmi.");
 
-        await reply("😔 Me ne vado... ciao!");
+        await reply(`😔 *_LEAVE_*
+━━━━━━━━━━━━━━
+▸ Me ne vado... ciao!
+━━━━━━━━━━━━━━`);
         await sock.groupLeave(from);
     },
 };

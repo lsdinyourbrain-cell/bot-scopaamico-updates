@@ -15,14 +15,14 @@ module.exports = {
             const ram = randomChoice(['16 GB DDR5', '32 GB DDR5', '64 GB DDR5']);
             const storage = randomChoice(['1 TB NVMe', '2 TB NVMe', '1 TB NVMe + 2 TB SSD']);
             await reply(
-`🖥️ *PC DEL GIORNO*
-━━━━━━━━━━━━━━━━━━
-CPU: *${cpu}*
-GPU: *${gpu}*
-RAM: *${ram}*
-Spazio: *${storage}*
-━━━━━━━━━━━━━━━━━━
-Perfetto per giocare
-e fare tutto senza stress.`);
+`🖥️ *_PC DEL GIORNO_*
+━━━━━━━━━━━━━━
+▸ *CPU:* _${cpu}_
+▸ *GPU:* _${gpu}_
+▸ *RAM:* _${ram}_
+▸ *Spazio:* _${storage}_
+━━━━━━━━━━━━━━
+_Perfetto per giocare e fare tutto senza stress._
+◈ _Vex Bot_`);
     },
 };

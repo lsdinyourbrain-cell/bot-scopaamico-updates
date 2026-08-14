@@ -18,7 +18,7 @@ module.exports = {
                          : pct <= 80 ? 'Tuta in acetato e AirPods a palla 🎧'
                          : 'Borsello falso, cassa Bluetooth sulla metro, codice penale aperto 🚔';
             await sock.sendMessage(from, {
-                text: `🧢 *MARANZA TEST*\n━━━━━━━━━━━━━━━━━━\n👤 @${target.split('@')[0]}\n📊 Percentuale: *${pct}%*\n━━━━━━━━━━━━━━━━━━\n_💬 ${frase}_`,
+                text: `🧢 *_MARANZA TEST_*\n━━━━━━━━━━━━━━\n▸ 👤 @${target.split('@')[0]}\n▸ 📊 *Percentuale:* _*${pct}%*_\n━━━━━━━━━━━━━━\n▸ _💬 ${frase}_\n◈ _Vex Bot_`,
                 mentions: [target],
             });
     },

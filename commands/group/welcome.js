@@ -9,8 +9,8 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { getWelcomeGroup, setWelcomeGroup, sameJid } = services;
 
-        if (!isGroup) return reply("❌ Questo comando funziona solo nei gruppi.");
-        if (!isOwner) return reply("⛔ Solo l'owner del bot può modificare questa impostazione.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ questo comando funziona solo nei gruppi.");
+        if (!isOwner) return reply("⚠️ _[uso]:_ solo l'owner del bot può modificare questa impostazione.");
 
         const config = getWelcomeGroup(from);
         const arg = textArgs.toLowerCase().trim();
@@ -19,11 +19,11 @@ module.exports = {
             const status = config.welcome ? '🟢 ATTIVO' : '🔴 DISATTIVO';
             return reply(
 `🎉 *BENVENUTO GRUPPO*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 Stato attuale: ${status}
 Uso: .welcome <on|off>
 Es: .welcome on
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
             );
         }
 
@@ -32,11 +32,11 @@ Es: .welcome on
 
         await reply(
 `🎉 *BENVENUTO ${enable ? 'ATTIVATO' : 'DISATTIVATO'}*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━
 Il messaggio di benvenuto è ora
 ${enable ? '🟢 ATTIVO' : '🔴 DISATTIVATO'}
 in questo gruppo.
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━`
         );
     },
 };

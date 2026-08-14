@@ -11,20 +11,23 @@ module.exports = {
 
         const entries = Object.entries(db.afk || {}).filter(([, v]) => v && v.from === from);
         if (!entries.length) {
-            return reply("🌙 Nessun utente è AFK in questo gruppo. Tutti in piedi! 💪");
+            return reply(`🌙 *_AFK LIST_*
+━━━━━━━━━━━━━━
+Nessun utente è *AFK* in questo gruppo. Tutti in piedi! 💪
+━━━━━━━━━━━━━━`);
         }
 
         const mentions = entries.map(([jid]) => jid);
         const lines = entries.map(([jid, v]) => {
             const mins = Math.max(1, Math.floor((Date.now() - (v.ts || Date.now())) / 60000));
             const reason = String(v.reason || 'nessun motivo').slice(0, 60);
-            return `• @${jid.split('@')[0]} — _${reason}_ _(da ${mins} min)_`;
+            return `▸ @${jid.split('@')[0]} — _${reason}_ _(da ${mins} min)_`;
         });
 
         return sock.sendMessage(from, {
-            text: `🌙 *UTENTI AFK* (${entries.length})\n\n` +
+            text: `🌙 *_AFK LIST_*\n━━━━━━━━━━━━━━\n▸ *Utenti AFK:* ${entries.length}\n` +
                 lines.join('\n') +
-                `\n\n_Torna in chat con un messaggio per uscire dall'AFK._`,
+                `\n━━━━━━━━━━━━━━\n_Torna in chat con un messaggio per uscire dall'AFK._`,
             mentions,
         }, { quoted: msg });
     },

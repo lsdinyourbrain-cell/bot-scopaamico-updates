@@ -18,16 +18,16 @@ module.exports = {
                 timeout: 10000,
             });
             if (!Array.isArray(data) || !data.length) {
-                return prog.done('❌ Criptovaluta non trovata. Prova con nomi come: bitcoin, ethereum, dogecoin, solana, cardano.');
+                return prog.done('⚠️ _Criptovaluta non trovata._ Prova con nomi come: bitcoin, ethereum, dogecoin, solana, cardano.');
             }
             const c = data[0];
             const price = c.current_price?.toLocaleString('it-IT', { maximumFractionDigits: 2 }) || '?';
             const chg = c.price_change_percentage_24h;
             const arrow = chg >= 0 ? '📈' : '📉';
-            const txt = `🪙 *${c.name}* (${c.symbol?.toUpperCase() || '?'})\n\n💰 Prezzo: *$${price}*\n${arrow} 24h: *${chg?.toFixed(2) || '?'}%*\n🏆 Posizione: #${c.market_cap_rank ?? '?'}`;
+            const txt = `🪙 *_${c.name}_* (_${c.symbol?.toUpperCase() || '?'}_)\n━━━━━━━━━━━━━━\n▸ 💰 *Prezzo:* _$${price}_\n▸ ${arrow} *24h:* _${chg?.toFixed(2) || '?'}%_\n▸ 🏆 *Posizione:* _#${c.market_cap_rank ?? '?'}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
             await prog.done(txt);
         } catch (_) {
-            await reply('❌ Errore nel recupero dei prezzi. Riprova più tardi.');
+            await reply('⚠️ _Errore nel recupero dei prezzi. Riprova più tardi._');
         }
     },
 };

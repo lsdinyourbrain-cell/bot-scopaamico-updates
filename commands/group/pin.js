@@ -9,10 +9,10 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isReply, contextInfo, isSenderAdmin, isBotAdmin, reply, services } = context;
         const { sameJid } = services;
 
-        if (!isGroup) return reply("Funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("Solo gli admin.");
-        if (!isBotAdmin) return reply("Rendimi admin prima.");
-        if (!isReply || !contextInfo?.stanzaId) return reply("Rispondi al messaggio da fissare.");
+        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
+        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
+        if (!isReply || !contextInfo?.stanzaId) return reply("⚠️ _[uso]:_ rispondi al messaggio da fissare.");
 
         const isUnpin = command === 'unpin' || command === 'sfissa';
 
@@ -41,7 +41,7 @@ module.exports = {
                 if (time > 7776000) time = 7776000; // max 90gg
                 if (time < 3600) time = 3600; // min 1h
             } else {
-                return reply("Formato tempo: .pin 24h / .pin 7d / .pin 30d");
+                return reply("⚠️ _[uso]:_ formato tempo: .pin 24h / .pin 7d / .pin 30d");
             }
         }
 
@@ -51,11 +51,13 @@ module.exports = {
                 type: isUnpin ? 2 : 1,
                 time,
             });
-            const label = isUnpin ? '🔓 *Messaggio sfissato*' : `📌 *Messaggio fissato* (${time / 3600}h)`;
+            const label = isUnpin
+                ? `🔓 *_UNPIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *sfissato*.\n━━━━━━━━━━━━━━`
+                : `📌 *_PIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *fissato* per _${time / 3600}h_.\n━━━━━━━━━━━━━━`;
             await reply(label);
         } catch (e) {
             console.error('[pin] error:', e);
-            await reply("❌ Errore nel fissare il messaggio.");
+            await reply("⚠️ _[uso]:_ errore nel fissare il messaggio.");
         }
     },
 };

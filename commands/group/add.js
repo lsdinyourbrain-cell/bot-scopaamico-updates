@@ -19,25 +19,29 @@ module.exports = {
 
         // ── DM: .add <link> → il bot entra nel gruppo/community ────────────
         if (!isGroup) {
-            if (!isOwner) return reply("In privato *\.add* è riservato all'*Owner del bot*.");
+            if (!isOwner) return reply("⚠️ _[uso]:_ in privato *\.add* è riservato all'*Owner del bot*.");
             const code = extractInviteCode(textArgs);
-            if (!code) return reply("Invia un link valido.\n\nEsempio:\n\.add https://chat.whatsapp.com/CODICE");
+            if (!code) return reply("⚠️ _[uso]:_ invia un link valido.\n\nEsempio:\n\.add https://chat.whatsapp.com/CODICE");
             return joinViaInvite(sock, from, code, reply);
         }
 
         // ── GRUPPO: aggiungi un utente al gruppo ───────────────────────────
-        if (!isSenderAdmin) return reply("Solo gli admin.");
-        if (!isBotAdmin) return reply("Rendimi admin prima.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
+        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
 
         let tgt = args.join(' ').replace(/[^0-9]/g, '');
-        if (!tgt) return reply("Inserisci il numero o tagga. Es: .add 391234567890");
+        if (!tgt) return reply("⚠️ _[uso]:_ inserisci il numero o tagga. Es: .add 391234567890");
 
         tgt = tgt + '@s.whatsapp.net';
         try {
             await sock.groupParticipantsUpdate(from, [tgt], 'add');
-            await reply(`☑️ @${tgt.split('@')[0]} aggiunto/a al gruppo.`);
+            await reply(`☑️ *_ADD_*
+━━━━━━━━━━━━━━
+▸ @${tgt.split('@')[0]} *aggiunto/a* al gruppo.
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         } catch (e) {
-            await reply("❌ Impossibile aggiungere. Il numero potrebbe non essere su WhatsApp o ha privacy restrittiva.");
+            await reply("⚠️ _[uso]:_ impossibile aggiungere. Il numero potrebbe non essere su WhatsApp o ha privacy restrittiva.");
         }
     },
 };
@@ -61,7 +65,7 @@ async function joinViaInvite(sock, dmJid, code, reply) {
         }
     }
     if (!info || !info.id) {
-        return reply("❌ Link non valido o scaduto.");
+        return reply("⚠️ _[uso]:_ link non valido o scaduto.");
     }
 
     // 2) Community: accetta l'invito (WhatsApp aggiunge automaticamente a
@@ -74,19 +78,20 @@ async function joinViaInvite(sock, dmJid, code, reply) {
                 linked = await sock.communityFetchLinkedGroups(communityJid);
             } catch (_) { linked = null; }
             const groups = linked?.linkedGroups?.length
-                ? linked.linkedGroups.map(g => `  • ${g.subject}`).join('\n')
+                ? linked.linkedGroups.map(g => `  ▸ ${g.subject}`).join('\n')
                 : '  (nessun sottogruppo)';
             return reply(
-`🌐 *Community raggiunta!*
-
-${communityJid ? 'Sono entrato nella community e in tutti i suoi gruppi.' : 'Sono entrato nella community.'}
-
-📁 *Gruppi:*
-${groups}`
+`🌐 *_COMMUNITY RAGGIUNTA_*
+━━━━━━━━━━━━━━
+${communityJid ? '▸ Sono entrato nella community e in tutti i suoi gruppi.' : '▸ Sono entrato nella community.'}
+━━━━━━━━━━━━━━
+▸ *Gruppi:*
+${groups}
+━━━━━━━━━━━━━━`
             );
         } catch (e) {
             console.error('[add] Errore ingresso community:', e.message);
-            return reply("❌ Non riesco a entrare nella community. Potrebbe richiedere l'approvazione di un admin.");
+            return reply("⚠️ _[uso]:_ non riesco a entrare nella community. Potrebbe richiedere l'approvazione di un admin.");
         }
     }
 
@@ -95,11 +100,18 @@ ${groups}`
     try {
         const groupJid = await sock.groupAcceptInvite(code);
         if (groupJid) {
-            return reply(`✅ Sono entrato nel gruppo *${info.subject || 'del link'}*!`);
+            return reply(`✅ *_ENTRATO NEL GRUPPO_*
+━━━━━━━━━━━━━━
+▸ *${info.subject || 'del link'}*
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         }
-        return reply("✅ Richiesta di ingresso inviata al gruppo (attende approvazione di un admin).");
+        return reply(`✅ *_RICHIESTA INVIATA_*
+━━━━━━━━━━━━━━
+▸ Richiesta di ingresso inviata al gruppo _(attende approvazione di un admin)_.
+━━━━━━━━━━━━━━`);
     } catch (e) {
         console.error('[add] Errore ingresso gruppo:', e.message);
-        return reply("❌ Non riesco a entrare nel gruppo. Potrebbe richiedere l'approvazione di un admin o il link è scaduto.");
+        return reply("⚠️ _[uso]:_ non riesco a entrare nel gruppo. Potrebbe richiedere l'approvazione di un admin o il link è scaduto.");
     }
 }

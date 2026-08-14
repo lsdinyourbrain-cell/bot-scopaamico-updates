@@ -10,7 +10,7 @@ module.exports = {
 
         const input = String(textArgs || '').trim();
         if (!input) {
-            return reply('⚠️ Uso: `.readmore parte1 | parte2`\nLa prima parte appare, la seconda nascosta dietro "leggi di più".');
+            return reply('⚠️ _[uso]: \`.readmore parte1 | parte2\`_\n▸ _La prima parte appare, la seconda nascosta dietro "leggi di più"._');
         }
 
         const parts = input.split('|');

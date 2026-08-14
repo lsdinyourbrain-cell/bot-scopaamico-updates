@@ -11,7 +11,7 @@ module.exports = {
 
         const quoted = isReply ? (contextInfo?.quotedMessage?.conversation || contextInfo?.quotedMessage?.extendedTextMessage?.text || '') : '';
         const data = String(quoted || textArgs || '').trim();
-        if (!data) return reply('⚠️ Scrivi il testo da codificare.\n👉 *Uso:* `.qr https://esempio.it` (o cita un messaggio)');
+        if (!data) return reply('⚠️ _[uso]: Scrivi il testo da codificare._\n▸ *Uso:* \`.qr https://esempio.it\` _(o cita un messaggio)_');
 
         try {
             const encoded = encodeURIComponent(data);
@@ -22,10 +22,10 @@ module.exports = {
             const buf = Buffer.from(res.data);
             await sock.sendMessage(from, {
                 image: buf,
-                caption: `▦ *QR Code generato*\nContenuto: ${data.slice(0, 80)}`,
+                caption: `✦ *_QR CODE_*\n━━━━━━━━━━━━━━\n▸ *Contenuto:* _${data.slice(0, 80)}_`,
             }, { quoted: msg });
         } catch (_) {
-            await reply('❌ Non riesco a generare il QR. Riprova più tardi.');
+            await reply('⚠️ _Non riesco a generare il QR. Riprova più tardi._');
         }
     },
 };

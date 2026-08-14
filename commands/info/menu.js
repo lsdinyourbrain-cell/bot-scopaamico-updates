@@ -405,7 +405,7 @@ const TIPS = [
 const homeScreen = (pushName, timeStr, dateStr, stats, tip) => {
     const name = (pushName || 'Utente').slice(0, 20);
     return (
-`🌟 *VEX BOT* 🌟
+`🌟 *MENU* 🌟
 ${SEP}
 👤 ${name}
 🕐 ${timeStr} · 📅 ${dateStr}

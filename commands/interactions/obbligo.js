@@ -8,6 +8,6 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { reply, services } = context;
         const { ARRAYS, randomChoice } = services;
-        await reply(`🎯 *OBBLIGO*\n━━━━━━━━━━━━━━━━━━\n${randomChoice(ARRAYS.obbligo)}\n━━━━━━━━━━━━━━━━━━`);
+        await reply(`🎯 *_OBBLIGO_*\n━━━━━━━━━━━━━━\n▸ ${randomChoice(ARRAYS.obbligo)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
     },
 };

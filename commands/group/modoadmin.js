@@ -9,10 +9,10 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, saveDB, sendButtons } = services;
 
-        if (!isGroup) return reply('⚠️ *Modo admin* funziona solo nei gruppi.');
+        if (!isGroup) return reply('⚠️ _[uso]:_ *modo admin* funziona solo nei gruppi.');
 
         if (!isOwner && !isSenderAdmin) {
-            return reply('❌ Solo gli admin del gruppo possono cambiare il modo admin.');
+            return reply('⚠️ _[uso]:_ solo gli admin del gruppo possono cambiare il modo admin.');
         }
 
         const arg = String(textArgs || '').trim().toLowerCase();
@@ -28,9 +28,13 @@ module.exports = {
         saveDB();
 
         const state = next ? 'ATTIVO' : 'DISATTIVO';
-        const text = `🛡️ *MODO ADMIN ${state}*\n\n${next
-            ? 'Da ora solo gli *admin del gruppo* possono usare il bot.\nChi non è admin riceverà una reazione ❌ e nessuna risposta.'
-            : 'Il bot è di nuovo utilizzabile da tutti i membri del gruppo.'}`;
+        const text = `🛡️ *_MODO ADMIN_*
+━━━━━━━━━━━━━━
+▸ *Stato:* ${state}
+${next
+    ? '▸ Da ora solo gli *admin del gruppo* possono usare il bot.\n▸ Chi non è admin riceverà una reazione ❌ e nessuna risposta.'
+    : '▸ Il bot è di nuovo utilizzabile da tutti i membri del gruppo.'}
+━━━━━━━━━━━━━━`;
 
         await sendButtons(sock, from, text, [
             { label: next ? '.modoadmin off' : '.modoadmin on', id: next ? 'modoadmin off' : 'modoadmin on' },
