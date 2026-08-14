@@ -40,15 +40,15 @@ module.exports = {
         saveDB();
 
         const text =
-`🧩 *ENIGMA*
-━━━━━━━━━━━━━━━━━━
+`🧩 *_ENIGMA_*
+━━━━━━━━━━━━━━
 *${pick.q}*
 
 🤔 Scrivi la risposta qui in
 chat entro 45 secondi!
 
 💰 Premio: *50€*
-━━━━━━━━━━━━━━━━━━`;
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, text, [
             { label: '💡 Suggerimento', id: `suggerimento ${sender.split('@')[0]}` },

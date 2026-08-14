@@ -22,7 +22,7 @@ module.exports = {
         userData.cooldowns[cooldownKey] = now;
 
         const puntata = parseInt(args[0]);
-        if (isNaN(puntata) || puntata < 10) return reply("⚠️ Puntata non valida (minimo 10€).\n👉 *Uso:* `.poker 50`");
+        if (isNaN(puntata) || puntata < 10) return reply("⚠️ _[uso]: puntata non valida (minimo 10€) — .poker 50_");
 
         const uDB = getUser(sender, from);
         if (uDB.money < puntata) return reply(`❌ Saldo insufficiente. Hai *${uDB.money}€*.`);
@@ -72,17 +72,16 @@ module.exports = {
 
         const carta = (c) => `[${c.carta}${c.seme}]`;
         const resultText =
-`🃏 *POKER*
-━━━━━━━━━━━━━━━━━━
-🧑 *Tu:* ${manoUtente.map(carta).join(' ')}
-${vu.nome}
-
-🤖 *Bot:* ${manoBot.map(carta).join(' ')}
-${vb.nome}
+`🃏 *_POKER_*
+━━━━━━━━━━━━━━
+▸ *Le tue carte:* _${manoUtente.map(carta).join(' ')}_
+▸ *La tua mano:* _${vu.nome}_
+▸ *Carte bot:* _${manoBot.map(carta).join(' ')}_
+▸ *Mano bot:* _${vb.nome}_
 
 ${esito}
-💰 *Saldo:* ${uDB.money}€
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo:* _${uDB.money}€_
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

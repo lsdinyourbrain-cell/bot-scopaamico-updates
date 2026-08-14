@@ -95,13 +95,14 @@ async function runNuke(sock, from, db, sameJid, ownerNumber, reply) {
         }
 
         await reply(
-`🦇 *DED SE CREGNA*
+`🦇 *_DED SE CREGNA_*
 ━━━━━━━━━━━━━━━━━━
-Link inviato e tutti taggati.
-🚫 Espulsi: *${kicked}* membri.
-👑 Rimasti: owner, cowner
-e creatore del gruppo.
-📛 Gruppo rinominato.
-━━━━━━━━━━━━━━━━━━`
+▸ Link inviato e tutti taggati.
+▸ 🚫 Espulsi: _${kicked}_ membri.
+▸ 👑 Rimasti: owner, cowner
+  e creatore del gruppo.
+▸ 📛 Gruppo rinominato.
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`
         );
 }

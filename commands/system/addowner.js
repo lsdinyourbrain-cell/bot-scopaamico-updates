@@ -56,11 +56,12 @@ module.exports = {
         const displayNum = resolved.number.split('@')[0];
         await sock.sendMessage(from, {
             text:
-`👑 *ADDOWNER*
+`👑 *_ADDOWNER_*
 ━━━━━━━━━━━━━━━━━━
-@${displayNum} è ora owner!
-aggiunto alle: ${now}
-━━━━━━━━━━━━━━━━━━`,
+▸ @${displayNum} è ora owner!
+▸ Aggiunto alle: _${now}_
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`,
             mentions: [resolved.number],
         }, { quoted: msg });
     },

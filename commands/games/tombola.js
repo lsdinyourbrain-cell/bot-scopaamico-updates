@@ -60,19 +60,17 @@ module.exports = {
         }
 
         const resultText =
-`🎱 *TOMBIOLA*
-━━━━━━━━━━━━━━━━━━
+`🎱 *_TOMBIOLA_*
+━━━━━━━━━━━━━━
 ${righe[0]}
 ${righe[1]}
 ${righe[2]}
 
-🎟️ Numeri estratti:
-${estratti.join(' ')}
-
-✅ In cartella: *${inCartella.length}*
+▸ *Numeri estratti:* _${estratti.join(' ')}_
+▸ *In cartella:* _${inCartella.length}_
 ${vincita > 0 ? `🎉 *Vincita: +${vincita}€!*` : '😿 Nessuna vincita.'}
-💰 *Saldo:* ${uDB.money}€
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo:* _${uDB.money}€_
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

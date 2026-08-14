@@ -12,9 +12,9 @@ module.exports = {
         const userJid = sender || from;
         const groupJid = isGroup ? from : null;
 
-        let txt = `📱 *ID INFO*\n━━━━━━━━━━━━━━━━━━\n👤 *Tu*:\n📱 ${userJid}\n`;
-        if (groupJid) txt += `👥 *Gruppo*:\n📱 ${groupJid}\n`;
-        txt += `━━━━━━━━━━━━━━━━━━`;
+        let txt = `📱 *_ID INFO_*\n━━━━━━━━━━━━━━━━━━\n▸ 👤 *Tu:*\n▸ 📱 _${userJid}_\n`;
+        if (groupJid) txt += `▸ 👥 *Gruppo:*\n▸ 📱 _${groupJid}_\n`;
+        txt += `━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
         await reply(txt);
     },
 };

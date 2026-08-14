@@ -18,20 +18,21 @@ module.exports = {
         if (sub === 'on' || sub === 'true' || sub === '1') {
             db._bestemmiometro[from] = true;
             saveDB();
-            return reply("🤬 *Bestemmiometro ATTIVATO* in questo gruppo.");
+            return reply("🤬 *_BESTEMMIOMETRO ATTIVATO_* in questo gruppo.");
         }
         if (sub === 'off' || sub === 'false' || sub === '0') {
             db._bestemmiometro[from] = false;
             saveDB();
-            return reply("🤬 *Bestemmiometro DISATTIVATO* in questo gruppo.");
+            return reply("🤬 *_BESTEMMIOMETRO DISATTIVATO_* in questo gruppo.");
         }
 
         const status = db._bestemmiometro[from] !== false ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         return reply(
-`🤬 *BESTEMMIOMETRO*
+`🤬 *_BESTEMMIOMETRO_*
 ━━━━━━━━━━━━━━━━━━
-${status}
-.bestemmiometro on/off
-━━━━━━━━━━━━━━━━━━`);
+▸ Stato: _${status}_
+▸ Uso: \`.bestemmiometro on/off\`
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
     },
 };

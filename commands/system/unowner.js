@@ -52,13 +52,14 @@ module.exports = {
         const displayNum = (removed.number || removed.lid || target).split('@')[0];
         await sock.sendMessage(from, {
             text:
-`🚫 *UNOWNER*
+`🚫 *_UNOWNER_*
 ━━━━━━━━━━━━━━━━━━
-@${displayNum} non è più
-owner. 😔
-I privilegi sono
-stati revocati.
-━━━━━━━━━━━━━━━━━━`,
+▸ @${displayNum} non è più
+  owner. 😔
+▸ I privilegi sono
+  stati revocati.
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`,
             mentions: [removed.number || removed.lid].filter(Boolean),
         }, { quoted: msg });
     },

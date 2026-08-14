@@ -12,10 +12,10 @@ module.exports = {
 
             if (!isGroup) {
                 return reply(
-`ℹ️ *GROUPINFO*
+`ℹ️ *_GROUPINFO_*
 ━━━━━━━━━━━━━━━━━━
-Questo comando funziona solo
-all'interno di un *gruppo*. 👥
+▸ Questo comando funziona solo
+  all'interno di un _gruppo_. 👥
 ━━━━━━━━━━━━━━━━━━`
                 );
             }
@@ -31,7 +31,7 @@ all'interno di un *gruppo*. 👥
 
                 // Costruisce le righe degli admin con icona di ruolo
                 const buildAdminLine = (p, icon) =>
-                    `${icon} @${(p.id || p.jid || '').split('@')[0]}`;
+                    `${icon} ▸ _@${(p.id || p.jid || '').split('@')[0]}_`;
 
                 const superAdminLines = superAdmins.map(p => buildAdminLine(p, '👑')).join('\n');
                 const adminLines      = admins.map(p => buildAdminLine(p, '⚙️')).join('\n');
@@ -55,19 +55,23 @@ all'interno di un *gruppo*. 👥
                     .filter(Boolean);
 
                 const txt =
-`🏷️ *INFORMAZIONI GRUPPO*
+`🏷️ *_INFORMAZIONI GRUPPO_*
 ━━━━━━━━━━━━━━━━━━
-📛 Nome: ${meta.subject || 'N/D'}
-🆔 ID: ${from}
-📅 Creato: ${creation}
-👥 Membri: ${totalMembers}
-📝 *Descrizione:*
-_${desc}_
+▸ 📛 Nome: _${meta.subject || 'N/D'}_
+▸ 🆔 ID: _${from}_
+▸ 📅 Creato: _${creation}_
+▸ 👥 Membri: _${totalMembers}_
+━━━━━━━━━━━━━━━━━━
+📝 *Descrizione*
+▸ _${desc}_
+━━━━━━━━━━━━━━━━━━
 👑 *Fondatore/SuperAdmin*
-${superAdminLines || '_(nessuno)_'}
+${superAdminLines || '▸ _(nessuno)_'}
+━━━━━━━━━━━━━━━━━━
 ⚙️ *Amministratori*
-${adminLines || '_(nessuno)_'}
-━━━━━━━━━━━━━━━━━━`;
+${adminLines || '▸ _(nessuno)_'}
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
                 // PFP del gruppo come allegato (fallback: solo testo)
                 let pfpUrl;

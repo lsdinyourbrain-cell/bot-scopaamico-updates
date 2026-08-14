@@ -34,7 +34,7 @@ module.exports = {
             };
             const picked = valid[scelta];
             if (!picked) {
-                return reply("⚠️ Scegli *testa* o *croce*.\n👉 *Uso:* `.testa testa 50` oppure `.testa croce 50`");
+                return reply("⚠️ _[uso]: scegli *testa* o *croce* — .testa testa 50 oppure .testa croce 50_");
             }
 
             const flip = randomChoice(['testa', 'croce']);
@@ -50,14 +50,14 @@ module.exports = {
             saveDB();
 
             const resultText =
-`🪙 *TESTA O CROCE*
-━━━━━━━━━━━━━━━━━━
-🧑 Hai scelto: *${picked}*
-🪙 Risultato: *${flip}*
+`🪙 *_TESTA O CROCE_*
+━━━━━━━━━━━━━━
+▸ *Hai scelto:* _${picked}_
+▸ *Risultato:* _${flip}_
 
 ${esito}
-💰 Saldo attuale: *${formatMoney(uDB.money)}*
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

@@ -13,16 +13,17 @@ module.exports = {
             db[from]._muted = false;
             saveDB();
             return reply(
-`▶️ *BOT RIPRESO*
+`▶️ *_BOT RIPRESO_*
 ━━━━━━━━━━━━━━━━━━
-Il bot è di nuovo attivo
-in questo gruppo! 🚀
-━━━━━━━━━━━━━━━━━━`);
+▸ Il bot è di nuovo attivo
+  in questo gruppo! 🚀
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         }
 
         if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nSolo l'Owner può riaccendere\nil bot globalmente.\n━━━━━━━━━━━━━━━━━━");
 
         setBotActive(true);
-        await reply("⚙️ *SISTEMA*\n━━━━━━━━━━━━━━━━━━\n✅ Bot ATTIVO e pronto! 🚀\n━━━━━━━━━━━━━━━━━━");
+        await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ ✅ Bot _ATTIVO_ e pronto! 🚀\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_");
     },
 };

@@ -19,7 +19,7 @@ module.exports = {
                 const time = dt.toLocaleTimeString('it-IT');
                 const date = dt.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
                 const tz = data.utc_offset || '?';
-                await prog.done(`🕐 *Ora a ${city}*\n\n⏰ ${time}\n📅 ${date}\n🌍 Timezone: UTC${tz}`);
+                await prog.done(`🕐 *_Ora a ${city}_*\n━━━━━━━━━━━━━━━━━━\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n▸ 🌍 Timezone: _UTC${tz}_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
                 return;
             }
         } catch (_) {}
@@ -28,7 +28,7 @@ module.exports = {
             const now = new Date();
             const time = now.toLocaleTimeString('it-IT');
             const date = now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-            await sendButtons(sock, from, `🕐 *Ora di sistema*\n\n⏰ ${time}\n📅 ${date}\n\nℹ️ Città "${city}" non trovata; mostro l'ora del server.`, [
+            await sendButtons(sock, from, `🕐 *_Ora di sistema_*\n━━━━━━━━━━━━━━━━━━\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n━━━━━━━━━━━━━━━━━━\nℹ️ Città "${city}" non trovata; mostro l'ora del server.\n◈ _Vex Bot_`, [
                 { label: '.ora', id: 'ora' },
             ], msg);
         } catch (_) {

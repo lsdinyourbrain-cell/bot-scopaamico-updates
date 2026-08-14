@@ -157,29 +157,32 @@ module.exports = {
         const dbSize = (JSON.stringify(db).length / 1024).toFixed(1);
 
         // Layout grafico elegante e pulito
-        let txt = `🤖 *INFO SYSTEM BOT*\n`;
+        let txt = `🤖 *_INFO SYSTEM BOT_*\n`;
         txt += `━━━━━━━━━━━━━━━━━━\n`;
-        txt += `💬 ${randomPhrase}\n`;
-        txt += `📅 Data: ${dateStr} │ 🕒 ${timeStr}\n`;
-        txt += `👤 Richiesto da: ${pushName || 'Utente'}\n`;
-        txt += `👑 *STAFF & CREATORI*\n`;
-        txt += `👑 Owner: ${mainOwnerDisplay}\n`;
+        txt += `▸ 💬 ${randomPhrase}\n`;
+        txt += `▸ 📅 Data: _${dateStr}_ │ 🕒 _${timeStr}_\n`;
+        txt += `▸ 👤 Richiesto da: _${pushName || 'Utente'}_\n`;
+        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `👑 *Staff & Creatori*\n`;
+        txt += `▸ 👑 Owner: ${mainOwnerDisplay}\n`;
 
         if (processedCoOwners.length > 0) {
-            txt += `⚔️ Co-owner (${processedCoOwners.length}):\n`;
+            txt += `▸ ⚔️ Co-owner (_${processedCoOwners.length}_):\n`;
             for (const co of processedCoOwners) {
-                txt += `▫️ ${co.text}\n`;
+                txt += `  ◦ ${co.text}\n`;
             }
         } else {
-            txt += `⚔️ Co-owner: Nessuno impostato\n`;
+            txt += `▸ ⚔️ Co-owner: _Nessuno impostato_\n`;
         }
 
-        txt += `📊 *STATISTICHE*\n`;
-        txt += `👥 Chat attive: ${totalUsers}\n`;
-        txt += `💾 Database: ${dbSize} KB\n`;
-        txt += `🚀 *COMANDI*\n`;
-        txt += `Scrivi .menu per\nla lista completa!\n`;
-        txt += `━━━━━━━━━━━━━━━━━━`;
+        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `📊 *Statistiche*\n`;
+        txt += `▸ 👥 Chat attive: _${totalUsers}_\n`;
+        txt += `▸ 💾 Database: _${dbSize} KB_\n`;
+        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `🚀 *Comandi*\n`;
+        txt += `▸ Scrivi .menu per\n  la lista completa!\n`;
+        txt += `━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
 
         await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });
     },

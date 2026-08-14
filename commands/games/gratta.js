@@ -62,13 +62,13 @@ module.exports = {
             saveDB();
 
             const resultText =
-`🎟️ *GRATTA E VINCI*
-━━━━━━━━━━━━━━━━━━
+`🎟️ *_GRATTA E VINCI_*
+━━━━━━━━━━━━━━
 ${render(grid)}
 
 ${esito}
-💰 *Saldo attuale:* ${formatMoney(uDB.money)}
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

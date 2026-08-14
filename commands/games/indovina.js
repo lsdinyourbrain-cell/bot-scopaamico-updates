@@ -36,7 +36,7 @@ module.exports = {
 
             const guess = parseInt(args[off]);
             if (isNaN(guess) || guess < 1 || guess > D.max) {
-                return reply(`⚠️ Indovina un numero tra 1 e *${D.max}*.\n👉 *Uso:* \`.indovina ${diff ? dKey + ' ' : ''}7\`\nDifficoltà: *facile* (1-5),\n*media* (1-10), *difficile* (1-20).`);
+                return reply(`⚠️ _[uso]: indovina un numero tra 1 e *${D.max}* — .indovina ${diff ? dKey + ' ' : ''}7_\nDifficoltà: *facile* (1-5), *media* (1-10), *difficile* (1-20).`);
             }
 
             const puntata = parseInt(args[off + 1]) || 20;
@@ -57,15 +57,15 @@ module.exports = {
             saveDB();
 
             const resultText =
-`🎯 *INDOVINA*
-━━━━━━━━━━━━━━━━━━
-🎚️ Difficoltà: ${D.max <= 5 ? '🟢 Facile (1-5)' : D.max <= 10 ? '🟡 Media (1-10)' : '🔴 Difficile (1-20)'}
-🔢 Hai scelto: *${guess}*
-🕵️ Numero segreto: *${secret}*
+`🎯 *_INDOVINA_*
+━━━━━━━━━━━━━━
+▸ *Difficoltà:* _${D.max <= 5 ? '🟢 Facile (1-5)' : D.max <= 10 ? '🟡 Media (1-10)' : '🔴 Difficile (1-20)'}_
+▸ *Hai scelto:* _${guess}_
+▸ *Numero segreto:* _${secret}_
 
 ${esito}
-💰 Saldo attuale: *${formatMoney(uDB.money)}*
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

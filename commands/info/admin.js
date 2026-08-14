@@ -44,7 +44,7 @@ module.exports = {
             for (const a of admins) {
                 const short = (a.id || a.jid || '').split('@')[0];
                 const isSuper = a.admin === 'superadmin';
-                const line = `👤 @${short}`;
+                const line = `▸ 👤 _@${short}_`;
                 if (isSuper) ownerList += line + ' 👑\n';
                 else adminList += line + '\n';
             }
@@ -54,21 +54,23 @@ module.exports = {
             const owners = db._owners || [];
             const coowners = db._coowners || [];
             if (owners.length > 0) {
-                botAdmins += owners.map(o => `👑 ${o.number}`).join('\n') + '\n';
+                botAdmins += owners.map(o => `▸ 👑 _${o.number}_`).join('\n') + '\n';
             }
             if (coowners.length > 0) {
-                botAdmins += coowners.map(c => `🤝 ${c.number}`).join('\n');
+                botAdmins += coowners.map(c => `▸ 🤝 _${c.number}_`).join('\n');
             }
-            if (!botAdmins) botAdmins = '(nessuno)';
+            if (!botAdmins) botAdmins = '▸ _(nessuno)_';
 
             const txt =
-`👑 *ADMIN GRUPPO*
+`👑 *_ADMIN GRUPPO_*
 ━━━━━━━━━━━━━━━━━━
-📛 ${groupName}
-👥 ${total} partecipanti
-🛡️ ${admins.length} admin
-${ownerList ? `*FONDATORI*\n${ownerList}\n` : ''}${adminList ? `*ADMIN*\n${adminList}\n` : ''}🤖 *BOT ADMIN*
+▸ 📛 _${groupName}_
+▸ 👥 _${total}_ partecipanti
+▸ 🛡️ _${admins.length}_ admin
+${ownerList ? `━━━━━━━━━━━━━━━━━━\n👑 *Fondatori*\n${ownerList}\n` : ''}${adminList ? `━━━━━━━━━━━━━━━━━━\n⚙️ *Admin*\n${adminList}\n` : ''}━━━━━━━━━━━━━━━━━━
+🤖 *BOT ADMIN*
 ${botAdmins}
+━━━━━━━━━━━━━━━━━━
 ⚙️ *COMANDI ADMIN*
 📢 .tag  📣 .tagall
 🔒 .chiudi  🔓 .apri
@@ -83,11 +85,13 @@ ${botAdmins}
 🔥 .antiflame  📋 .antilink
 💼 .antiwzbusiness
 🤬 .bestemmiometro on/off
+━━━━━━━━━━━━━━━━━━
 🛡️ *COMANDI OWNER*
 ⏻ .spegni  ⏼ .accendi
 🔄 .riavvia  🤝 .cowner
 🔗 .setlink  📋 .infobot
-━━━━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
             const adminMentions = admins.map(a => a.id || a.jid).filter(Boolean);
             await sock.sendMessage(from, {

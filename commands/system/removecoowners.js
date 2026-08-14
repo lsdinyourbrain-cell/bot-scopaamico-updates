@@ -48,12 +48,13 @@ module.exports = {
         }
 
         return reply(
-`🗑️ *CO-OWNER RIMOSSI*
+`🗑️ *_CO-OWNER RIMOSSI_*
 ━━━━━━━━━━━━━━━━━━
-*${removed}* co-owner rimossi! 🗑️
-🔐 Restano solo
-gli owner principali.
-━━━━━━━━━━━━━━━━━━`
+▸ 🗑️ _${removed}_ co-owner rimossi!
+▸ 🔐 Restano solo
+  gli owner principali.
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`
         );
     },
 };

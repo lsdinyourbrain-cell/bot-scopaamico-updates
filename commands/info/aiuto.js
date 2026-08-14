@@ -67,12 +67,12 @@ const explain = (mod) => {
         ? `\n📎 Alias: ${mod.aliases.map(a => '.' + a).join(', ')}`
         : '';
     return (
-`📘 *AIUTO — .${mod.name}*${aliases}
+`📘 *_AIUTO — .${mod.name}_*${aliases}
 ${SEP}
-📝 ${cleanDesc(mod)}
-
-💡 Scrivi \`.aiuto\` per la guida completa,
-   o \`.menu\` per navigare le sezioni.`);
+▸ 📝 ${cleanDesc(mod)}
+${SEP}
+▸ 💡 Scrivi \`.aiuto\` per la guida completa,
+  o \`.menu\` per navigare le sezioni.`);
 };
 
 // Elenco dei comandi di una sezione con le descrizioni complete.
@@ -83,7 +83,7 @@ const sectionDump = (section, commands) => {
         return `${emoji} \`.${cmd}\` — ${desc}`;
     });
     return (
-`${section.emoji} *SEZIONE ${section.title}* · ${section.items.length} comandi
+`${section.emoji} *_SEZIONE ${section.title}_* · _${section.items.length} comandi_
 ${SEP}
 ${rows.join('\n')}
 ${SEP}

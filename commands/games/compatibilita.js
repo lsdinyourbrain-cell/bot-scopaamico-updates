@@ -15,12 +15,12 @@ module.exports = {
 
             if (!isGroup) return reply("Funziona solo nei gruppi.");
             if (mentioned.length < 2 && !(mentioned.length === 1 && isReply)) {
-                return reply("Tagga due utenti. Esempio: `.compatibilita @user1 @user2`");
+                return reply("⚠️ _[uso]: tagga due utenti — .compatibilita @user1 @user2_");
             }
 
             let user1 = mentioned[0];
             let user2 = mentioned[1] || (isReply ? sender : null);
-            if (!user2) return reply("Tagga due utenti!");
+            if (!user2) return reply("⚠️ _[uso]: tagga due utenti — .compatibilita @user1 @user2_");
 
             if (sameJid(user1, user2)) return reply("Due persone diverse, non la stessa! 😂");
 
@@ -46,7 +46,7 @@ module.exports = {
             const bar = '█'.repeat(Math.round(percent / 10)) + '░'.repeat(10 - Math.round(percent / 10));
 
             await sock.sendMessage(from, {
-                text: `💘 *COMPATIBILITÀ*\n━━━━━━━━━━━━━━━━━━\n@${user1.split('@')[0]} ❤️ @${user2.split('@')[0]}\n\n${bar} *${percent}%*\n\n_${frase}_\n━━━━━━━━━━━━━━━━━━`,
+                text: `💘 *_COMPATIBILITÀ_*\n━━━━━━━━━━━━━━\n@${user1.split('@')[0]} ❤️ @${user2.split('@')[0]}\n\n${bar} *${percent}%*\n\n_${frase}_\n◈ _Vex Bot_`,
                 mentions: [user1, user2],
             });
     },

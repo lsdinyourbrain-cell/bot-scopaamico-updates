@@ -33,7 +33,7 @@ module.exports = {
             };
             const picked = valid[scelta];
             if (!picked) {
-                return reply("⚠️ Scegli *pari* o *dispari*.\n👉 *Uso:* `.parita pari 50` oppure `.parita dispari 50`");
+                return reply("⚠️ _[uso]: scegli *pari* o *dispari* — .parita pari 50 oppure .parita dispari 50_");
             }
 
             const roll = randomInt(1, 6);
@@ -52,14 +52,14 @@ module.exports = {
             saveDB();
 
             const resultText =
-`🎲 *PARI O DISPARI*
-━━━━━━━━━━━━━━━━━━
-🧑 Hai scelto: *${picked}*
-🎲 Dado uscito: *${roll}* (*${result}*)
+`🎲 *_PARI O DISPARI_*
+━━━━━━━━━━━━━━
+▸ *Hai scelto:* _${picked}_
+▸ *Dado uscito:* _${roll} (${result})_
 
 ${esito}
-💰 Saldo attuale: *${formatMoney(uDB.money)}*
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

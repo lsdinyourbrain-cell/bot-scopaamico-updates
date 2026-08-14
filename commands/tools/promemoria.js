@@ -12,7 +12,7 @@ module.exports = {
 
         const parsed = parseDuration(textArgs);
         if (!parsed) {
-            return reply("⏰ *Come si usa*\n\n.promemoria <testo> in <tempo>\n\nEsempi:\n• `.promemoria compra il latte in 10 minuti`\n• `.promemoria pausa caffè tra 2 ore`\n• `.promemoria 30s`");
+            return reply("⏰ *_Come si usa_*\n━━━━━━━━━━━━━━━━━━\n▸ .promemoria <testo> in <tempo>\n▸ *Esempi:*\n▸ ✦ .promemoria compra il latte in 10 minuti\n▸ ✦ .promemoria pausa caffè tra 2 ore\n▸ ✦ .promemoria 30s\n━━━━━━━━━━━━━━━━━━");
         }
 
         const clean = String(textArgs)
@@ -22,10 +22,10 @@ module.exports = {
             .trim();
         const reminderText = clean || '…ti avevo chiesto di ricordarti qualcosa!';
 
-        await reply(`⏰ *Promemoria impostato!*\n\n📝 ${reminderText.slice(0, 300)}\n⏳ Tra *${humanizeMs(parsed.ms)}*\n\nTi avviserò quando sarà il momento.`);
+        await reply(`⏰ *_Promemoria impostato!_*\n━━━━━━━━━━━━━━━━━━\n▸ 📝 _${reminderText.slice(0, 300)}_\n▸ ⏳ Tra _${humanizeMs(parsed.ms)}_\n▸ Ti avviserò quando sarà\n  il momento.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
 
         setTimeout(() => {
-            const text = `⏰ *PROMEMORIA* @${sender.split('@')[0]}\n\n📝 ${reminderText}`;
+            const text = `⏰ *_PROMEMORIA_* @${sender.split('@')[0]}\n━━━━━━━━━━━━━━━━━━\n▸ 📝 _${reminderText}_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
             sock.sendMessage(from, { text, mentions: [sender] }).catch(() => {});
         }, parsed.ms);
     },

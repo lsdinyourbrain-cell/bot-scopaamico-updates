@@ -19,15 +19,15 @@ module.exports = {
         if (sub === 'on' || sub === 'true' || sub === '1') {
             db._antiflame[from].enabled = true;
             saveDB();
-            return reply("🔥 *Antiflame ATTIVATO* — parole pesanti bloccate.");
+            return reply("🔥 *_ANTIFLAME ATTIVATO_* — parole pesanti bloccate.");
         }
         if (sub === 'off' || sub === 'false' || sub === '0') {
             db._antiflame[from].enabled = false;
             saveDB();
-            return reply("🔥 *Antiflame DISATTIVATO*.");
+            return reply("🔥 *_ANTIFLAME DISATTIVATO_*.");
         }
 
         const status = db._antiflame[from].enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
-        return reply(`🔥 *ANTIFLAME*\n━━━━━━━━━━━━━━━━━━\n${status}\nBlocca frasi come:\n"ucciditi", "ammazzati",\n"fucilati" e simili.\n.antiflame on/off\n━━━━━━━━━━━━━━━━━━`);
+        return reply(`🔥 *_ANTIFLAME_*\n━━━━━━━━━━━━━━━━━━\n▸ Stato: _${status}_\n▸ Blocca frasi come:\n  "ucciditi", "ammazzati",\n  "fucilati" e simili.\n▸ Uso: \`.antiflame on/off\`\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
     },
 };

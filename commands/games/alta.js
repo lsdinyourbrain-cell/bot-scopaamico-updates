@@ -30,7 +30,7 @@ module.exports = {
 
             const picked = scelta === 'alta' ? 'alta' : scelta === 'bassa' ? 'bassa' : scelta === 'a' ? 'alta' : scelta === 'b' ? 'bassa' : null;
             if (!picked) {
-                return reply("⚠️ Scegli *alta* o *bassa*.\n👉 *Uso:* `.alta alta 50` oppure `.alta bassa 50`");
+                return reply("⚠️ _[uso]: scegli *alta* o *bassa* — .alta alta 50 oppure .alta bassa 50_");
             }
 
             const symbols = { 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10', 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
@@ -51,15 +51,15 @@ module.exports = {
             saveDB();
 
             const resultText =
-`🃏 *ALTA O BASSA*
-━━━━━━━━━━━━━━━━━━
-🎴 Carta mostrata: *${symbols[cardOne]}*
-🎴 Carta successiva: *${symbols[cardTwo]}*
-🧑 Avevi detto: *${picked}*
+`🃏 *_ALTA O BASSA_*
+━━━━━━━━━━━━━━
+▸ *Carta mostrata:* _${symbols[cardOne]}_
+▸ *Carta successiva:* _${symbols[cardTwo]}_
+▸ *Avevi detto:* _${picked}_
 
 ${esito}
-💰 Saldo attuale: *${formatMoney(uDB.money)}*
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

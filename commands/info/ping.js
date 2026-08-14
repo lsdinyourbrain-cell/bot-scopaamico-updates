@@ -12,7 +12,7 @@ module.exports = {
 
             // Latenza misurata sul round-trip di un primo messaggio.
             const start = Date.now();
-            const pingMsg = await sock.sendMessage(from, { text: '✨ *Elaborazione dati di sistema...*' }, { quoted: msg });
+            const pingMsg = await sock.sendMessage(from, { text: '✨ *_Elaborazione dati di sistema..._*' }, { quoted: msg });
             const latency = Date.now() - start;
 
             // CPU del sistema e del processo bot misurate in parallelo.
@@ -21,23 +21,22 @@ module.exports = {
             const info = await getSysInfo(sysPromise, procPromise);
 
             const txt =
-`⚡ *BOT STATUS*
+`⚡ *_BOT STATUS_*
 ━━━━━━━━━━━━━━━━━━
-⏱️ Latenza: ${latency} ms
-🖥️ Processore: ${info.cpuModel}
-🧠 Core: ${info.cpuCores}
-💻 Uso sistema: ${info.cpu}
-🔧 CPU processo bot:
-${info.cpuProcess}
-💾 RAM sistema:
-${info.ramUsed} GB / ${info.ramTotal} GB (${info.ramPercent}%)
-🤖 Processo bot:
-${info.processRam} MB RAM
-📚 Heap: ${info.heapUsed} MB
-⏳ Uptime bot: ${info.uptime}
-🧩 Sistema: ${info.platform}
-🟢 Node.js: ${info.node}
-━━━━━━━━━━━━━━━━━━`;
+▸ ⏱️ Latenza: _${latency} ms_
+▸ 🖥️ Processore: _${info.cpuModel}_
+▸ 🧠 Core: _${info.cpuCores}_
+▸ 💻 Uso sistema: _${info.cpu}_
+▸ 🔧 CPU processo bot: _${info.cpuProcess}_
+▸ 💾 RAM sistema:
+  _${info.ramUsed} GB / ${info.ramTotal} GB (${info.ramPercent}%)_
+▸ 🤖 Processo bot: _${info.processRam} MB RAM_
+▸ 📚 Heap: _${info.heapUsed} MB_
+▸ ⏳ Uptime bot: _${info.uptime}_
+▸ 🧩 Sistema: _${info.platform}_
+▸ 🟢 Node.js: _${info.node}_
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
             try { await sock.sendMessage(from, { delete: pingMsg.key }); } catch (_) {}
 

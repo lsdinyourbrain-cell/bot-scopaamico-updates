@@ -11,7 +11,7 @@ module.exports = {
 
         const issue = String(textArgs || '').trim();
         if (!issue) {
-            return reply('⚠️ Scrivi il problema da segnalare.\n👉 *Uso:* `.report ho trovato un bug...`');
+            return reply('⚠️ _[uso]:_ scrivi il problema da segnalare.\n▸ \`.report ho trovato un bug...\`');
         }
 
         const ownerJid = String(ownerNumber || '').includes('@') ? ownerNumber : `${ownerNumber}@s.whatsapp.net`;
@@ -19,9 +19,16 @@ module.exports = {
         try {
             const senderLabel = `${sender.split('@')[0]} (${isGroup ? 'in gruppo' : 'in privato'})`;
             await sock.sendMessage(ownerJid, {
-                text: `🐛 *SEGNALAZIONE*\n\n👤 Da: *${senderLabel}*\n📍 Chat: ${from}\n\n📝 ${issue.slice(0, 1000)}`,
+                text: `🐛 *_SEGNALAZIONE_*\n━━━━━━━━━━━━━━━━━━\n▸ 👤 Da: _${senderLabel}_\n▸ 📍 Chat: _${from}_\n━━━━━━━━━━━━━━━━━━\n▸ 📝 ${issue.slice(0, 1000)}`,
             });
-            await reply('✅ Segnalazione inviata al creatore del bot. Grazie per l\'aiuto! 🙏');
+            await reply(
+`✅ *_SEGNALAZIONE INVIATA_*
+━━━━━━━━━━━━━━━━━━
+▸ Segnalazione inviata al
+  creatore del bot.
+▸ Grazie per l'aiuto! 🙏
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         } catch (_) {
             await reply('❌ Non riesco a inoltrare la segnalazione. Riprova più tardi.');
         }

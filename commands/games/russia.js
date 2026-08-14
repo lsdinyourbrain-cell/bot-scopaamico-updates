@@ -22,7 +22,7 @@ module.exports = {
         userData.cooldowns[cooldownKey] = now;
 
         const puntata = parseInt(args[0]);
-        if (isNaN(puntata) || puntata < 10) return reply("❌ Puntata non valida (minimo 10€).\n👉 *Uso:* `.russia 100`");
+        if (isNaN(puntata) || puntata < 10) return reply("⚠️ _[uso]: puntata non valida (minimo 10€) — .russia 100_");
 
         const uDB = getUser(sender, from);
         if (uDB.money < puntata) return reply(`❌ Saldo insufficiente. Hai *${uDB.money}€*.`);
@@ -34,16 +34,16 @@ module.exports = {
         saveDB();
 
         const resultText =
-`🔫 *ROULETTE RUSSA*
-━━━━━━━━━━━━━━━━━━
-🎯 Carichi il revolver e
+`🔫 *_ROULETTE RUSSA_*
+━━━━━━━━━━━━━━
+Carichi il revolver e
 premi il grilletto...
 
 ${fatale ? '💥 *BANG!* Colpito!' : '😅 *CLACK!* Sei vivo!'}
 
 ${fatale ? `❌ Perduti: -${formatMoney(puntata)}€` : `✅ Vincita: +${formatMoney(puntata * 5)}€`}
-💰 *Saldo:* ${formatMoney(uDB.money)}€
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo:* _${formatMoney(uDB.money)}€_
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

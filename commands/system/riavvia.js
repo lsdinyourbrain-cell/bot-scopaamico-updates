@@ -12,7 +12,7 @@ module.exports = {
 
             if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
             
-            await reply("⚙️ *SISTEMA*\n━━━━━━━━━━━━━━━━━━\n🔄 Riavvio del processo...\nTorno operativo a breve! 🚀\n━━━━━━━━━━━━━━━━━━");
+            await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ 🔄 Riavvio del processo...\n  Torno operativo a breve! 🚀\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_");
             // Codice 42 = "riavviami": start.bat lo rileva e rilancia node.
             setTimeout(() => process.exit(42), 1500);
     },

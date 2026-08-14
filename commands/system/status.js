@@ -25,19 +25,18 @@ module.exports = {
         const nodeVer = process.version;
 
         const txt =
-`⚡ *BOT STATUS*
+`⚡ *_BOT STATUS_*
 ━━━━━━━━━━━━━━━━━━
-⏱️ Uptime: *${uptimeStr}*
-📦 Gruppi: *${groupCount}*
-👥 Utenti: *${totalMem}*
-🖥️ CPU sistema:
-*${cpu === null ? 'N/D' : cpu.toFixed(1) + '%'}*
-🔧 CPU processo:
-*${procCpu === null ? 'N/D' : procCpu + '%'}*
-💾 RAM: *${memUsage}MB*
-🟢 Node: *${nodeVer}*
-🔋 PID: *${process.pid}*
-━━━━━━━━━━━━━━━━━━`;
+▸ ⏱️ Uptime: _${uptimeStr}_
+▸ 📦 Gruppi: _${groupCount}_
+▸ 👥 Utenti: _${totalMem}_
+▸ 🖥️ CPU sistema: _${cpu === null ? 'N/D' : cpu.toFixed(1) + '%'}_
+▸ 🔧 CPU processo: _${procCpu === null ? 'N/D' : procCpu + '%'}_
+▸ 💾 RAM: _${memUsage}MB_
+▸ 🟢 Node: _${nodeVer}_
+▸ 🔋 PID: _${process.pid}_
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, txt, [
             { label: '.status', id: 'status' },

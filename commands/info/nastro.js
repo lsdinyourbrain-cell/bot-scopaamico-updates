@@ -28,12 +28,13 @@ module.exports = {
 
         if (!users.length) {
             return sendButtons(sock, from,
-`📊 *NASTRO*
+`📊 *_NASTRO_*
 ${SEP}
-Nessun dato per questo gruppo.
-I contatori partono quando i
-membri scrivono in chat.
-${SEP}`,
+▸ Nessun dato per questo gruppo.
+▸ I contatori partono quando i
+  membri scrivono in chat.
+${SEP}
+◈ _Vex Bot_`,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
 
@@ -61,27 +62,28 @@ ${SEP}`,
         const topXpList = users
             .sort((a, b) => (Number.isFinite(b[1].xp) ? b[1].xp : 0) - (Number.isFinite(a[1].xp) ? a[1].xp : 0))
             .slice(0, 5)
-            .map(([jid, d], i) => `${medal(i)} @${jid.split('@')[0]} — liv. ${d.level || 1} · ${Number.isFinite(d.xp) ? d.xp : 0} XP`)
+            .map(([jid, d], i) => `${medal(i)} ▸ _@${jid.split('@')[0]}_ · liv. _${d.level || 1}_ · _${Number.isFinite(d.xp) ? d.xp : 0} XP_`)
             .join('\n');
 
-        const header = `📊 *NASTRO DEL GRUPPO*`;
+        const header = `📊 *_NASTRO DEL GRUPPO_*`;
         const txt =
 `${header}
 ${SEP}
-🤬 Bestemmie totali: *${fmtMoney(totalBestemmie)}*
-💬 Messaggi totali: *${fmtMoney(totalMsg)}*
-💰 Soldi in circolo: *${fmtMoney(totalMoney)}€*
+▸ 🤬 Bestemmie totali: _${fmtMoney(totalBestemmie)}_
+▸ 💬 Messaggi totali: _${fmtMoney(totalMsg)}_
+▸ 💰 Soldi in circolo: _${fmtMoney(totalMoney)}€_
 ${SEP}
-⚡ *Più attivo*: @${topMsg.jid.split('@')[0]}
-   (${topMsg.msgCount} messaggi)
-🎮 *Top livelli*: @${topXp.jid.split('@')[0]}
-   (liv. ${topXp.level} · ${topXp.xp} XP)
-💵 *Più ricco*: @${topMoney.jid.split('@')[0]}
-   (${fmtMoney(topMoney.money)}€)
+⚡ *Più attivo*
+▸ _@${topMsg.jid.split('@')[0]}_ · _${topMsg.msgCount} messaggi_
+🎮 *Top livelli*
+▸ _@${topXp.jid.split('@')[0]}_ · _liv. ${topXp.level} · ${topXp.xp} XP_
+💵 *Più ricco*
+▸ _@${topMoney.jid.split('@')[0]}_ · _${fmtMoney(topMoney.money)}€_
 ${SEP}
 🏆 *TOP 5 XP*
 ${topXpList}
-${SEP}`;
+${SEP}
+◈ _Vex Bot_`;
 
         return sendButtons(sock, from, txt,
             [

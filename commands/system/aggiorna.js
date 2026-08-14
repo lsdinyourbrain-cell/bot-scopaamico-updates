@@ -74,16 +74,17 @@ module.exports = {
                 await runGit(execFileAsync, projectDir, ['clean', '-fd', '-e', 'node_modules', '-e', '.env', '-e', 'auth_info_baileys', '-e', 'data', '-e', 'temp', '-e', 'logs']);
             } catch (_) {}
             return reply(
-`✨ *TUTTO AGGIORNATO*
+`✨ *_TUTTO AGGIORNATO_*
 ━━━━━━━━━━━━━━━━━━
-✅ Il bot è già alla
-versione più recente!
-🔖 Build attuale:
-\`${localHead.slice(0, 7)}\`
-🚀 Non c'è nulla di nuovo,
-ma la qualità è sempre
-al massimo. 💎
-━━━━━━━━━━━━━━━━━━`);
+▸ ✅ Il bot è già alla
+  versione più recente!
+▸ 🔖 Build attuale:
+  \`${localHead.slice(0, 7)}\`
+▸ 🚀 Non c'è nulla di nuovo,
+  ma la qualità è sempre
+  al massimo. 💎
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         }
 
         // 4) Changelog dei nuovi commit
@@ -125,19 +126,19 @@ al massimo. 💎
         fs.rmSync(tmpDir, { recursive: true, force: true });
 
         if (syntaxBroken) {
-            return reply(`❌ *Aggiornamento bloccato.*\n\nIl file \`${syntaxBroken}\` nella nuova versione ha errori di sintassi.\nNon ho applicato nulla.`);
+            return reply(`❌ *Aggiornamento bloccato.*\n\n▸ Il file \`${syntaxBroken}\` nella nuova versione ha errori di sintassi.\n▸ Non ho applicato nulla.`);
         }
 
         // 7) Info aggiornamento
         const shortRemote = remoteHead.slice(0, 7);
         const infoParts = [
-            '📦 *Nuovo aggiornamento disponibile!*',
-            '',
-            changelog ? `📝 *Modifiche:*\n${changelog}` : '📝 Nessun commit dettagliato.',
-            '',
-            `🔄 Applico la versione \`${shortRemote}\`...`,
+            '📦 *_Nuovo aggiornamento disponibile!_*',
+            '━━━━━━━━━━━━━━━━━━',
+            changelog ? `▸ 📝 *Modifiche:*\n${changelog}` : '▸ 📝 Nessun commit dettagliato.',
+            `▸ 🔄 Applico la versione \`${shortRemote}\`...`,
         ];
-        if (depsChanged) infoParts.push('\n📥 Installerò anche le nuove dipendenze.');
+        if (depsChanged) infoParts.push('▸ 📥 Installerò anche le nuove dipendenze.');
+        infoParts.push('━━━━━━━━━━━━━━━━━━', '◈ _Vex Bot_');
         await reply(infoParts.join('\n'));
 
         // 8) Applica la versione remota
@@ -172,13 +173,13 @@ al massimo. 💎
                 path.join(projectDir, '.restart-msg.json'),
                 JSON.stringify({
                     from,
-                    message: `🔄 *Aggiornamento completato e bot riavviato.*\n\nNuova versione: \`${shortRemote}\`\n\n✅ Bot operativo.`,
+                    message: `🔄 *_Aggiornamento completato e bot riavviato._*\n━━━━━━━━━━━━━━━━━━\n▸ Nuova versione: \`${shortRemote}\`\n▸ ✅ Bot operativo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                 }),
                 'utf-8'
             );
         } catch (_) {}
 
-        await reply('✅ *Aggiornamento applicato.*\nRiavvio in corso... torno operativo tra qualche secondo. 🔄');
+        await reply('✅ *Aggiornamento applicato.*\n▸ Riavvio in corso... torno operativo tra qualche secondo. 🔄');
         setTimeout(() => process.exit(0), 1500);
     },
 };

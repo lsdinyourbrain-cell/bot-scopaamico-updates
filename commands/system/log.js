@@ -42,7 +42,7 @@ module.exports = {
         }
         if (current.trim()) chunks.push(current.trimEnd());
 
-        const header = `📄 *LOG BOT*\n━━━━━━━━━━━━━━━━━━\n${chunks.length === 1 ? `ultime ${n} righe` : `log in ${chunks.length} parti`}\n━━━━━━━━━━━━━━━━━━`;
+        const header = `📄 *_LOG BOT_*\n━━━━━━━━━━━━━━━━━━\n▸ ${chunks.length === 1 ? `ultime ${n} righe` : `log in ${chunks.length} parti`}\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
         await reply(header + '\n```\n' + chunks[0] + '\n```');
 
         for (let i = 1; i < chunks.length; i++) {

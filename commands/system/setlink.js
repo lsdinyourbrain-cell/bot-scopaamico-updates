@@ -22,12 +22,13 @@ module.exports = {
         if (!link) {
             const current = db._config?.sponsorLink || 'nessuno';
             return reply(
-`🔗 *SETLINK*
+`🔗 *_SETLINK_*
 ━━━━━━━━━━━━━━━━━━
-Link attuale: ${current}
-Usa: .setlink <url>
-per cambiarlo.
-━━━━━━━━━━━━━━━━━━`);
+▸ Link attuale: _${current}_
+▸ Usa: \`.setlink <url>\`
+  per cambiarlo.
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         }
 
         if (!db._config) db._config = {};
@@ -35,13 +36,14 @@ per cambiarlo.
         saveDB();
 
         await reply(
-`🔗 *SETLINK*
+`🔗 *_SETLINK_*
 ━━━━━━━━━━━━━━━━━━
-✅ Link aggiornato!
-${link}
-Sarà visibile nel menu
-e in .sponsor su tutti
-i gruppi. 🚀
-━━━━━━━━━━━━━━━━━━`);
+▸ ✅ Link aggiornato!
+▸ _${link}_
+▸ Sarà visibile nel menu
+  e in .sponsor su tutti
+  i gruppi. 🚀
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
     },
 };

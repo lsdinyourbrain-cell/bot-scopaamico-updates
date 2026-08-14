@@ -30,23 +30,25 @@ module.exports = {
         const logKB = (result.logBytes / 1024).toFixed(1);
 
         await reply(
-`🧹 *CACHE PULITA*
+`🧹 *_CACHE PULITA_*
 ━━━━━━━━━━━━━━━━━━
-✨ Tutto pulito, fra!
-in ${elapsed} ms.
-🗑️ File temporanei rimossi:
-${result.deletedFiles}
-💾 Spazio liberato:
-${freedMB} KB
-📦 Cache gruppi azzerata:
-${result.groupEntries}
-📊 Stato attuale:
-💾 DB: ${dbKB} KB
-📄 Log: ${logKB} KB
-🗂️ Temp (prima):
-${tempBeforeMB} KB
-⚡ Il bot ora risponde
-più veloce! 🚀
-━━━━━━━━━━━━━━━━━━`);
+▸ ✨ Tutto pulito, fra!
+  in _${elapsed} ms_.
+▸ 🗑️ File temporanei rimossi:
+  _${result.deletedFiles}_
+▸ 💾 Spazio liberato:
+  _${freedMB} KB_
+▸ 📦 Cache gruppi azzerata:
+  _${result.groupEntries}_
+━━━━━━━━━━━━━━━━━━
+📊 *Stato attuale*
+▸ 💾 DB: _${dbKB} KB_
+▸ 📄 Log: _${logKB} KB_
+▸ 🗂️ Temp (prima):
+  _${tempBeforeMB} KB_
+▸ ⚡ Il bot ora risponde
+  più veloce! 🚀
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
     },
 };

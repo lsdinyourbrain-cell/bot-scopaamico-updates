@@ -14,14 +14,15 @@ module.exports = {
             db[from]._muted = true;
             saveDB();
             return sendButtons(sock, from,
-`⏸️ *BOT IN PAUSA*
+`⏸️ *_BOT IN PAUSA_*
 ━━━━━━━━━━━━━━━━━━
-Il bot è stato disattivato
-in questo gruppo
-da un amministratore.
-Premi il pulsante per
-riattivarlo.
-━━━━━━━━━━━━━━━━━━`,
+▸ Il bot è stato disattivato
+  in questo gruppo
+  da un amministratore.
+▸ Premi il pulsante per
+  riattivarlo.
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`,
                 [{ label: '.accendi', id: 'accendi' }],
                 msg);
         }
@@ -29,6 +30,6 @@ riattivarlo.
         if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
 
         setBotActive(false);
-        await reply("⚙️ *SISTEMA*\n━━━━━━━━━━━━━━━━━━\n🛑 Bot in modalità\nSOSPENSIONE.\nNon risponderò a nessuno,\ntranne che all'Owner.\n━━━━━━━━━━━━━━━━━━");
+        await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ 🛑 Bot in modalità\n  _SOSPENSIONE_.\n▸ Non risponderò a nessuno,\n  tranne che all'Owner.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_");
     },
 };

@@ -73,16 +73,16 @@ module.exports = {
             saveDB();
 
             const resultText =
-`🃏 *BLACKJACK*
-━━━━━━━━━━━━━━━━━━
-🧑 Le tue carte: ${playerCards.join(' | ')}
-🧮 Il tuo totale: *${playerTotal}*
-🤖 Carte bot: ${dealerCards.join(' | ')}
-🧮 Totale bot: *${dealerTotal}*
+`🃏 *_BLACKJACK_*
+━━━━━━━━━━━━━━
+▸ *Le tue carte:* _${playerCards.join(' | ')}_
+▸ *Il tuo totale:* _${playerTotal}_
+▸ *Carte bot:* _${dealerCards.join(' | ')}_
+▸ *Totale bot:* _${dealerTotal}_
 
 ${esito}
-💰 *Saldo attuale:* ${formatMoney(uDB.money)}
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

@@ -49,14 +49,14 @@ module.exports = {
             const mask = (wg) => wg.word.split('').map(ch => wg.guessed.includes(ch) ? ch : ' _ ').join('');
 
             await reply(
-`🧩 *INDOVINA LA PAROLA*
-━━━━━━━━━━━━━━━━━━
+`🧩 *_INDOVINA LA PAROLA_*
+━━━━━━━━━━━━━━
 ${mask(db[from].wordGame)}
 
 ✏️ Scrivi una *lettera* o la
 *parola intera*!
 ⏳ 90 secondi · 6 errori = fine.
-━━━━━━━━━━━━━━━━━━`
+◈ _Vex Bot_`
             );
 
             setTimeout(() => {
@@ -64,7 +64,7 @@ ${mask(db[from].wordGame)}
                 if (wg?.active && Date.now() - wg.timestamp >= 90000) {
                     wg.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `⏰ *TEMPO SCADUTO*\n━━━━━━━━━━━━━━━━━━\nLa parola era: *${wg.word}*\n━━━━━━━━━━━━━━━━━━` }).catch(() => {});
+                    sock.sendMessage(from, { text: `⏰ *TEMPO SCADUTO*\n━━━━━━━━━━━━━━\nLa parola era: *${wg.word}*\n━━━━━━━━━━━━━━` }).catch(() => {});
                 }
             }, 90000);
     },

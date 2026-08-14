@@ -63,14 +63,14 @@ module.exports = {
             saveDB();
 
             const resultText =
-`🎡 *RUOTA DELLA FORTUNA*
-━━━━━━━━━━━━━━━━━━
+`🎡 *_RUOTA DELLA FORTUNA_*
+━━━━━━━━━━━━━━
 🎡 La ruota gira...
-🎯 Settore: *${win.name}* ${win.emoji}
+▸ *Settore:* _${win.name}_ ${win.emoji}
 
 ${esito}
-💰 Saldo attuale: *${formatMoney(uDB.money)}*
-━━━━━━━━━━━━━━━━━━`;
+▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

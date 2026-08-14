@@ -40,11 +40,11 @@ module.exports = {
         const q = questions[0];
         await sock.sendMessage(from, {
             text:
-                `🏆 *TRIVIA SFIDA*\n` +
-                `━━━━━━━━━━━━━━━━━━\n` +
+                `🏆 *_TRIVIA SFIDA_*\n` +
+                `━━━━━━━━━━━━━━\n` +
                 `${formatQuestion(q, 1)}\n` +
                 `⚡ Rispondi con *A/B/C/D*!\n` +
-                `━━━━━━━━━━━━━━━━━━`,
+                `◈ _Vex Bot_`,
         }, { quoted: msg });
 
         setTimeout(() => {

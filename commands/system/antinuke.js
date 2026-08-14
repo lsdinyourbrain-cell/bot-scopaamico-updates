@@ -9,7 +9,7 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, saveDB, getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS, sendButtons } = services;
 
-        if (!isGroup) return reply("🛡️ *ANTINUKE*\n\nFunziona solo nei *gruppi*.");
+        if (!isGroup) return reply("🛡️ *_ANTINUKE_*\n━━━━━━━━━━━━━━━━━━\n▸ Funziona solo nei _gruppi_.\n━━━━━━━━━━━━━━━━━━");
 
         if (!isOwner) {
             return reply(
@@ -33,32 +33,35 @@ riservato all'*Owner del bot*.
                 .map(([key, label]) => {
                     const active = enabled && cfg.controls[key];
                     const icon = active ? '🟢' : '🔴';
-                    return `${icon} ${key} ➔ ${active ? 'ON' : 'OFF'}`;
+                    return `▸ ${icon} _${key}_: ${active ? 'ON' : 'OFF'}`;
                 })
                 .join('\n');
 
             const wlLines = cfg.whitelist.length
-                ? cfg.whitelist.map(w => `• @${w.replace(/[^0-9]/g, '')}`).join('\n')
-                : '(nessuno)';
+                ? cfg.whitelist.map(w => `▸ @${w.replace(/[^0-9]/g, '')}`).join('\n')
+                : '▸ _(nessuno)_';
 
             const txt =
-`🛡️ *ANTINUKE*
+`🛡️ *_ANTINUKE_*
 ━━━━━━━━━━━━━━━━━━
-Stato: ${enabled ? '🟢 *ATTIVO*' : '🔴 *DISATTIVO*'}
-*CONTROLLI:*
+▸ Stato: _${enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO'}_
+━━━━━━━━━━━━━━━━━━
+📋 *Controlli*
 ${controlsLines}
-*WHITELIST:*
-Utenti fidati esenti da tutto:
+━━━━━━━━━━━━━━━━━━
+📋 *Whitelist*
+▸ Utenti fidati esenti da tutto:
 ${wlLines}
-💡 *Uso:*
-.antinuke on/off
-.antinuke <controllo> on/off
-.antinuke all on/off
-.antinuke whitelist <numero>
-.antinuke whitelist list
-*Controlli:*
-${Object.keys(ANTINUKE_CONTROLS).join(', ')}
-━━━━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━━━━━
+💡 *Uso*
+▸ .antinuke on/off
+▸ .antinuke <controllo> on/off
+▸ .antinuke all on/off
+▸ .antinuke whitelist <numero>
+▸ .antinuke whitelist list
+▸ Controlli: ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
             try {
                 await sendButtons(sock, from, txt, [
@@ -89,13 +92,14 @@ ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
             }
             saveDB();
             return reply(
-`🛡️ *ANTINUKE*
+`🛡️ *_ANTINUKE_*
 ━━━━━━━━━━━━━━━━━━
-Stato: ${cfg.enabled ? '🟢 *ATTIVO*' : '🔴 *DISATTIVO*'}
+▸ Stato: _${cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO'}_
 ${cfg.enabled
-    ? 'Il gruppo è ora protetto.\nSolo owner e whitelist\nhanno i pieni poteri.\nPer aggiungere fidati:\n.antinuke whitelist <numero>'
-    : 'Protezione disattivata.\nChiunque può agire normalmente.'}
-━━━━━━━━━━━━━━━━━━`
+    ? '▸ Il gruppo è ora protetto.\n  Solo owner e whitelist\n  hanno i pieni poteri.\n▸ Per aggiungere fidati:\n  .antinuke whitelist <numero>'
+    : '▸ Protezione disattivata.\n  Chiunque può agire normalmente.'}
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`
             );
         }
 
@@ -104,27 +108,27 @@ ${cfg.enabled
             const value = sub === 'all on';
             for (const key of Object.keys(ANTINUKE_CONTROLS)) cfg.controls[key] = value;
             saveDB();
-            return reply(`🛡️ *ANTINUKE* — tutti i controlli → *${value ? 'ON' : 'OFF'}*`);
+            return reply(`🛡️ *_ANTINUKE_* — tutti i controlli: _${value ? 'ON' : 'OFF'}_`);
         }
 
         // ── WHITELIST ─────────────────────────────────────────────────────
         if (sub === 'whitelist list' || sub === 'wl list') {
-            if (!cfg.whitelist.length) return reply("📋 *Whitelist antinuke:* (vuota)");
-            const lines = cfg.whitelist.map(w => `${w.replace(/[^0-9]/g, '')}`).join('\n');
-            return reply(`📋 *WHITELIST ANTINUKE*\n━━━━━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━━━━━`);
+            if (!cfg.whitelist.length) return reply("📋 *_WHITELIST ANTINUKE_*\n━━━━━━━━━━━━━━━━━━\n▸ _(vuota)_\n━━━━━━━━━━━━━━━━━━");
+            const lines = cfg.whitelist.map(w => `▸ ${w.replace(/[^0-9]/g, '')}`).join('\n');
+            return reply(`📋 *_WHITELIST ANTINUKE_*\n━━━━━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
         }
         if (/^(whitelist|wl)\s+/.test(sub)) {
             const raw = sub.replace(/^(whitelist|wl)\s+/, '').trim();
             const num = raw.replace(/[^0-9]/g, '');
-            if (!num || num.length < 6) return reply("⚠️ Numero non valido.");
+            if (!num || num.length < 6) return reply("⚠️ _[uso]:_ numero non valido.\n▸ .antinuke whitelist <numero>");
             if (cfg.whitelist.some(w => w.replace(/[^0-9]/g, '') === num)) {
                 cfg.whitelist = cfg.whitelist.filter(w => w.replace(/[^0-9]/g, '') !== num);
                 saveDB();
-                return reply(`🗑️ *${num}* rimosso dalla whitelist antinuke.`);
+                return reply(`🗑️ _${num}_ rimosso dalla whitelist antinuke.`);
             }
             cfg.whitelist.push(num);
             saveDB();
-            return reply(`✅ *${num}* aggiunto alla whitelist antinuke (esente da tutto).`);
+            return reply(`✅ _${num}_ aggiunto alla whitelist antinuke (esente da tutto).`);
         }
 
         // ── CONTROLLO SINGOLO ─────────────────────────────────────────────
@@ -143,21 +147,19 @@ ${cfg.enabled
                 } catch (_) { /* snapshot resta null: l'antigc non ha target di revert */ }
             }
             saveDB();
-            return reply(`🛡️ *${key}* → *${value ? 'ON' : 'OFF'}*`);
+            return reply(`🛡️ *_${key}:_* _${value ? 'ON' : 'OFF'}_`);
         }
 
         return reply(
-`⚠️ *ANTINUKE — ERRORE*
+`⚠️ *_ANTINUKE — ERRORE_*
 ━━━━━━━━━━━━━━━━━━
-Sottocomando non riconosciuto.
-💡 *Uso:*
-.antinuke on/off
-.antinuke <controllo> on/off
-.antinuke whitelist <numero>
-.antinuke whitelist list
-.antinuke all on/off
-*Controlli:*
-${Object.keys(ANTINUKE_CONTROLS).join(', ')}
+▸ _[uso]:_ sottocomando non riconosciuto.
+▸ .antinuke on/off
+▸ .antinuke <controllo> on/off
+▸ .antinuke whitelist <numero>
+▸ .antinuke whitelist list
+▸ .antinuke all on/off
+▸ Controlli: ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
 ━━━━━━━━━━━━━━━━━━`
         );
     },

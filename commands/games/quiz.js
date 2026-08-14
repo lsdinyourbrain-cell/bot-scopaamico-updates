@@ -36,7 +36,7 @@ module.exports = {
             const optionsText = pick.a.map((opt, i) => `${optLetters[i]}) ${opt}`).join('\n');
 
             await sock.sendMessage(from, {
-                text: `❓ *QUIZ TIME!*\n━━━━━━━━━━━━━━━━━━\n❓ ${pick.q}\n\n${optionsText}\n\n⚡ Rispondi A/B/C/D\n⏳ Hai 30 secondi!\n━━━━━━━━━━━━━━━━━━`,
+                text: `❓ *_QUIZ TIME!_*\n━━━━━━━━━━━━━━\n❓ ${pick.q}\n\n${optionsText}\n\n⚡ Rispondi A/B/C/D\n⏳ Hai 30 secondi!\n◈ _Vex Bot_`,
             }, { quoted: msg });
 
             setTimeout(() => {

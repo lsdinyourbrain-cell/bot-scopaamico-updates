@@ -42,8 +42,8 @@ module.exports = {
             const display = sequence.map(k => `${COLOR_MAP[k]} ${k}`).join(' ');
 
             await reply(
-`🧠 *MEMORIA!*
-━━━━━━━━━━━━━━━━━━
+`🧠 *_MEMORIA_*
+━━━━━━━━━━━━━━
 Memorizza questa sequenza:
 
 ${display}
@@ -51,7 +51,7 @@ ${display}
 ✏️ Ripetila scrivendo le
 *lettere* (es: \`R G B Y\`)
 ⏳ Hai 60 secondi.
-━━━━━━━━━━━━━━━━━━`
+◈ _Vex Bot_`
             );
 
             setTimeout(() => {
