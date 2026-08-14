@@ -23,7 +23,7 @@ module.exports = {
         // ── PREPARAZIONE (ingredienti + passi) ───────────────────────────
         if (w1 === 'prep' || w1 === 'preparazione') {
             const idMeal = (w2 || '').trim();
-            if (!idMeal) return reply('ℹ️ Usa: `.ricette prep <id>`');
+            if (!idMeal) return reply('⚠️ _[uso]: *.ricette prep <id>*_');
             try {
                 const { data } = await axios.get(
                     `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${encodeURIComponent(idMeal)}`,
@@ -36,7 +36,7 @@ module.exports = {
                 for (let i = 1; i <= 20; i++) {
                     const name = meal[`strIngredient${i}`]?.trim();
                     const qty = meal[`strMeasure${i}`]?.trim();
-                    if (name) ingr.push(`• ${qty} ${name}`.trim());
+                    if (name) ingr.push(`▸ ${qty} ${name}`.trim());
                 }
 
                 const steps = String(meal.strInstructions || '')
@@ -45,21 +45,21 @@ module.exports = {
                     .filter(s => /^[A-Z0-9]/.test(s) && s.length > 3)
                     .slice(0, 12);
 
-                const title = `👨🍳 *${meal.strMeal}*`;
-                const area = meal.strArea ? ` 📍 ${meal.strArea}` : '';
-                const head = `${title}${area}\n${SEP}\n🧂 *INGREDIENTI* (${ingr.length}):\n${ingr.join('\n')}`;
+                const title = `👨🍳 *_${meal.strMeal}_*`;
+                const area = meal.strArea ? ` · 📍 _${meal.strArea}_` : '';
+                const head = `${title}${area}\n${SEP}\n🧂 *_INGREDIENTI_* (_${ingr.length}_):\n${ingr.join('\n')}`;
 
                 if (steps.length) {
                     const chunkSize = 12;
                     const pages = Math.ceil(steps.length / chunkSize);
                     for (let p = 0; p < pages; p++) {
                         const chunk = steps.slice(p * chunkSize, (p + 1) * chunkSize);
-                        const body = `${p === 0 ? head + '\n\n' : ''}👨‍🍳 *PASSI* (${chunkSize * p + 1}-${chunkSize * p + chunk.length}):\n${chunk.map((s, i) => `${chunkSize * p + i + 1}. ${s}`).join('\n')}\n${SEP}`;
+                        const body = `${p === 0 ? head + '\n\n' : ''}👨‍🍳 *_PASSI_* (_${chunkSize * p + 1}_-_${chunkSize * p + chunk.length}_):\n${chunk.map((s, i) => `${chunkSize * p + i + 1}. ${s}`).join('\n')}\n${SEP}\n◈ _Vex Bot_`;
                         if (p === 0) await reply(body);
                         else await sock.sendMessage(from, { text: body }, { quoted: msg }).catch(() => {});
                     }
                 } else {
-                    await reply(`${head}\n${SEP}\n(istruzioni non disponibili)`);
+                    await reply(`${head}\n${SEP}\n▸ _Istruzioni non disponibili_\n◈ _Vex Bot_`);
                 }
             } catch (_) {
                 await reply('❌ Non trovo questa ricetta. Riprova.');
@@ -98,21 +98,23 @@ module.exports = {
             }));
 
             const sent = await sendCarousel(sock, from, {
-                text: `👨🍳 *RICETTE CASUALI*
+                text: `👨🍳 *_RICETTE CASUALI_*
 ${SEP}
-10 ricette da tutto il mondo.
-Scorri le card e premi
-*👨🍳 Preparazione* per
-ingredienti e passi!
-${SEP}`,
+▸ _10 ricette da tutto il mondo._
+▸ _Scorri le card e premi_
+  *👨🍳 Preparazione* per
+  _ingredienti e passi!_
+${SEP}
+◈ _Vex Bot_`,
                 cards,
             }, msg);
             if (!sent) {
                 await sendButtons(sock, from,
-`👨🍳 *RICETTE*
+`👨🍳 *_RICETTE_*
 ${SEP}
-${results.map((m, i) => `${i + 1}. ${m.strMeal}${m.strArea ? ' (' + m.strArea + ')' : ''} — \`.ricette prep ${m.idMeal}\``).join('\n')}
-${SEP}`,
+${results.map((m, i) => `${i + 1}. ${m.strMeal}${m.strArea ? ' (_' + m.strArea + '_)' : ''} — \`.ricette prep ${m.idMeal}\``).join('\n')}
+${SEP}
+◈ _Vex Bot_`,
                     [{ label: '🔁 Altre ricette', id: 'ricette' }], msg);
             }
         } catch (e) {

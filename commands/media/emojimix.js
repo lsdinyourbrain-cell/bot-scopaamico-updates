@@ -31,7 +31,7 @@ module.exports = {
 
         const emojis = pickEmojis(textArgs);
         if (emojis.length < 2) {
-            return reply("😜 *Come si usa*\n\n.emojimix <emoji1> <emoji2>\n\nEsempio: `.emojimix 😂❤️` oppure `.emojimix 😱 😍`");
+            return reply("⚠️ _[uso]: fonde due emoji in una sola._\n━━━━━━━━━━━━━━\n▸ `.emojimix <emoji1> <emoji2>`\n━━━━━━━━━━━━━━\n▸ Esempio: `.emojimix 😂❤️` oppure `.emojimix 😱 😍`");
         }
 
         const cp1 = codepointOf(emojis[0]);

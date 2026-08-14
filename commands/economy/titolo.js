@@ -14,7 +14,7 @@ module.exports = {
 
         if (!text) {
             const current = me.title ? `*${me.title.slice(0, 25)}*` : '_nessun titolo_';
-            return reply(`🏷️ *IL TUO TITOLO*\n━━━━━━━━━━━━━━━━━━\n${current}\n\n_Impostane uno con .titolo!_\n_(max 25 caratteri)_\n━━━━━━━━━━━━━━━━━━`);
+            return reply(`🏷️ *_IL TUO TITOLO_*\n━━━━━━━━━━━━━━\n▸ 🏷️ Titolo: ${current}\n▸ 📝 Impostane uno con _.titolo_\n▸ 🔠 _max 25 caratteri_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
         }
 
         if (text === '-') {
@@ -29,6 +29,6 @@ module.exports = {
 
         me.title = text;
         saveDB();
-        return reply(`🏷️ *Titolo impostato!*\n\nDa ora il tuo profilo mostra:\n👉 *${text}*`);
+        return reply(`🏷️ *_TITOLO IMPOSTATO_*\n━━━━━━━━━━━━━━\n▸ Da ora il tuo profilo mostra:\n▸ 👉 *${text}*\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
     },
 };

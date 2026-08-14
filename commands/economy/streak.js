@@ -26,7 +26,7 @@ module.exports = {
 
         if (lastKey === todayKey) {
             // Già preso oggi: nessun premio, mostra solo lo stato
-            return reply(`📅 *STREAK*\n━━━━━━━━━━━━━━━━━━\nHai già ritirato il premio\ndi oggi!\n🔥 Serie: *${count} giorni*\n🕐 Torna domani per\ncontinuare la serie.\n━━━━━━━━━━━━━━━━━━`);
+            return reply(`⏳ Hai già ritirato il premio di oggi!\n▸ 🔥 Serie: _${count} giorni_\n▸ 🕐 Torna domani per continuare la serie.`);
         }
 
         if (lastKey === yesterdayKey) {
@@ -44,15 +44,14 @@ module.exports = {
 
         const resultText =
 `🔥 *STREAK*
-━━━━━━━━━━━━━━━━━━
-📅 Oggi: ${today.toLocaleDateString('it-IT')}
-
-🔥 Serie: *${newCount}* ${newCount === 1 ? 'giorno' : 'giorni'}
-di fila!
-${newCount > 1 ? '✨ Serie mantenuta!' : '🆕 Nuova serie iniziata!'}
-💰 Premio ritirato: *+${formatMoney(reward)}€*
-💳 Saldo attuale: *${formatMoney(uDB.money)}€*
-━━━━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━
+▸ 📅 Oggi: _${today.toLocaleDateString('it-IT')}_
+▸ 🔥 Serie: _${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}_ di fila
+▸ ${newCount > 1 ? '✨ Serie mantenuta!' : '🆕 Nuova serie iniziata!'}
+▸ 💰 Premio ritirato: _+${formatMoney(reward)}€_
+▸ 💳 Saldo attuale: _${formatMoney(uDB.money)}€_
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}`, id: `${command}` },

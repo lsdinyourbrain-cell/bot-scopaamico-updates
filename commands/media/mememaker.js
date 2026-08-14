@@ -26,7 +26,7 @@ module.exports = {
 
         const [topRaw = '', bottomRaw = ''] = String(textArgs || '').split('|').map((s) => s.trim());
         if (!topRaw && !bottomRaw) {
-            return reply("🎨 *Come si usa*\n\nRispondi a un'immagine e scrivi:\n`.mememaker testo sopra | testo sotto`\n\nEsempio: `.mememaker quando mia madre dice | di no`");
+            return reply("⚠️ _[uso]: rispondi a un'immagine e scrivi il testo del meme._\n━━━━━━━━━━━━━━\n▸ `.mememaker testo sopra | testo sotto`\n━━━━━━━━━━━━━━\n▸ Esempio: `.mememaker quando mia madre dice | di no`");
         }
 
         try {
@@ -74,9 +74,11 @@ module.exports = {
 
             await sock.sendMessage(from, {
                 image: composite,
-                caption: `🎨 *Mememaker*\n\n${topRaw ? '⬆️ _' + topRaw.slice(0, 60) + '_' : ''}${bottomRaw ? '\n⬇️ _' + bottomRaw.slice(0, 60) + '_' : ''}`,
+                caption: `🎨 *_MEMEMAKER_*
+━━━━━━━━━━━━━━${topRaw ? '\n▸ ⬆️ _' + topRaw.slice(0, 60) + '_' : ''}${bottomRaw ? '\n▸ ⬇️ _' + bottomRaw.slice(0, 60) + '_' : ''}
+◈ _Vex Bot_`,
             }, { quoted: msg });
-            await prog.done('🎨 *Meme pronto!* ✅');
+            await prog.done('🎨 *_MEME_*\n━━━━━━━━━━━━━━\n▸ _Meme pronto!_\n◈ _Vex Bot_');
         } catch (e) {
             console.error('[mememaker]', e.message);
             return reply("❌ Errore durante la creazione del meme. Riprova con un'altra immagine.");

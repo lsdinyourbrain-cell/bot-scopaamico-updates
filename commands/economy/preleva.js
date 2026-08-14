@@ -11,7 +11,7 @@ module.exports = {
 
 
             const amount = parseInt(textArgs);
-            if (!amount || amount <= 0) return reply("⚠️ Importo non valido.\n👉 *Uso:* `.preleva 500`");
+            if (!amount || amount <= 0) return reply("⚠️ _[uso]: .preleva <importo>_");
 
             const userData = getUser(sender, from);
             if (!userData.bank) userData.bank = 0;
@@ -22,12 +22,12 @@ module.exports = {
             saveDB();
 
             await reply(
-`🏦 *PRELEVO*
-━━━━━━━━━━━━━━━━━━
-📤 Prelievo: *${amount}€*
-
-💰 Contante: *${userData.money}€*
-🏦 Banca: *${userData.bank}€*
-━━━━━━━━━━━━━━━━━━`);
+`🏦 *_PRELEVO_*
+━━━━━━━━━━━━━━
+▸ 📤 Prelievo: _${amount}€_
+━━━━━━━━━━━━━━
+▸ 💰 Contante: _${userData.money}€_
+▸ 🏦 Banca: _${userData.bank}€_
+◈ _Vex Bot_`);
     },
 };

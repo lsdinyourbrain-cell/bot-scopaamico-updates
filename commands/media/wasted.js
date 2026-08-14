@@ -98,9 +98,12 @@ module.exports = {
 
             await sock.sendMessage(from, {
                 image: wastedBuffer,
-                caption: `💀 *${target.split('@')[0]} WASTED*\n\n*Grand Theft Auto: Vex Bot Edition*`
+                caption: `💀 *_${target.split('@')[0]} WASTED_*
+━━━━━━━━━━━━━━
+▸ _Grand Theft Auto: Vex Bot Edition_
+◈ _Vex Bot_`
             }, { quoted: msg });
-            await prog.done('💀 *WASTED generato!* ✅');
+            await prog.done('💀 *_WASTED_*\n━━━━━━━━━━━━━━\n▸ _WASTED generato!_\n◈ _Vex Bot_');
 
         } catch (e) {
             console.error('[wasted]', e);

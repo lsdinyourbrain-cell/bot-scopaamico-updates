@@ -46,7 +46,7 @@ module.exports = {
 
         const text = String(textArgs || '').trim();
         if (!text || text.length > 80) {
-            return reply("✨ *Come si usa*\n\n.attp <testo>  (max 80 caratteri)\n\nEsempio: `.attp CIAO BELLO`");
+            return reply("⚠️ _[uso]: scrivi il testo da trasformare in sticker neon._\n━━━━━━━━━━━━━━\n▸ `.attp <testo>` — _max 80 caratteri_\n━━━━━━━━━━━━━━\n▸ Esempio: `.attp CIAO BELLO`");
         }
 
         try {

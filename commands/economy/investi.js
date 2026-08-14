@@ -53,12 +53,13 @@ module.exports = {
                 : 0;
 
             const text =
-`📈 *BORSA*
-━━━━━━━━━━━━━━━━━━
-${linee.length ? linee.join('\n') : '📭 Portafoglio vuoto.\nCompra azioni con:\n*.investi compra GOOG*'}
-💶 Valore azioni: *${tot}€*
-💳 Contante: *${uDB.money}€*
-━━━━━━━━━━━━━━━━━━`;
+`📈 *_BORSA_*
+━━━━━━━━━━━━━━
+▸ ${linee.length ? linee.join('\n') : '📭 Portafoglio vuoto.\n▸ Compra azioni con: _*.investi compra GOOG*_'}
+━━━━━━━━━━━━━━
+▸ 💶 Valore azioni: _${tot}€_
+▸ 💳 Contante: _${uDB.money}€_
+◈ _Vex Bot_`;
             return await sendButtons(sock, from, text, [
                 { label: '📝 Listino', id: 'investi listino' },
             ], msg);
@@ -66,11 +67,12 @@ ${linee.length ? linee.join('\n') : '📭 Portafoglio vuoto.\nCompra azioni con:
 
         if (azione === 'LISTINO') {
             const listino =
-`📝 *LISTINO AZIONI*
-━━━━━━━━━━━━━━━━━━
-${AZIENDE.map(a => `${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`).join('\n')}
-━━━━━━━━━━━━━━━━━━
-*.investi compra <CODICE> [n]*`;
+`📝 *_LISTINO AZIONI_*
+━━━━━━━━━━━━━━
+▸ ${AZIENDE.map(a => `${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`).join('\n')}
+━━━━━━━━━━━━━━
+▸ _*.investi compra <CODICE> [n]*_
+◈ _Vex Bot_`;
             return await sendButtons(sock, from, listino, [
                 { label: '📊 Il tuo portafoglio', id: 'investi' },
             ], msg);
@@ -88,7 +90,7 @@ ${AZIENDE.map(a => `${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`).joi
                 uDB.money -= costo;
                 uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + qty;
                 saveDB();
-                return reply(`✅ Comprate *${qty}* azioni\ndi *${azienda.name}* per *${costo}€*\n💰 Saldo: *${uDB.money}€*`);
+                return reply(`✅ *_COMPRATE!_*\n━━━━━━━━━━━━━━\n▸ 📈 Azioni: _${qty}_\n▸ 🏢 _${azienda.name}_\n▸ 💰 Costo: _${costo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n◈ _Vex Bot_`);
             }
 
             const q = parseInt(parts[2]) || (uDB.azioni[target.toUpperCase()] || 1);
@@ -99,9 +101,9 @@ ${AZIENDE.map(a => `${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`).joi
             if (uDB.azioni[target.toUpperCase()] <= 0) delete uDB.azioni[target.toUpperCase()];
             uDB.money += ricavo;
             saveDB();
-            return reply(`💰 Vendute *${q}* azioni\ndi *${azienda.name}* per *${ricavo}€*\n💳 Saldo: *${uDB.money}€*`);
+            return reply(`💰 *_VENDUTE!_*\n━━━━━━━━━━━━━━\n▸ 📉 Azioni: _${q}_\n▸ 🏢 _${azienda.name}_\n▸ 💵 Ricavo: _${ricavo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n◈ _Vex Bot_`);
         }
 
-        reply("⚠️ *USO:*\n• *.investi* — portafoglio\n• *.investi listino* — prezzi\n• *.investi compra <codice> [n]*\n• *.investi vendi <codice> [n]*");
+        reply("⚠️ _[uso]:_\n▸ _*.investi*_ — portafoglio\n▸ _*.investi listino*_ — prezzi\n▸ _*.investi compra <codice> [n]*_\n▸ _*.investi vendi <codice> [n]*_");
     },
 };

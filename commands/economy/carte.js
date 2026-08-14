@@ -15,7 +15,7 @@
 
 const cards = require('../../lib/cards');
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '━━━━━━━━━━━━━━';
 
 const MAIN_MENU_TEXT = `🎴 *CARTE VEX*
 ${SEP}

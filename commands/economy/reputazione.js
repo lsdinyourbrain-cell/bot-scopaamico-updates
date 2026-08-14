@@ -22,15 +22,15 @@ module.exports = {
             const rep = Number(u.rep) || 0;
             const badge = rep >= 100 ? '👑' : rep >= 50 ? '🌟' : rep >= 20 ? '⭐' : rep >= 5 ? '👍' : '🐣';
             return reply(
-`🏷️ *REPUTAZIONE*
-━━━━━━━━━━━━━━━━━━
-${badge} @${sender.split('@')[0]}
-⭐ *${rep}* punti
-${repBar(rep)}
-
-_._rep @utente per votare_
-_(1 voto ogni 6 ore)_
-━━━━━━━━━━━━━━━━━━`);
+`🏷️ *_REPUTAZIONE_*
+━━━━━━━━━━━━━━
+▸ ${badge} @${sender.split('@')[0]}
+▸ ⭐ Punti: _${rep}_
+▸ ${repBar(rep)}
+━━━━━━━━━━━━━━
+▸ 🗳️ _._rep @utente_ per votare
+▸ ⏳ _1 voto ogni 6 ore_
+◈ _Vex Bot_`);
         }
 
         if (sameJid(targetJid, sender)) return reply("Non puoi votare te stesso!");
@@ -42,7 +42,7 @@ _(1 voto ogni 6 ore)_
         const CD_MS = 6 * 3600 * 1000;
         if (now - last < CD_MS) {
             const hours = Math.ceil((CD_MS - (now - last)) / 3600000);
-            return reply(`⏳ Hai già votato questo utente! Riprova tra *${hours}* ore.`);
+            return reply(`⏳ Hai già votato questo utente!\n▸ Riprova tra _${hours} ore_.`);
         }
         me.repGiven[targetJid] = now;
 
@@ -51,7 +51,7 @@ _(1 voto ogni 6 ore)_
         saveDB();
 
         return sock.sendMessage(from, {
-            text: `✅ @${sender.split('@')[0]} ha dato +1⭐\na @${targetJid.split('@')[0]}!\n\n📊 La sua reputazione\nora è *${target.rep}* punti.`,
+            text: `✅ @${sender.split('@')[0]} ha dato +1⭐\n▸ a @${targetJid.split('@')[0]}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

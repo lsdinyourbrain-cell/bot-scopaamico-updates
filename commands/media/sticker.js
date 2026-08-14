@@ -24,7 +24,7 @@ module.exports = {
 
             const media = directMedia || quotedMedia;
             if (!media) {
-                return await reply("Invia o rispondi a un’immagine o a un video per creare lo sticker.");
+                return await reply("⚠️ _[uso]: invia o rispondi a un'immagine o a un video per creare lo sticker._");
             }
 
             try {
@@ -61,7 +61,7 @@ module.exports = {
                 }
 
                 if (!buffer || buffer.length === 0) {
-                    return await reply("Il media non è più disponibile sui server di WhatsApp.");
+                    return await reply("❌ Il media non è più disponibile sui server di WhatsApp.");
                 }
 
                 const stamp = Date.now();

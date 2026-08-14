@@ -31,7 +31,7 @@ module.exports = {
                     audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
                 }
             }
-            if (!audioBuffer) return reply('🎤 Rispondi a un vocale con *.robot* per voce robotica.');
+            if (!audioBuffer) return reply('⚠️ _[uso]: rispondi a un vocale con *.robot* per voce robotica._');
 
             const prog = await showProgress(sock, from, { label: 'VOCE ROBOTICA', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `robot_in_${Date.now()}.opus`);
@@ -40,7 +40,7 @@ module.exports = {
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'asetrate=48000*0.6,aresample=48000,volume=2.0,chorus=0.5:0.9:50:0.7:0.7:2', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🤖 *Voce robotica pronta!* ✅');
+            await prog.done('🤖 *_ROBOT_*\n━━━━━━━━━━━━━━\n▸ _Voce robotica pronta!_\n◈ _Vex Bot_');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[robot]', e);

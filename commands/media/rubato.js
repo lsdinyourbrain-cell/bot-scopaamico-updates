@@ -13,7 +13,7 @@ module.exports = {
 
         try {
             if (!isReply || !contextInfo.quotedMessage) {
-                return reply('🖼️ *Sticker → Immagine*\n\nRispondi a uno *sticker* con *.rubato* per convertirlo in immagine salvabile.');
+                return reply('⚠️ _[uso]: rispondi a uno *sticker* con *.rubato* per convertirlo in immagine salvabile._');
             }
 
             const quoted = contextInfo.quotedMessage;
@@ -42,7 +42,7 @@ module.exports = {
 
             await sock.sendMessage(from, {
                 image: imageBuffer,
-                caption: '✅ *Sticker convertito in immagine!*\nOra puoi salvarla nel rullino.'
+                caption: '✅ *_STICKER → IMMAGINE_*\n━━━━━━━━━━━━━━\n▸ _Sticker convertito in immagine!_\n▸ Ora puoi _salvarla nel rullino_.\n◈ _Vex Bot_'
             }, { quoted: msg });
 
         } catch (e) {

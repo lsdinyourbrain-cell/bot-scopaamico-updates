@@ -38,14 +38,15 @@ module.exports = {
 
         if (t === 'uso' || t === 'help') {
             return sendButtons(sock, from,
-`📰 *FAKENEWS*
+`📰 *_FAKENEWS_*
 ${SEP}
-Una notizia finta e satirica
-sul gruppo, in stile tg.
+▸ _Una notizia finta e satirica_
+  _sul gruppo, in stile tg._
 ${SEP}
-• \`.fakenews\` → a caso
-• \`.fakenews @amico vende finti NFT\` → con dettagli
-${SEP}`,
+▸ \`.fakenews\` → _a caso_
+▸ \`.fakenews @amico vende finti NFT\` → _con dettagli_
+${SEP}
+◈ _Vex Bot_`,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
 
@@ -100,6 +101,6 @@ ${SEP}`,
             await prog.done(needKey());
             return;
         }
-        await prog.done(`📰 *FAKENEWS* · ${groupName}\n${SEP}\n${content}\n${SEP}\n☝️ Notizia evidentemente falsa 😄`);
+        await prog.done(`📰 *_FAKENEWS_* · _${groupName}_\n${SEP}\n${content}\n${SEP}\n☝️ _Notizia evidentemente falsa_ 😄\n◈ _Vex Bot_`);
     },
 };

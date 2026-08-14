@@ -25,7 +25,7 @@ module.exports = {
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `🎁 *DONAZIONE!*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha donato\n*${amount}€* a @${targetJid.split('@')[0]}! 🫶\n\n💰 Il tuo saldo: *${formatMoney(senderData.money)}*\n━━━━━━━━━━━━━━━━━━`,
+            text: `🎁 *_DONAZIONE!_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha donato _${amount}€_ a @${targetJid.split('@')[0]}! 🫶\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${formatMoney(senderData.money)}_\n◈ _Vex Bot_`,
             mentions: [sender, targetJid],
         });
     },

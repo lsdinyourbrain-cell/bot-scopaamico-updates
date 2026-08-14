@@ -9,7 +9,7 @@
 //  Pulsanti "Scava <riga><colonna>" (es. 12 = riga 1 colonna 2).
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '━━━━━━━━━━━━━━';
 const TICKET = 20;      // costo biglietto
 const CELL_REWARD = 25; // premio per cella sicura
 const BOMBS = 2;        // bombe nel campo

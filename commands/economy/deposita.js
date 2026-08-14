@@ -11,7 +11,7 @@ module.exports = {
 
 
             const amount = parseInt(textArgs);
-            if (!amount || amount <= 0) return reply("⚠️ Importo non valido.\n👉 *Uso:* `.deposita 500`");
+            if (!amount || amount <= 0) return reply("⚠️ _[uso]: .deposita <importo>_");
 
             const userData = getUser(sender, from);
             if (userData.money < amount) return reply(`❌ Non hai abbastanza soldi. Hai solo *${userData.money}€*.`);
@@ -22,12 +22,12 @@ module.exports = {
             saveDB();
 
             await reply(
-`🏦 *DEPOSITO*
-━━━━━━━━━━━━━━━━━━
-📥 Depositato: *${amount}€*
-
-💰 Contante: *${userData.money}€*
-🏦 Banca: *${userData.bank}€*
-━━━━━━━━━━━━━━━━━━`);
+`🏦 *_DEPOSITO_*
+━━━━━━━━━━━━━━
+▸ 📥 Depositato: _${amount}€_
+━━━━━━━━━━━━━━
+▸ 💰 Contante: _${userData.money}€_
+▸ 🏦 Banca: _${userData.bank}€_
+◈ _Vex Bot_`);
     },
 };

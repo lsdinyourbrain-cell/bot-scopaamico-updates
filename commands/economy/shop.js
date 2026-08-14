@@ -44,7 +44,7 @@ const ITEMS = [
     },
 ];
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '━━━━━━━━━━━━━━';
 
 // Renderizza la card di un oggetto come immagine SVG → PNG (le card del
 // carosello WhatsApp DEVONO avere un'immagine, altrimenti il messaggio

@@ -48,16 +48,14 @@ module.exports = {
 
         return sock.sendMessage(from, {
             text:
-`🎁 *REGALO!*
-━━━━━━━━━━━━━━━━━━
-🎀 @${sender.split('@')[0]} ha regalato
-*${formatMoney(amount)}* a @${targetJid.split('@')[0]}!
-
-_${randomChoice(GIFT_LINES)}_
-
-💳 Il tuo saldo: *${formatMoney(me.money)}*
-📦 Regali dati oggi: ${me.regali.n}/3
-━━━━━━━━━━━━━━━━━━`,
+`🎁 *_REGALO!_*
+━━━━━━━━━━━━━━
+▸ 🎀 @${sender.split('@')[0]} ha regalato _${formatMoney(amount)}_ a @${targetJid.split('@')[0]}!
+▸ _${randomChoice(GIFT_LINES)}_
+━━━━━━━━━━━━━━
+▸ 💳 Il tuo saldo: _${formatMoney(me.money)}_
+▸ 📦 Regali dati oggi: _${me.regali.n}/3_
+◈ _Vex Bot_`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

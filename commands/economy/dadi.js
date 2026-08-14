@@ -18,12 +18,12 @@ module.exports = {
             const cdMs = 5000;
             if (!isButton && now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`⏳ Calma! Puoi lanciare i dadi tra *${remain}s*.`);
+                return reply(`⏳ Calma! Puoi lanciare i dadi tra _${remain}s_.`);
             }
             userData.cooldowns[cooldownKey] = now;
 
             const puntata = parseInt(args[0]);
-            if (isNaN(puntata) || puntata <= 0) return reply("⚠️ Specifica una puntata valida.\n👉 *Uso:* `.dadi 50`");
+            if (isNaN(puntata) || puntata <= 0) return reply("⚠️ _[uso]: .dadi <importo>_ — es. _.dadi 50_");
 
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
@@ -45,14 +45,14 @@ module.exports = {
             saveDB();
 
             const resultText =
-`🎲 *LANCIO DADI*
-━━━━━━━━━━━━━━━━━━
-🧑 Tu: *${userRoll}*
-🤖 Bot: *${botRoll}*
-
-${esito}
-💰 Saldo attuale: *${uDB.money}€*
-━━━━━━━━━━━━━━━━━━`;
+`🎲 *_LANCIO DADI_*
+━━━━━━━━━━━━━━
+▸ 🧑 Tu: _${userRoll}_
+▸ 🤖 Bot: _${botRoll}_
+━━━━━━━━━━━━━━
+▸ ${esito}
+▸ 💰 Saldo attuale: _${uDB.money}€_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

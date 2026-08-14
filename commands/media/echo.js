@@ -31,7 +31,7 @@ module.exports = {
                     audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
                 }
             }
-            if (!audioBuffer) return reply('🎤 Rispondi a un vocale con *.echo* per aggiungere riverbero.');
+            if (!audioBuffer) return reply('⚠️ _[uso]: rispondi a un vocale con *.echo* per aggiungere riverbero._');
 
             const prog = await showProgress(sock, from, { label: 'RIVERBERO', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `echo_in_${Date.now()}.opus`);
@@ -40,7 +40,7 @@ module.exports = {
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'aecho=0.8:0.9:1000:0.3', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🏔️ *Riverbero aggiunto!* ✅');
+            await prog.done('🏔️ *_ECHO_*\n━━━━━━━━━━━━━━\n▸ _Riverbero aggiunto!_\n◈ _Vex Bot_');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[echo]', e);

@@ -40,7 +40,7 @@ module.exports = {
             }
 
             if (!audioBuffer) {
-                return reply('🎤 Rispondi a un vocale con *.8d* per audio spaziale 8D. Usa le cuffie!');
+                return reply('⚠️ _[uso]: rispondi a un vocale con *.8d* per audio spaziale 8D. Usa le cuffie!_');
             }
 
             const prog = await showProgress(sock, from, { label: 'AUDIO 8D', duration: 2500, quoted: msg });
@@ -66,7 +66,7 @@ module.exports = {
                 mimetype: 'audio/ogg; codecs=opus',
                 ptt: true
             }, { quoted: msg });
-            await prog.done('🎧 *Audio 8D generato!* ✅');
+            await prog.done('🎧 *_AUDIO 8D_*\n━━━━━━━━━━━━━━\n▸ _Audio 8D generato!_\n◈ _Vex Bot_');
 
             fs.unlinkSync(inputPath);
             fs.unlinkSync(outputPath);

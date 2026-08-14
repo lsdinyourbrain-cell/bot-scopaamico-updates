@@ -12,7 +12,7 @@ module.exports = {
 
             const puntata = 20;
             const uDB     = getUser(sender, from);
-            if (uDB.money < puntata) return reply(`❌ Costa *${puntata}€* girare la slot. Saldo attuale: *${uDB.money}€*.`);
+            if (uDB.money < puntata) return reply(`❌ Costa _${puntata}€_ girare la slot. Saldo attuale: _${uDB.money}€_.`);
 
             uDB.money -= puntata;
             const icone = ['🍒', '🍋', '🔔', '💎', '🍉'];
@@ -28,13 +28,13 @@ module.exports = {
             const risultato = win > 0 ? `🎊 *HAI VINTO ${win}€!* 🎊` : `💀 *HAI PERSO ${puntata}€*`;
 
             const resultText =
-`🎰 *SLOT MACHINE*
-━━━━━━━━━━━━━━━━━━
-[ ${r[0]} | ${r[1]} | ${r[2]} ]
-
-${risultato}
-💰 Saldo attuale: *${uDB.money}€*
-━━━━━━━━━━━━━━━━━━`;
+`🎰 *_SLOT MACHINE_*
+━━━━━━━━━━━━━━
+▸ [ ${r[0]} | ${r[1]} | ${r[2]} ]
+▸ ${risultato}
+━━━━━━━━━━━━━━
+▸ 💰 Saldo attuale: _${uDB.money}€_
+◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

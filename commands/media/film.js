@@ -34,44 +34,46 @@ module.exports = {
             if (!db._tmdb) db._tmdb = {};
             db._tmdb.apiKey = rawKey;
             saveDB();
-            return reply('✅ Chiave TMDB salvata! Ora usa `.film` per i film casuali.');
+            return reply('✅ *_CHIAVE TMDB SALVATA_*\n━━━━━━━━━━━━━━━━━━\n▸ Ora usa `.film` per _i film casuali_.\n◈ _Vex Bot_');
         }
 
         const apiKey = (db?._tmdb?.apiKey) || process.env.TMDB_API_KEY || '';
         if (!apiKey) {
             return sendButtons(sock, from,
-`🎬 *FILM* · serve la chiave TMDB
+`🎬 *_FILM_* · _serve la chiave TMDB_
 ${SEP}
-TMDB è gratuito: registrati su
-themoviedb.org/settings/api e
-ottieni una chiave, poi salvala:
-
-\`.film set "la-tua-chiave"\`
-${SEP}`,
+▸ TMDB è _gratuito_: registrati su
+  themoviedb.org/settings/api e
+  ottieni una _chiave_, poi salvala:
+${SEP}
+▸ \`.film set "la-tua-chiave"\`
+${SEP}
+◈ _Vex Bot_`,
                 [{ label: 'ℹ️ Guida TMDB', id: 'film guida' }], msg);
         }
 
         // ── GUIDA CHIAVE ─────────────────────────────────────────────────
         if (w1 === 'guida') {
-            return reply(`🎬 *CHIAVE TMDB (gratuita)*\n${SEP}\n1. Vai su themoviedb.org\n2. Registrati (gratis)\n3. Impostazioni → API\n4. Crea una chiave\n5. Salvala qui:\n\n\`.film set "la-tua-chiave\"\`\n${SEP}\nPoi \`.film\` per i film!`);
+            return reply(`🎬 *_CHIAVE TMDB (GRATUITA)_*\n${SEP}\n▸ 1. _Vai su themoviedb.org_\n▸ 2. _Registrati (gratis)_\n▸ 3. _Impostazioni → API_\n▸ 4. _Crea una chiave_\n▸ 5. _Salvala qui:_\n${SEP}\n▸ \`.film set "la-tua-chiave"\`\n${SEP}\n▸ Poi \`.film\` per _i film!_\n◈ _Vex Bot_`);
         }
 
         // ── TRAILER SU YOUTUBE ──────────────────────────────────────────
         if (w1 === 'trailer') {
             const title = (w2 || '').replace(/\+/g, ' ').trim();
-            if (!title) return reply('ℹ️ Uso: `.film trailer <titolo>`');
+            if (!title) return reply('⚠️ _[uso]: *.film trailer <titolo>*_');
             try {
                 const { searchVideos } = require('../../lib/mediaDownloader');
                 const results = await searchVideos(`${title} trailer`, 3);
                 const first = results[0];
                 if (!first) return reply('❌ Nessun trailer trovato su YouTube.');
                 return sendButtons(sock, from,
-`🎬 *TRAILER — ${title}*
+`🎬 *_TRAILER_* — _${title}_
 ${SEP}
-🏷️ ${first.title?.slice(0, 80)}
-📺 ${first.channel || ''}
+▸ 🏷️ _${first.title?.slice(0, 80)}_
+▸ 📺 _${first.channel || ''}_
 ${SEP}
-👉 ${first.url}`,
+▸ 👉 ${first.url}
+◈ _Vex Bot_`,
                     [{ label: '🔁 Altri film', id: 'film' }, { label: '🎬 Cerca altro', id: `film trailer ${title}` }], msg);
             } catch (e) {
                 console.error('[film trailer]', e.message);
@@ -101,12 +103,13 @@ ${SEP}
             }));
 
             const sent = await sendCarousel(sock, from, {
-                text: `🎬 *FILM DEL MOMENTO*
+                text: `🎬 *_FILM DEL MOMENTO_*
 ${SEP}
-10 film trending da TMDB.
-Premi *🎬 Trailer* per la
-ricerca su YouTube.
-${SEP}`,
+▸ _10 film trending da TMDB._
+▸ Premi *🎬 Trailer* per la
+  _ricerca su YouTube._
+${SEP}
+◈ _Vex Bot_`,
                 cards,
             }, msg);
             if (!sent) {
@@ -114,11 +117,12 @@ ${SEP}`,
                     `${i + 1}. ${m.title} (${m.release_date?.slice(0, 4) || '?'}) ⭐${Number(m.vote_average || 0).toFixed(1)}`
                 ).join('\n');
                 await sendButtons(sock, from,
-`🎬 *FILM DEL MOMENTO*
+`🎬 *_FILM DEL MOMENTO_*
 ${SEP}
 ${lines}
 ${SEP}
-Trailer: \`.film trailer <titolo>\``,
+▸ Trailer: \`.film trailer <titolo>\`
+◈ _Vex Bot_`,
                     [{ label: '🔁 Altri film', id: 'film' }], msg);
             }
         } catch (e) {

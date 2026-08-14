@@ -24,7 +24,7 @@ module.exports = {
                 delete db[from].lotteria;
                 saveDB();
                 return await sock.sendMessage(from, {
-                    text: `🎉 *VINCITORE LOTTERIA!*\n━━━━━━━━━━━━━━━━━━\n🏆 @${winner.split('@')[0]} vince *${premio}€*!\n🎟️ Biglietti: ${lotto.tickets[winner]}\n━━━━━━━━━━━━━━━━━━`,
+                    text: `🎉 *_VINCITORE LOTTERIA!_*\n━━━━━━━━━━━━━━\n▸ 🏆 @${winner.split('@')[0]} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [winner],
                 });
             }
@@ -45,7 +45,7 @@ module.exports = {
             saveDB();
 
             const poolFinale = Math.floor(lotto.pool);
-            await sendButtons(sock, from, `🎟️ *LOTTERIA*\n━━━━━━━━━━━━━━━━━━\nHai comprato un biglietto!\n🎟️ Totale tuoi: ${lotto.tickets[sender]}\n💰 Montepremi: *${poolFinale}€*\n━━━━━━━━━━━━━━━━━━`, [
+            await sendButtons(sock, from, `🎟️ *_LOTTERIA_*\n━━━━━━━━━━━━━━\n▸ ✅ Hai comprato un biglietto!\n▸ 🎟️ Totale tuoi: _${lotto.tickets[sender]}_\n▸ 💰 Montepremi: _${poolFinale}€_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`, [
                 { label: '.lotteria', id: 'lotteria' },
                 { label: '.lotteria estrai', id: 'lotteria estrai' },
             ], msg);

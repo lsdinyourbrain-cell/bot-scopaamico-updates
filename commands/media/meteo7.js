@@ -59,9 +59,9 @@ module.exports = {
         const city = String(textArgs || '').trim();
         if (!city) {
             return sendButtons(sock, from,
-`🌤️ *Manca la città!*
+`⚠️ _[uso]: scrivi una città per le previsioni a 7 giorni._
 ${SEP}
-Esempio: \`.meteo7 Milano\``,
+▸ Esempio: \`.meteo7 Milano\``,
                 [{ label: '.meteo7 Roma', id: 'meteo7 Roma' }], msg);
         }
 
@@ -116,17 +116,17 @@ Esempio: \`.meteo7 Milano\``,
             }
 
             const sent = await sendCarousel(sock, from, {
-                text: `🌤️ *PREVISIONI 7 GIORNI*\n${SEP}\n📍 ${cityName}\n${SEP}\nScorri per vedere la\nsettimana giorno per giorno 👇\n${SEP}`,
+                text: `🌤️ *_PREVISIONI 7 GIORNI_*\n${SEP}\n▸ 📍 _${cityName}_\n${SEP}\n▸ _Scorri per vedere la_\n  _settimana giorno per giorno_ 👇\n${SEP}\n◈ _Vex Bot_`,
                 cards,
             }, msg);
             if (!sent) {
                 const lines = consolidated.map((day, i) =>
                     `${day.icon} *${day.dow}* (${day.dateStr})\n   ${day.desc} · ${day.max}°/${day.min}° · pioggia ${day.rain}%`
                 ).join('\n');
-                await reply(`🌤️ *METEO ${cityName} — 7 GIORNI*\n${SEP}\n${lines}\n${SEP}`);
+                await reply(`🌤️ *_METEO_* _${cityName} — 7 GIORNI_\n${SEP}\n${lines}\n${SEP}\n◈ _Vex Bot_`);
             }
         } catch (_) {
-            await reply('Non trovo il meteo di questa città. Riprova con un nome più preciso.');
+            await reply('❌ Non trovo il meteo di questa città. Riprova con un nome più preciso.');
         }
     },
 };

@@ -11,7 +11,7 @@ module.exports = {
 
 
             if (!textArgs) return sendButtons(sock, from,
-                "🌤️ *Manca la città!*\n\nEsempio: `.weather Milano`",
+                "⚠️ _[uso]: scrivi una città._\n━━━━━━━━━━━━━━━━━━\n▸ Esempio: `.weather Milano`",
                 [{ label: '.weather Roma', id: 'weather Roma' }],
                 msg);
             try {
@@ -23,16 +23,17 @@ module.exports = {
                 const city = area?.areaName?.[0]?.value || textArgs;
                 const description = current.weatherDesc?.[0]?.value || 'N/D';
                 await prog.done(
-`🌦️ *METEO*
+`🌦️ *_METEO_*
 ━━━━━━━━━━━━━━━━━━
-📍 *${city}*
-🌡️ ${current.temp_C}°C
-${description}
-💧 Umidità: ${current.humidity}%
-🌬️ Vento: ${current.windspeedKmph} km/h
-━━━━━━━━━━━━━━━━━━`);
+▸ 📍 *${city}*
+▸ 🌡️ _${current.temp_C}°C_
+▸ _${description}_
+▸ 💧 _Umidità:_ ${current.humidity}%
+▸ 🌬️ _Vento:_ ${current.windspeedKmph} _km/h_
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
             } catch (_) {
-                await reply("Non trovo il meteo di questa città. Riprova con un nome più preciso.");
+                await reply("❌ Non trovo il meteo di questa città. Riprova con un nome più preciso.");
             }
     },
 };

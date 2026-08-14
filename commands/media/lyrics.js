@@ -14,7 +14,7 @@ module.exports = {
         const query = (textArgs || '').trim();
         if (!query) {
             return sendButtons(sock, from,
-                "🎤 *Manca la canzone!*\n\nEsempio: `.lyrics Blinding Lights The Weeknd`",
+                "⚠️ _[uso]: scrivi il titolo e l'artista della canzone._\n━━━━━━━━━━━━━━\n▸ Esempio: `.lyrics Blinding Lights The Weeknd`",
                 [{ label: '.lyrics Blinding Lights', id: 'lyrics Blinding Lights The Weeknd' }],
                 msg);
         }
@@ -22,12 +22,17 @@ module.exports = {
         try {
             const found = await searchLyrics(axios, query);
             if (!found || !found.lyrics) {
-                return reply(`Ho trovato *${query}*, ma il testo non è disponibile.`);
+                return reply(`⚠️ Ho trovato *${query}*, ma il testo non è disponibile.`);
             }
 
             const lyrics = found.lyrics.slice(0, 6000) + (found.lyrics.length > 6000 ? '\n\n…testo tagliato qui.' : '');
-            const head = `🎤 *${found.title || query}*${found.artist ? ' — _' + found.artist + '_' : ''}\n\n`;
-            await sock.sendMessage(from, { text: head + lyrics }, { quoted: msg });
+            const head = `🎤 *_LYRICS_*
+━━━━━━━━━━━━━━
+▸ *${found.title || query}*${found.artist ? ' — _' + found.artist + '_' : ''}
+━━━━━━━━━━━━━━
+
+`;
+            await sock.sendMessage(from, { text: head + lyrics + '\n\n◈ _Vex Bot_' }, { quoted: msg });
         } catch (e) {
             console.error('[lyrics]', e.message);
             await reply("Non riesco a recuperare il testo in questo momento. Riprova più tardi.");

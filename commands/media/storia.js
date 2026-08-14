@@ -45,14 +45,15 @@ module.exports = {
         // Uso del comando.
         if (t === 'uso' || t === 'help') {
             return sendButtons(sock, from,
-`📖 *STORIA*
+`📖 *_STORIA_*
 ${SEP}
-Racconto una mini-storia dell'IA!
+▸ _Racconto una mini-storia dell'IA!_
 ${SEP}
-• \`.storia\` → protagonisti a caso
-• \`.storia @amico @amica\` → i taggati
-• \`.storia cavalieri dello zodiaco\` → tema a scelta
-${SEP}`,
+▸ \`.storia\` → _protagonisti a caso_
+▸ \`.storia @amico @amica\` → _i taggati_
+▸ \`.storia cavalieri dello zodiaco\` → _tema a scelta_
+${SEP}
+◈ _Vex Bot_`,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
 
@@ -95,6 +96,6 @@ ${SEP}`,
             await prog.done(needKey());
             return;
         }
-        await prog.done(`📖 *STORIA*\n${SEP}\n${content}`);
+        await prog.done(`📖 *_STORIA_*\n${SEP}\n${content}\n◈ _Vex Bot_`);
     },
 };

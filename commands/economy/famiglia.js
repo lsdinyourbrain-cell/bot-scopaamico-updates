@@ -34,7 +34,7 @@ module.exports = {
 
                 if (!isAccept) {
                     await sock.sendMessage(from, {
-                        text: `❌ *RIFIUTATO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha rifiutato\nla proposta di @${prop.proposer.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
+                        text: `❌ *_RIFIUTATO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha rifiutato\n▸ la proposta di @${prop.proposer.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                         mentions: [sender, prop.proposer],
                     });
                     return;
@@ -51,7 +51,7 @@ module.exports = {
                     targetDB.spouse = prop.proposer;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `💒 *MATRIMONIO*\n━━━━━━━━━━━━━━━━━━\n@${prop.proposer.split('@')[0]} 💞 @${prop.target.split('@')[0]}\n_Vi siete appena sposati!_\n━━━━━━━━━━━━━━━━━━`,
+                        text: `💒 *_MATRIMONIO_*\n━━━━━━━━━━━━━━\n▸ @${prop.proposer.split('@')[0]} 💞 @${prop.target.split('@')[0]}\n▸ _Vi siete appena sposati!_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                         mentions: [prop.proposer, prop.target],
                     });
                 } else if (prop.type === 'adotta') {
@@ -62,7 +62,7 @@ module.exports = {
                     if (!targetDB.parents.includes(prop.proposer)) targetDB.parents.push(prop.proposer);
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🍼 *ADOZIONE*\n━━━━━━━━━━━━━━━━━━\n@${prop.proposer.split('@')[0]} ha adottato\n@${prop.target.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
+                        text: `🍼 *_ADOZIONE_*\n━━━━━━━━━━━━━━\n▸ @${prop.proposer.split('@')[0]} ha adottato @${prop.target.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                         mentions: [prop.proposer, prop.target],
                     });
                 }
@@ -95,14 +95,14 @@ module.exports = {
                 }
 
                 const albero =
-`🌳 *FAMIGLIA*
-━━━━━━━━━━━━━━━━━━
-👤 *${pushName.slice(0, 20)}*
-
-${partnerLine}
-${parentsLine}
-${childrenLine}
-━━━━━━━━━━━━━━━━━━`;
+`🌳 *_FAMIGLIA_*
+━━━━━━━━━━━━━━
+▸ 👤 _${pushName.slice(0, 20)}_
+▸ ${partnerLine}
+▸ ${parentsLine}
+▸ ${childrenLine}
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
                 await sock.sendMessage(from, { text: albero, mentions: familyMentions });
             }
@@ -119,14 +119,13 @@ ${childrenLine}
                 saveDB();
 
                 return sendButtons(sock, from,
-`💍 *PROPOSTA DI MATRIMONIO*
-━━━━━━━━━━━━━━━━━━
-@${sender.split('@')[0]} ti chiede
-di sposarlo/a! 💞
-
-_Accetti?_
-(2 minuti di tempo)
-━━━━━━━━━━━━━━━━━━`,
+`💍 *_PROPOSTA DI MATRIMONIO_*
+━━━━━━━━━━━━━━
+▸ @${sender.split('@')[0]} ti chiede di sposarlo/a! 💞
+▸ _Accetti?_
+▸ ⏳ _2 minuti di tempo_
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`,
                     [
                         { label: '💍 Sì, accetto!', id: `famiglia si ${proposalId}` },
                         { label: '❌ No, grazie', id: `famiglia no ${proposalId}` },
@@ -141,7 +140,7 @@ _Accetti?_
                 exDB.spouse = null;
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `💔 *DIVORZIO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha divorziato\nda @${ex.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
+                    text: `💔 *_DIVORZIO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha divorziato da @${ex.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [sender, ex],
                 });
             }
@@ -157,14 +156,13 @@ _Accetti?_
                 saveDB();
 
                 return sendButtons(sock, from,
-`🍼 *PROPOSTA DI ADOZIONE*
-━━━━━━━━━━━━━━━━━━
-@${sender.split('@')[0]} vuole
-adottarti! 👨‍👧
-
-_Accetti?_
-(2 minuti di tempo)
-━━━━━━━━━━━━━━━━━━`,
+`🍼 *_PROPOSTA DI ADOZIONE_*
+━━━━━━━━━━━━━━
+▸ @${sender.split('@')[0]} vuole adottarti! 👨‍👧
+▸ _Accetti?_
+▸ ⏳ _2 minuti di tempo_
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`,
                     [
                         { label: '🍼 Sì, accetto!', id: `famiglia si ${proposalId}` },
                         { label: '❌ No, grazie', id: `famiglia no ${proposalId}` },
@@ -180,7 +178,7 @@ _Accetti?_
                 tDB.parents = tDB.parents.filter(parent => parent !== sender);
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚪 *CACCIATA*\n━━━━━━━━━━━━━━━━━━\n@${target.split('@')[0]} non è più\nnella famiglia di @${sender.split('@')[0]}\n━━━━━━━━━━━━━━━━━━`,
+                    text: `🚪 *_CACCIATA_*\n━━━━━━━━━━━━━━\n▸ @${target.split('@')[0]} non è più nella famiglia di @${sender.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [sender, target],
                 });
             }
@@ -194,12 +192,12 @@ _Accetti?_
                 uDB.parents = [];
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚶 *ABBANDONO*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha scelto\ndi andare per la sua strada\n━━━━━━━━━━━━━━━━━━`,
+                    text: `🚶 *_ABBANDONO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha scelto di andare per la sua strada\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [sender],
                 });
             }
             else {
-                await reply("❓ *AIUTO FAMIGLIA*\n━━━━━━━━━━━━━━━━━━\n.famiglia\n.famiglia sposa @u\n.famiglia adotta @u\n.famiglia divorzia\n.famiglia caccia @u\n.famiglia abbandona\n━━━━━━━━━━━━━━━━━━");
+                await reply("❓ *_AIUTO FAMIGLIA_*\n━━━━━━━━━━━━━━\n▸ _.famiglia_\n▸ _.famiglia sposa @u_\n▸ _.famiglia adotta @u_\n▸ _.famiglia divorzia_\n▸ _.famiglia caccia @u_\n▸ _.famiglia abbandona_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
             }
     },
 };

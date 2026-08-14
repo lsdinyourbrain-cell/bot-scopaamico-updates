@@ -24,10 +24,10 @@ module.exports = {
 
             await sock.sendMessage(
                 jid,
-                { video, caption: '✅ Download completato!' },
+                { video, caption: '✅ *_DOWNLOAD_*\n━━━━━━━━━━━━━━\n▸ _Download completato!_\n◈ _Vex Bot_' },
                 { quoted: msg }
             );
-            await prog.done('📥 *Video Instagram scaricato!* ✅');
+            await prog.done('📥 *_INSTAGRAM_*\n━━━━━━━━━━━━━━\n▸ _Video Instagram scaricato!_\n◈ _Vex Bot_');
         } catch (error) {
             console.error('[ig]', error.message);
             await sock.sendMessage(jid, { text: "❌ Link non valido o download non disponibile." });

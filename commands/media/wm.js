@@ -17,10 +17,10 @@ module.exports = {
 
         const newTitle = (textArgs || '').trim();
         if (!newTitle) {
-            return reply("Scrivi il nuovo titolo da dare allo sticker. Esempio: .wm denunciarsi");
+            return reply("⚠️ _[uso]: scrivi il nuovo titolo da dare allo sticker._\n▸ Esempio: `.wm denunciarsi`");
         }
         if (newTitle.length > 100) {
-            return reply("Titolo troppo lungo (max 100 caratteri).");
+            return reply("⚠️ Titolo troppo lungo (_max 100 caratteri_).");
         }
 
         // Estrai lo sticker dal messaggio citato
@@ -30,7 +30,7 @@ module.exports = {
             || msg.message?.stickerMessage;
 
         if (!stickerMsg) {
-            return reply("Rispondi a uno sticker per clonarlo col nuovo nome.");
+            return reply("⚠️ _[uso]: rispondi a uno sticker per clonarlo col nuovo nome._");
         }
 
         const prog = await showProgress(sock, from, {
@@ -88,7 +88,7 @@ module.exports = {
             await prog.done('Sticker clonato con titolo: ' + newTitle + ' ✅');
         } catch (err) {
             console.error('[wm]', err.message);
-            await prog.fail('Errore nella clonazione dello sticker. Verifica che sia uno sticker valido.');
+            await prog.fail('❌ Errore nella clonazione dello sticker. Verifica che sia uno sticker valido.');
         }
     },
 };

@@ -10,8 +10,8 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
 
 
-            if (!isGroup) return reply("Funziona solo nei gruppi.");
-            if (!targetJid) return reply("Tagga chi vuoi derubare!");
+            if (!isGroup) return reply("⚠️ Funziona solo nei gruppi.");
+            if (!targetJid) return reply("⚠️ _[uso]: .ruba @utente_");
             if (sameJid(sender, targetJid)) return reply("Non puoi rubare a te stesso, scemo 😂");
 
             const targetData = getUser(targetJid, from);
@@ -30,13 +30,12 @@ module.exports = {
                 thiefData.money = Math.max(0, thiefData.money - penalty);
                 saveDB();
                 return reply(
-`🚔 *BECCATO!*
-━━━━━━━━━━━━━━━━━━
-Il proprietario ti ha fatto
-una multa di *${penalty}€*!
-
-💰 Saldo: *${thiefData.money}€*
-━━━━━━━━━━━━━━━━━━`);
+`🚔 *_BECCATO!_*
+━━━━━━━━━━━━━━
+▸ 😱 Il proprietario ti ha fatto una multa di _${penalty}€_!
+━━━━━━━━━━━━━━
+▸ 💰 Saldo: _${thiefData.money}€_
+◈ _Vex Bot_`);
             }
 
             const stolen = Math.min(targetData.money, Math.floor(Math.random() * 100) + 20);
@@ -45,7 +44,7 @@ una multa di *${penalty}€*!
             saveDB();
 
             await sock.sendMessage(from, {
-                text: `🕵️ *FURTO!*\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]} ha rubato\n*${stolen}€* a @${targetJid.split('@')[0]}! 💀\n\n💰 Il tuo saldo: *${thiefData.money}€*\n━━━━━━━━━━━━━━━━━━`,
+                text: `🕵️ *_FURTO!_*\n━━━━━━━━━━━━━━\n▸ 💀 @${sender.split('@')[0]} ha rubato _${stolen}€_ a @${targetJid.split('@')[0]}!\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n◈ _Vex Bot_`,
                 mentions: [sender, targetJid],
             });
     },

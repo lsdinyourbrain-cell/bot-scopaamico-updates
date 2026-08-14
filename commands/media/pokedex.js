@@ -193,9 +193,15 @@ module.exports = {
 
             await sock.sendMessage(from, {
                 image: cardBuffer,
-                caption: `📋 *Scheda Pokédex per ${displayName}*\n\n#${String(id).padStart(3, '0')}  •  Liv.${level}  •  ${type1}/${type2}\n\n*Per uso ludico - non ufficiale* 😄`
+                caption: `📋 *_POKÉDEX_*
+━━━━━━━━━━━━━━
+▸ *Nome:* _${displayName}_
+▸ *#${String(id).padStart(3, '0')}_ · _Liv.${level}_ · _${type1}/${type2}_
+━━━━━━━━━━━━━━
+▸ _Per uso ludico - non ufficiale_ 😄
+◈ _Vex Bot_`
             }, { quoted: msg });
-            await prog.done('📋 *Scheda Pokédex generata!* ✅');
+            await prog.done('📋 *_POKÉDEX_*\n━━━━━━━━━━━━━━\n▸ _Scheda Pokédex generata!_\n◈ _Vex Bot_');
 
         } catch (e) {
             console.error('[pokedex]', e);

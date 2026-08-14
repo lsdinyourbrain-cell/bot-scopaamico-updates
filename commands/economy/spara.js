@@ -11,20 +11,20 @@ module.exports = {
 
 
             const result = claimBounty(from, sender);
-            if (result === null) return reply("Nessuna taglia attiva in questo gruppo 🤷");
+            if (result === null) return reply("⚠️ Nessuna taglia attiva in questo gruppo 🤷");
             if (result === 0) {
-                return reply("💥 Hai sparato ma il bersaglio si è schivato!\nPer stavolta niente taglia 😂");
+                return reply("💥 Hai sparato ma il bersaglio si è schivato!\n▸ 😂 Per stavolta niente taglia!");
             }
             const userData = getUser(sender, from);
             userData.money += result;
             saveDB();
             await reply(
-`🎯 *TAGLIASSA!*
-━━━━━━━━━━━━━━━━━━
-Hai centrato il bersaglio!
-Intascato: *${result}€* 💰
-
-💰 Saldo: *${userData.money}€*
-━━━━━━━━━━━━━━━━━━`);
+`🎯 *_TAGLIASSA!_*
+━━━━━━━━━━━━━━
+▸ 💥 Hai centrato il bersaglio!
+▸ 💰 Intascato: _${result}€_
+━━━━━━━━━━━━━━
+▸ 💳 Saldo: _${userData.money}€_
+◈ _Vex Bot_`);
     },
 };

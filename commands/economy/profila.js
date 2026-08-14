@@ -36,29 +36,29 @@ module.exports = {
             try { pfpUrl = await sock.profilePictureUrl(target, 'image'); } catch (_) { pfpUrl = null; }
 
             const profileText =
-`👤 *PROFILO*
-━━━━━━━━━━━━━━━━━━
-🧑 *${name.slice(0, 20)}*
-🏷️ ${uDB.title ? '*' + uDB.title.slice(0, 25) + '*' : '_Nessun titolo_'}
-
-⭐ Livello: *${level}*
-🌟 Rango: ${xpLib.rankOf(level)}
-✨ XP: *${xp}* / *${xpNeed}*
-${xpLib.xpBar(xp, xpNeed)}
-🏅 Pregi (ultimi): ${lastPregi || '_Nessuno_'}
-🎓 Punti pregio: *${pregi.length}*
-
-💰 Contante: *${wallet}€*
-🏦 Banca: *${bank}€*
-💵 Totale: *${wallet + bank}€*
-
-💍 Sposato: ${spouse ? `@${spouse.split('@')[0]}` : '_No_'}
-👴 Genitori: *${parents}*
-🍼 Figli: *${children}*
-
-💬 Messaggi: *${msgCount}*
-🤬 Bestemmie: *${bestemmie}*
-━━━━━━━━━━━━━━━━━━`;
+`👤 *_PROFILO_*
+━━━━━━━━━━━━━━
+▸ 🧑 _${name.slice(0, 20)}_
+▸ 🏷️ ${uDB.title ? '*' + uDB.title.slice(0, 25) + '*' : '_Nessun titolo_'}
+━━━━━━━━━━━━━━
+▸ ⭐ Livello: _${level}_
+▸ 🌟 Rango: _${xpLib.rankOf(level)}_
+▸ ✨ XP: _${xp}_ / _${xpNeed}_
+▸ ${xpLib.xpBar(xp, xpNeed)}
+▸ 🏅 Pregi (ultimi): _${lastPregi || 'Nessuno'}_
+▸ 🎓 Punti pregio: _${pregi.length}_
+━━━━━━━━━━━━━━
+▸ 💰 Contante: _${wallet}€_
+▸ 🏦 Banca: _${bank}€_
+▸ 💵 Totale: _${wallet + bank}€_
+━━━━━━━━━━━━━━
+▸ 💍 Sposato: ${spouse ? `@${spouse.split('@')[0]}` : '_No_'}
+▸ 👴 Genitori: _${parents}_
+▸ 🍼 Figli: _${children}_
+━━━━━━━━━━━━━━
+▸ 💬 Messaggi: _${msgCount}_
+▸ 🤬 Bestemmie: _${bestemmie}_
+◈ _Vex Bot_`;
 
             if (pfpUrl) {
                 await sock.sendMessage(from, { image: { url: pfpUrl }, caption: profileText, mentions: spouse ? [spouse] : [] });

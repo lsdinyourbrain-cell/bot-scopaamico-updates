@@ -16,7 +16,7 @@ module.exports = {
             const quoted = rawCtx.quotedMessage;
 
             if (!quoted) {
-                return reply("Rispondi a una foto o a un video *Visualizza una volta*.");
+                return reply("⚠️ _[uso]: rispondi a una foto o a un video *Visualizza una volta*._");
             }
 
             // Dopo che WA consuma il wrapper viewOnce, Baileys espone
@@ -31,7 +31,7 @@ module.exports = {
             const innerMedia    = targetMessage.imageMessage || targetMessage.videoMessage;
 
             if (!innerMedia) {
-                return reply("Rispondi a una foto o a un video *Visualizza una volta*.");
+                return reply("⚠️ _[uso]: rispondi a una foto o a un video *Visualizza una volta*._");
             }
 
             try {
@@ -55,21 +55,21 @@ module.exports = {
                 );
 
                 if (!buffer || buffer.length === 0) {
-                    return reply("Il media non è più disponibile sui server di WhatsApp.");
+                    return reply("❌ Il media non è più disponibile sui server di WhatsApp.");
                 }
 
                 if (targetMessage.imageMessage) {
                     await sock.sendMessage(from,
-                        { image: buffer, caption: "👁️ *View once sbloccato*" },
+                        { image: buffer, caption: "👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n◈ _Vex Bot_" },
                         { quoted: msg }
                     );
-                    await prog.done("👁️ *View once sbloccato!* ✅");
+                    await prog.done("👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n◈ _Vex Bot_");
                 } else {
                     await sock.sendMessage(from,
-                        { video: buffer, caption: "👁️ *View once sbloccato*" },
+                        { video: buffer, caption: "👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n◈ _Vex Bot_" },
                         { quoted: msg }
                     );
-                    await prog.done("👁️ *View once sbloccato!* ✅");
+                    await prog.done("👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n◈ _Vex Bot_");
                 }
 
             } catch (err) {

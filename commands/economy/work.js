@@ -17,7 +17,7 @@ module.exports = {
         const cdMs = 20 * 60 * 1000;
         if (!isButton && now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 60000);
-            return reply(`⏳ Hai appena finito un turno!\n😴 Riposa per ancora *${remain} minuti*.`);
+            return reply(`⏳ Hai appena finito un turno!\n😴 Riposa per ancora _${remain} minuti_.`);
         }
         userData.cooldowns[cooldownKey] = now;
 
@@ -39,15 +39,15 @@ module.exports = {
         saveDB();
 
         const resultText =
-`💼 *WORK*
-━━━━━━━━━━━━━━━━━━
-${lavoro.emoji} Hai lavorato ${lavoro.nome}!
-
-💰 Guadagno: *+${formatMoney(paga)}€*
-
-💳 Saldo attuale: *${formatMoney(uDB.money)}€*
-⏳ Nuovo turno tra 20 minuti
-━━━━━━━━━━━━━━━━━━`;
+`💼 *_WORK_*
+━━━━━━━━━━━━━━
+▸ ${lavoro.emoji} Hai lavorato ${lavoro.nome}!
+━━━━━━━━━━━━━━
+▸ 💰 *Guadagno:* _+${formatMoney(paga)}€_
+━━━━━━━━━━━━━━
+▸ 💳 *Saldo attuale:* _${formatMoney(uDB.money)}€_
+▸ ⏳ Nuovo turno tra 20 minuti
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, resultText, [
             { label: `💼 Nuovo turno`, id: `.${command}` },

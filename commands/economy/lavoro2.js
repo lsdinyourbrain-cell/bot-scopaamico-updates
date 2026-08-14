@@ -44,20 +44,16 @@ module.exports = {
         saveDB();
 
         const text =
-`💪 *LAVORETTO*
-━━━━━━━━━━━━━━━━━━
-${gig.emoji} Oggi ${gig.nome}:
-_${randomChoice(gig.tip())}._
-
-${bonus ? '🔥 *CRITICO!* Paga massima!' : ''}
-💰 Guadagno: *+${formatMoney(guadagno)}*
-
-💳 Saldo: *${formatMoney(userData.money)}*
-
-🧾 Carriera: ${userData.lavoro2.giorni} lavoretti,
-${formatMoney(userData.lavoro2.guadagnato)} accumulati
-⏳ Nuovo lavoretto tra 45 minuti
-━━━━━━━━━━━━━━━━━━`;
+`💪 *_LAVORETTO_*
+━━━━━━━━━━━━━━
+▸ ${gig.emoji} Oggi ${gig.nome}:
+▸ _${randomChoice(gig.tip())}._
+${bonus ? '▸ 🔥 *_CRITICO! Paga massima!_*\n' : ''}▸ 💰 Guadagno: _+${formatMoney(guadagno)}_
+━━━━━━━━━━━━━━
+▸ 💳 Saldo: _${formatMoney(userData.money)}_
+▸ 🧾 Carriera: _${userData.lavoro2.giorni} lavoretti_, _${formatMoney(userData.lavoro2.guadagnato)}_ accumulati
+▸ ⏳ Nuovo lavoretto tra 45 minuti
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, text, [
             { label: `💪 Altro lavoretto`, id: `.${command}` },

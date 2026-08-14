@@ -32,15 +32,16 @@ module.exports = {
 
         if (!t) {
             return sendButtons(sock, from,
-`🧞 *GENIO DELLA LAMPADA*
+`🧞 *_GENIO DELLA LAMPADA_*
 ${SEP}
-Chiedimi qualcosa e rispondo!
+▸ _Chiedimi qualcosa e rispondo!_
 ${SEP}
-• \`.genio Sarò ricco?\` → stile a caso
-• \`.genio ironia Devo studiare?\` → stile scelto
+▸ \`.genio Sarò ricco?\` → _stile a caso_
+▸ \`.genio ironia Devo studiare?\` → _stile scelto_
 ${SEP}
-Stili: saggezza · ironia · poesia · profezia
-${SEP}`,
+▸ _Stili:_ saggezza · ironia · poesia · profezia
+${SEP}
+◈ _Vex Bot_`,
                 [
                     { label: '🐉 Saperi (sagg.)', id: 'genio saggezza Chi sono io?' },
                     { label: '😏 Ironia', id: 'genio ironia Dimmi la verità' },
@@ -82,6 +83,6 @@ ${SEP}`,
             return;
         }
         const emoji = style === 'ironia' ? '😏' : style === 'poesia' ? '📜' : style === 'profezia' ? '🔮' : '🧞';
-        await prog.done(`${emoji} *GENIO* · stile ${style}\n${SEP}\n${content}`);
+        await prog.done(`${emoji} *_GENIO_* · _stile ${style}_\n${SEP}\n${content}\n◈ _Vex Bot_`);
     },
 };

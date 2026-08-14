@@ -10,7 +10,7 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
 
-            if (!targetJid) return reply("Tagga una persona: è solo una scenetta, promesso.");
+            if (!targetJid) return reply("⚠️ _[uso]: tagga una persona: è solo una scenetta, promesso._");
             const pause = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             try {
                 const fake = await sock.sendMessage(from, {
@@ -28,7 +28,7 @@ module.exports = {
                     mentions: [targetJid],
                 });
             } catch (_) {
-                await reply("La scenetta si è impallata, riprova.");
+                await reply("❌ La scenetta si è impallata, riprova.");
             }
     },
 };

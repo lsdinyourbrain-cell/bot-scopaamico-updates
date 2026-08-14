@@ -65,7 +65,7 @@ module.exports = {
                 },
                 { quoted: msg }
             );
-            await prog.done('🎙️ *Testo convertito in vocale!* ✅');
+            await prog.done('🎙️ *_TTS_*\n━━━━━━━━━━━━━━\n▸ _Testo convertito in vocale!_\n◈ _Vex Bot_');
         } catch (error) {
             console.error('[tts]', error.message);
             await sock.sendMessage(jid, { text: "❌ Errore durante l'elaborazione della richiesta." });

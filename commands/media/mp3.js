@@ -22,7 +22,7 @@ module.exports = {
         const query = (args || []).join(' ').trim();
 
         if (!query) {
-            return reply('Scrivi il titolo della canzone. Esempio: `.mp3 Blinding Lights`');
+            return reply("⚠️ _[uso]: scrivi il titolo della canzone._\n━━━━━━━━━━━━━━\n▸ Esempio: `.mp3 Blinding Lights`");
         }
 
         const prog = await showProgress(sock, from, {
@@ -51,7 +51,7 @@ module.exports = {
                 fileName: `${cleanName}.${ext}`,
             }, { quoted: msg });
 
-            await prog.done(`🎵 Scaricato *${query}* intero!`);
+            await prog.done(`🎵 *_MP3_*\n━━━━━━━━━━━━━━\n▸ _Scaricato_ *${query}* _intero!_\n◈ _Vex Bot_`);
         } catch (e) {
             console.error('[mp3]', e.message);
             await prog.fail('❌ ' + getDownloadErrorMessage(e));

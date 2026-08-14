@@ -168,7 +168,7 @@ module.exports = {
         const query = textArgs;
         if (!query) {
             return sendButtons(sock, from,
-                "🔎 *Ricerca su YouTube*\n\nScrivi cosa cerchi. Esempio:\n`.cerca Blinding Lights The Weeknd`\n\nScorri le card, premi *MP3* (audio in .mp3) o *MP4* (video).",
+                "🔎 *_RICERCA SU YOUTUBE_*\n━━━━━━━━━━━━━━\n▸ Scrivi cosa cerchi. Esempio:\n▸ `.cerca Blinding Lights The Weeknd`\n━━━━━━━━━━━━━━\n▸ Scorri le card, premi *MP3* (_audio_) o *MP4* (_video_).\n◈ _Vex Bot_",
                 [{ label: '.cerca Blinding Lights', id: 'cerca Blinding Lights The Weeknd' }],
                 msg);
         }
@@ -197,7 +197,7 @@ module.exports = {
 async function renderCarousel(sock, from, st, msg, reply) {
     try {
         const sent = await sendCarousel(sock, from, {
-            text: `🔎 *Risultati per "${st.query}"* — scorri ➡️`,
+            text: `🔎 *_Risultati_* per _"${st.query}"_ — _scorri ➡️_`,
             cards: buildCards(st.results),
         }, msg);
         return sent;
@@ -216,18 +216,19 @@ const resultsText = (st) => {
     const tot = st.results.length;
     const pages = totalPages(st.results);
     return (
-`🔎 *Risultati per "${st.query}"*
+`🔎 *_Risultati_* per _"${st.query}"_
 ━━━━━━━━━━━━━━━━━━
 ${items.map((v, i) => {
     const n = start + i + 1;
-    const dur = v.duration ? ` · ⏱ ${fmtDur(v.duration)}` : '';
-    const ch = v.channel ? `\n📺 ${v.channel}` : '';
+    const dur = v.duration ? ` · ⏱ _${fmtDur(v.duration)}_` : '';
+    const ch = v.channel ? `\n▸ 📺 _${v.channel}_` : '';
     return `${n}. ${v.title}${dur}${ch}`;
 }).join('\n')}
 ━━━━━━━━━━━━━━━━━━
-Pagina ${st.page}/${pages} · ${tot} video
-👇 Premi *1* o *2* per scegliere,
-oppure naviga con i pulsanti.`);
+▸ _Pagina_ ${st.page}/${pages} · _${tot} video_
+▸ 👇 Premi *1* o *2* per _scegliere_,
+  oppure naviga con _i pulsanti_.
+◈ _Vex Bot_`);
 };
 
 async function renderResultsFallback(sock, from, st, msg, sendButtons) {
@@ -286,18 +287,20 @@ async function renderQualityMenu(sock, from, st, video, msg, sendButtons) {
     return sendButtons(
         sock,
         from,
-        `🎥 *${video.title}*\n\n📥 Scegli la qualità del video:`,
+        `🎥 *_${video.title}_*\n━━━━━━━━━━━━━━━━━━\n▸ 📥 _Scegli la qualità del video:_\n◈ _Vex Bot_`,
         QUALITY_OPTIONS.map((o) => ({ label: o.label, id: o.id(idx) })),
         msg
     );
 }
 
 const pickText = (video) => (
-`🎬 *${video.title}*
-${video.duration ? `⏱ ${fmtDur(video.duration)}` : ''}${video.channel ? ` · 📺 ${video.channel}` : ''}
-${video.views ? `\n👁 ${fmtViews(video.views)} visualizzazioni` : ''}
-
-Cosa vuoi scaricare?`
+`🎬 *_${video.title}_*
+━━━━━━━━━━━━━━━━━━
+${video.duration ? `▸ ⏱ _${fmtDur(video.duration)}_` : ''}${video.channel ? ` ▸ 📺 _${video.channel}_` : ''}
+${video.views ? `▸ 👁 _${fmtViews(video.views)} visualizzazioni_` : ''}
+━━━━━━━━━━━━━━━━━━
+▸ _Cosa vuoi scaricare?_
+◈ _Vex Bot_`
 );
 
 // ── DOWNLOAD ED INVIO ─────────────────────────────────────────────────────
@@ -328,12 +331,12 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
                 quoted: msg,
                 mediaUploadTimeoutMs: 120000,
             }));
-            await reply(`🎵 *Audio pronto!*\n${video.title}`);
+            await reply(`🎵 *_AUDIO PRONTO_*\n━━━━━━━━━━━━━━━━━━\n▸ _${video.title}_\n◈ _Vex Bot_`);
         } else {
             // Il video è garantito in .mp4 (mediaDownloader converte
             // .webm/.mkv e i codec non h264): mimetype corretto.
-            const quality = height ? ` (${height}p)` : '';
-            const caption = `🎥 ${video.title}${quality}`;
+            const quality = height ? ` (_${height}p_)` : '';
+            const caption = `🎥 *_${video.title}_*${quality}\n◈ _Vex Bot_`;
             // WhatsApp rifiuta l'upload ("Media upload failed") se il video
             // è troppo grande per un messaggio video: sopra i 50MB viene
             // inviato come FILE .mp4 (limite file = 2GB).
