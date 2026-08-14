@@ -17,7 +17,7 @@ const cards = require('../../lib/cards');
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
 
-const MAIN_MENU_TEXT = `🎴 *CARTE SCOPAMICO*
+const MAIN_MENU_TEXT = `🎴 *CARTE VEX*
 ${SEP}
 Apri le *buste* e colleziona
 *${cards.TOTAL_CARDS} carte* su 3 set!
@@ -89,7 +89,7 @@ Hai ${fmtEuro(u.money, formatMoney)}€ (in banca: ${fmtEuro(u.bank || 0, format
                 const packBuf = await cards.renderPack(sharp);
                 await sock.sendMessage(from, {
                     image: packBuf,
-                    caption: `🎁 *BUSTA SCOPAMICO*\n${SEP}\nStrappo la pellicola...\n⭐ ${cards.PACK_COST}€ · n°${u.cardsOpened}\n${SEP}\nApertura in corso...`,
+                    caption: `🎁 *BUSTA VEX*\n${SEP}\nStrappo la pellicola...\n⭐ ${cards.PACK_COST}€ · n°${u.cardsOpened}\n${SEP}\nApertura in corso...`,
                 }, { quoted: msg });
                 if (typeof sleep === 'function') await sleep(900);
             } catch (e) {

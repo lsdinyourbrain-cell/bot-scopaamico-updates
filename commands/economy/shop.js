@@ -209,7 +209,7 @@ Usalo subito: \`.shop usa ${it.id}\``,
         }
 
         const sent = await sendCarousel(sock, from, {
-            text: `🛍️ *NEGOZIO SCOPAMICO*
+            text: `🛍️ *NEGOZIO VEX*
 ${SEP}
 Compra con i soldi in *contante*.
 Poi usa gli oggetti con
