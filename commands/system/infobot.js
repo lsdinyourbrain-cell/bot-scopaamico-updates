@@ -140,12 +140,12 @@ module.exports = {
 
         // Frasi casuali
         const phrases = [
-            "✨ SCOPAAMICO BOT —\nPotenza e controllo totale! 🫶",
-            "🔥 Creato per gestire e\nanimare i gruppi WhatsApp!",
-            "🤖 Sistema avanzato di\ngestione e moderazione 💪",
-            "⚡ Sempre attivo e\npronto all'uso 🍝",
-            "🛡️ Protezione gruppo,\ncomandi audio e divertimento.",
-            "🚀 Versione 11.0 —\nMassime prestazioni."
+            "✨ VEX BOT —\nsta sempre sul pezzo, fra 🫶",
+            "🔥 Nato per gestire e\nanimare i tuoi gruppi 💪",
+            "⚡ Mod, comandi e giochi:\ndentro c'è un po' di tutto, raga",
+            "🍝 Sempre attivo e\npronto all'uso, tranquillo",
+            "🛡️ Protegge il gruppo\ne ti fa divertire, gg",
+            "🚀 Versione 11.0 —\ncorre e non si stanca mai"
         ];
         const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
 

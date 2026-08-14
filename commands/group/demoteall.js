@@ -47,7 +47,7 @@ module.exports = {
 🔄 Retrocessi: *${target.length}* admin
 👑 Restano il creatore
 e l'owner
-✅ Operazione completata!
+✅ Tutto fatto, fra!
 ━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },

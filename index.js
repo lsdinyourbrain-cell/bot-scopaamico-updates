@@ -1899,7 +1899,7 @@ async function startBot() {
                     ig.active = false;
                     delete db[from].impiccatoGames[sender];
                     saveDB();
-                    await show(`⏰ *Tempo scaduto!* La parola era *${ig.word}* (${ig.categoria}).`);
+                    await show(`⏰ *Tempo finito!*\nLa parola era *${ig.word}*\n(${ig.categoria}).`);
                     return;
                 }
                 const input = body.trim().toUpperCase().replace(/[^A-ZÀ-ÿ]/g, '');
@@ -1910,7 +1910,7 @@ async function startBot() {
                     ig.active = false;
                     delete db[from].impiccatoGames[sender];
                     saveDB();
-                    await show(`🛑 Partita di impiccato terminata.\nLa parola era *${ig.word}* (${ig.categoria}).`);
+                    await show(`🛑 Hai mollato! 💀\nLa parola era *${ig.word}*\n(${ig.categoria}).`);
                     return;
                 }
 
@@ -1921,10 +1921,10 @@ async function startBot() {
                         delete db[from].impiccatoGames[sender];
                         saveDB();
                         await show(
-                            `🎉 *INDOVINATA!* 🎉\n` +
+                            `🎉 *GG!* Ce l'hai fatta! 🎉\n` +
                             `━━━━━━━━━━━━━━━━━━\n` +
                             `${impiccatoCmd.buildBoardText(ig)}\n` +
-                            `Complimenti, sei salvo... per ora 😈`
+                            `Sei salvo... per ora 😈`
                         );
                     } else {
                         ig.wrong++;
@@ -1935,7 +1935,7 @@ async function startBot() {
                             await show(buildBoardLoseText(ig));
                         } else {
                             saveDB();
-                            await show(impiccatoCmd.buildBoardText(ig) + `\n\n❌ Parola sbagliata! Prova ancora.`);
+                            await show(impiccatoCmd.buildBoardText(ig) + `\n\n❌ Parola sbagliata, fra! Riprova.`);
                         }
                     }
                     return;
@@ -1944,7 +1944,7 @@ async function startBot() {
                 // Singola lettera
                 const letter = input[0];
                 if (ig.guessed.includes(letter)) {
-                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n⚠️ La lettera *${letter}* è già provata!`);
+                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n⚠️ *${letter}* già provata, fra!`);
                     return;
                 }
                 ig.guessed.push(letter);
@@ -1957,15 +1957,15 @@ async function startBot() {
                         delete db[from].impiccatoGames[sender];
                         saveDB();
                         await show(
-                            `🎉 *INDOVINATA!* 🎉\n` +
+                            `🎉 *GG!* Ce l'hai fatta! 🎉\n` +
                             `━━━━━━━━━━━━━━━━━━\n` +
                             `${impiccatoCmd.buildBoardText(ig)}\n` +
-                            `Complimenti, sei salvo... per ora 😈`
+                            `Sei salvo... per ora 😈`
                         );
                         return;
                     }
                     saveDB();
-                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n✅ *${letter}* è nella parola!`);
+                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n✅ *${letter}* c'è, gg!`);
                 } else {
                     ig.wrong++;
                     if (ig.wrong >= (ig.maxWrong || impiccatoCmd.MAX_WRONG)) {
@@ -1976,7 +1976,7 @@ async function startBot() {
                         return;
                     }
                     saveDB();
-                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n❌ *${letter}* non c'è. Errori: ${ig.wrong}/${ig.maxWrong || impiccatoCmd.MAX_WRONG}`);
+                    await show(impiccatoCmd.buildBoardText(ig) + `\n\n❌ *${letter}* non c'è, fra. Errori: ${ig.wrong}/${ig.maxWrong || impiccatoCmd.MAX_WRONG}`);
                 }
             } catch (e) {
                 console.error('[impiccato handler]', e.message);
@@ -1990,7 +1990,7 @@ async function startBot() {
                 if (Date.now() - game.timestamp > 180000) {
                     game.active = false;
                     saveDB();
-                    await sock.sendMessage(from, { text: '⏰ Tempo scaduto per il tris! Partita annullata.' });
+                    await sock.sendMessage(from, { text: '⏰ Tempo scaduto, fra! Partita di tris annullata.' });
                     return;
                 }
 
@@ -2003,7 +2003,7 @@ async function startBot() {
 
                 const idx = num - 1;
                 if (game.board[idx] !== null) {
-                    await sock.sendMessage(from, { text: `⚠️ La cella ${num} è già occupata! Scegline un'altra.` });
+                    await sock.sendMessage(from, { text: `⚠️ Cella ${num} già occupata, fra! Scegline un'altra.` });
                     return;
                 }
 
@@ -2026,16 +2026,16 @@ async function startBot() {
                 if (winnerIdx !== null) {
                     game.active = false;
                     saveDB();
-                    caption = `🏆 *VITTORIA!* @${game.players[winnerIdx].split('@')[0]} (${symbol}) vince il tris!`;
+                    caption = `🏆 *GG!* @${game.players[winnerIdx].split('@')[0]} (${symbol}) ha spaccato al tris!`;
                 } else if (isFull) {
                     game.active = false;
                     saveDB();
-                    caption = `🤝 *PAREGGIO!* La board è piena, nessun vincitore.`;
+                    caption = `🤝 *PAREGGIO!* Board piena, chi se lo aspettava 😂`;
                 } else {
                     game.current = 1 - game.current;
                     saveDB();
                     const nextSymbol = game.current === 0 ? '❌' : '⭕';
-                    caption = `🎮 *TRIS* — Tocca a @${game.players[game.current].split('@')[0]} (${nextSymbol}).\nScrivi un numero *1-9*.`;
+                    caption = `🎮 *TRIS* — Tocca a @${game.players[game.current].split('@')[0]} (${nextSymbol}).\nManda un numero *1-9*!`;
                 }
 
                 // Render NUOVA board e invia PRIMA, poi cancella il messaggio
@@ -2109,7 +2109,7 @@ async function startBot() {
                 if (Date.now() - game.timestamp > 180000) {
                     game.active = false;
                     saveDB();
-                    await sock.sendMessage(from, { text: '⏰ Tempo scaduto per il Forza 4! Partita annullata.' });
+                    await sock.sendMessage(from, { text: '⏰ Tempo scaduto, fra! Partita di Forza 4 annullata.' });
                     return;
                 }
 
@@ -2120,7 +2120,7 @@ async function startBot() {
                 if (!sameJid(sender, currentPlayer)) return;
 
                 if (!forza4Lib.isValidMove(game.board, num - 1)) {
-                    await sock.sendMessage(from, { text: `⚠️ La colonna ${num} è piena! Scegline un'altra.` });
+                    await sock.sendMessage(from, { text: `⚠️ Colonna ${num} piena, fra! Scegline un'altra.` });
                     return;
                 }
 
@@ -2137,16 +2137,16 @@ async function startBot() {
                     const winnerUser = getUser(game.players[game.current], from);
                     winnerUser.money += 150;
                     saveDB();
-                    caption = `🏆 *VITTORIA!* @${game.players[game.current].split('@')[0]} vince a Forza 4!\n+150€ 💰`;
+                    caption = `🏆 *GG!* @${game.players[game.current].split('@')[0]} ha spaccato a Forza 4!\n+150€ 💰`;
                 } else if (full) {
                     game.active = false;
                     saveDB();
-                    caption = `🤝 *PAREGGIO!* La board è piena, nessun vincitore.`;
+                    caption = `🤝 *PAREGGIO!* Board piena, chi se lo aspettava 😂`;
                 } else {
                     game.current = 1 - game.current;
                     saveDB();
                     const nextMark = game.current === 0 ? '🔴' : '🟡';
-                    caption = `🎮 *FORZA 4* — Tocca a @${game.players[game.current].split('@')[0]} (${nextMark}).\nScrivi un numero *1-7*.`;
+                    caption = `🎮 *FORZA 4* — Tocca a @${game.players[game.current].split('@')[0]} (${nextMark}).\nManda un numero *1-7*!`;
                 }
 
                 let boardBuffer;
@@ -2201,12 +2201,12 @@ async function startBot() {
 
                 if (!wordleLib.isWordValid(guess)) {
                     await sock.sendMessage(from, {
-                        text: `⚠️ Scrivi una parola di *${wordleLib.WORD_LEN}* lettere (es. "CASA" → 4 no, serve una parola da 5).\n*Il tuo:* "${raw}"`,
+                        text: `⚠️ Serve una parola di *${wordleLib.WORD_LEN}* lettere!\n*Il tuo:* "${raw}" non va.`,
                     });
                     return;
                 }
                 if (wg.attempts.some((a) => a.word === guess)) {
-                    await sock.sendMessage(from, { text: `⚠️ *${guess}* è già stata provata!` });
+                    await sock.sendMessage(from, { text: `⚠️ *${guess}* già provata, fra!` });
                     return;
                 }
 
@@ -2229,13 +2229,13 @@ async function startBot() {
                     const uDB = getUser(sender, from);
                     uDB.money += 120;
                     saveDB();
-                    caption = `🎉 *WORDLE RISOLTO!* @${sender.split('@')[0]} ha trovato *${wg.target}* in ${wg.attempts.length} tentativi!\n+120€ 💰`;
+                    caption = `🎉 *GG!* @${sender.split('@')[0]} ha beccato *${wg.target}* in ${wg.attempts.length} tentativi!\n+120€ 💰`;
                 } else if (wg.attempts.length >= maxAttempts) {
                     wg.active = false;
                     saveDB();
-                    caption = `😵 *GAME OVER!* La parola era *${wg.target}*.`;
+                    caption = `😵 *GAME OVER!* Era *${wg.target}*, fra. 💀`;
                 } else {
-                    caption = `🟩 *WORDLE* — Tentativo ${wg.attempts.length}/${maxAttempts}. Prova ancora!`;
+                    caption = `🟩 *WORDLE* — Tentativo ${wg.attempts.length}/${maxAttempts}. Dai, tu puoi! 💪`;
                 }
 
                 const sent = await sock.sendMessage(from, {

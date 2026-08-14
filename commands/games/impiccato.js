@@ -70,6 +70,32 @@ const HANGMAN_STAGES = [
 const MAX_WRONG = 6;
 const GAME_TIMEOUT_MS = 120000; // 2 minuti
 
+// Emoji per categoria, mostrata accanto al nome nella board.
+const CATEGORY_EMOJI = {
+    'Animali': '🐾',
+    'Cibo': '🍕',
+    'Tecnologia': '💻',
+    'Natura': '🌿',
+    'Spazio': '🚀',
+    'Geografia': '🌍',
+    'Luoghi': '🏙️',
+    'Mestieri': '🛠️',
+    'Musica': '🎵',
+    'Sport': '⚽',
+    'Auto': '🏎️',
+    'Mezzi': '🚂',
+    'Mitologia': '🐉',
+    'Altro': '✨',
+    'Personaggi': '🦸',
+    'Videogiochi': '🎮',
+    'Social': '📱',
+    'Scuola': '🎒',
+    'Città': '🏛️',
+    'Anime e Cartoni': '🧸',
+    'Film e Serie': '🎬',
+};
+const withCat = (c) => `${CATEGORY_EMOJI[c] || '📂'} ${c}`;
+
 // Difficoltà: cambiano la lunghezza delle parole (min-max lettere) e quanti
 // errori sono ammessi prima che il boia sia completo.
 const DIFFICULTIES = {
@@ -105,7 +131,7 @@ const buildBoardText = (game) => {
 📝 Lettere provate:
 ${formatGuessed(game.guessed)}
 
-Scrivi una *lettera* o tenta
+Manda una *lettera* o prova
 la *parola intera*!`;
 };
 
@@ -133,11 +159,12 @@ module.exports = {
                 return reply(n ? `🛑 Ho fermato le *${n}* partite di impiccato in corso.` : "Nessuna partita di impiccato in corso.");
             }            if (games[sender]) {
                 games[sender].active = false;
+                const parola = games[sender].word;
                 delete games[sender];
                 saveDB();
-                return reply("🛑 Partita di impiccato terminata. La parola era: *(abbandono)*");
+                return reply(`🛑 Partita fermata!\nLa parola era *${parola}*.`);
             }
-            return reply("Non hai una partita di impiccato attiva.");
+            return reply("Non hai partite di impiccato attive, fra.");
         }
 
         const diff = DIFFICULTIES[args2];
@@ -168,7 +195,7 @@ lunghe e poche chances!
 
         // Una partita per giocatore: se ne ha già una attiva, niente doppioni.
         if (games[sender]?.active) {
-            return reply("Hai già una partita di impiccato in corso! Scrivi una lettera per continuare o `.impiccato stop` per fermarla.");
+            return reply("Hai già una partita in corso! Manda una lettera o chiudila con `.impiccato stop`, fra.");
         }
 
         // Parole della giusta lunghezza per la difficoltà scelta, evitando
@@ -185,7 +212,7 @@ lunghe e poche chances!
         const boardText =
             `${diff.emoji} *IMPICCATO* · ${diff.label}\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
-            `${buildBoardText({ word, categoria: picked.categoria, wrong: 0, guessed: [], maxWrong: diff.maxWrong })}\n` +
+            `${buildBoardText({ word, categoria: withCat(picked.categoria), wrong: 0, guessed: [], maxWrong: diff.maxWrong })}\n` +
             `⏳ Tempo: 2 minuti` +
             `\n━━━━━━━━━━━━━━━━━━`;
 
@@ -202,7 +229,7 @@ lunghe e poche chances!
         games[sender] = {
             active: true,
             word,
-            categoria: picked.categoria,
+            categoria: withCat(picked.categoria),
             wrong: 0,
             maxWrong: diff.maxWrong,
             guessed: [],
@@ -218,7 +245,7 @@ lunghe e poche chances!
             if (g?.active && Date.now() - g.timestamp >= GAME_TIMEOUT_MS) {
                 g.active = false;
                 saveDB();
-                const text = `⏰ *Tempo scaduto!*\nLa parola era *${g.word}*.\n📂 Categoria: ${g.categoria}`;
+                const text = `⏰ *Tempo finito!*\nLa parola era *${g.word}*.\n📂 Categoria: ${g.categoria}`;
                 if (g.lastMsgKey) {
                     sock.sendMessage(from, { text, edit: g.lastMsgKey }).catch(() => {});
                 } else {

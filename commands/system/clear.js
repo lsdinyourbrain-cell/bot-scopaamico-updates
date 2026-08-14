@@ -32,7 +32,7 @@ module.exports = {
         await reply(
 `🧹 *CACHE PULITA*
 ━━━━━━━━━━━━━━━━━━
-✨ Operazione completata
+✨ Tutto pulito, fra!
 in ${elapsed} ms.
 🗑️ File temporanei rimossi:
 ${result.deletedFiles}

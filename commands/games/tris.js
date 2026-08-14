@@ -59,7 +59,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🎮 *TRIS*\n━━━━━━━━━━━━━━━━━━\n🎉 Partita iniziata!\n❌ Sfidante: @${sender.split('@')[0]}\n⭕ Sfidato: @${opponent.split('@')[0]}\n\nTocca a ❌ (@${sender.split('@')[0]}).\nScrivi un numero *1-9*\nper mettere la X.\n━━━━━━━━━━━━━━━━━━`,
+            caption: `🎮 *TRIS*\n━━━━━━━━━━━━━━━━━━\n🎉 Dai, si parte!\nChe figata 🔥\n❌ Sfidante: @${sender.split('@')[0]}\n⭕ Sfidato: @${opponent.split('@')[0]}\n\nTocca a ❌ (@${sender.split('@')[0]}).\nScrivi un numero *1-9*\nper mettere la X.\n━━━━━━━━━━━━━━━━━━`,
             mentions: players,
         }, { quoted: msg });
 

@@ -48,7 +48,7 @@ module.exports = {
 ━━━━━━━━━━━━━━━━━━
 👥 Espulsi: *${total}* membri
 👑 Restano solo admin e owner
-✅ Operazione completata!
+✅ Tutto fatto, fra!
 ━━━━━━━━━━━━━━━━━━`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },

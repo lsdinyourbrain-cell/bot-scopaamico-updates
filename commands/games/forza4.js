@@ -54,7 +54,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🎮 *FORZA 4*\n━━━━━━━━━━━━━━━━━━\n🎉 Partita iniziata!\n🔴 Sfidante: @${sender.split('@')[0]}\n🟡 Sfidato: @${opponent.split('@')[0]}\n\nTocca a 🔴 (@${sender.split('@')[0]}).\nScrivi un numero *1-7*\nper lanciare il pedino.\n━━━━━━━━━━━━━━━━━━`,
+            caption: `🎮 *FORZA 4*\n━━━━━━━━━━━━━━━━━━\n🎉 Dai, si parte!\nChe figata 🔥\n🔴 Sfidante: @${sender.split('@')[0]}\n🟡 Sfidato: @${opponent.split('@')[0]}\n\nTocca a 🔴 (@${sender.split('@')[0]}).\nScrivi un numero *1-7*\nper lanciare il pedino.\n━━━━━━━━━━━━━━━━━━`,
             mentions: players,
         }, { quoted: msg });
 
