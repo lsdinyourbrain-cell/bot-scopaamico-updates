@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  INDOVINA_EMOJI — ScopaAmico Bot
+//  INDOVINA_EMOJI — Vex Bot
 //  Indovina film/serie/canzoni dai "rebus" a emoji. Livelli facile/media/
 //  difficile come l'impiccato. Risposta via pulsanti (3 opzioni).
 //  Stato della partita in db[from].emojiGame.

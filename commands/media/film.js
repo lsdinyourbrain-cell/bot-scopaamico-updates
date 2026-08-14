@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  FILM — ScopaAmico Bot
+//  FILM — Vex Bot
 //  10 film casuali/trending da TMDB: locandina, anno, voto + pulsante
 //  🎬 Trailer che lancia la ricerca su YouTube (yt-dlp).
 //  Serve una chiave TMDB gratuita (https://www.themoviedb.org/settings/api):

@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  BANDA (MAFIA) — ScopaAmico Bot
+//  BANDA (MAFIA) — Vex Bot
 //  Gioco party a ruoli: notte/giorno. Di notte la banda elimina, il detective
 //  indaga e il medico salva (in chat PRIVATA). Di giorno il gruppo vota chi
 //  eliminare (in gruppo). Vince la banda o il villaggio.

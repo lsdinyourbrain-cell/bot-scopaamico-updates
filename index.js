@@ -1215,7 +1215,7 @@ async function startBot() {
         markOnlineOnConnect : false,
         syncFullHistory     : false,
         generateHighQualityLinkPreview: false,
-        browser             : ['ScopaAmico Bot', 'Chrome', '120.0.0'],
+        browser             : ['Vex Bot', 'Chrome', '120.0.0'],
     });
 
     sock.ev.on('creds.update', saveCreds);

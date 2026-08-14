@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  METEO7 — ScopaAmico Bot
+//  METEO7 — Vex Bot
 //  Estensione di .weather: previsioni su 7 giorni (API gratuita wttr.in),
 //  una card al giorno con icona, temp max/min e pioggia.
 // ─────────────────────────────────────────────────────────────────────────────

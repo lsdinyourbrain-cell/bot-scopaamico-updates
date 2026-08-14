@@ -46,7 +46,7 @@ module.exports = {
             if (png.length < 100) throw new Error('risposta vuota');
 
             const sticker = await makeSticker(sharp, webpmux, png);
-            await sock.sendMessage(from, { sticker, stickerName: 'Emoji Mix', stickerAuthor: 'ScopaAmico' }, { quoted: msg });
+            await sock.sendMessage(from, { sticker, stickerName: 'Emoji Mix', stickerAuthor: 'Vex' }, { quoted: msg });
         } catch (e) {
             console.error('[emojimix]', e.message);
             return reply("❌ Non riesco a fondere queste emoji. Prova con una coppia più usata (es. 😂❤️).");

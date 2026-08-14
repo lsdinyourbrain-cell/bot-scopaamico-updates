@@ -1,4 +1,4 @@
-# ScopaAmico Bot — versione Termux (Android)
+# Vex Bot — versione Termux (Android)
 
 Bot compatibile con Termux. Usa ffmpeg e yt-dlp di sistema invece dei binari bundleati (ffmpeg-static / youtube-dl-exec), che non girano su Android.
 

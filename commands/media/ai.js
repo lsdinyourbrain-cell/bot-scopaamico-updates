@@ -46,8 +46,8 @@ module.exports = {
                     headers: {
                         'Authorization': `Bearer ${activeKey}`,
                         'Content-Type': 'application/json',
-                        'HTTP-Referer': 'https://github.com/ScopaAmicoBot',
-                        'X-Title': 'ScopaAmico Bot',
+                        'HTTP-Referer': 'https://github.com/VexBot',
+                        'X-Title': 'Vex Bot',
                     },
                     timeout: 30000,
                 });

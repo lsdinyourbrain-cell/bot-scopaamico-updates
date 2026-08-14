@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  CORSA — ScopaAmico Bot
+//  CORSA — Vex Bot
 //  Gara di gruppo a turni: ogni partecipante risponde a mini-sfide a scelta
 //  multipla (pulsanti). Chi arriva prima al traguardo (3 risposte giuste)
 //  vince il montepremi. Lo stato vive in db[from].corsaGame.

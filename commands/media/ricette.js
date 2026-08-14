@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  RICETTE — ScopaAmico Bot
+//  RICETTE — Vex Bot
 //  10 ricette random dall'API gratuita TheMealDB, una per card del carosello
 //  con foto e pulsante 👨🍳 Preparazione (ingredienti + passi).
 // ─────────────────────────────────────────────────────────────────────────────

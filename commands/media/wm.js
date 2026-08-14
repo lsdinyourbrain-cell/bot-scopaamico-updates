@@ -59,9 +59,9 @@ module.exports = {
             await img.load(tempPath);
 
             const exifData = {
-                'sticker-pack-id': 'com.scopaamico.bot.wm',
+                'sticker-pack-id': 'com.vexbot.bot.wm',
                 'sticker-pack-name': newTitle,
-                'sticker-pack-publisher': 'ScopaAmicoBot',
+                'sticker-pack-publisher': 'VexBot',
                 emojis: ['✨'],
             };
 

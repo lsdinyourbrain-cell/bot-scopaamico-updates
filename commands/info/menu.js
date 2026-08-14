@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  MENU — ScopaAmico Bot
+//  MENU — Vex Bot
 //  Stile pulito, senza cornici box-drawing (che si disallineano con emoji di
 //  larghezza variabile). Ogni riga è corta (max ~40 colonne) per non andare
 //  a capo male su WhatsApp.

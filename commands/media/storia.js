@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  STORIA — ScopaAmico Bot
+//  STORIA — Vex Bot
 //  Racconta una mini-storia scritta dall'IA, con protagonisti a scelta
 //  (membri del gruppo, @tag, o personaggi inventati). Usa la key salvata
 //  con `.ai set` oppure quella in .env (AI_API_KEY).

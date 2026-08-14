@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  CERTIFICATO — ScopaAmico Bot
+//  CERTIFICATO — Vex Bot
 //  Genera un certificato personalizzato (immagine) con nome, titolo e data.
 //  Uso: .certificato  → per chi invia il comando
 //       .certificato @amico  → per il taggato
@@ -57,7 +57,7 @@ const buildCert = async (sharp, name, title) => {
 
   <text x="160" y="560" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-style="italic" fill="#8a6d1f">Il Direttore</text>
   <line x1="90" y1="545" x2="230" y2="545" stroke="#c9a227" stroke-width="2"/>
-  <text x="740" y="560" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-style="italic" fill="#8a6d1f">ScopaAmico Bot</text>
+  <text x="740" y="560" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-style="italic" fill="#8a6d1f">Vex Bot</text>
   <line x1="670" y1="545" x2="810" y2="545" stroke="#c9a227" stroke-width="2"/>
 </svg>`;
 

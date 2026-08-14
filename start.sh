@@ -1,5 +1,5 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# ScopaAmico Bot - avvio automatico con auto-restart
+﻿#!/data/data/com.termux/files/usr/bin/bash
+# Vex Bot - avvio automatico con auto-restart
 # Avvio: bash start.sh  (il bot riparte da solo dopo .aggiorna e dopo i crash)
 
 cd "$(dirname "$0")"
@@ -8,7 +8,7 @@ cd "$(dirname "$0")"
 termux-wake-lock 2>/dev/null || true
 
 echo "=============================================="
-echo "  ScopaAmico Bot - avvio automatico"
+echo "  Vex Bot - avvio automatico"
 echo "  Ctrl+C per fermare"
 echo "=============================================="
 

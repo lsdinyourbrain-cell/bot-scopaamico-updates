@@ -12,7 +12,7 @@ module.exports = {
         const MAIN_OWNER_JID = `${MAIN_OWNER_NUM}@s.whatsapp.net`;
         const MAIN_OWNER_FORMATTED = '+1 (548) 314-7193';
 
-        const txt = `🤖 *ScopaAmico Bot*\n\n✍️ Creato da:\n👑 *@${MAIN_OWNER_NUM}*\n📞 ${MAIN_OWNER_FORMATTED}\n\n💬 Per assistenza scrivi pure al creatore.`;
+        const txt = `🤖 *Vex Bot*\n\n✍️ Creato da:\n👑 *@${MAIN_OWNER_NUM}*\n📞 ${MAIN_OWNER_FORMATTED}\n\n💬 Per assistenza scrivi pure al creatore.`;
 
         await sock.sendMessage(from, { text: txt, mentions: [MAIN_OWNER_JID] }).catch(() => {});
     },

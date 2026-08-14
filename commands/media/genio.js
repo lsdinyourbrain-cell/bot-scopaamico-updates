@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  GENIO — ScopaAmico Bot
+//  GENIO — Vex Bot
 //  Chiedi qualcosa al Genio della lampada: risponde con saggezza, ironia o
 //  poesia (a scelta), sempre con l'IA. Key: `.ai set "chiave"` o .env.
 // ─────────────────────────────────────────────────────────────────────────────

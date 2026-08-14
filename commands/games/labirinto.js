@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  LABIRINTO — ScopaAmico Bot
+//  LABIRINTO — Vex Bot
 //  Flusso in 3 passi con UI nativa WhatsApp (carosello: come in .cerca, ogni
 //  card DEVE avere un'immagine o WhatsApp mostra "messaggio non supportato").
 //   1. `.labirinto`                      → scegli la DIFFICOLTÀ (pulsanti)

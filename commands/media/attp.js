@@ -31,7 +31,7 @@ const renderNeonSvg = (text) => {
         <rect width="512" height="512" fill="#0d0d12"/>
         <circle cx="256" cy="256" r="230" fill="none" stroke="#1d1d2a" stroke-width="2"/>
         ${texts}
-        <text x="256" y="486" font-family="Arial, sans-serif" font-size="18" fill="#4a4a66" text-anchor="middle">ScopaAmico</text>
+        <text x="256" y="486" font-family="Arial, sans-serif" font-size="18" fill="#4a4a66" text-anchor="middle">Vex Bot</text>
     </svg>`;
 };
 

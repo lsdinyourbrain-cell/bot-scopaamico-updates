@@ -183,7 +183,7 @@ module.exports = {
                     ${movesHtml}
                     
                     <!-- Footer -->
-                    <text x="270" y="460" font-family="Arial, sans-serif" font-size="10" fill="#555" text-anchor="middle">Pokédex ScopaAmico • Dati generati casualmente per divertimento</text>
+                    <text x="270" y="460" font-family="Arial, sans-serif" font-size="10" fill="#555" text-anchor="middle">Pokédex Vex Bot • Dati generati casualmente per divertimento</text>
                 </svg>
             `;
 

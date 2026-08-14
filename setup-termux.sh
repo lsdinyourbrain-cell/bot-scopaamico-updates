@@ -1,8 +1,8 @@
-#!/data/data/com.termux/files/usr/bin/bash
+﻿#!/data/data/com.termux/files/usr/bin/bash
 set -e
 
 echo "=============================================="
-echo "  Setup ScopaAmico Bot per Termux (Android)"
+echo "  Setup Vex Bot per Termux (Android)"
 echo "=============================================="
 
 echo "[1/4] Aggiornamento pacchetti..."

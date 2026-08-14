@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  MINE — ScopaAmico Bot
+//  MINE — Vex Bot
 //  Versione strategica di .scava: campo 3x3 con 2 bombe nascoste. Paghi un
 //  biglietto (20€), scavi le celle con i pulsanti: ogni cella sicura aggiunge
 //  al montepremi, ogni bomba azzera tutto. Puoi incassare quando vuoi.

@@ -22,7 +22,7 @@ module.exports = {
 `✨ *SPONSOR*
 ━━━━━━━━━━━━━━━━━━
 Ciao, sono il
-*ScopaAmico Bot* 🤖
+*Vex Bot* 🤖
 Unisciti al gruppo
 ufficiale! 🫶
 👇 *CLICCA QUI* 👇

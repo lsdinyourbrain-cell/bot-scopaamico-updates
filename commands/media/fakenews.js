@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  FAKENEWS — ScopaAmico Bot
+//  FAKENEWS — Vex Bot
 //  Genera una notizia (palesemente) falsa e satirica sul gruppo, scritta
 //  dall'IA, in stile tg. Key: `.ai set "chiave"` o .env.
 // ─────────────────────────────────────────────────────────────────────────────

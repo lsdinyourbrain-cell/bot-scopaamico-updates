@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  CARTE — ScopaAmico Bot
+//  CARTE — Vex Bot
 //  Bustine collezionabili stile Pokémon:
 //   .carte              → menu principale
 //   .carte apri         → compra una busta (500€) e apre 5 carte

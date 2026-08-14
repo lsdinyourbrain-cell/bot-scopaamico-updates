@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  AIUTO — ScopaAmico Bot
+//  AIUTO — Vex Bot
 //  .aiuto            → invia un file .txt con TUTTI i comandi spiegati
 //  .aiuto <comando>  → spiega un singolo comando (uso, alias, descrizione)
 //  .aiuto <sezione>  → elenca tutti i comandi di una sezione con le descrizioni
@@ -38,7 +38,7 @@ const buildGuideTxt = (commands) => {
     }
 
     let out = '';
-    out += `✧ GUIDE COMPLETA — ScopaAmico Bot v${pkg.version} ✧\n`;
+    out += `✧ GUIDE COMPLETA — Vex Bot v${pkg.version} ✧\n`;
     out += `In chat usa "." davanti a ogni comando.\n`;
     out += `Menu interattivo: .menu  ·  Dettaglio comando: .aiuto <comando>\n\n`;
 
@@ -57,7 +57,7 @@ const buildGuideTxt = (commands) => {
     }
 
     out += `\n${'═'.repeat(34)}\n`;
-    out += `Fine guida · Buon divertimento con ScopaAmico! 🎉\n`;
+    out += `Fine guida · Buon divertimento con Vex Bot! 🎉\n`;
     return out;
 };
 
@@ -110,7 +110,7 @@ module.exports = {
             const txt = buildGuideTxt(commands);
             await sock.sendMessage(from, {
                 document: Buffer.from(txt, 'utf8'),
-                fileName: 'ScopaAmico_Guida.txt',
+                fileName: 'VexBot_Guida.txt',
                 mimetype: 'text/plain',
                 caption: `📘 *Guida completa* · ${uniqueCommands(commands).length} comandi · v${pkg.version}`,
             }, { quoted: msg });

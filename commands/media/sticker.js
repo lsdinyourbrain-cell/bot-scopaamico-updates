@@ -101,7 +101,7 @@ module.exports = {
 
                 const exifData = {
                     "sticker-pack-id": "com.snowcorp.stickerly.android.stickercontentprovider b5e7275f-f1de-4137-961f-57becfad34f2",
-                    "sticker-pack-name": "ScopaAmicoBot",
+                    "sticker-pack-name": "VexBot",
                     "sticker-pack-publisher": "bot di ᗪ乇几ㄩ几匚丨卂尺丂丨 +1 (548) 314-7193",
                     "emojis": ["🤖"]
                 };

@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  SHOP — ScopaAmico Bot
+//  SHOP — Vex Bot
 //  Negozio con carosello: ogni card è un oggetto (emoji, prezzo, effetto) con
 //  i pulsanti 🛒 Compra / ℹ️ Info. Gli oggetti finiscono nello zaino
 //  (u.shopInv = { id: quantità }) e si usano con .shop usa <id>.
@@ -65,7 +65,7 @@ const renderItemCard = async (sharp, it, priceStr) => {
   <text x="180" y="285" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#8a6d1f">💰 ${esc(priceStr)}</text>
   <line x1="70" y1="315" x2="290" y2="315" stroke="#c9a227" stroke-width="2"/>
   <text x="180" y="355" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#6b4d00">${esc(it.effect)}</text>
-  <text x="180" y="395" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#b08d1f">ScopaAmico Shop</text>
+  <text x="180" y="395" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#b08d1f">Vex Bot Shop</text>
 </svg>`;
     return sharp(Buffer.from(svg)).png().toBuffer();
 };
@@ -196,7 +196,7 @@ Usalo subito: \`.shop usa ${it.id}\``,
                     title: `${it.emoji} ${it.name}`,
                     subtitle: `${formatMoney(it.price)}€`,
                     body: `${it.desc}\n\n✨ ${it.effect}`,
-                    footer: 'ScopaAmico Shop',
+                    footer: 'Vex Bot Shop',
                     imageBuffer: img,
                     buttons: [
                         { label: `🛒 Compra · ${it.price}€`, id: `shop compra ${it.id}` },
