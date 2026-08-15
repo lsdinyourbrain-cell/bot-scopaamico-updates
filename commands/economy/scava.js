@@ -28,10 +28,8 @@ module.exports = {
             userData.money += taxed.net;
             saveDB();
 
-            const taxLine = taxed.tax > 0
-                ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
-                : '';
-            await sendButtons(sock, from, `╔════════════════════╗\n▸ ⛏️ *_MINIERA_*\n╚════════════════════╝\n▸ 💰 *Ritrovato:* _${gross}€_\n▸ 💳 *Per te:* _+${taxed.net}€_${taxLine}\n▸ 💵 *Saldo:* _${userData.money}€_\n◈ _Vex Bot_`, [
+            const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
+            await sendButtons(sock, from, `⛏️ _MINIERA_\n▸ Ritrovato: _${gross}€_ ▸ Per te: _+${taxed.net}€_${taxLine}\n▸ Saldo: _${userData.money}€_\n▸ Vex Bot`, [
                 { label: `.${command}`, id: `${command}` },
             ], msg);
     },

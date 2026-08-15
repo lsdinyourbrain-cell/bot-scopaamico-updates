@@ -27,18 +27,12 @@ module.exports = {
             userData.lastDaily = now;
             saveDB();
 
-            const taxLine = taxed.tax > 0
-                ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
-                : '';
+            const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
 
             await reply(
-`╔════════════════════╗
-▸ 🎁 *BONUS GIORNALERO*
-╚════════════════════╝
-▸ 💰 *Lordo:* _+${grossBonus}€_
-▸ 💳 *Netto:* _+${taxed.net}€_
-${taxLine}
-▸ 💵 *Saldo attuale:* _${userData.money}€_
-◈ _Vex Bot_`);
+`🎁 *Bonus giornaliero*
+▸ Lordo: _+${grossBonus}€_ ▸ Netto: _+${taxed.net}€_${taxLine}
+▸ Saldo: _${userData.money}€_
+▸ Vex Bot`);
     },
 };

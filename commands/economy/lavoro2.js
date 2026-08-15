@@ -44,23 +44,14 @@ module.exports = {
         userData.lavoro2.guadagnato += gross;
         saveDB();
 
-        const taxLine = taxed.tax > 0
-            ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
-            : '';
+        const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
 
         const text =
-`╔════════════════════╗
-▸ 💪 *_LAVORETTO_*
-╚════════════════════╝
-▸ ${gig.emoji} Oggi ${gig.nome}:
-▸ _${randomChoice(gig.tip())}_
-${bonus ? '▸ 🔥 *CRITICO! Paga massima!*\n' : ''}▸ 💵 *Lordo:* _+${formatMoney(gross)}_
-▸ 💳 *Netto:* _+${formatMoney(taxed.net)}_
-${taxLine}
-▸ 💰 *Saldo attuale:* _${formatMoney(userData.money)}_
-▸ 🧾 *Carriera:* _${userData.lavoro2.giorni} lavoretti_, _${formatMoney(userData.lavoro2.guadagnato)}_ lordi accumulati
-▸ ⏳ Prossimo lavoretto: _45 minuti_
-◈ _Vex Bot_`;
+`💪 _Lavoretto: ${gig.emoji} ${gig.nome}_
+▸ ${bonus ? '🔥 CRITICO! ' : ''}${randomChoice(gig.tip())}
+▸ Lordo: _+${formatMoney(gross)}_ ▸ Netto: _+${formatMoney(taxed.net)}_${taxLine}
+▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo: _45 min_ | Lavoretti: _${userData.lavoro2.giorni}_
+▸ Vex Bot`;
 
         await sendButtons(sock, from, text, [
             { label: `💪 Altro lavoretto`, id: `.${command}` },

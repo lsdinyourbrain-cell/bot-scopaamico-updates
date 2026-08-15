@@ -27,20 +27,14 @@ module.exports = {
             uDB.money += taxed.net;
             saveDB();
 
-            const taxLine = taxed.tax > 0
-                ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
-                : '';
-            const risultato = win > 0 ? `🎊 *Vinci ${win}€!*` : `💀 *Hai puntato ${puntata}€*`;
+            const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
+            const risultato = win > 0 ? `🎊 Vinci ${win}€!` : `💀 Hai perso ${puntata}€`;
 
             const resultText =
-`╔════════════════════╗
-▸ 🎰 *_SLOT MACHINE_*
-╚════════════════════╝
-▸ 📟 [ ${r[0]} | ${r[1]} | ${r[2]} ]
+`🎰 _[ ${r[0]} | ${r[1]} | ${r[2]} ]_
 ▸ ${risultato}
-${win > 0 ? `▸ 💵 *Lordo:* _+${formatMoney(win)}€_\n▸ 💳 *Per te:* _+${formatMoney(taxed.net)}€_` : ''}${taxLine}
-▸ 💰 *Saldo:* _${uDB.money}€_
-◈ _Vex Bot_`;
+▸ ${win > 0 ? `Lordo: _+${win}€_ ▸ Netto: _+${taxed.net}€_${taxLine}` : '▸ Saldo: ' + `_${uDB.money}€_`}
+▸ Vex Bot`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

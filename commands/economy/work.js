@@ -39,20 +39,13 @@ module.exports = {
         uDB.money += taxed.net;
         saveDB();
 
-        const taxLine = taxed.tax > 0
-            ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
-            : '';
+        const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
 
         const resultText =
-`╔════════════════════╗
-▸ 🧑‍💼 Hai lavorato: _${lavoro.emoji} ${lavoro.nome}_
-╚════════════════════╝
-▸ 💵 *Retribuzione lorda:* _+${formatMoney(gross)}€_
-▸ 💳 *Entrate nette:* _+${formatMoney(taxed.net)}€_
-${taxLine}
-▸ 💰 *Saldo attuale:* _${formatMoney(uDB.money)}€_
-▸ ⏳ Prossimo turno: _20 minuti_
-◈ _Vex Bot_`;
+`💼 _${lavoro.emoji} ${lavoro.nome}_
+▸ Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}
+▸ Saldo: _${formatMoney(uDB.money)}€_ | Prossimo turno: _20 minuti_
+▸ Vex Bot`;
 
         await sendButtons(sock, from, resultText, [
             { label: `💼 Nuovo turno`, id: `.${command}` },

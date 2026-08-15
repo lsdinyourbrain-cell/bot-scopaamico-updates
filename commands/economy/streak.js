@@ -43,22 +43,13 @@ module.exports = {
         uDB.money += taxed.net;
         saveDB();
 
-        const taxLine = taxed.tax > 0
-            ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
-            : '';
+        const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
 
         const resultText =
-`╔════════════════════╗
-▸ 🔥 *_STREAK DI FIDELITÀ_
-╚════════════════════╝
-▸ 📅 *Data:* _${today.toLocaleDateString('it-IT')}_
-▸ 🔥 *Serie:* _${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}_ di fila
-▸ ${newCount > 1 ? '✨ *Serie mantenuta!*' : '🆕 *Nuova serie!'}
-▸ 💰 *Lordo:* _+${formatMoney(reward)}€_
-▸ 💳 *Per te:* _+${formatMoney(taxed.net)}€_
-${taxLine}
-▸ 💵 *Saldo attuale:* _${uDB.money}€_
-◈ _Vex Bot_`;;
+`🔥 _Streak: ${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}_${newCount > 1 ? ' ✨' : ' 🆕'}
+▸ Lordo: _+${formatMoney(reward)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}
+▸ Saldo: _${uDB.money}€_
+▸ Vex Bot`;;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}`, id: `${command}` },
