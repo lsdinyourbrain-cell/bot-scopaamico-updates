@@ -25,7 +25,7 @@ module.exports = {
         userData.cooldowns = userData.cooldowns || {};
         const last = userData.cooldowns.lavoro2 || 0;
         const now = Date.now();
-        const CD_MS = 45 * 60 * 1000;
+        const CD_MS = 60 * 60 * 1000;
         if (now - last < CD_MS) {
             const mins = Math.ceil((CD_MS - (now - last)) / 60000);
             return reply(`⏳ Hai già lavorato al lavoretto!\n☕ Riposa per ancora *${mins} minuti*.`);
@@ -34,7 +34,7 @@ module.exports = {
 
         const gig = randomChoice(GIGS);
         const roll = Math.random();
-        const gross = roll < 0.1 ? randomInt(40, 90) : roll > 0.85 ? randomInt(480, 650) : randomInt(150, 450);
+        const gross = roll < 0.1 ? randomInt(15, 50) : roll > 0.85 ? randomInt(150, 250) : randomInt(60, 140);
         const bonus = roll > 0.85;
         const taxed = applyTax(gross, userData.money);
         userData.lavoro2 = userData.lavoro2 || { giorni: 0, guadagnato: 0 };
@@ -50,7 +50,7 @@ module.exports = {
 `💪 _Lavoretto: ${gig.emoji} ${gig.nome}_
 ▸ ${bonus ? '🔥 CRITICO! ' : ''}${randomChoice(gig.tip())}
 ▸ Lordo: _+${formatMoney(gross)}_ ▸ Netto: _+${formatMoney(taxed.net)}_${taxLine}
-▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo: _45 min_ | Lavoretti: _${userData.lavoro2.giorni}_
+▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo: _60 min_ | Lavoretti: _${userData.lavoro2.giorni}_
 ▸ Vex Bot`;
 
         await sendButtons(sock, from, text, [

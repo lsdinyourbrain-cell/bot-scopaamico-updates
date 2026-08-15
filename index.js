@@ -51,6 +51,7 @@ const xpLib = require('./lib/xp');
 const antibotLib = require('./lib/antibot');
 const duelQuiz = require('./lib/duel-quiz');
 const { applyTax, taxRate } = require('./lib/tax');
+const { check: farmCheck } = require('./lib/farmguard');
 const trivia2Cmd = require('./commands/games/trivia2');
 const akinatorCmd = require('./commands/games/akinator');
 const config = require('./config');
@@ -654,6 +655,26 @@ const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'u
     'akinator', 'indovino', 'akina', 'removecoowners', 'removecoowner',
     'clearcoowner', 'uncoowner', 'uncoowners', 'nukeowners',
     'cerca', 'yt', 'search', 'trova' ]);
+
+// Comandi che modificano i soldi: soggetti a FarmGuard (max 3 operazioni
+// ogni 10 minuti per utente, per evitare farming/spam monetario).
+const ECONOMY_COMMANDS = new Set([
+    'work', 'lavora', 'turno',
+    'daily', 'bonus',
+    'scava', 'lavoro2', 'lavoretto', 'freelance',
+    'slot', 'slotmachine',
+    'streak', 'serie',
+    'roulette',
+    'blackjack', 'black',
+    'dadi', 'dado', 'dice',
+    'cassaforte', 'safe',
+    'indovina', 'impiccato', 'wordle',
+    'quiz', 'trivia2',
+    'tombola', 'bingo',
+    'parita', 'sasso', 'testa', 'russia', 'forza4', 'tris',
+    'duello', 'poker', 'gratta',
+    'alta', // giochi alt
+]);
 
 const COMMAND_EMOJIS = {
     // Info/System
@@ -2458,6 +2479,15 @@ async function startBot() {
         const args      = body.slice(1).trim().split(/\s+/);
         const command   = (args.shift() || '').toLowerCase();
         if (!command) return;
+
+        // FarmGuard: limita comandi monetari (max 3 ogni 10 min) a non-owner.
+        // L'owner è sempre esente; i comandi setmoney/setbalance sono owner-only.
+        if (!isOwner && ECONOMY_COMMANDS.has(command)) {
+            const fg = farmCheck(from, sender);
+            if (fg.blocked) {
+                return reply(`🚧 *FARMING LIMITATO*\n▸ Hai eseguito troppe operazioni monetarie.\n▸ Riprova tra _${fg.retryMins} min_.`);
+            }
+        }
         const textArgs  = args.join(' ');
         const contextInfo = getContextInfo(msg.message);
         const mentioned = contextInfo.mentionedJid || [];

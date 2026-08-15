@@ -20,8 +20,8 @@ module.exports = {
             const r     = [0, 1, 2].map(() => icone[Math.floor(Math.random() * icone.length)]);
 
             let win = 0;
-            if (r[0] === r[1] && r[1] === r[2]) win = 200;
-            else if (r[0] === r[1] || r[1] === r[2] || r[0] === r[2]) win = 30;
+            if (r[0] === r[1] && r[1] === r[2]) win = 100;
+            else if (r[0] === r[1] || r[1] === r[2] || r[0] === r[2]) win = 15;
 
             const taxed = applyTax(win, uDB.money);
             uDB.money += taxed.net;

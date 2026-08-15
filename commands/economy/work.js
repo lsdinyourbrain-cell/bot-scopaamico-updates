@@ -22,14 +22,14 @@ module.exports = {
         userData.cooldowns[cooldownKey] = now;
 
         const lavori = [
-            { emoji: '⚙️', nome: 'in fabbrica', paga: () => randomInt(80, 180) },
-            { emoji: '🍔', nome: 'al fast food', paga: () => randomInt(50, 120) },
-            { emoji: '👨‍💻', nome: 'da programmatore', paga: () => randomInt(140, 300) },
-            { emoji: '🧑‍🌾', nome: 'in campagna', paga: () => randomInt(60, 140) },
-            { emoji: '📦', nome: 'in magazzino', paga: () => randomInt(70, 150) },
-            { emoji: '🛵', nome: 'da rider', paga: () => randomInt(55, 130) },
-            { emoji: '🎓', nome: 'da tutor', paga: () => randomInt(90, 190) },
-            { emoji: '🕵️', nome: 'da detective', paga: () => randomInt(120, 250) },
+            { emoji: '⚙️', nome: 'in fabbrica', paga: () => randomInt(30, 90) },
+            { emoji: '🍔', nome: 'al fast food', paga: () => randomInt(20, 60) },
+            { emoji: '👨‍💻', nome: 'da programmatore', paga: () => randomInt(60, 150) },
+            { emoji: '🧑‍🌾', nome: 'in campagna', paga: () => randomInt(25, 70) },
+            { emoji: '📦', nome: 'in magazzino', paga: () => randomInt(30, 80) },
+            { emoji: '🛵', nome: 'da rider', paga: () => randomInt(20, 70) },
+            { emoji: '🎓', nome: 'da tutor', paga: () => randomInt(40, 100) },
+            { emoji: '🕵️', nome: 'da detective', paga: () => randomInt(50, 130) },
         ];
 
         const lavoro = randomChoice(lavori);

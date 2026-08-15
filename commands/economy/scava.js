@@ -15,7 +15,7 @@ module.exports = {
             if (!userData.cooldowns) userData.cooldowns = {};
             const last = userData.cooldowns[cooldownKey] || 0;
             const now = Date.now();
-            const cdMs = 30000;
+            const cdMs = 45000;
 
             if (!isButton && now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
@@ -23,7 +23,7 @@ module.exports = {
             }
 
             userData.cooldowns[cooldownKey] = now;
-            const gross = Math.floor(Math.random() * 50) + 10;
+            const gross = Math.floor(Math.random() * 25) + 5;
             const taxed = applyTax(gross, userData.money);
             userData.money += taxed.net;
             saveDB();

@@ -21,7 +21,7 @@ module.exports = {
                 return reply(`⏳ Hai già ritirato il daily!\n▸ Ripassa tra _${hours}h ${mins}m_.`);
             }
 
-            const grossBonus = randomInt(150, 400);
+            const grossBonus = randomInt(50, 180);
             const taxed = applyTax(grossBonus, userData.money);
             userData.money += taxed.net;
             userData.lastDaily = now;

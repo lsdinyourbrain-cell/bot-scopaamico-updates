@@ -31,10 +31,10 @@ module.exports = {
 
         if (lastKey === yesterdayKey) {
             newCount = count + 1;
-            reward = 20 + (newCount - 1) * 5;
+            reward = 10 + (newCount - 1) * 3;
         } else {
             newCount = 1;
-            reward = 20;
+            reward = 10;
         }
 
         uDB.streakCount = newCount;
