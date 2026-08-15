@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, applyTax } = services;
 
 
             const userData = getUser(sender, from);
@@ -21,18 +21,24 @@ module.exports = {
                 return reply(`⏳ Hai già ritirato il daily!\n▸ Ripassa tra _${hours}h ${mins}m_.`);
             }
 
-            const bonus = randomInt(150, 400);
-            userData.money += bonus;
+            const grossBonus = randomInt(150, 400);
+            const taxed = applyTax(grossBonus, userData.money);
+            userData.money += taxed.net;
             userData.lastDaily = now;
             saveDB();
 
+            const taxLine = taxed.tax > 0
+                ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
+                : '';
+
             await reply(
-`🎁 *_DAILY_*
-━━━━━━━━━━━━━━
-▸ 📅 *Bonus ritirato:* _+${bonus}€_
-▸ 🤑 Che giornata fortunata!
-━━━━━━━━━━━━━━
-▸ 💰 *Saldo:* _${userData.money}€_
+`╔════════════════════╗
+▸ 🎁 *BONUS GIORNALERO*
+╚════════════════════╝
+▸ 💰 *Lordo:* _+${grossBonus}€_
+▸ 💳 *Netto:* _+${taxed.net}€_
+${taxLine}
+▸ 💵 *Saldo attuale:* _${userData.money}€_
 ◈ _Vex Bot_`);
     },
 };

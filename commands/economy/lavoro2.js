@@ -19,7 +19,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, reply, services } = context;
-        const { getUser, saveDB, randomChoice, randomInt, formatMoney, sendButtons } = services;
+        const { getUser, saveDB, randomChoice, randomInt, formatMoney, sendButtons, applyTax } = services;
 
         const userData = getUser(sender, from);
         userData.cooldowns = userData.cooldowns || {};
@@ -34,25 +34,32 @@ module.exports = {
 
         const gig = randomChoice(GIGS);
         const roll = Math.random();
-        const guadagno = roll < 0.1 ? randomInt(40, 90) : roll > 0.85 ? randomInt(480, 650) : randomInt(150, 450);
+        const gross = roll < 0.1 ? randomInt(40, 90) : roll > 0.85 ? randomInt(480, 650) : randomInt(150, 450);
         const bonus = roll > 0.85;
-
-        userData.money += guadagno;
+        const taxed = applyTax(gross, userData.money);
         userData.lavoro2 = userData.lavoro2 || { giorni: 0, guadagnato: 0 };
+
+        userData.money += taxed.net;
         userData.lavoro2.giorni += 1;
-        userData.lavoro2.guadagnato += guadagno;
+        userData.lavoro2.guadagnato += gross;
         saveDB();
 
+        const taxLine = taxed.tax > 0
+            ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
+            : '';
+
         const text =
-`💪 *_LAVORETTO_*
-━━━━━━━━━━━━━━
+`╔════════════════════╗
+▸ 💪 *_LAVORETTO_*
+╚════════════════════╝
 ▸ ${gig.emoji} Oggi ${gig.nome}:
-▸ _${randomChoice(gig.tip())}._
-${bonus ? '▸ 🔥 *_CRITICO! Paga massima!_*\n' : ''}▸ 💰 Guadagno: _+${formatMoney(guadagno)}_
-━━━━━━━━━━━━━━
-▸ 💳 Saldo: _${formatMoney(userData.money)}_
-▸ 🧾 Carriera: _${userData.lavoro2.giorni} lavoretti_, _${formatMoney(userData.lavoro2.guadagnato)}_ accumulati
-▸ ⏳ Nuovo lavoretto tra 45 minuti
+▸ _${randomChoice(gig.tip())}_
+${bonus ? '▸ 🔥 *CRITICO! Paga massima!*\n' : ''}▸ 💵 *Lordo:* _+${formatMoney(gross)}_
+▸ 💳 *Netto:* _+${formatMoney(taxed.net)}_
+${taxLine}
+▸ 💰 *Saldo attuale:* _${formatMoney(userData.money)}_
+▸ 🧾 *Carriera:* _${userData.lavoro2.giorni} lavoretti_, _${formatMoney(userData.lavoro2.guadagnato)}_ lordi accumulati
+▸ ⏳ Prossimo lavoretto: _45 minuti_
 ◈ _Vex Bot_`;
 
         await sendButtons(sock, from, text, [

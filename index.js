@@ -50,6 +50,7 @@ const mazeLib = require('./lib/maze');
 const xpLib = require('./lib/xp');
 const antibotLib = require('./lib/antibot');
 const duelQuiz = require('./lib/duel-quiz');
+const { applyTax, taxRate } = require('./lib/tax');
 const trivia2Cmd = require('./commands/games/trivia2');
 const akinatorCmd = require('./commands/games/akinator');
 const config = require('./config');
@@ -2524,6 +2525,7 @@ async function startBot() {
                     setNukeActive, isNukeActive,
                     checkTrisWinner,
                     renderTrisBoard: (board) => renderTrisBoardRaw(sharp, board),
+                    applyTax, taxRate,
                 },
             });
 

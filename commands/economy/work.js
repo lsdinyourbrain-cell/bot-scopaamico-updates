@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { getUser, saveDB, sendButtons, randomInt, randomChoice, formatMoney } = services;
+        const { getUser, saveDB, sendButtons, randomInt, randomChoice, formatMoney, applyTax } = services;
 
         const cooldownKey = 'work';
         const userData = getUser(sender, from);
@@ -33,20 +33,25 @@ module.exports = {
         ];
 
         const lavoro = randomChoice(lavori);
-        const paga = lavoro.paga();
         const uDB = getUser(sender, from);
-        uDB.money += paga;
+        const gross = lavoro.paga();
+        const taxed = applyTax(gross, uDB.money);
+        uDB.money += taxed.net;
         saveDB();
 
+        const taxLine = taxed.tax > 0
+            ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
+            : '';
+
         const resultText =
-`💼 *_WORK_*
-━━━━━━━━━━━━━━
-▸ ${lavoro.emoji} Hai lavorato ${lavoro.nome}!
-━━━━━━━━━━━━━━
-▸ 💰 *Guadagno:* _+${formatMoney(paga)}€_
-━━━━━━━━━━━━━━
-▸ 💳 *Saldo attuale:* _${formatMoney(uDB.money)}€_
-▸ ⏳ Nuovo turno tra 20 minuti
+`╔════════════════════╗
+▸ 🧑‍💼 Hai lavorato: _${lavoro.emoji} ${lavoro.nome}_
+╚════════════════════╝
+▸ 💵 *Retribuzione lorda:* _+${formatMoney(gross)}€_
+▸ 💳 *Entrate nette:* _+${formatMoney(taxed.net)}€_
+${taxLine}
+▸ 💰 *Saldo attuale:* _${formatMoney(uDB.money)}€_
+▸ ⏳ Prossimo turno: _20 minuti_
 ◈ _Vex Bot_`;
 
         await sendButtons(sock, from, resultText, [

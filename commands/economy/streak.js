@@ -7,7 +7,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { getUser, saveDB, sendButtons, formatMoney } = services;
+        const { getUser, saveDB, sendButtons, formatMoney, applyTax } = services;
 
         const uDB = getUser(sender, from);
 
@@ -39,19 +39,26 @@ module.exports = {
 
         uDB.streakCount = newCount;
         uDB.streakDay = todayKey;
-        uDB.money += reward;
+        const taxed = applyTax(reward, uDB.money);
+        uDB.money += taxed.net;
         saveDB();
 
+        const taxLine = taxed.tax > 0
+            ? `\n▸ 🏛️ *Tassa:* _-${taxed.tax}€_ (${taxed.rate}%)`
+            : '';
+
         const resultText =
-`🔥 *STREAK*
-━━━━━━━━━━━━━━
-▸ 📅 Oggi: _${today.toLocaleDateString('it-IT')}_
-▸ 🔥 Serie: _${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}_ di fila
-▸ ${newCount > 1 ? '✨ Serie mantenuta!' : '🆕 Nuova serie iniziata!'}
-▸ 💰 Premio ritirato: _+${formatMoney(reward)}€_
-▸ 💳 Saldo attuale: _${formatMoney(uDB.money)}€_
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`╔════════════════════╗
+▸ 🔥 *_STREAK DI FIDELITÀ_
+╚════════════════════╝
+▸ 📅 *Data:* _${today.toLocaleDateString('it-IT')}_
+▸ 🔥 *Serie:* _${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}_ di fila
+▸ ${newCount > 1 ? '✨ *Serie mantenuta!*' : '🆕 *Nuova serie!'}
+▸ 💰 *Lordo:* _+${formatMoney(reward)}€_
+▸ 💳 *Per te:* _+${formatMoney(taxed.net)}€_
+${taxLine}
+▸ 💵 *Saldo attuale:* _${uDB.money}€_
+◈ _Vex Bot_`;;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}`, id: `${command}` },

@@ -100,7 +100,7 @@ const buildCards = (results) => results.map((v, i) => {
 
 module.exports = {
     name: 'cerca',
-    aliases: ['yt', 'search', 'trova'],
+    aliases: ['yt', 'search', 'trova', 'play', 'ytplay', 'ytsearch'],
     description: "Cerca video su YouTube: scorri le card e scarica subito l'audio in .mp3 o il video. Uso: .cerca <testo>",
 
     async run(sock, msg, args, context) {
