@@ -105,17 +105,11 @@ module.exports = {
 
         const q = String(textArgs || '').trim().toLowerCase();
 
-        // ── GUIDA COMPLETA (file .txt) ────────────────────────────────────
-        if (!q) {
-            const txt = buildGuideTxt(commands);
-            await sock.sendMessage(from, {
-                document: Buffer.from(txt, 'utf8'),
-                fileName: 'VexBot_Guida.txt',
-                mimetype: 'text/plain',
-                caption: `📘 *Guida completa* · ${uniqueCommands(commands).length} comandi · v${pkg.version}`,
-            }, { quoted: msg });
-            return;
-        }
+        // "aiuto" richiesto in qualsiasi forma (anche con maiuscole o alias:
+        // help, guida, helpme) SENZA argomenti: la guida completa del bot
+        // viene soppressa volontariamente. Rimane comunque la spiegazione
+        // di un comando (.aiuto <comando>) e il dettaglio di una sezione.
+        if (!q) return;
 
         // ── COMANDO (priorità: un comando può avere lo stesso nome di una sezione) ─
         const mod = commands.get(q);
