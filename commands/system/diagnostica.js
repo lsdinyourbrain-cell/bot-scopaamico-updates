@@ -10,7 +10,7 @@ const { getFfmpegPath, isFfmpegVerified } = require('../../lib/ffmpeg-path');
 
 module.exports = {
     name: 'diagnostica',
-    aliases: ['diag', 'testbot', 'check'],
+    aliases: ['diag', 'testbot'],
     description: "Diagnostica il sistema del bot (solo Owner): ffmpeg, yt-dlp, conversione audio e video.",
 
     async run(sock, msg, args, context) {
