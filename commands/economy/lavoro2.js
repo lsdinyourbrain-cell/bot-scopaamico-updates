@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDarkFont } = require('../../lib/font');
+
 // Secondo lavoro: un "lavoretto freelance" con un mini-racconto e una paga
 // più alta (cooldown di 45 minuti). Storia della carriera in userData.lavoro2.
 
@@ -53,7 +55,7 @@ module.exports = {
 ▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo: _60 min_ | Lavoretti: _${userData.lavoro2.giorni}_
 ▸ Vex Bot`;
 
-        await sendButtons(sock, from, text, [
+        await sendButtons(sock, from, toDarkFont(text), [
             { label: `💪 Altro lavoretto`, id: `.${command}` },
         ], msg);
     },

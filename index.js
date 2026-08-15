@@ -52,7 +52,6 @@ const antibotLib = require('./lib/antibot');
 const duelQuiz = require('./lib/duel-quiz');
 const { applyTax, taxRate } = require('./lib/tax');
 const { check: farmCheck } = require('./lib/farmguard');
-const { toDarkFont } = require('./lib/font');
 const trivia2Cmd = require('./commands/games/trivia2');
 const akinatorCmd = require('./commands/games/akinator');
 const config = require('./config');
@@ -1240,17 +1239,6 @@ async function startBot() {
         generateHighQualityLinkPreview: false,
         browser             : ['Vex Bot', 'Chrome', '120.0.0'],
     });
-
-    // ── Proxy Dark Font ────────────────────────────────────────────────────
-    // Ogni messaggio di testo/caption che il bot invia viene convertito in
-    // stile Fraktur Bold (𝔻𝕒𝕣𝕜 𝔾𝕠𝕥𝕙𝕚𝕔). Vengono lasciati invariati id,
-    // label e options (così i pulsanti e le reazioni continuano a funzionare).
-    const _origSend = sock.sendMessage.bind(sock);
-    sock.sendMessage = async (jid, content, options) => {
-        if (content && typeof content.text === 'string') content.text = toDarkFont(content.text);
-        if (content && typeof content.caption === 'string') content.caption = toDarkFont(content.caption);
-        return _origSend(jid, content, options);
-    };
 
     sock.ev.on('creds.update', saveCreds);
 

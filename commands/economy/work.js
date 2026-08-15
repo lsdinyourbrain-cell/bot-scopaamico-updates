@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDarkFont } = require('../../lib/font');
+
 module.exports = {
     name: 'work',
     aliases: ['lavora', 'turno'],
@@ -47,7 +49,7 @@ module.exports = {
 ▸ Saldo: _${formatMoney(uDB.money)}€_ | Prossimo turno: _20 minuti_
 ▸ Vex Bot`;
 
-        await sendButtons(sock, from, resultText, [
+        await sendButtons(sock, from, toDarkFont(resultText), [
             { label: `💼 Nuovo turno`, id: `.${command}` },
         ], msg);
     },

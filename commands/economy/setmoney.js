@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDarkFont } = require('../../lib/font');
+
 module.exports = {
     name: 'setmoney',
     aliases: ['setbalance'],

@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDarkFont } = require('../../lib/font');
+
 module.exports = {
     name: 'daily',
     aliases: ['bonus'],
@@ -29,10 +31,10 @@ module.exports = {
 
             const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
 
-            await reply(
+            await reply(toDarkFont(
 `🎁 *Bonus giornaliero*
 ▸ Lordo: _+${grossBonus}€_ ▸ Netto: _+${taxed.net}€_${taxLine}
 ▸ Saldo: _${userData.money}€_
-▸ Vex Bot`);
+▸ Vex Bot`));
     },
 };

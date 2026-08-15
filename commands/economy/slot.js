@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDarkFont } = require('../../lib/font');
+
 module.exports = {
     name: 'slot',
     aliases: [],
@@ -35,7 +37,7 @@ module.exports = {
 ▸ ${risultato}
 ▸ ${win > 0 ? `Lordo: _+${win}€_ ▸ Netto: _+${taxed.net}€_${taxLine}` : '▸ Saldo: ' + `_${uDB.money}€_`}
 ▸ Vex Bot`;
-            await sendButtons(sock, from, resultText, [
+            await sendButtons(sock, from, toDarkFont(resultText), [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);
     },

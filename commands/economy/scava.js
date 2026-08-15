@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDarkFont } = require('../../lib/font');
+
 module.exports = {
     name: 'scava',
     aliases: [],
@@ -29,7 +31,7 @@ module.exports = {
             saveDB();
 
             const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
-            await sendButtons(sock, from, `⛏️ _MINIERA_\n▸ Ritrovato: _${gross}€_ ▸ Per te: _+${taxed.net}€_${taxLine}\n▸ Saldo: _${userData.money}€_\n▸ Vex Bot`, [
+            await sendButtons(sock, from, toDarkFont(`⛏️ _MINIERA_\n▸ Ritrovato: _${gross}€_ ▸ Per te: _+${taxed.net}€_${taxLine}\n▸ Saldo: _${userData.money}€_\n▸ Vex Bot`), [
                 { label: `.${command}`, id: `${command}` },
             ], msg);
     },
