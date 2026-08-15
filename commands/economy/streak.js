@@ -51,7 +51,7 @@ module.exports = {
 `🔥 _Streak: ${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}_${newCount > 1 ? ' ✨' : ' 🆕'}
 ▸ Lordo: _+${formatMoney(reward)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}
 ▸ Saldo: _${uDB.money}€_
-▸ Vex Bot`;;
+▸ Vex Bot`;
 
         await sendButtons(sock, from, toDarkFont(resultText), [
             { label: `.${command}`, id: `${command}` },

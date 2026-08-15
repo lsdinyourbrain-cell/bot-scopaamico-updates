@@ -17,7 +17,8 @@ module.exports = {
         const last = userData.cooldowns[cooldownKey] || 0;
         const now = Date.now();
         const cdMs = 20 * 60 * 1000;
-        if (!isButton && now - last < cdMs) {
+        // Il pulsante "Nuovo turno" NON bypassa il cooldown (niente farming).
+        if (now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 60000);
             return reply(`⏳ Hai appena finito un turno!\n😴 Riposa per ancora _${remain} minuti_.`);
         }
@@ -34,19 +35,31 @@ module.exports = {
             { emoji: '🕵️', nome: 'da detective', paga: () => randomInt(50, 130) },
         ];
 
+        // Eventi casuali del turno: fortuna, straordinario o giornata storta.
+        const roll = Math.random();
+        let event = null;
+        if (roll < 0.10) {
+            event = { label: '🔥 STRAORDINARIO!', mult: 2, emoji: '🔥' };
+        } else if (roll < 0.30) {
+            event = { label: '😎 Mancia del capo!', mult: 1.5, emoji: '😎' };
+        } else if (roll < 0.40) {
+            event = { label: '😤 Giornata storta...', mult: 0.5, emoji: '😤' };
+        }
+
         const lavoro = randomChoice(lavori);
-        const uDB = getUser(sender, from);
-        const gross = lavoro.paga();
-        const taxed = applyTax(gross, uDB.money);
-        uDB.money += taxed.net;
+        const base = lavoro.paga();
+        const gross = Math.max(1, Math.round(base * (event ? event.mult : 1)));
+        const taxed = applyTax(gross, userData.money);
+        userData.money += taxed.net;
         saveDB();
 
         const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
+        const eventLine = event ? `\n▸ ${event.emoji} _${event.label}_` : '';
 
         const resultText =
 `💼 _${lavoro.emoji} ${lavoro.nome}_
-▸ Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}
-▸ Saldo: _${formatMoney(uDB.money)}€_ | Prossimo turno: _20 minuti_
+▸ Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}${eventLine}
+▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo turno: _20 minuti_
 ▸ Vex Bot`;
 
         await sendButtons(sock, from, toDarkFont(resultText), [

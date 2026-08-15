@@ -13,6 +13,11 @@ module.exports = {
             const sub = args[0]?.toLowerCase();
 
             if (sub === 'estrai') {
+                if (!isGroup) return reply("La lotteria funziona solo nei gruppi.");
+                // Solo l'owner o un admin del gruppo può estrarre il vincitore
+                if (!isOwner && !isSenderAdmin) {
+                    return reply("⚠️ Solo un *admin del gruppo* (o l'owner)\npuò estrarre il vincitore della lotteria.");
+                }
                 if (!db[from]?.lotteria) return reply("Nessuna lotteria attiva in questo gruppo.");
                 const lotto = db[from].lotteria;
                 const players = Object.keys(lotto.tickets);

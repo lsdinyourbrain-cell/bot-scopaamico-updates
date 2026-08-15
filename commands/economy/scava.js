@@ -19,7 +19,7 @@ module.exports = {
             const now = Date.now();
             const cdMs = 45000;
 
-            if (!isButton && now - last < cdMs) {
+            if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
                 return reply(`⏳ Scava e respira!\n▸ Riposa per ancora _${remain}s_ prima di riscavare.`);
             }

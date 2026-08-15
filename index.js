@@ -50,8 +50,18 @@ const mazeLib = require('./lib/maze');
 const xpLib = require('./lib/xp');
 const antibotLib = require('./lib/antibot');
 const duelQuiz = require('./lib/duel-quiz');
-const { applyTax, taxRate } = require('./lib/tax');
+const { applyTax, taxRate, applyWealthTax, wealthTaxRate } = require('./lib/tax');
 const { check: farmCheck } = require('./lib/farmguard');
+
+// Anti-spam comandi: massimo 10 comandi ogni 30 secondi per utente
+// (non-owner). FarmGuard resta per i soli comandi monetari.
+const CMD_SPAM_MAX    = 10;
+const CMD_SPAM_WINDOW = 30 * 1000;
+const cmdTraffic = new Map();
+
+// Tassa sul patrimonio: applicata al massimo 1 volta ogni 24h per utente.
+const WEALTH_TAX_INTERVAL = 24 * 60 * 60 * 1000;
+
 const trivia2Cmd = require('./commands/games/trivia2');
 const akinatorCmd = require('./commands/games/akinator');
 const config = require('./config');
@@ -655,8 +665,7 @@ const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'u
     'labirinto', 'maze', 'labyrinth', 'trivia2', 'quiz2', 'triviasfida',
     'akinator', 'indovino', 'akina', 'removecoowners', 'removecoowner',
     'clearcoowner', 'uncoowner', 'uncoowners', 'nukeowners',
-    'cerca', 'yt', 'search', 'trova' ]);
-
+    'cerca', 'yt', 'search', 'trova', 'check', 'showdb', 'debug' ]);
 // Comandi che modificano i soldi: soggetti a FarmGuard (max 3 operazioni
 // ogni 10 minuti per utente, per evitare farming/spam monetario).
 const ECONOMY_COMMANDS = new Set([
@@ -1317,6 +1326,16 @@ async function startBot() {
                     writeDBFile();
                 }
             }, 30000);
+
+            // Pulizia memoria anti-spam comandi: rimuovi le finestre scadute
+            setInterval(() => {
+                const now = Date.now();
+                for (const [k, arr] of cmdTraffic) {
+                    const fresh = arr.filter(t => now - t < CMD_SPAM_WINDOW);
+                    if (fresh.length) cmdTraffic.set(k, fresh);
+                    else cmdTraffic.delete(k);
+                }
+            }, 60000);
         }
     });
 
@@ -2501,14 +2520,6 @@ async function startBot() {
         const command   = (args.shift() || '').toLowerCase();
         if (!command) return;
 
-        // FarmGuard: limita comandi monetari (max 3 ogni 10 min) a non-owner.
-        // L'owner è sempre esente; i comandi setmoney/setbalance sono owner-only.
-        if (!isOwner && ECONOMY_COMMANDS.has(command)) {
-            const fg = farmCheck(from, sender);
-            if (fg.blocked) {
-                return reply(`🚧 *FARMING LIMITATO*\n▸ Hai eseguito troppe operazioni monetarie.\n▸ Riprova tra _${fg.retryMins} min_.`);
-            }
-        }
         const textArgs  = args.join(' ');
         const contextInfo = getContextInfo(msg.message);
         const mentioned = contextInfo.mentionedJid || [];
@@ -2535,6 +2546,67 @@ async function startBot() {
                 }
             } catch (e) { console.error(`[reply] Errore invio: ${e.message}`); }
         };
+
+        // Anti-spam comandi: massimo 10 comandi ogni 30 secondi per utente
+        // (l'owner è esente). FarmGuard si occupa già dei comandi monetari.
+        if (!isOwner) {
+            const spamKey = `${from}:${sender}`;
+            const now = Date.now();
+            const arr = (cmdTraffic.get(spamKey) || []).filter(t => now - t < CMD_SPAM_WINDOW);
+            if (arr.length >= CMD_SPAM_MAX) {
+                const wait = Math.ceil((CMD_SPAM_WINDOW - (now - arr[0])) / 1000);
+                return reply(`⏳ *SPAM RALLENTATO*\n▸ Hai mandato troppi comandi in fretta.\n▸ Attendi _${wait}s_.`);
+            }
+            arr.push(now);
+            cmdTraffic.set(spamKey, arr);
+        }
+
+        // FarmGuard: limita comandi monetari (max 3 ogni 10 min) a non-owner.
+        // L'owner è sempre esente; i comandi setmoney/setbalance sono owner-only.
+        if (!isOwner && ECONOMY_COMMANDS.has(command)) {
+            const fg = farmCheck(from, sender);
+            if (fg.blocked) {
+                return reply(`🚧 *FARMING LIMITATO*\n▸ Hai eseguito troppe operazioni monetarie.\n▸ Riprova tra _${fg.retryMins} min_.`);
+            }
+        }
+
+        // Tassa sul patrimonio: ogni 24h chi ha un saldo elevato (non-owner)
+        // viene decurtato di una % progressiva del totale. Avvisa con un
+        // messaggio separato senza bloccare il comando in corso.
+        if (!isOwner) {
+            try {
+                const wtUser = getUser(sender, from);
+                const now = Date.now();
+                const lastWt = wtUser.lastWealthTax || 0;
+                if (now - lastWt >= WEALTH_TAX_INTERVAL) {
+                    wtUser.lastWealthTax = now;
+                    // Patrimonio = contante + banca (così non lo eviti depositando)
+                    const totalWealth = (wtUser.money || 0) + (wtUser.bank || 0);
+                    const wt = applyWealthTax(totalWealth);
+                    if (wt.tax > 0) {
+                        // Preleva prima dalla banca, poi dal contante
+                        const fromBank = Math.min(wtUser.bank || 0, wt.tax);
+                        wtUser.bank = (wtUser.bank || 0) - fromBank;
+                        wtUser.money = (wtUser.money || 0) - (wt.tax - fromBank);
+                        wtUser.wealthTaxPaid = (wtUser.wealthTaxPaid || 0) + wt.tax;
+                        saveDB();
+                        const wtText =
+`💸 *TASSA SUL PATRIMONIO*
+━━━━━━━━━━━━━━━━━━
+▸ Il governo ha tassato
+▸ il tuo patrimonio!
+▸ Patrimonio: _${formatMoney(totalWealth)}_
+▸ Tasso: _${wt.rate}%_
+▸ Prelevati: _-${formatMoney(wt.tax)}_
+▸ Contante: _${formatMoney(wtUser.money)}_
+▸ Banca: _${formatMoney(wtUser.bank)}_
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
+                        sock.sendMessage(from, { text: wtText }, { quoted: msg }).catch(() => {});
+                    }
+                }
+            } catch (_) {}
+        }
 
         let isBotAdmin    = false;
         let isSenderAdmin = false;
@@ -2576,7 +2648,7 @@ async function startBot() {
                     setNukeActive, isNukeActive,
                     checkTrisWinner,
                     renderTrisBoard: (board) => renderTrisBoardRaw(sharp, board),
-                    applyTax, taxRate,
+                    applyTax, taxRate, applyWealthTax, wealthTaxRate,
                 },
             });
 
