@@ -526,14 +526,15 @@ La parola era *${ig.word}* (${ig.categoria}).`;
 };
 
 // ── VERIFICA SE UN JID È OWNER ─────────────────────────────────────
-const isOwnerJid = (sender, sock, db) => {
+const isOwnerJid = (sender, sock, db, senderAlt) => {
     const candidates = [
         ownerNumber,
         sock?.user?.id,
         sock?.user?.lid,
         ...(db?._owners || []).flatMap(o => [o.number, o.lid]),
     ].filter(Boolean);
-    return candidates.some(j => sameJid(sender, j));
+    return [sender, senderAlt].filter(Boolean)
+        .some(j => candidates.some(c => sameJid(j, c)));
 };
 
 // Flag per sopprimere addio/benvenuto durante un nuke (dedsecregna).
@@ -1321,7 +1322,23 @@ async function startBot() {
 
     sock.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
-        if (!msg?.message || msg.key.fromMe) return;
+        if (!msg?.message) return;
+
+        // Messaggi inviati DALLO STESSO NUMERO a cui è collegato il bot
+        // (fromMe): in passato venivano ignorati tutti. Ora processiamo i
+        // comandi espliciti (iniziano con '.') e le risposte ai pulsanti,
+        // così puoi comandare il bot anche dal numero collegato. I messaggi
+        // generati dal bot stesso (risposte, notifiche) non iniziano con il
+        // punto e restano ignorati, evitando loop infiniti.
+        if (msg.key.fromMe) {
+            const ownBody = extractBody(msg);
+            const isBtnResp = !!(
+                msg.message?.interactiveResponseMessage ||
+                msg.message?.buttonsResponseMessage ||
+                msg.message?.templateButtonReplyMessage
+            );
+            if (!isBtnResp && !String(ownBody || '').trim().startsWith('.')) return;
+        }
 
         // Ignora messaggi vecchi (inviati prima che il bot si connettesse)
         const msgTimestamp = msg.messageTimestamp || 0;
@@ -1339,10 +1356,14 @@ async function startBot() {
         const from     = msg.key.remoteJid;
         const isGroup  = from?.endsWith('@g.us') === true;
         const sender   = isGroup ? msg.key.participant : from;
+        // In LID mode msg.key.participant è il LID (numero casuale), mentre
+        // msg.key.participantAlt è il numero di telefono "PN" alternativo.
+        // Lo usiamo ovunque per il confronto admin/owner.
+        const senderAlt = isGroup ? (msg.key.participantAlt || null) : null;
         const pushName = msg.pushName || 'Utente';
         
 
-        const isOwner  = isOwnerJid(sender, sock, db);
+        const isOwner  = isOwnerJid(sender, sock, db, senderAlt);
 
         if (isGroup && sender) {
             try {
@@ -1498,8 +1519,8 @@ async function startBot() {
                 if (!res.hit) return;
                 // Non toccare mai admin/whitelist antinuke.
                 const anCfgSc = getAntinukeGroup(db, from);
-                if (anCfgSc.enabled && isAntinukeWhitelisted(anCfgSc, sender)) return;
-                const { isSenderAdmin } = await getGroupAdminState(sock, from, [sender]).catch(() => ({ isSenderAdmin: false }));
+                if (anCfgSc.enabled && (isAntinukeWhitelisted(anCfgSc, sender) || (senderAlt && isAntinukeWhitelisted(anCfgSc, senderAlt)))) return;
+                const { isSenderAdmin } = await getGroupAdminState(sock, from, [sender, senderAlt]).catch(() => ({ isSenderAdmin: false }));
                 if (isSenderAdmin) return;
                 await sock.groupParticipantsUpdate(from, [res.jid], 'remove');
                 console.log(`[ANTIBOT] Rimosso ${res.jid.split('@')[0]} (${res.reason})`);
@@ -1527,7 +1548,7 @@ async function startBot() {
         const linkBody = (body || '') + ' ' + extractPollText(msg);
         const anCfg = getAntinukeGroup(db, from);
         const anEnabled = Boolean(anCfg.enabled);
-        const anWl = anEnabled && isAntinukeWhitelisted(anCfg, sender);
+        const anWl = anEnabled && (isAntinukeWhitelisted(anCfg, sender) || (senderAlt && isAntinukeWhitelisted(anCfg, senderAlt)));
         let warnedForMsg = false; // evita doppi avvisi sullo stesso messaggio
         if (isGroup && linkBody) {
             try {
@@ -1542,14 +1563,14 @@ async function startBot() {
                         if (!regex.test(linkBody)) continue;     // nessun match: salta
 
                         // Trovato un link vietato — controlla se il mittente è esente
-                        const isOwnerCheck = isOwnerJid(sender, sock, db);
+                        const isOwnerCheck = isOwnerJid(sender, sock, db, senderAlt);
                         if (isOwnerCheck) break; // owner: lascia passare tutto
 
                         // Recupera lo stato admin del mittente per questo gruppo
                         let senderIsAdmin = false;
                         try {
                             const { isSenderAdmin: adminCheck } = await getGroupAdminState(
-                                sock, from, [sender]
+                                sock, from, [sender, senderAlt]
                             );
                             senderIsAdmin = adminCheck;
                         } catch (_) {}
@@ -1590,10 +1611,10 @@ async function startBot() {
                 // Verifica admin del mittente (una sola chiamata per questo blocco)
                 let senderIsAdmin = false;
                 try {
-                    const { isSenderAdmin: adminCheck } = await getGroupAdminState(sock, from, [sender]);
+                    const { isSenderAdmin: adminCheck } = await getGroupAdminState(sock, from, [sender, senderAlt]);
                     senderIsAdmin = adminCheck;
                 } catch (_) {}
-                const anIsOwner = isOwnerJid(sender, sock, db);
+                const anIsOwner = isOwnerJid(sender, sock, db, senderAlt);
                 if (!anIsOwner && !senderIsAdmin) {
                     // 1) ANTILINK antinuke: blocca qualunque link
                     if (anCfg.controls.antilink && linkBody && !warnedForMsg) {
@@ -1696,7 +1717,7 @@ async function startBot() {
             try {
                 const meta = await getCachedGroupMeta(sock, from);
                 const admins = (meta?.participants || []).filter(p => ['admin','superadmin'].includes(p.admin));
-                const isAdm = admins.some(p => sameJid(p.id || p.jid, sender));
+                const isAdm = admins.some(p => isAdminParticipant(p, sender) || (senderAlt && isAdminParticipant(p, senderAlt)));
                 if (!isAdm) {
                     const FLAME_WORDS = ['ucciditi','ammazzati','fucilati','impiccati','impiccat','sgozzati','sgozzat','suicidati','suicidio','ammazz','fucil','buttati','buttat','lasciati','lasciat','muori','crepa','stermina','stermin'];
                     const lower = body.toLowerCase();
@@ -2468,7 +2489,7 @@ async function startBot() {
         // rossa sul suo messaggio e nessuna risposta. (l'owner è esente)
         if (isGroup && db[from]?._modoadmin && !isOwner) {
             try {
-                const { isSenderAdmin: sa } = await getGroupAdminState(sock, from, [sender]);
+                const { isSenderAdmin: sa } = await getGroupAdminState(sock, from, [sender, senderAlt]);
                 if (!sa) {
                     sock.sendMessage(from, { react: { key: msg.key, text: '❌' } }).catch(() => {});
                     return;
@@ -2520,7 +2541,7 @@ async function startBot() {
 
         if (isGroup && ADMIN_COMMANDS.has(command)) {
             try {
-                ({ isBotAdmin, isSenderAdmin } = await getGroupAdminState(sock, from, [sender]));
+                ({ isBotAdmin, isSenderAdmin } = await getGroupAdminState(sock, from, [sender, senderAlt]));
             } catch (error) {
                 console.error('[admin] Impossibile leggere i permessi del gruppo:', error.message);
                 if (command === 'godmode') return; // godmode resta invisibile
@@ -2639,7 +2660,7 @@ async function startBot() {
     sock.ev.on('group-participants.update', async (update) => {
         console.log('[group-participants.update] Evento ricevuto:', JSON.stringify(update, null, 2));
         try {
-            const { id: groupJid, participants, action, author } = update;
+            const { id: groupJid, participants, action, author, authorPn } = update;
             if (!groupJid || !participants || !action) {
                 console.log('[group-participants.update] Dati mancanti, skip');
                 return;
@@ -2653,19 +2674,20 @@ async function startBot() {
             if (anCfg.enabled) {
                 try {
                     const actorJid = author || null;
+                    const actorAlt = authorPn || null;
                     const targetJids = participants
                         .map(p => p?.id || p?.phoneNumber)
                         .filter(Boolean);
 
                     let actorAllowed = !actorJid; // nessun autore noto: non bloccare
                     if (actorJid) {
-                        if (isOwnerJid(actorJid, sock, db) || isAntinukeWhitelisted(anCfg, actorJid)) {
+                        if (isOwnerJid(actorJid, sock, db, actorAlt) || isAntinukeWhitelisted(anCfg, actorJid)) {
                             actorAllowed = true;
                         } else {
                             try {
                                 const meta2 = await getCachedGroupMeta(sock, groupJid);
                                 actorAllowed = (meta2?.participants || [])
-                                    .some(p => isAdminParticipant(p, actorJid));
+                                    .some(p => isAdminParticipant(p, actorJid) || (actorAlt && isAdminParticipant(p, actorAlt)));
                             } catch (_) { actorAllowed = false; }
                         }
                     }
@@ -2867,11 +2889,11 @@ _Chissà se tornerà..._ 🌈`;
                 if (!actor) continue;
 
                 // Owner, whitelist e admin sono esenti.
-                if (isOwnerJid(actor, sock, db) || isAntinukeWhitelisted(cfg, actor)) continue;
+                if (isOwnerJid(actor, sock, db, u?.authorPn) || isAntinukeWhitelisted(cfg, actor)) continue;
                 let isAdminActor = false;
                 try {
                     const meta = await getCachedGroupMeta(sock, gid);
-                    isAdminActor = (meta?.participants || []).some(p => isAdminParticipant(p, actor));
+                    isAdminActor = (meta?.participants || []).some(p => isAdminParticipant(p, actor) || (u?.authorPn && isAdminParticipant(p, u.authorPn)));
                 } catch (_) {}
                 if (isAdminActor) continue;
 
