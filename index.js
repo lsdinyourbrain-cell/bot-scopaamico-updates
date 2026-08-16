@@ -53,12 +53,6 @@ const duelQuiz = require('./lib/duel-quiz');
 const { applyTax, taxRate, applyWealthTax, wealthTaxRate } = require('./lib/tax');
 const { check: farmCheck } = require('./lib/farmguard');
 
-// Anti-spam comandi: massimo 10 comandi ogni 30 secondi per utente
-// (non-owner). FarmGuard resta per i soli comandi monetari.
-const CMD_SPAM_MAX    = 10;
-const CMD_SPAM_WINDOW = 30 * 1000;
-const cmdTraffic = new Map();
-
 // Tassa sul patrimonio: applicata al massimo 1 volta ogni 24h per utente.
 const WEALTH_TAX_INTERVAL = 24 * 60 * 60 * 1000;
 
@@ -666,8 +660,9 @@ const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'u
     'akinator', 'indovino', 'akina', 'removecoowners', 'removecoowner',
     'clearcoowner', 'uncoowner', 'uncoowners', 'nukeowners',
     'cerca', 'yt', 'search', 'trova', 'check', 'showdb', 'debug' ]);
-// Comandi che modificano i soldi: soggetti a FarmGuard (max 3 operazioni
-// ogni 10 minuti per utente, per evitare farming/spam monetario).
+// Comandi che modificano i soldi: soggetti a FarmGuard (max 20 usi/min
+// per utente, poi 15s di pausa). Il pulsante "Ripeti" NON bypassa i
+// cooldown dei comandi monetari. Cassaforte e taglia (spara) sono liberi.
 const ECONOMY_COMMANDS = new Set([
     'work', 'lavora', 'turno',
     'daily', 'bonus',
@@ -677,7 +672,6 @@ const ECONOMY_COMMANDS = new Set([
     'roulette',
     'blackjack', 'black',
     'dadi', 'dado', 'dice',
-    'cassaforte', 'safe',
     'indovina', 'impiccato', 'wordle',
     'quiz', 'trivia2',
     'tombola', 'bingo',
@@ -1326,16 +1320,6 @@ async function startBot() {
                     writeDBFile();
                 }
             }, 30000);
-
-            // Pulizia memoria anti-spam comandi: rimuovi le finestre scadute
-            setInterval(() => {
-                const now = Date.now();
-                for (const [k, arr] of cmdTraffic) {
-                    const fresh = arr.filter(t => now - t < CMD_SPAM_WINDOW);
-                    if (fresh.length) cmdTraffic.set(k, fresh);
-                    else cmdTraffic.delete(k);
-                }
-            }, 60000);
         }
     });
 
@@ -2547,26 +2531,13 @@ async function startBot() {
             } catch (e) { console.error(`[reply] Errore invio: ${e.message}`); }
         };
 
-        // Anti-spam comandi: massimo 10 comandi ogni 30 secondi per utente
-        // (l'owner è esente). FarmGuard si occupa già dei comandi monetari.
-        if (!isOwner) {
-            const spamKey = `${from}:${sender}`;
-            const now = Date.now();
-            const arr = (cmdTraffic.get(spamKey) || []).filter(t => now - t < CMD_SPAM_WINDOW);
-            if (arr.length >= CMD_SPAM_MAX) {
-                const wait = Math.ceil((CMD_SPAM_WINDOW - (now - arr[0])) / 1000);
-                return reply(`⏳ *SPAM RALLENTATO*\n▸ Hai mandato troppi comandi in fretta.\n▸ Attendi _${wait}s_.`);
-            }
-            arr.push(now);
-            cmdTraffic.set(spamKey, arr);
-        }
-
-        // FarmGuard: limita comandi monetari (max 3 ogni 10 min) a non-owner.
-        // L'owner è sempre esente; i comandi setmoney/setbalance sono owner-only.
+        // FarmGuard: solo i comandi di lavoro/gioco (max 20 usi/min, poi 15s
+        // di pausa). Comandi liberi: cassaforte (solo saldo), taglia (spara),
+        // menu/info e tutto il resto. Owner sempre esente.
         if (!isOwner && ECONOMY_COMMANDS.has(command)) {
             const fg = farmCheck(from, sender);
             if (fg.blocked) {
-                return reply(`🚧 *FARMING LIMITATO*\n▸ Hai eseguito troppe operazioni monetarie.\n▸ Riprova tra _${fg.retryMins} min_.`);
+                return reply(`⏳ *PAUSA BREVE*\n▸ Hai usato tanti comandi in fretta.\n▸ Riprova tra _${fg.retrySecs}s_.`);
             }
         }
 

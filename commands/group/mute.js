@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'mute',
     aliases: ["unmute", "muta", "smuta", "riabilita"],
@@ -29,7 +31,7 @@ module.exports = {
         if (command === 'unmute' || command === 'smuta' || command === 'riabilita') {
             targetData.isMuted = false;
             saveDB();
-            return await sock.sendMessage(from, { text: `🔊 *_UNMUTE_*
+            return await sock.sendMessage(from, { text: `🔊 ${toDecorated('UNMUTE', 'mono', '⏣')}
 ━━━━━━━━━━━━━━
 ▸ @${tgt.split('@')[0]} può *scrivere di nuovo*.
 ━━━━━━━━━━━━━━
@@ -40,7 +42,7 @@ module.exports = {
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `🔇 *_MUTE_*
+            text: `🔇 ${toDecorated('MUTE', 'mono', '⏣')}
 ━━━━━━━━━━━━━━
 ▸ @${tgt.split('@')[0]} è stato *mutato* permanentemente.
 ━━━━━━━━━━━━━━

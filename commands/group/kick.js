@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'kick',
     aliases: ['caccia', 'butta', 'elimina'],
@@ -22,7 +24,7 @@ module.exports = {
         try {
             await sock.groupParticipantsUpdate(from, [tgt], 'remove');
             await sock.sendMessage(from, {
-                text: `👋 *_KICK_*
+                text: `👋 ${toDecorated('KICK', 'mono', '⏣')}
 ━━━━━━━━━━━━━━
 ▸ @${tgt.split('@')[0]} *cacciato/a* dal gruppo.
 ━━━━━━━━━━━━━━

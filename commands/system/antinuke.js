@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'antinuke',
     aliases: [],
@@ -9,7 +11,7 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, saveDB, getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS, sendButtons } = services;
 
-        if (!isGroup) return reply("🛡️ *_ANTINUKE_*\n━━━━━━━━━━━━━━━━━━\n▸ Funziona solo nei _gruppi_.\n━━━━━━━━━━━━━━━━━━");
+        if (!isGroup) return reply(`🛡️ ${toDecorated('ANTINUKE', 'outline', '✠')}\n━━━━━━━━━━━━━━━━━━\n▸ Funziona solo nei _gruppi_.\n━━━━━━━━━━━━━━━━━━`);
 
         if (!isOwner) {
             return reply(
@@ -42,7 +44,7 @@ riservato all'*Owner del bot*.
                 : '▸ _(nessuno)_';
 
             const txt =
-`🛡️ *_ANTINUKE_*
+`🛡️ ${toDecorated('ANTINUKE', 'outline', '✠')}
 ━━━━━━━━━━━━━━━━━━
 ▸ Stato: _${enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO'}_
 ━━━━━━━━━━━━━━━━━━
@@ -92,7 +94,7 @@ ${wlLines}
             }
             saveDB();
             return reply(
-`🛡️ *_ANTINUKE_*
+`🛡️ ${toDecorated('ANTINUKE', 'outline', '✠')}
 ━━━━━━━━━━━━━━━━━━
 ▸ Stato: _${cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO'}_
 ${cfg.enabled
@@ -108,14 +110,14 @@ ${cfg.enabled
             const value = sub === 'all on';
             for (const key of Object.keys(ANTINUKE_CONTROLS)) cfg.controls[key] = value;
             saveDB();
-            return reply(`🛡️ *_ANTINUKE_* — tutti i controlli: _${value ? 'ON' : 'OFF'}_`);
+            return reply(`🛡️ ${toDecorated('ANTINUKE', 'outline', '✠')} — tutti i controlli: _${value ? 'ON' : 'OFF'}_`);
         }
 
         // ── WHITELIST ─────────────────────────────────────────────────────
         if (sub === 'whitelist list' || sub === 'wl list') {
-            if (!cfg.whitelist.length) return reply("📋 *_WHITELIST ANTINUKE_*\n━━━━━━━━━━━━━━━━━━\n▸ _(vuota)_\n━━━━━━━━━━━━━━━━━━");
+            if (!cfg.whitelist.length) return reply(`📋 ${toDecorated('WHITELIST ANTINUKE', 'outline', '✠')}\n━━━━━━━━━━━━━━━━━━\n▸ _(vuota)_\n━━━━━━━━━━━━━━━━━━`);
             const lines = cfg.whitelist.map(w => `▸ ${w.replace(/[^0-9]/g, '')}`).join('\n');
-            return reply(`📋 *_WHITELIST ANTINUKE_*\n━━━━━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`📋 ${toDecorated('WHITELIST ANTINUKE', 'outline', '✠')}\n━━━━━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
         }
         if (/^(whitelist|wl)\s+/.test(sub)) {
             const raw = sub.replace(/^(whitelist|wl)\s+/, '').trim();

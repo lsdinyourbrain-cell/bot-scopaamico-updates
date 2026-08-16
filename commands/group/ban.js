@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'ban',
     aliases: ['banna', 'espelli'],
@@ -17,7 +19,7 @@ module.exports = {
             if (sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ non puoi rimuovere te stesso/a con il bot.");
             try {
                 await sock.groupParticipantsUpdate(from, [targetJid], 'remove');
-                await sock.sendMessage(from, { text: `👋 *_BAN_*
+                await sock.sendMessage(from, { text: `👋 ${toDecorated('BAN', 'mono', '⏣')}
 ━━━━━━━━━━━━━━
 ▸ @${targetJid.split('@')[0]} è stato/a *rimosso/a* dal gruppo.
 ━━━━━━━━━━━━━━

@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'modoadmin',
     aliases: ['adminmode', 'modeadmin', 'soloadmin'],
@@ -28,7 +30,7 @@ module.exports = {
         saveDB();
 
         const state = next ? 'ATTIVO' : 'DISATTIVO';
-        const text = `🛡️ *_MODO ADMIN_*
+        const text = `🛡️ ${toDecorated('MODO ADMIN', 'gothic', '❖')}
 ━━━━━━━━━━━━━━
 ▸ *Stato:* ${state}
 ${next

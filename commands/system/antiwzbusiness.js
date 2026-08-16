@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'antiwzbusiness',
     aliases: ['antiwb', 'awb'],
@@ -22,12 +24,12 @@ module.exports = {
         if (sub === 'on' || sub === 'true' || sub === '1') {
             cfg.enabled = true;
             saveDB();
-            return reply("🛡️ *_Anti WhatsApp Business ATTIVATO_*.");
+            return reply(`🛡️ ${toDecorated('ANTI WHATSAPP BUSINESS ATTIVATO', 'outline', '✠')}.`);
         }
         if (sub === 'off' || sub === 'false' || sub === '0') {
             cfg.enabled = false;
             saveDB();
-            return reply("🛡️ *_Anti WhatsApp Business DISATTIVATO_*.");
+            return reply(`🛡️ ${toDecorated('ANTI WHATSAPP BUSINESS DISATTIVATO', 'outline', '✠')}.`);
         }
 
         if (sub.startsWith('whitelist ') || sub.startsWith('wl ')) {
@@ -46,7 +48,7 @@ module.exports = {
         const status = cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         const wlList = cfg.whitelist.length ? cfg.whitelist.map(w => `▸ _${w}_`).join('\n') : '▸ _Nessuno._';
         return reply(
-`🛡️ *_ANTI WZ BUSINESS_*
+`🛡️ ${toDecorated('ANTI WZ BUSINESS', 'outline', '✠')}
 ━━━━━━━━━━━━━━━━━━
 ▸ Stato: _${status}_
 ━━━━━━━━━━━━━━━━━━

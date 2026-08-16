@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'promote',
     aliases: ["demote", "promuovi", "degrada"],
@@ -20,8 +22,8 @@ module.exports = {
                 await sock.groupParticipantsUpdate(from, [targetJid], action);
                 const short = targetJid.split('@')[0];
                 const text = isPromote
-                    ? `👑 *_PROMOTE_*\n━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`
-                    : `⬇️ *_DEMOTE_*\n━━━━━━━━━━━━━━\n▸ @${short} non è più admin.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                    ? `👑 ${toDecorated('PROMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`
+                    : `⬇️ ${toDecorated('DEMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━\n▸ @${short} non è più admin.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
                 await sock.sendMessage(from, { text, mentions: [targetJid] }, { quoted: msg });
             } catch (e) {
                 console.error('[promote/demote]', e.message);

@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -56,7 +58,7 @@ module.exports = {
         const displayNum = resolved.number.split('@')[0];
         await sock.sendMessage(from, {
             text:
-`👑 *_ADDOWNER_*
+`👑 ${toDecorated('ADDOWNER', 'gothic', '◈')}
 ━━━━━━━━━━━━━━━━━━
 ▸ @${displayNum} è ora owner!
 ▸ Aggiunto alle: _${now}_

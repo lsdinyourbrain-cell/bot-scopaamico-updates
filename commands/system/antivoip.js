@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'antivoip',
     aliases: [],
@@ -22,12 +24,12 @@ module.exports = {
         if (sub === 'on' || sub === 'true' || sub === '1') {
             cfg.enabled = true;
             saveDB();
-            return reply("🛡️ *_ANTIVOIP ATTIVATO_* — i numeri non +39 verranno rimossi.");
+            return reply(`🛡️ ${toDecorated('ANTIVOIP ATTIVATO', 'outline', '✠')} — i numeri non +39 verranno rimossi.`);
         }
         if (sub === 'off' || sub === 'false' || sub === '0') {
             cfg.enabled = false;
             saveDB();
-            return reply("🛡️ *_ANTIVOIP DISATTIVATO_*.");
+            return reply(`🛡️ ${toDecorated('ANTIVOIP DISATTIVATO', 'outline', '✠')}.`);
         }
 
         if (sub.startsWith('whitelist ') || sub.startsWith('wl ')) {
@@ -46,7 +48,7 @@ module.exports = {
         const status = cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         const wlList = cfg.whitelist.length ? cfg.whitelist.map(w => `▸ _${w}_`).join('\n') : '▸ _Nessun numero in whitelist._';
         return reply(
-`🛡️ *_ANTIVOIP_*
+`🛡️ ${toDecorated('ANTIVOIP', 'outline', '✠')}
 ━━━━━━━━━━━━━━━━━━
 ▸ Stato: _${status}_
 ━━━━━━━━━━━━━━━━━━

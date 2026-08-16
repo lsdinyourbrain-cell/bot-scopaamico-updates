@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'check',
     aliases: ['showdb', 'debug'],
@@ -21,7 +23,7 @@ module.exports = {
         }
         if (!target) {
             return reply(
-`📌 *_CHECK_*
+`📌 ${toDecorated('CHECK', 'gothic', '◈')}
 ━━━━━━━━━━━━━━━━━━
 ▸ Tagga o rispondi a un utente
 ▸ (anche solo il numero: _.check 39..._)
@@ -148,7 +150,7 @@ module.exports = {
         const extra = totLines > 30 ? `\n▸ _… e altri ${totLines - 30} campi_` : '';
 
         const text =
-`🔍 *_CHECK DB_*
+`🔍 ${toDecorated('CHECK DB', 'gothic', '◈')}
 ━━━━━━━━━━━━━━━━━━
 ▸ Chat: _${from}_
 ▸ Utente: _${short}_ (${target.includes('@lid') ? 'LID' : 'PN'})

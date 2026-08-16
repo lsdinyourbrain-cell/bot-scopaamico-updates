@@ -1,5 +1,7 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+
 module.exports = {
     name: 'antilink',
     aliases: ['bloccalink', 'nolink'],
@@ -12,7 +14,7 @@ module.exports = {
 
             if (!isGroup) {
                 return reply(
-`🔗 *ANTILINK*
+`🔗 ${toDecorated('ANTILINK', 'outline', '✠')}
 ━━━━━━━━━━━━━━
 ℹ️ Questo sistema funziona
 solo nei *gruppi*.
@@ -45,7 +47,7 @@ riservato all'*Owner del bot*.
                 }).join('\n');
 
                 return reply(
-`🔗 *ANTILINK — STATO*
+`🔗 ${toDecorated('ANTILINK — STATO', 'outline', '✠')}
 ━━━━━━━━━━━━━━
 ${statusLines}
 💡 *Uso:*
@@ -84,7 +86,7 @@ Esempio:
 
                 const icon = newState ? '🟢' : '🔴';
                 return reply(
-`🔗 *ANTILINK AGGIORNATO*
+`🔗 ${toDecorated('ANTILINK AGGIORNATO', 'outline', '✠')}
 ━━━━━━━━━━━━━━
 ${icon} Tutti i filtri → *${stateArg.toUpperCase()}*
 Ogni link sarà ${newState ? 'bloccato 🚫' : 'permesso ✅'}.
@@ -112,7 +114,7 @@ ${platformNames.join(', ')}
 
             const icon = newState ? '🟢' : '🔴';
             await reply(
-`🔗 *ANTILINK AGGIORNATO*
+`🔗 ${toDecorated('ANTILINK AGGIORNATO', 'outline', '✠')}
 ━━━━━━━━━━━━━━
 Piattaforma: *${sub}*
 Stato: ${icon} *${stateArg.toUpperCase()}*
