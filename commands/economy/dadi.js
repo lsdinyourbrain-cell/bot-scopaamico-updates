@@ -18,7 +18,7 @@ module.exports = {
             const last = userData.cooldowns[cooldownKey] || 0;
             const now = Date.now();
             const cdMs = 5000;
-            if (!isButton && now - last < cdMs) {
+            if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
                 return reply(`⏳ Calma! Puoi lanciare i dadi tra _${remain}s_.`);
             }
@@ -26,6 +26,7 @@ module.exports = {
 
             const puntata = parseInt(args[0]);
             if (isNaN(puntata) || puntata <= 0) return reply("⚠️ _[uso]: .dadi <importo>_ — es. _.dadi 50_");
+            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
 
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");

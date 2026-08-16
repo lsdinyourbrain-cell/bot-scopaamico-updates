@@ -15,7 +15,7 @@ module.exports = {
         const last = userData.cooldowns[cooldownKey] || 0;
         const now = Date.now();
         const cdMs = 15000;
-        if (!isButton && now - last < cdMs) {
+        if (now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 1000);
             return reply(`⏳ L'estrazione sta ancora girando. Riprova tra *${remain}s*.`);
         }

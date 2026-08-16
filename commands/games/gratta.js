@@ -18,18 +18,18 @@ module.exports = {
             const last = userData.cooldowns[cooldownKey] || 0;
             const now = Date.now();
             const cdMs = 8000;
-            if (!isButton && now - last < cdMs) {
+            if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
                 return reply(`⏳ Calma! Puoi grattare tra *${remain}s*.`);
             }
             userData.cooldowns[cooldownKey] = now;
 
-            const cost = 10;
+            const cost = 15;
             const uDB = getUser(sender, from);
-            if (uDB.money < cost) return reply("❌ Servono 10€ per un gratta e vinci.");
+            if (uDB.money < cost) return reply("❌ Servono 15€ per un gratta e vinci.");
 
             const symbols = ['🍒', '🍋', '🍇', '⭐', '💎', '🎰'];
-            const prizes = { '🍒': 20, '🍋': 25, '🍇': 35, '⭐': 50, '💎': 80, '🎰': 200 };
+            const prizes = { '🍒': 20, '🍋': 25, '🍇': 35, '⭐': 45, '💎': 60, '🎰': 100 };
             const grid = Array.from({ length: 9 }, () => randomChoice(symbols));
 
             const lines = [

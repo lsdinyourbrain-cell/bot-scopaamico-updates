@@ -16,6 +16,7 @@ module.exports = {
             if (!Number.isInteger(puntata) || puntata <= 0) {
                 return reply("⚠️ _[uso]: .roulette <importo>_ — es. _.roulette 50_");
             }
+            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) return reply(`❌ Ti mancano soldi: hai _${formatMoney(uDB.money)}_.`);
 

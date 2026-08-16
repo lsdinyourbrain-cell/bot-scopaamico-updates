@@ -84,24 +84,28 @@ module.exports = {
             if (!azienda) return reply(`❌ Azione *${target}* non trovata.\nUsa *.investi listino*.`);
 
             if (azione === 'COMPRA') {
-                const qty = parseInt(parts[2]) || 1;
-                const costo = azienda.price * qty;
+                const qty = Math.floor(parseInt(parts[2], 10));
+                if (parts[2] !== undefined && (isNaN(qty) || qty < 1)) return reply(`❌ Quantità non valida.`);
+                const n = (isNaN(qty) || qty < 1) ? 1 : qty;
+                const costo = azienda.price * n;
                 if (uDB.money < costo) return reply(`❌ Non ti bastano i soldi.\nServono *${costo}€*.`);
                 uDB.money -= costo;
-                uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + qty;
+                uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + n;
                 saveDB();
-                return reply(`✅ *_COMPRATE!_*\n━━━━━━━━━━━━━━\n▸ 📈 Azioni: _${qty}_\n▸ 🏢 _${azienda.name}_\n▸ 💰 Costo: _${costo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n◈ _Vex Bot_`);
+                return reply(`✅ *_COMPRATE!_*\n━━━━━━━━━━━━━━\n▸ 📈 Azioni: _${n}_\n▸ 🏢 _${azienda.name}_\n▸ 💰 Costo: _${costo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n◈ _Vex Bot_`);
             }
 
-            const q = parseInt(parts[2]) || (uDB.azioni[target.toUpperCase()] || 1);
-            if (q <= 0 || (uDB.azioni[target.toUpperCase()] || 0) < 1) return reply(`❌ Non possiedi azioni\ndi *${azienda.name}*.`);
-            if (q > uDB.azioni[target.toUpperCase()]) return reply(`Ne possiedi solo *${uDB.azioni[target.toUpperCase()]}*.`);
-            const ricavo = azienda.price * q;
-            uDB.azioni[target.toUpperCase()] -= q;
+            const q = Math.floor(parseInt(parts[2], 10));
+            if (parts[2] !== undefined && (isNaN(q) || q < 1)) return reply(`❌ Quantità non valida.`);
+            const qty2 = (isNaN(q) || q < 1) ? (uDB.azioni[target.toUpperCase()] || 1) : q;
+            if (qty2 <= 0 || (uDB.azioni[target.toUpperCase()] || 0) < 1) return reply(`❌ Non possiedi azioni\ndi *${azienda.name}*.`);
+            if (qty2 > uDB.azioni[target.toUpperCase()]) return reply(`Ne possiedi solo *${uDB.azioni[target.toUpperCase()]}*.`);
+            const ricavo = azienda.price * qty2;
+            uDB.azioni[target.toUpperCase()] -= qty2;
             if (uDB.azioni[target.toUpperCase()] <= 0) delete uDB.azioni[target.toUpperCase()];
             uDB.money += ricavo;
             saveDB();
-            return reply(`💰 *_VENDUTE!_*\n━━━━━━━━━━━━━━\n▸ 📉 Azioni: _${q}_\n▸ 🏢 _${azienda.name}_\n▸ 💵 Ricavo: _${ricavo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n◈ _Vex Bot_`);
+            return reply(`💰 *_VENDUTE!_*\n━━━━━━━━━━━━━━\n▸ 📉 Azioni: _${qty2}_\n▸ 🏢 _${azienda.name}_\n▸ 💵 Ricavo: _${ricavo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n◈ _Vex Bot_`);
         }
 
         reply("⚠️ _[uso]:_\n▸ _*.investi*_ — portafoglio\n▸ _*.investi listino*_ — prezzi\n▸ _*.investi compra <codice> [n]*_\n▸ _*.investi vendi <codice> [n]*_");

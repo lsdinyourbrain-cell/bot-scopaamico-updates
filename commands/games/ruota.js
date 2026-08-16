@@ -16,7 +16,7 @@ module.exports = {
             const last = userData.cooldowns[cooldownKey] || 0;
             const now = Date.now();
             const cdMs = 8000;
-            if (!isButton && now - last < cdMs) {
+            if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
                 return reply(`⏳ Calma! La ruota sta ancora girando. Riprova tra *${remain}s*.`);
             }
@@ -25,20 +25,21 @@ module.exports = {
             const puntata = parseInt(args[0]) || 20;
             const uDB = getUser(sender, from);
             if (puntata < 1) return reply("⚠️ Puntata non valida.");
+            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
 
             const sectors = [
                 { name: 'PERDONA', mult: 0, emoji: '💸' },
+                { name: 'PERDONA', mult: 0, emoji: '💸' },
+                { name: 'x0.5', mult: 0.5, emoji: '😬' },
+                { name: 'x1', mult: 1, emoji: '😐' },
+                { name: 'x1', mult: 1, emoji: '😐' },
+                { name: 'x1.5', mult: 1.5, emoji: '🙂' },
                 { name: 'x2', mult: 2, emoji: '💰' },
                 { name: 'PERDONA', mult: 0, emoji: '💸' },
-                { name: 'x3', mult: 3, emoji: '🤑' },
-                { name: 'x1', mult: 1, emoji: '😐' },
-                { name: 'x0.5', mult: 0.5, emoji: '😬' },
-                { name: 'x5', mult: 5, emoji: '🔥' },
-                { name: 'PERDONA', mult: 0, emoji: '💸' },
-                { name: 'x1.5', mult: 1.5, emoji: '🙂' },
-                { name: 'x10', mult: 10, emoji: '🤯' },
                 { name: 'x2.5', mult: 2.5, emoji: '😍' },
+                { name: 'x3', mult: 3, emoji: '🤑' },
+                { name: 'PERDONA', mult: 0, emoji: '💸' },
                 { name: 'PERDONA', mult: 0, emoji: '💸' },
             ];
 

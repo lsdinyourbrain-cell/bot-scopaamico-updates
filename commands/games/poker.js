@@ -15,7 +15,7 @@ module.exports = {
         const last = userData.cooldowns[cooldownKey] || 0;
         const now = Date.now();
         const cdMs = 6000;
-        if (!isButton && now - last < cdMs) {
+        if (now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 1000);
             return reply(`⏳ Calma! La mano sta ancora girando. Riprova tra *${remain}s*.`);
         }
@@ -23,6 +23,7 @@ module.exports = {
 
         const puntata = parseInt(args[0]);
         if (isNaN(puntata) || puntata < 10) return reply("⚠️ _[uso]: puntata non valida (minimo 10€) — .poker 50_");
+        if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
 
         const uDB = getUser(sender, from);
         if (uDB.money < puntata) return reply(`❌ Saldo insufficiente. Hai *${uDB.money}€*.`);

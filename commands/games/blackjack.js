@@ -18,7 +18,7 @@ module.exports = {
             const last = userData.cooldowns[cooldownKey] || 0;
             const now = Date.now();
             const cdMs = 8000;
-            if (!isButton && now - last < cdMs) {
+            if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
                 return reply(`⏳ Calma! Puoi giocare tra *${remain}s*.`);
             }
@@ -27,6 +27,7 @@ module.exports = {
             const puntata = parseInt(args[0]) || 20;
             const uDB = getUser(sender, from);
             if (puntata < 1) return reply("⚠️ Puntata non valida.");
+            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
 
             const draw = () => randomInt(2, 11);
