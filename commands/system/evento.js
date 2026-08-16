@@ -6,7 +6,7 @@ const EV = require('../../lib/events');
 module.exports = {
     name: 'evento',
     aliases: ['events', 'eventi'],
-    description: "Eventi temporanei per la chat: .evento (stato) | .evento start <tipo> [min] | .evento stop <tipo> | .evento boss | .evento raccogli | .evento apri",
+    description: "Eventi temporanei per la chat: .evento (stato) | .evento random | .evento start <tipo> [min] | .evento stop <tipo> | .evento boss | .evento raccogli | .evento apri",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, isSenderAdmin, reply, services } = context;
@@ -85,8 +85,39 @@ module.exports = {
         }
 
         // ── GESTIONE (solo owner/admin) ───────────────────────────────────
-        if (sub === 'start' || sub === 'stop') {
+        if (sub === 'start' || sub === 'stop' || sub === 'random' || sub === 'casuale') {
             if (!canManage) return reply("⛔ Solo gli admin possono avviare o fermare gli eventi.");
+
+            // EVENTO CASUALE: sceglie un tipo e una durata a caso.
+            if (sub === 'random' || sub === 'casuale') {
+                const res = EV.startRandom(db, from);
+                const tipo = Object.keys(EV.EVENT_TYPES).find(t => EV.isActive(db, from, t));
+
+                let extra = '';
+                if (tipo === 'boss') {
+                    const boss = EV.spawnBoss(db, from);
+                    extra = `\n▸ 💥 *${boss.maxHp} HP* di boss evocati!`;
+                }
+                if (tipo === 'pioggia') {
+                    EV.startRain(db, from);
+                    extra = `\n▸ 🌧️ La prima pioggia sta per cadere!`;
+                }
+                if (tipo === 'raduno') {
+                    const r = EV.radunoReward(db, from);
+                    extra = `\n▸ 👥 Ogni partecipante riceve _+${r.amount}€_!\n▸ Basta mandare un messaggio in chat!`;
+                }
+                saveDB();
+
+                const meta = res.meta;
+                return reply(
+`🎲 *EVENTO CASUALE!* 🎲
+━━━━━━━━━━━━━━━━━━
+▸ ${meta.emoji} _${meta.label}_
+▸ ⏱️ Durata: _${res.dur} minuti_
+▸ 📋 ${meta.desc}${extra}
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
+            }
 
             if (sub === 'stop') {
                 const tipo = String(textArgs).trim().split(/\s+/)[1] || '';
@@ -119,6 +150,10 @@ module.exports = {
                 EV.startRain(db, from);
                 extra = `\n▸ 🌧️ La prima pioggia sta per cadere!`;
             }
+            if (tipo === 'raduno') {
+                const r = EV.radunoReward(db, from);
+                extra = `\n▸ 👥 Ogni partecipante riceve _+${r.amount}€_!\n▸ Basta mandare un messaggio in chat!`;
+            }
             saveDB();
 
             const meta = res.meta;
@@ -149,6 +184,10 @@ module.exports = {
             ? `\n▸ 🌧️ *Pioggia in arrivo!* usa _.evento raccogli_`
             : '';
 
+        const radunoLine = EV.isActive(db, from, 'raduno')
+            ? `\n▸ 👥 *Raduno:* _+${EV.radunoReward(db, from).amount}€_ per chi partecipa!`
+            : '';
+
         const disponibili = Object.entries(EV.EVENT_TYPES)
             .map(([t, m]) => `▸ ${m.emoji} _${t}_ — ${m.desc}`)
             .join('\n');
@@ -157,13 +196,14 @@ module.exports = {
 `⚡ ${toDecorated('EVENTI', 'gothic', '◈')}
 ━━━━━━━━━━━━━━━━━━
 ▸ 📡 *Attivi ora:*
-${nowLines}${bossLine}${rainLine}
+${nowLines}${bossLine}${rainLine}${radunoLine}
 ━━━━━━━━━━━━━━━━━━
 📋 *Disponibili:*
 ${disponibili}
 ━━━━━━━━━━━━━━━━━━
 💡 *Uso:*
 ▸ .evento start <tipo> [min]
+▸ .evento random (casuale!)
 ▸ .evento stop <tipo>
 ▸ .evento boss (spara!)
 ▸ .evento raccogli (pioggia)

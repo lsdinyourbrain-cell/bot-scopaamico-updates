@@ -1406,6 +1406,19 @@ const rainMsgCount = new Map();
                     }
                 }
 
+                // Evento "Raduno": mandare un messaggio in chat = partecipare.
+                // Ogni utente riceve il premio UNA volta per evento.
+                if (eventsLib.isActive(db, from, 'raduno')) {
+                    const amt = eventsLib.participateRaduno(db, from, sender);
+                    if (amt) {
+                        userData.money = (userData.money || 0) + amt;
+                        sock.sendMessage(from, {
+                            text: `👥 *RADUNO!* 👥\n\n@${sender.split('@')[0]} è al raduno e riceve _+${amt}€_!\n\nManda un messaggio anche tu per partecipare! 💸`,
+                            mentions: [sender],
+                        }).catch(() => {});
+                    }
+                }
+
                 _dbDirty = true; // scrittura ritardata: si salva ogni 30s max
             } catch (_) {}
         }
