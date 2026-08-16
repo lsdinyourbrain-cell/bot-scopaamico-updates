@@ -1,5 +1,7 @@
 'use strict';
 
+const EV = require('../../lib/events');
+
 module.exports = {
     name: 'roulette',
     aliases: [],
@@ -18,14 +20,16 @@ module.exports = {
             if (uDB.money < puntata) return reply(`❌ Ti mancano soldi: hai _${formatMoney(uDB.money)}_.`);
 
             const win = Math.random() < 0.44;
-            uDB.money += win ? puntata : -puntata;
+            const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
+            uDB.money += win ? puntata * evMult : -puntata;
             saveDB();
 
+            const evLine = evMult > 1 && win ? `\n▸ 🎰 _Evento: vincita x${evMult}_` : '';
             const resultText =
 `🎡 *_ROULETTE_*
 ━━━━━━━━━━━━━━
 ▸ 💸 Puntata: _${formatMoney(puntata)}_
-▸ ${win ? '✨ È uscito il tuo numero!' : '🫠 Giro storto, andata male.'}
+▸ ${win ? '✨ È uscito il tuo numero!' : '🫠 Giro storto, andata male.'}${evLine}
 ━━━━━━━━━━━━━━
 ▸ 💰 Saldo: _${formatMoney(uDB.money)}_
 ◈ _Vex Bot_`;

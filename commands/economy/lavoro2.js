@@ -1,6 +1,7 @@
 'use strict';
 
 const { toDarkFont } = require('../../lib/font');
+const EV = require('../../lib/events');
 
 // Secondo lavoro: un "lavoretto freelance" con un mini-racconto e una paga
 // più alta (cooldown di 45 minuti). Storia della carriera in userData.lavoro2.
@@ -21,7 +22,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, reply, services } = context;
-        const { getUser, saveDB, randomChoice, randomInt, formatMoney, sendButtons, applyTax } = services;
+        const { getUser, saveDB, randomChoice, randomInt, formatMoney, sendButtons, applyTax, db } = services;
 
         const userData = getUser(sender, from);
         userData.cooldowns = userData.cooldowns || {};
@@ -36,7 +37,8 @@ module.exports = {
 
         const gig = randomChoice(GIGS);
         const roll = Math.random();
-        const gross = roll < 0.1 ? randomInt(15, 50) : roll > 0.85 ? randomInt(150, 250) : randomInt(60, 140);
+        const evMult = EV.isActive(db, from, 'doppioguadagno') ? 2 : 1;
+        const gross = (roll < 0.1 ? randomInt(15, 50) : roll > 0.85 ? randomInt(150, 250) : randomInt(60, 140)) * evMult;
         const bonus = roll > 0.85;
         const taxed = applyTax(gross, userData.money);
         userData.lavoro2 = userData.lavoro2 || { giorni: 0, guadagnato: 0 };
@@ -47,11 +49,12 @@ module.exports = {
         saveDB();
 
         const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
+        const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
 
         const text =
 `💪 _Lavoretto: ${gig.emoji} ${gig.nome}_
 ▸ ${bonus ? '🔥 CRITICO! ' : ''}${randomChoice(gig.tip())}
-▸ Lordo: _+${formatMoney(gross)}_ ▸ Netto: _+${formatMoney(taxed.net)}_${taxLine}
+▸ Lordo: _+${formatMoney(gross)}_ ▸ Netto: _+${formatMoney(taxed.net)}_${taxLine}${evLine}
 ▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo: _60 min_ | Lavoretti: _${userData.lavoro2.giorni}_
 ▸ Vex Bot`;
 

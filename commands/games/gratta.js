@@ -1,5 +1,7 @@
 'use strict';
 
+const EV = require('../../lib/events');
+
 module.exports = {
     name: 'gratta',
     aliases: ['grattaevinci'],
@@ -47,9 +49,9 @@ module.exports = {
 
             let esito;
             if (winLine) {
-                const prize = prizes[grid[winLine[0]]];
+                const prize = prizes[grid[winLine[0]]] * (EV.isActive(db, from, 'slotoro') ? 3 : 1);
                 uDB.money += prize - cost;
-                esito = `🎉 *TRIS DI ${grid[winLine[0]]}!* Vinci ${formatMoney(prize)}!`;
+                esito = `🎉 *TRIS DI ${grid[winLine[0]]}!* Vinci ${formatMoney(prize)}!${prize > prizes[grid[winLine[0]]] ? ' 🎰x3' : ''}`;
             } else {
                 uDB.money -= cost;
                 esito = `😞 Niente tris questa volta.\nHai speso ${formatMoney(cost)}.`;

@@ -48,6 +48,7 @@ const forza4Lib = require('./lib/four-in-row');
 const wordleLib = require('./lib/wordle');
 const mazeLib = require('./lib/maze');
 const xpLib = require('./lib/xp');
+const eventsLib = require('./lib/events');
 const antibotLib = require('./lib/antibot');
 const duelQuiz = require('./lib/duel-quiz');
 const { applyTax, taxRate, applyWealthTax, wealthTaxRate } = require('./lib/tax');
@@ -653,7 +654,7 @@ const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag
 
 // Comandi per cui il pulsante "Ripeti" automatico NON deve comparire:
 // sistemici o distruttivi, rischiosi da far ripartire a un tap.
-const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'diagnostica', 'clear', 'dedsecregna', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara',
+const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'diagnostica', 'clear', 'dedsecregna', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara', 'evento', 'events', 'eventi',
     // Nuovi giochi nativi: niente pulsante Ripeti sulle risposte di gioco
     'forza4', 'connect4', 'forza-4', 'wordle', 'wordle-ita', 'wordleita',
     'labirinto', 'maze', 'labyrinth', 'trivia2', 'quiz2', 'triviasfida',
@@ -1368,6 +1369,9 @@ async function startBot() {
 
         const isOwner  = isOwnerJid(sender, sock, db, senderAlt);
 
+// Contatore messaggi per chat per la pioggia di soldi (evento pioggia)
+const rainMsgCount = new Map();
+
         if (isGroup && sender) {
             try {
                 const userData = getUser(sender, from);
@@ -1375,7 +1379,9 @@ async function startBot() {
 
                 // XP per attività nel gruppo (stato separato per ogni gruppo):
                 // ogni messaggio dà XP, a ogni livello si riceve un pregio.
-                const ups = xpLib.grantXp(userData);
+                // Evento "Doppio XP" → XP x2.
+                const xpMult = eventsLib.isActive(db, from, 'doppioxp') ? 2 : 1;
+                const ups = xpLib.grantXp(userData, 1, xpMult);
                 if (ups.length) {
                     const bonus = 10 + Math.max(...ups) * 5;
                     userData.money = (userData.money || 0) + bonus;
@@ -1383,6 +1389,21 @@ async function startBot() {
                         text: xpLib.levelUpText(ups, sender.split('@')[0]),
                         mentions: [sender],
                     }).catch(() => {});
+                }
+
+                // Evento "Pioggia di soldi": ogni 20 messaggi cade una pioggia.
+                if (eventsLib.isActive(db, from, 'pioggia')) {
+                    const n = (rainMsgCount.get(from) || 0) + 1;
+                    rainMsgCount.set(from, n);
+                    if (n >= 20) {
+                        rainMsgCount.set(from, 0);
+                        const rain = eventsLib.startRain(db, from);
+                        if (rain) {
+                            sock.sendMessage(from, {
+                                text: `🌧️ *PIOGGIA DI SOLDI!* 🌧️\n\nCade una pioggia di _${rain.amount}€_!\n\nChi scrive \`.evento raccogli\`\nprima della fine se li prende! 💸`,
+                            }).catch(() => {});
+                        }
+                    }
                 }
 
                 _dbDirty = true; // scrittura ritardata: si salva ogni 30s max
@@ -1744,21 +1765,27 @@ async function startBot() {
         // ── BOUNTY SPAWN ──────────────────────────────────────────────────
         // Ottimizzazione: la probabilità di spawn viene verificata PRIMA
         // (senza rete): solo 1 messaggio su 20 circa fa groupMetadata.
-        if (isGroup && body && !body.startsWith('.') && from.endsWith('@g.us') && shouldTrySpawnBounty(from)) {
-            try {
-                const metadata = await getCachedGroupMeta(sock, from);
-                const members = metadata?.participants || [];
-                if (members.length > 1) {
-                    const bounty = trySpawnBounty(from, members);
-                    if (bounty) {
-                        const targetShort = bounty.target.split('@')[0];
-                        await sock.sendMessage(from, {
-                            text: `💰 *TAGLIA ATTIVA!* 💰\n\nÈ stata messa una taglia di *${bounty.reward}€* su @${targetShort}!\n\nusa \`.spara\` per provare a incassarla! 🔫`,
-                            mentions: [bounty.target],
-                        });
+        // Evento "Taglia regale": taglie più grosse e più frequenti.
+        if (isGroup && body && !body.startsWith('.') && from.endsWith('@g.us')) {
+            const regal = eventsLib.isActive(db, from, 'tagliaregale');
+            if (shouldTrySpawnBounty(from, regal)) {
+                try {
+                    const metadata = await getCachedGroupMeta(sock, from);
+                    const members = metadata?.participants || [];
+                    if (members.length > 1) {
+                        const bounty = trySpawnBounty(from, members, regal);
+                        if (bounty) {
+                            const targetShort = bounty.target.split('@')[0];
+                            await sock.sendMessage(from, {
+                                text: regal
+                                    ? `🏆 *TAGLIA REGALE!* 🏆\n\n👑 È stata messa una taglia di *${bounty.reward}€* su @${targetShort}!\n\nusa \`.spara\` per provare a incassarla! 🔫`
+                                    : `💰 *TAGLIA ATTIVA!* 💰\n\nÈ stata messa una taglia di *${bounty.reward}€* su @${targetShort}!\n\nusa \`.spara\` per provare a incassarla! 🔫`,
+                                mentions: [bounty.target],
+                            });
+                        }
                     }
-                }
-            } catch (_) {}
+                } catch (_) {}
+            }
         }
 
         // ── ENIGMA: risposte via testo libero ────────────────────────────

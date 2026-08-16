@@ -1,6 +1,7 @@
 'use strict';
 
 const { toDarkFont } = require('../../lib/font');
+const EV = require('../../lib/events');
 
 module.exports = {
     name: 'work',
@@ -9,7 +10,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { getUser, saveDB, sendButtons, randomInt, randomChoice, formatMoney, applyTax } = services;
+        const { getUser, saveDB, sendButtons, randomInt, randomChoice, formatMoney, applyTax, db } = services;
 
         const cooldownKey = 'work';
         const userData = getUser(sender, from);
@@ -48,17 +49,19 @@ module.exports = {
 
         const lavoro = randomChoice(lavori);
         const base = lavoro.paga();
-        const gross = Math.max(1, Math.round(base * (event ? event.mult : 1)));
+        const evMult = EV.isActive(db, from, 'doppioguadagno') ? 2 : 1;
+        const gross = Math.max(1, Math.round(base * (event ? event.mult : 1) * evMult));
         const taxed = applyTax(gross, userData.money);
         userData.money += taxed.net;
         saveDB();
 
         const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
         const eventLine = event ? `\n▸ ${event.emoji} _${event.label}_` : '';
+        const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
 
         const resultText =
 `💼 _${lavoro.emoji} ${lavoro.nome}_
-▸ Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}${eventLine}
+▸ Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}${eventLine}${evLine}
 ▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo turno: _20 minuti_
 ▸ Vex Bot`;
 

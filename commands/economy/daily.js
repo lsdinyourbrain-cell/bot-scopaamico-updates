@@ -1,6 +1,7 @@
 'use strict';
 
 const { toDarkFont } = require('../../lib/font');
+const EV = require('../../lib/events');
 
 module.exports = {
     name: 'daily',
@@ -23,17 +24,19 @@ module.exports = {
                 return reply(`⏳ Hai già ritirato il daily!\n▸ Ripassa tra _${hours}h ${mins}m_.`);
             }
 
-            const grossBonus = randomInt(50, 180);
+            const evMult = EV.isActive(db, from, 'doppioguadagno') ? 2 : 1;
+            const grossBonus = randomInt(50, 180) * evMult;
             const taxed = applyTax(grossBonus, userData.money);
             userData.money += taxed.net;
             userData.lastDaily = now;
             saveDB();
 
             const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
+            const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
 
             await reply(toDarkFont(
 `🎁 *Bonus giornaliero*
-▸ Lordo: _+${grossBonus}€_ ▸ Netto: _+${taxed.net}€_${taxLine}
+▸ Lordo: _+${grossBonus}€_ ▸ Netto: _+${taxed.net}€_${taxLine}${evLine}
 ▸ Saldo: _${userData.money}€_
 ▸ Vex Bot`));
     },

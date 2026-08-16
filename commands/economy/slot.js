@@ -1,6 +1,7 @@
 'use strict';
 
 const { toDarkFont } = require('../../lib/font');
+const EV = require('../../lib/events');
 
 module.exports = {
     name: 'slot',
@@ -24,17 +25,20 @@ module.exports = {
             let win = 0;
             if (r[0] === r[1] && r[1] === r[2]) win = 100;
             else if (r[0] === r[1] || r[1] === r[2] || r[0] === r[2]) win = 15;
+            const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
+            win = win * evMult;
 
             const taxed = applyTax(win, uDB.money);
             uDB.money += taxed.net;
             saveDB();
 
             const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
+            const evLine = evMult > 1 && win > 0 ? `\n▸ 🎰 _Evento: vincita x${evMult}_` : '';
             const risultato = win > 0 ? `🎊 Vinci ${win}€!` : `💀 Hai perso ${puntata}€`;
 
             const resultText =
 `🎰 _[ ${r[0]} | ${r[1]} | ${r[2]} ]_
-▸ ${risultato}
+▸ ${risultato}${evLine}
 ▸ ${win > 0 ? `Lordo: _+${win}€_ ▸ Netto: _+${taxed.net}€_${taxLine}` : '▸ Saldo: ' + `_${uDB.money}€_`}
 ▸ Vex Bot`;
             await sendButtons(sock, from, toDarkFont(resultText), [

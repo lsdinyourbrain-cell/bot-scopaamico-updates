@@ -1,6 +1,7 @@
 'use strict';
 
 const { toDarkFont } = require('../../lib/font');
+const EV = require('../../lib/events');
 
 module.exports = {
     name: 'scava',
@@ -25,13 +26,15 @@ module.exports = {
             }
 
             userData.cooldowns[cooldownKey] = now;
-            const gross = Math.floor(Math.random() * 25) + 5;
+            const evMult = EV.isActive(db, from, 'doppioguadagno') ? 2 : 1;
+            const gross = (Math.floor(Math.random() * 25) + 5) * evMult;
             const taxed = applyTax(gross, userData.money);
             userData.money += taxed.net;
             saveDB();
 
             const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
-            await sendButtons(sock, from, toDarkFont(`⛏️ _MINIERA_\n▸ Ritrovato: _${gross}€_ ▸ Per te: _+${taxed.net}€_${taxLine}\n▸ Saldo: _${userData.money}€_\n▸ Vex Bot`), [
+            const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
+            await sendButtons(sock, from, toDarkFont(`⛏️ _MINIERA_\n▸ Ritrovato: _${gross}€_ ▸ Per te: _+${taxed.net}€_${taxLine}${evLine}\n▸ Saldo: _${userData.money}€_\n▸ Vex Bot`), [
                 { label: `.${command}`, id: `${command}` },
             ], msg);
     },

@@ -1,5 +1,7 @@
 'use strict';
 
+const EV = require('../../lib/events');
+
 module.exports = {
     name: 'dadi',
     aliases: [],
@@ -31,10 +33,11 @@ module.exports = {
             const userRoll = Math.floor(Math.random() * 6) + 1;
             const botRoll  = Math.floor(Math.random() * 6) + 1;
 
+            const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
             let esito;
             if (userRoll > botRoll) {
-                uDB.money += puntata;
-                esito = `✅ *HAI VINTO!* (+${puntata}€)`;
+                uDB.money += puntata * evMult;
+                esito = `✅ *HAI VINTO!* (+${puntata * evMult}€)${evMult > 1 ? ' 🎰x3' : ''}`;
             } else if (userRoll < botRoll) {
                 uDB.money -= puntata;
                 esito = `❌ *HAI PERSO!* (-${puntata}€)`;

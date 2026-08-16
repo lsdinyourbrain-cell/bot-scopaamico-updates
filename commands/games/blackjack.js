@@ -1,5 +1,7 @@
 'use strict';
 
+const EV = require('../../lib/events');
+
 module.exports = {
     name: 'blackjack',
     aliases: ['bj', 'ventuno', '21'],
@@ -48,20 +50,21 @@ module.exports = {
                 dealerTotal += c;
             }
 
+            const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
             let esito;
             if (playerTotal > 21) {
                 uDB.money -= puntata;
                 esito = `💥 *SBALLATO!* -${formatMoney(puntata)}`;
             } else if (dealerTotal > 21) {
-                uDB.money += puntata;
-                esito = `🎉 *Il bot sballa!* +${formatMoney(puntata)}`;
+                uDB.money += puntata * evMult;
+                esito = `🎉 *Il bot sballa!* +${formatMoney(puntata * evMult)}${evMult > 1 ? ' 🎰x3' : ''}`;
             } else if (playerTotal > dealerTotal) {
                 if (playerTotal === 21) {
-                    uDB.money += Math.round(puntata * 1.5);
-                    esito = `🌟 *BLACKJACK!* +${formatMoney(Math.round(puntata * 1.5))}`;
+                    uDB.money += Math.round(puntata * 1.5) * evMult;
+                    esito = `🌟 *BLACKJACK!* +${formatMoney(Math.round(puntata * 1.5) * evMult)}${evMult > 1 ? ' 🎰x3' : ''}`;
                 } else {
-                    uDB.money += puntata;
-                    esito = `✅ *HAI VINTO!* +${formatMoney(puntata)}`;
+                    uDB.money += puntata * evMult;
+                    esito = `✅ *HAI VINTO!* +${formatMoney(puntata * evMult)}${evMult > 1 ? ' 🎰x3' : ''}`;
                 }
             } else if (playerTotal < dealerTotal) {
                 uDB.money -= puntata;

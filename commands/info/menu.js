@@ -42,6 +42,7 @@ const SECTIONS = [
             ['📰', 'fakenews', 'notizia falsa satirica'],
             ['🏅', 'certificato', 'certificato su misura'],
             ['📊', 'nastro', 'riepilogo del gruppo'],
+            ['⚡', 'evento', 'eventi per la chat'],
         ],
     },
     {
@@ -293,6 +294,7 @@ const SECTIONS = [
             ['🛡️', 'modoadmin', 'solo admin usano il bot'],
             ['📈', 'p', 'promuovi (rapido)'],
             ['📉', 'd', 'togli admin (rapido)'],
+            ['⚡', 'evento', 'gestisci eventi'],
         ],
     },
     {
