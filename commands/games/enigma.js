@@ -6,8 +6,10 @@ module.exports = {
     description: "Rispondi a un indovinello e vinci monete.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
+        const { command, textArgs, from, sender, senderAlt, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
         const { db, getUser, saveDB, sendButtons, randomInt } = services;
+
+        const show = (jid, alt) => String(alt || jid || '').split('@')[0];
 
         const riddles = [
             { q: "Ha un letto ma non dorme, ha una bocca ma non mangia. Chi è?", a: "Il fiume" },
@@ -30,6 +32,15 @@ module.exports = {
 
         const pick = riddles[randomInt(0, riddles.length - 1)];
 
+        // ── SUGGERIMENTO (pulsante 💡) ────────────────────────────────────
+        if (String(args[0] || '').toLowerCase() === 'suggerimento') {
+            const eg = db[from]?.enigma;
+            if (!eg?.active) return reply('Nessun enigma attivo. Usa `.enigma` per iniziare!');
+            const ans = String(eg.answer || '');
+            const hint = `${ans[0].toUpperCase()}${ans.slice(1).replace(/\S/g, '_')}`;
+            return reply(`💡 *Suggerimento:*\nLa risposta inizia con *"${ans[0].toUpperCase()}"*\n${hint}`);
+        }
+
         if (!db[from]) db[from] = {};
         db[from].enigma = {
             active: true,
@@ -51,7 +62,7 @@ chat entro 45 secondi!
 ◈ _Vex Bot_`;
 
         await sendButtons(sock, from, text, [
-            { label: '💡 Suggerimento', id: `suggerimento ${sender.split('@')[0]}` },
+            { label: '💡 Suggerimento', id: 'enigma suggerimento' },
             { label: '🎁 Nuovo Enigma', id: `${command}` },
         ], msg);
 

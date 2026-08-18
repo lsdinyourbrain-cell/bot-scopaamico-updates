@@ -13,7 +13,7 @@ module.exports = {
             const url = await sock.profilePictureUrl(from, 'image');
             await sock.sendMessage(from, {
                 image: { url },
-                caption: `🖼️ *_FOTO DEL GRUPPO_*`,
+                caption: `🖼️ *_FOTO DEL GRUPPO_*\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
             }, { quoted: msg });
         } catch (_) {
             await reply("⚠️ _[uso]:_ nessuna foto profilo trovata.");

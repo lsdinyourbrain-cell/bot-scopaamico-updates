@@ -14,7 +14,8 @@ module.exports = {
             return reply(`🌙 *_AFK LIST_*
 ━━━━━━━━━━━━━━
 Nessun utente è *AFK* in questo gruppo. Tutti in piedi! 💪
-━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         }
 
         const mentions = entries.map(([jid]) => jid);
@@ -27,7 +28,7 @@ Nessun utente è *AFK* in questo gruppo. Tutti in piedi! 💪
         return sock.sendMessage(from, {
             text: `🌙 *_AFK LIST_*\n━━━━━━━━━━━━━━\n▸ *Utenti AFK:* ${entries.length}\n` +
                 lines.join('\n') +
-                `\n━━━━━━━━━━━━━━\n_Torna in chat con un messaggio per uscire dall'AFK._`,
+                `\n━━━━━━━━━━━━━━\n_Torna in chat con un messaggio per uscire dall'AFK._\n◈ _Vex Bot_`,
             mentions,
         }, { quoted: msg });
     },

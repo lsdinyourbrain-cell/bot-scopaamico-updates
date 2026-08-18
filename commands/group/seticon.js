@@ -30,7 +30,8 @@ module.exports = {
             await reply(`✅ *_FOTO GRUPPO_*
 ━━━━━━━━━━━━━━
 ▸ Foto gruppo *aggiornata*!
-━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         } catch (e) {
             await reply("⚠️ _[uso]:_ errore. Riprova.");
         }

@@ -30,6 +30,7 @@ module.exports = {
         await reply(`⏳ *_MESSAGGI TEMPORANEI_*
 ━━━━━━━━━━━━━━
 ▸ *Stato:* ${label}
-━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
     },
 };

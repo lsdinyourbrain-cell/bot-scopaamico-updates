@@ -25,7 +25,8 @@ ${meta.subject}
 🟣 Super: *${superAdmins.length}*
 🔵 Normal: *${regularAdmins.length}*
 📱 Utenti: *${total - admins.length}*
-━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         } catch (_) {
             await reply("⚠️ _[uso]:_ errore nel recuperare info gruppo.");
         }

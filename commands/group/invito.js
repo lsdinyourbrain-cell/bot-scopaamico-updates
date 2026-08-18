@@ -21,7 +21,8 @@ module.exports = {
 ━━━━━━━━━━━━━━
 ${link}
 Condividilo con chi vuoi!
-━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         } catch (e) {
             await reply("⚠️ _[uso]:_ non riesco a generare il link. Controlla i permessi.");
         }

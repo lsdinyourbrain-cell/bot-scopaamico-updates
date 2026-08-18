@@ -1,5 +1,7 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
+
 module.exports = {
     name: 'lotteria',
     aliases: [],
@@ -7,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, sendButtons } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, sendButtons } = services;
 
 
             const sub = args[0]?.toLowerCase();
@@ -22,6 +24,8 @@ module.exports = {
                 const lotto = db[from].lotteria;
                 const players = Object.keys(lotto.tickets);
                 if (players.length === 0) return reply("Nessuno ha comprato biglietti.");
+                let meta = null;
+                try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
                 const winner = players[Math.floor(Math.random() * players.length)];
                 const premio = Math.floor(lotto.pool);
                 const wDB = getUser(winner, from);
@@ -29,7 +33,7 @@ module.exports = {
                 delete db[from].lotteria;
                 saveDB();
                 return await sock.sendMessage(from, {
-                    text: `🎉 *_VINCITORE LOTTERIA!_*\n━━━━━━━━━━━━━━\n▸ 🏆 @${winner.split('@')[0]} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `🎉 *_VINCITORE LOTTERIA!_*\n━━━━━━━━━━━━━━\n▸ 🏆 @${dispOf(winner, resolveJid(winner, meta))} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [winner],
                 });
             }

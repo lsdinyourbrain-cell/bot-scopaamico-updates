@@ -1,5 +1,7 @@
 'use strict';
 
+const EV = require('../../lib/events');
+
 module.exports = {
     name: 'poker',
     aliases: ['elev', 'scala'],
@@ -7,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { getUser, saveDB, sendButtons, randomInt } = services;
+        const { getUser, saveDB, sendButtons, randomInt, db } = services;
 
         const cooldownKey = 'poker';
         const userData = getUser(sender, from);
@@ -60,9 +62,10 @@ module.exports = {
         const vb = valutamano(manoBot);
 
         let esito;
+        const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
         if (vu.tipo > vb.tipo || (vu.tipo === vb.tipo && vu.forza > vb.forza)) {
-            uDB.money += puntata;
-            esito = `✅ *HAI VINTO!* (+${puntata}€)`;
+            uDB.money += puntata * evMult;
+            esito = `✅ *HAI VINTO!* (+${puntata * evMult}€${evMult > 1 ? ' x3 slotoro 🎰' : ''})`;
         } else if (vb.tipo > vu.tipo || (vb.tipo === vu.tipo && vb.forza > vu.forza)) {
             uDB.money -= puntata;
             esito = `❌ *HAI PERSO!* (-${puntata}€)`;

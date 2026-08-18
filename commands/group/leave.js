@@ -14,7 +14,8 @@ module.exports = {
         await reply(`😔 *_LEAVE_*
 ━━━━━━━━━━━━━━
 ▸ Me ne vado... ciao!
-━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         await sock.groupLeave(from);
     },
 };

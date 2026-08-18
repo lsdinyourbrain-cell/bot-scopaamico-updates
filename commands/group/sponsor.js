@@ -27,7 +27,8 @@ Unisciti al gruppo
 ufficiale! 🫶
 👇 *CLICCA QUI* 👇
 ${link}
-━━━━━━━━━━━━━━`,
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`,
         }, { quoted: msg });
     },
 };

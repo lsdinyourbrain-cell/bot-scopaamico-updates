@@ -1,5 +1,7 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
+
 const GIFT_LINES = [
     '🎀 Ti ho incartato un po\' di amicizia, buon uso!',
     '🎁 Spero che ti piaccia: l\'ho scelto con (quasi) amore!',
@@ -15,7 +17,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, mentioned, targetJid, isReply, contextInfo, reply, services } = context;
-        const { getUser, saveDB, sameJid, formatMoney, randomChoice } = services;
+        const { getUser, saveDB, sameJid, formatMoney, randomChoice, getCachedGroupMeta } = services;
 
         if (!isGroup) return reply("Il regalo funziona solo nei gruppi.");
         if (!targetJid) return reply("🎁 Tagga la persona a cui vuoi regalare. Esempio: `.regalo @utente 100`");
@@ -40,6 +42,10 @@ module.exports = {
         }
         me.regali.n += 1;
 
+        let meta = null;
+        try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+        const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
+
         const target = getUser(targetJid, from);
         me.money -= amount;
         target.money += amount;
@@ -50,7 +56,7 @@ module.exports = {
             text:
 `🎁 *_REGALO!_*
 ━━━━━━━━━━━━━━
-▸ 🎀 @${sender.split('@')[0]} ha regalato _${formatMoney(amount)}_ a @${targetJid.split('@')[0]}!
+▸ 🎀 @${disp(sender)} ha regalato _${formatMoney(amount)}_ a @${disp(targetJid)}!
 ▸ _${randomChoice(GIFT_LINES)}_
 ━━━━━━━━━━━━━━
 ▸ 💳 Il tuo saldo: _${formatMoney(me.money)}_

@@ -52,8 +52,8 @@ module.exports = {
                 time,
             });
             const label = isUnpin
-                ? `🔓 *_UNPIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *sfissato*.\n━━━━━━━━━━━━━━`
-                : `📌 *_PIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *fissato* per _${time / 3600}h_.\n━━━━━━━━━━━━━━`;
+                ? `🔓 *_UNPIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *sfissato*.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`
+                : `📌 *_PIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *fissato* per _${time / 3600}h_.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
             await reply(label);
         } catch (e) {
             console.error('[pin] error:', e);

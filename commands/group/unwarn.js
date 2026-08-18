@@ -19,7 +19,8 @@ module.exports = {
                 text: `✅ *_UNWARN_*
 ━━━━━━━━━━━━━━
 ▸ @${targetJid.split('@')[0]} non ha *avvisi* da rimuovere.
-━━━━━━━━━━━━━━`,
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`,
                 mentions: [targetJid],
             });
         }

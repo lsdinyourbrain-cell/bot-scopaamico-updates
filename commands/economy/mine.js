@@ -11,7 +11,7 @@
 
 const SEP = '━━━━━━━━━━━━━━';
 const TICKET = 20;      // costo biglietto
-const CELL_REWARD = 25; // premio per cella sicura
+const CELL_REWARD = 15; // premio per cella sicura (EV casa ~ -6%: il bot incassa nel lungo periodo)
 const BOMBS = 2;        // bombe nel campo
 const ROWS = 3;
 const COLS = 3;
@@ -64,9 +64,14 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, reply, services } = context;
-        const { db, saveDB, getUser, sendButtons } = services;
+        const { db, saveDB, getUser, sendButtons, getCachedGroupMeta } = services;
+        const { dispOf, resolveJid } = require('../../lib/jid');
 
         if (!isGroup) return reply('Si gioca solo nei gruppi!');
+
+        let meta = null;
+        try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+        const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
 
         const q = String(textArgs || '').trim().toLowerCase();
         const [w1, w2] = q.split(/\s+/);
@@ -145,7 +150,7 @@ Continua a scavare o incassa 👇`,
         if (g?.active) {
             return sendButtons(sock, from,
 `⛏️ C'è già una partita attiva
-di *${g.sender.split('@')[0]}*!
+di *${disp(g.sender)}*!
 ${SEP}
 ${renderBoard(g)}
 ${SEP}

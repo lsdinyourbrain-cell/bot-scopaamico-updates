@@ -16,9 +16,10 @@ module.exports = {
             const meta = await sock.groupMetadata(from);
             const participants = Array.isArray(meta.participants) ? meta.participants : [];
             const botJid = sock.user?.id || null;
+            const botLid = sock.user?.lid || null;
             const mentions = participants
-                .map(p => p.id || p.jid)
-                .filter(jid => jid && (!botJid || !sameJid(jid, botJid)));
+                .map(p => p.phoneNumber || p.id || p.jid)
+                .filter(jid => jid && (!botJid || !sameJid(jid, botJid)) && (!botLid || !sameJid(jid, botLid)));
 
             const quoted = msg.message?.extendedTextMessage?.contextInfo;
             const quotedMsg = quoted?.quotedMessage;
@@ -102,7 +103,8 @@ module.exports = {
             const tagBody = customText || `📢 *_TAG_*
 ━━━━━━━━━━━━━━
 *Attenzione a tutti!*${meta.subject ? `\n_Messaggio nel gruppo: ${meta.subject}_` : ''}
-━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
             await sock.sendMessage(from, { text: tagBody, mentions }, { quoted: msg });
         } catch (e) {

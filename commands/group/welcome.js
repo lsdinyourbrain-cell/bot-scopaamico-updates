@@ -23,7 +23,8 @@ module.exports = {
 Stato attuale: ${status}
 Uso: .welcome <on|off>
 Es: .welcome on
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
             );
         }
 
@@ -36,7 +37,8 @@ Es: .welcome on
 Il messaggio di benvenuto è ora
 ${enable ? '🟢 ATTIVO' : '🔴 DISATTIVATO'}
 in questo gruppo.
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
         );
     },
 };

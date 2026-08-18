@@ -6,8 +6,8 @@ module.exports = {
     description: "Toglie l'admin a tutti, tranne al creatore del gruppo e all'owner.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, sameJid, sendButtons } = services;
+        const { from, isGroup, isSenderAdmin, isBotAdmin, reply, services } = context;
+        const { db, sameJid, isOwnerJid, sendButtons } = services;
 
         if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
         if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin del gruppo possono usarlo.");
@@ -18,17 +18,15 @@ module.exports = {
             const participants = meta?.participants || [];
             const botJid = sock.user?.id || sock.user?.lid || '';
 
-            const protectedJids = new Set();
-            protectedJids.add(meta.owner || '');
-            if (db._owners?.length) db._owners.forEach(o => protectedJids.add(o));
-            protectedJids.add(botJid);
+            const jidOf = (p) => p.phoneNumber || p.id || p.jid;
 
             const target = participants
-                .filter(p => p.admin === 'admin' || p.admin === 'superadmin')
-                .map(p => p.id || p.jid)
+                // I superadmin (creatore del gruppo) non vanno mai toccati
+                .filter(p => p.admin === 'admin')
+                .map(jidOf)
                 .filter(Boolean)
-                .filter(j => !protectedJids.has(j))
-                .filter(j => !sameJid(j, botJid));
+                .filter(j => !sameJid(j, botJid))
+                .filter(j => !isOwnerJid(j, sock, db, null));
 
             if (!target.length) return reply("✅ Nessun admin da retrocedere.");
 
@@ -48,7 +46,8 @@ module.exports = {
 👑 Restano il creatore
 e l'owner
 ✅ Tutto fatto, fra!
-━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },
             ], msg);

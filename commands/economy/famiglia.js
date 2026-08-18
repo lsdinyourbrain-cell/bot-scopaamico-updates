@@ -1,5 +1,7 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
+
 module.exports = {
     name: 'famiglia',
     aliases: [],
@@ -7,12 +9,15 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
 
 
             const subCmd = args[0]?.toLowerCase();
             const target = mentioned[0];
             const uDB    = getUser(sender, from);
+            let meta = null;
+            try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+            const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
 
             // ── Gestione proposta pendente: il bersaglio risponde con si/no ─
             const proposalId = args[1];
@@ -34,7 +39,7 @@ module.exports = {
 
                 if (!isAccept) {
                     await sock.sendMessage(from, {
-                        text: `❌ *_RIFIUTATO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha rifiutato\n▸ la proposta di @${prop.proposer.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                        text: `❌ *_RIFIUTATO_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha rifiutato\n▸ la proposta di @${disp(prop.proposer)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                         mentions: [sender, prop.proposer],
                     });
                     return;
@@ -51,7 +56,7 @@ module.exports = {
                     targetDB.spouse = prop.proposer;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `💒 *_MATRIMONIO_*\n━━━━━━━━━━━━━━\n▸ @${prop.proposer.split('@')[0]} 💞 @${prop.target.split('@')[0]}\n▸ _Vi siete appena sposati!_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                        text: `💒 *_MATRIMONIO_*\n━━━━━━━━━━━━━━\n▸ @${disp(prop.proposer)} 💞 @${disp(prop.target)}\n▸ _Vi siete appena sposati!_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                         mentions: [prop.proposer, prop.target],
                     });
                 } else if (prop.type === 'adotta') {
@@ -62,7 +67,7 @@ module.exports = {
                     if (!targetDB.parents.includes(prop.proposer)) targetDB.parents.push(prop.proposer);
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🍼 *_ADOZIONE_*\n━━━━━━━━━━━━━━\n▸ @${prop.proposer.split('@')[0]} ha adottato @${prop.target.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                        text: `🍼 *_ADOZIONE_*\n━━━━━━━━━━━━━━\n▸ @${disp(prop.proposer)} ha adottato @${disp(prop.target)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                         mentions: [prop.proposer, prop.target],
                     });
                 }
@@ -74,21 +79,21 @@ module.exports = {
                 let partnerLine, parentsLine, childrenLine;
 
                 if (uDB.spouse) {
-                    partnerLine = `💍 *Coniuge:* @${uDB.spouse.split('@')[0]}`;
+                    partnerLine = `💍 *Coniuge:* @${disp(uDB.spouse)}`;
                     familyMentions.push(uDB.spouse);
                 } else {
                     partnerLine = '💍 *Coniuge:* _Nessuno_';
                 }
 
                 if (uDB.parents.length > 0) {
-                    parentsLine = `👴 *Genitori:*\n${uDB.parents.map(p => `🧑 @${p.split('@')[0]}`).join('\n')}`;
+                    parentsLine = `👴 *Genitori:*\n${uDB.parents.map(p => `🧑 @${disp(p)}`).join('\n')}`;
                     familyMentions.push(...uDB.parents);
                 } else {
                     parentsLine = '👴 *Genitori:* _Nessuno_';
                 }
 
                 if (uDB.children.length > 0) {
-                    childrenLine = `🍼 *Figli:*\n${uDB.children.map(c => `🧑 @${c.split('@')[0]}`).join('\n')}`;
+                    childrenLine = `🍼 *Figli:*\n${uDB.children.map(c => `🧑 @${disp(c)}`).join('\n')}`;
                     familyMentions.push(...uDB.children);
                 } else {
                     childrenLine = '🍼 *Figli:* _Nessuno_';
@@ -121,7 +126,7 @@ module.exports = {
                 return sendButtons(sock, from,
 `💍 *_PROPOSTA DI MATRIMONIO_*
 ━━━━━━━━━━━━━━
-▸ @${sender.split('@')[0]} ti chiede di sposarlo/a! 💞
+▸ @${disp(sender)} ti chiede di sposarlo/a! 💞
 ▸ _Accetti?_
 ▸ ⏳ _2 minuti di tempo_
 ━━━━━━━━━━━━━━
@@ -140,7 +145,7 @@ module.exports = {
                 exDB.spouse = null;
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `💔 *_DIVORZIO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha divorziato da @${ex.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `💔 *_DIVORZIO_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha divorziato da @${disp(ex)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [sender, ex],
                 });
             }
@@ -158,7 +163,7 @@ module.exports = {
                 return sendButtons(sock, from,
 `🍼 *_PROPOSTA DI ADOZIONE_*
 ━━━━━━━━━━━━━━
-▸ @${sender.split('@')[0]} vuole adottarti! 👨‍👧
+▸ @${disp(sender)} vuole adottarti! 👨‍👧
 ▸ _Accetti?_
 ▸ ⏳ _2 minuti di tempo_
 ━━━━━━━━━━━━━━
@@ -178,7 +183,7 @@ module.exports = {
                 tDB.parents = tDB.parents.filter(parent => parent !== sender);
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚪 *_CACCIATA_*\n━━━━━━━━━━━━━━\n▸ @${target.split('@')[0]} non è più nella famiglia di @${sender.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `🚪 *_CACCIATA_*\n━━━━━━━━━━━━━━\n▸ @${disp(target)} non è più nella famiglia di @${disp(sender)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [sender, target],
                 });
             }
@@ -192,7 +197,7 @@ module.exports = {
                 uDB.parents = [];
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚶 *_ABBANDONO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha scelto di andare per la sua strada\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `🚶 *_ABBANDONO_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha scelto di andare per la sua strada\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [sender],
                 });
             }

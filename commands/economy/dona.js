@@ -1,5 +1,7 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
+
 module.exports = {
     name: 'dona',
     aliases: ['regala'],
@@ -7,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
         if (!isGroup) return reply("Questo comando funziona solo nei gruppi.");
         if (!targetJid) return reply("Tagga la persona a cui vuoi donare. Esempio: `.dona @utente 100`");
@@ -19,13 +21,17 @@ module.exports = {
         const senderData = getUser(sender, from);
         if (senderData.money < amount) return reply(`Non hai abbastanza soldi. Hai solo *${formatMoney(senderData.money)}*`);
 
+        let meta = null;
+        try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+        const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
+
         const targetData = getUser(targetJid, from);
         senderData.money -= amount;
         targetData.money += amount;
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `🎁 *_DONAZIONE!_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha donato _${amount}€_ a @${targetJid.split('@')[0]}! 🫶\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${formatMoney(senderData.money)}_\n◈ _Vex Bot_`,
+            text: `🎁 *_DONAZIONE!_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha donato _${amount}€_ a @${disp(targetJid)}! 🫶\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${formatMoney(senderData.money)}_\n◈ _Vex Bot_`,
             mentions: [sender, targetJid],
         });
     },

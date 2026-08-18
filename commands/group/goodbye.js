@@ -24,7 +24,8 @@ module.exports = {
 Stato attuale: ${status}
 Uso: .goodbye <on|off>
 Es: .goodbye on
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             }
 
@@ -38,7 +39,8 @@ ${enable ? '✅ Attivato' : '❌ Disattivato'}
 Il messaggio di arrivederci
 ${enable ? 'verrà inviato' : 'NON verrà più inviato'}
 quando qualcuno esce.
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
             );
     },
 };

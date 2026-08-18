@@ -1,5 +1,7 @@
 'use strict';
 
+const EV = require('../../lib/events');
+
 module.exports = {
     name: 'indovina',
     aliases: ['indovinanumero'],
@@ -24,10 +26,11 @@ module.exports = {
 
             // Difficoltà opzionale come primo argomento: cambia l'intervallo del numero
             // e il moltiplicatore della vincita. Default = media (1-10).
+            // EV: facile 0%, media/difficile -10% (margine del bot).
             const DIFFS = {
-                facile:    { max: 5, mult: 3 },
-                media:     { max: 10, mult: 2 },
-                difficile: { max: 20, mult: 4 },
+                facile:    { max: 5, mult: 4 },
+                media:     { max: 10, mult: 9 },
+                difficile: { max: 20, mult: 18 },
             };
             const dKey = String(args[0] || '').toLowerCase();
             const diff = DIFFS[dKey];
@@ -47,9 +50,10 @@ module.exports = {
 
             const secret = randomInt(1, D.max);
             let esito;
+            const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
             if (guess === secret) {
-                uDB.money += puntata * D.mult;
-                esito = `🎉 *NUMERO GIUSTO!* +${formatMoney(puntata * D.mult)}`;
+                uDB.money += puntata * D.mult * evMult;
+                esito = `🎉 *NUMERO GIUSTO!* +${formatMoney(puntata * D.mult * evMult)}${evMult > 1 ? ' (x3 slotoro 🎰)' : ''}`;
             } else {
                 uDB.money -= puntata;
                 esito = `😅 Era il *${secret}*. Hai perso ${formatMoney(puntata)}.`;

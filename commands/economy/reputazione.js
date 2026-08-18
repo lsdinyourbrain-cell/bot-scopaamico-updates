@@ -1,8 +1,10 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
+
 const repBar = (rep, max = 100) => {
     const filled = Math.max(0, Math.min(max, Math.round((rep / max) * 10)));
-    return '▰'.repeat(Math.max(1, filled || 1)) + '▱'.repeat(Math.max(0, 10 - filled));
+    return '▰'.repeat(filled) + '▱'.repeat(10 - filled);
 };
 
 module.exports = {
@@ -12,7 +14,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, mentioned, targetJid, isReply, contextInfo, reply, services } = context;
-        const { getUser, saveDB, sameJid } = services;
+        const { getUser, saveDB, sameJid, getCachedGroupMeta } = services;
 
         if (!isGroup) return reply("La reputazione funziona solo nei gruppi.");
 
@@ -46,12 +48,16 @@ module.exports = {
         }
         me.repGiven[targetJid] = now;
 
+        let meta = null;
+        try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+        const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
+
         const target = getUser(targetJid, from);
         target.rep = (Number(target.rep) || 0) + 1;
         saveDB();
 
         return sock.sendMessage(from, {
-            text: `✅ @${sender.split('@')[0]} ha dato +1⭐\n▸ a @${targetJid.split('@')[0]}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.`,
+            text: `✅ @${disp(sender)} ha dato +1⭐\n▸ a @${disp(targetJid)}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

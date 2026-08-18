@@ -1,28 +1,41 @@
 'use strict';
 
+const { toDecorated } = require('../../lib/font');
+const { dispOf, resolveJid } = require('../../lib/jid');
+
 module.exports = {
     name: 'd',
     aliases: [],
     description: "Alias rapido per .demote.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { from, sender, isGroup, isSenderAdmin, isBotAdmin, targetJid, reply, services } = context;
+        const { db, sameJid, isOwnerJid, getCachedGroupMeta, sendButtons } = services;
 
+        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ comando riservato agli admin.");
+        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
+        if (!targetJid || sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ tagga un utente da degradare.");
+        if (isOwnerJid(targetJid, sock, db, null)) return reply("⛔ Non posso degradare l'owner del bot.");
 
-            if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-            if (!isSenderAdmin) return reply("⚠️ _[uso]:_ comando riservato agli admin.");
-            if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
-            if (!targetJid || sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ tagga un utente da degradare.");
-            try {
-                await sock.groupParticipantsUpdate(from, [targetJid], 'demote');
-                await sock.sendMessage(from, { text: `⬇️ *_DEMOTE_*
-━━━━━━━━━━━━━━
-▸ @${targetJid.split('@')[0]} non è più *admin*.
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`, mentions: [targetJid] }, { quoted: msg });
-            } catch (e) {
-                await reply("⚠️ _[uso]:_ non riesco a degradare. Controlla i permessi.");
-            }
+        try {
+            let meta = null;
+            try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+            const tgtPn = resolveJid(targetJid, meta);
+            const useJid = tgtPn || targetJid;
+            const short = dispOf(targetJid, tgtPn);
+
+            await sock.groupParticipantsUpdate(from, [useJid], 'demote');
+
+            await sendButtons(sock, from,
+                `⬇️ ${toDecorated('DEMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} non è più *admin*.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                [{ label: '📜 Registro modifiche', id: 'registro' }], msg)
+                .catch(() => sock.sendMessage(from, {
+                    text: `⬇️ ${toDecorated('DEMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} non è più *admin*.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    mentions: [useJid],
+                }, { quoted: msg }));
+        } catch (_) {
+            await reply("⚠️ _[uso]:_ non riesco a degradare. Controlla i permessi.");
+        }
     },
 };

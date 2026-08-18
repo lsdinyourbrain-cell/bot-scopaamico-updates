@@ -33,7 +33,7 @@ ${SEP}`
         try {
             const meta = await sock.groupMetadata(from);
             const participants = Array.isArray(meta.participants) ? meta.participants : [];
-            const allJids = participants.map(p => p.id || p.jid).filter(Boolean);
+            const allJids = participants.map(p => p.phoneNumber || p.id || p.jid).filter(Boolean);
             const header = textArgs.trim() || '👀 Attenzione a tutti!';
             const lines = allJids.map(id => `${flagForJid(id)} @${id.split('@')[0]}`);
 
@@ -43,7 +43,9 @@ ${SEP}`
 ${SEP}
 ${header}
 ${SEP}
-${lines.join('\n')}`,
+${lines.join('\n')}
+${SEP}
+◈ _Vex Bot_`,
                 mentions: allJids,
             }, { quoted: msg });
 

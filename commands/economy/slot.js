@@ -24,7 +24,7 @@ module.exports = {
 
             let win = 0;
             if (r[0] === r[1] && r[1] === r[2]) win = 100;
-            else if (r[0] === r[1] || r[1] === r[2] || r[0] === r[2]) win = 15;
+            else if (r[0] === r[1] || r[1] === r[2] || r[0] === r[2]) win = 40;
             const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
             win = win * evMult;
 
@@ -39,7 +39,7 @@ module.exports = {
             const resultText =
 `🎰 _[ ${r[0]} | ${r[1]} | ${r[2]} ]_
 ▸ ${risultato}${evLine}
-▸ ${win > 0 ? `Lordo: _+${win}€_ ▸ Netto: _+${taxed.net}€_${taxLine}` : '▸ Saldo: ' + `_${uDB.money}€_`}
+▸ ${win > 0 ? `Lordo: _+${win}€_ ▸ Netto: _+${taxed.net}€_${taxLine}\n▸ Saldo: _${uDB.money}€_` : `Saldo: _${uDB.money}€_`}
 ▸ Vex Bot`;
             await sendButtons(sock, from, toDarkFont(resultText), [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

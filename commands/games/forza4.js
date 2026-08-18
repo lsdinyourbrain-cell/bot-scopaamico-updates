@@ -9,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB, sameJid, sharp } = services;
+        const { db, saveDB, sameJid, sharp, getCachedGroupMeta } = services;
 
         if (!isGroup) return reply("Il Forza 4 si gioca solo nei gruppi.");
 
@@ -28,7 +28,19 @@ module.exports = {
             return reply("Non puoi giocare contro te stesso!");
         }
 
-        const players = [sender, opponent]; // 0 = 🔴 sfidante, 1 = 🟡 sfidato
+        // Risolve eventuali @lid in numeri di telefono reali (per menzioni e testo)
+        let meta = null;
+        try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+        const resolve = (jid) => {
+            const pn = (meta?.participants || []).find(p =>
+                sameJid(p.id || p.jid, jid) || sameJid(p.phoneNumber, jid)
+            )?.phoneNumber;
+            return pn || jid;
+        };
+        const senderPn = resolve(sender);
+        const opponentPn = resolve(opponent);
+
+        const players = [senderPn, opponentPn]; // 0 = 🔴 sfidante, 1 = 🟡 sfidato
 
         db[from] = db[from] || {};
         db[from].forza4Game = {
@@ -36,7 +48,7 @@ module.exports = {
             board: createBoard(),
             players,
             current: 0,
-            sender,
+            sender: senderPn,
             timestamp: Date.now(),
             lastMsgKey: null,
         };
@@ -54,7 +66,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🎮 *FORZA 4*\n━━━━━━━━━━━━━━━━━━\n🎉 Dai, si parte!\nChe figata 🔥\n🔴 Sfidante: @${sender.split('@')[0]}\n🟡 Sfidato: @${opponent.split('@')[0]}\n\nTocca a 🔴 (@${sender.split('@')[0]}).\nScrivi un numero *1-7*\nper lanciare il pedino.\n━━━━━━━━━━━━━━━━━━`,
+            caption: `🎮 *FORZA 4*\n━━━━━━━━━━━━━━━━━━\n🎉 Dai, si parte!\nChe figata 🔥\n🔴 Sfidante: @${senderPn.split('@')[0]}\n🟡 Sfidato: @${opponentPn.split('@')[0]}\n\nTocca a 🔴 (@${senderPn.split('@')[0]}).\nScrivi un numero *1-7*\nper lanciare il pedino.\n━━━━━━━━━━━━━━━━━━`,
             mentions: players,
         }, { quoted: msg });
 

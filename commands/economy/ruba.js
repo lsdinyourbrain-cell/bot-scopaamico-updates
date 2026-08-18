@@ -1,5 +1,7 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
+
 module.exports = {
     name: 'ruba',
     aliases: [],
@@ -7,19 +9,23 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
 
 
             if (!isGroup) return reply("⚠️ Funziona solo nei gruppi.");
             if (!targetJid) return reply("⚠️ _[uso]: .ruba @utente_");
             if (sameJid(sender, targetJid)) return reply("Non puoi rubare a te stesso, scemo 😂");
 
+            let meta = null;
+            try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+            const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
+
             const targetData = getUser(targetJid, from);
             const thiefData = getUser(sender, from);
 
             if (targetData.money < 10) {
                 return await sock.sendMessage(from, {
-                    text: `@${targetJid.split('@')[0]} è al verde, non ha niente da rubare! 🍃`,
+                    text: `@${disp(targetJid)} è al verde, non ha niente da rubare! 🍃`,
                     mentions: [targetJid],
                 });
             }
@@ -44,7 +50,7 @@ module.exports = {
             saveDB();
 
             await sock.sendMessage(from, {
-                text: `🕵️ *_FURTO!_*\n━━━━━━━━━━━━━━\n▸ 💀 @${sender.split('@')[0]} ha rubato _${stolen}€_ a @${targetJid.split('@')[0]}!\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n◈ _Vex Bot_`,
+                text: `🕵️ *_FURTO!_*\n━━━━━━━━━━━━━━\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n◈ _Vex Bot_`,
                 mentions: [sender, targetJid],
             });
     },

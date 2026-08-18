@@ -10,7 +10,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, isOwnerJid } = services;
 
 
             if (!isGroup) return reply("Funziona solo nei gruppi.");
@@ -24,13 +24,15 @@ module.exports = {
 
             if (sameJid(user1, user2)) return reply("Due persone diverse, non la stessa! 😂");
 
-            const ownerJid = "269956662956146@lid";
-            const alessiaJid = mentioned.find(j => !sameJid(j, ownerJid) && !sameJid(j, sender)) || user2;
+            // L'easter egg scatta per CHIUNQUE sia owner del bot (numero
+            // principale o co-owner aggiunti con .addowner), senza jid fissi.
+            const isOwnerJ = (j) => isOwnerJid(j, sock, db, null);
+            const alessiaJid = mentioned.find(j => !isOwnerJ(j) && !sameJid(j, sender)) || user2;
 
             let percent, frase;
 
-            if ((sameJid(user1, ownerJid) && sameJid(user2, alessiaJid)) ||
-                (sameJid(user2, ownerJid) && sameJid(user1, alessiaJid))) {
+            if ((isOwnerJ(user1) && sameJid(user2, alessiaJid)) ||
+                (isOwnerJ(user2) && sameJid(user1, alessiaJid))) {
                 percent = 100;
                 frase = "💞 *AMORE VERO* 💞\n\nQuesto è speciale! L'algoritmo\nha riconosciuto un amore unico:\nquello tra il creatore e la sua\nAlessia. Il destino ha deciso:\n*100%* sempre e per sempre. ✨💕";
             } else {

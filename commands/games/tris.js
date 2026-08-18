@@ -9,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { sharp, db, saveDB, sameJid } = services;
+        const { sharp, db, saveDB, sameJid, getCachedGroupMeta } = services;
 
         if (!isGroup) return reply("Il tris si gioca solo nei gruppi.");
 
@@ -28,12 +28,21 @@ module.exports = {
         if (sameJid(opponent, sender)) {
             return reply("Non puoi giocare contro te stesso!");
         }
-        if (opponent.endsWith('@lid')) {
-            // normalizza: per i bisogni del gioco va bene comunque
-        }
+
+        // Risolve eventuali @lid in numeri di telefono reali (per menzioni e testo)
+        let meta = null;
+        try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+        const resolve = (jid) => {
+            const pn = (meta?.participants || []).find(p =>
+                sameJid(p.id || p.jid, jid) || sameJid(p.phoneNumber, jid)
+            )?.phoneNumber;
+            return pn || jid;
+        };
+        const senderPn = resolve(sender);
+        const opponentPn = resolve(opponent);
 
         const board = Array(9).fill(null);
-        const players = [sender, opponent]; // 0 = X (sfidante), 1 = O (sfidato)
+        const players = [senderPn, opponentPn]; // 0 = X (sfidante), 1 = O (sfidato)
 
         db[from] = db[from] || {};
         db[from].trisGame = {
@@ -41,7 +50,7 @@ module.exports = {
             board,
             players,
             current: 0,             // indice del giocatore che deve muovere
-            sender,
+            sender: senderPn,
             timestamp: Date.now(),
             lastMsgKey: null,       // key dell'ultimo messaggio board (per cancellarlo)
         };
@@ -59,7 +68,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🎮 *TRIS*\n━━━━━━━━━━━━━━━━━━\n🎉 Dai, si parte!\nChe figata 🔥\n❌ Sfidante: @${sender.split('@')[0]}\n⭕ Sfidato: @${opponent.split('@')[0]}\n\nTocca a ❌ (@${sender.split('@')[0]}).\nScrivi un numero *1-9*\nper mettere la X.\n━━━━━━━━━━━━━━━━━━`,
+            caption: `🎮 *TRIS*\n━━━━━━━━━━━━━━━━━━\n🎉 Dai, si parte!\nChe figata 🔥\n❌ Sfidante: @${senderPn.split('@')[0]}\n⭕ Sfidato: @${opponentPn.split('@')[0]}\n\nTocca a ❌ (@${senderPn.split('@')[0]}).\nScrivi un numero *1-9*\nper mettere la X.\n━━━━━━━━━━━━━━━━━━`,
             mentions: players,
         }, { quoted: msg });
 

@@ -19,7 +19,7 @@ module.exports = {
             userData.money += result;
             saveDB();
             await reply(
-`🎯 *_TAGLIASSA!_*
+`🎯 *_TAGLIA!_*
 ━━━━━━━━━━━━━━
 ▸ 💥 Hai centrato il bersaglio!
 ▸ 💰 Intascato: _${result}€_

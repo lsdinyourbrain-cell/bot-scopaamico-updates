@@ -18,7 +18,7 @@ const GIGS = [
 module.exports = {
     name: 'lavoro2',
     aliases: ['lavoretto', 'freelance'],
-    description: "Fai un lavoretto freelance con storie, paga più alta e cooldown di 45 minuti. Uso: .lavoro2",
+    description: "Fai un lavoretto freelance con storie, paga più alta e cooldown di 60 minuti. Uso: .lavoro2",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, reply, services } = context;

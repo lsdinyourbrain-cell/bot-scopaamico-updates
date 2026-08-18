@@ -15,6 +15,14 @@ module.exports = {
             const cooldownKey = 'dadi';
             const userData = getUser(sender, from);
             if (!userData.cooldowns) userData.cooldowns = {};
+
+            const puntata = parseInt(args[0]);
+            if (isNaN(puntata) || puntata <= 0) return reply("⚠️ _[uso]: .dadi <importo>_ — es. _.dadi 50_");
+            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+
+            const uDB = getUser(sender, from);
+            if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
+
             const last = userData.cooldowns[cooldownKey] || 0;
             const now = Date.now();
             const cdMs = 5000;
@@ -24,21 +32,15 @@ module.exports = {
             }
             userData.cooldowns[cooldownKey] = now;
 
-            const puntata = parseInt(args[0]);
-            if (isNaN(puntata) || puntata <= 0) return reply("⚠️ _[uso]: .dadi <importo>_ — es. _.dadi 50_");
-            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
-
-            const uDB = getUser(sender, from);
-            if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
-
             const userRoll = Math.floor(Math.random() * 6) + 1;
             const botRoll  = Math.floor(Math.random() * 6) + 1;
 
             const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
             let esito;
             if (userRoll > botRoll) {
-                uDB.money += puntata * evMult;
-                esito = `✅ *HAI VINTO!* (+${puntata * evMult}€)${evMult > 1 ? ' 🎰x3' : ''}`;
+                const payout = Math.floor(puntata * 0.95 * evMult);
+                uDB.money += payout;
+                esito = `✅ *HAI VINTO!* (+${payout}€)${evMult > 1 ? ' 🎰x3' : ''}`;
             } else if (userRoll < botRoll) {
                 uDB.money -= puntata;
                 esito = `❌ *HAI PERSO!* (-${puntata}€)`;

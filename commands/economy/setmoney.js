@@ -9,9 +9,14 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, reply, services } = context;
-        const { formatMoney, getUser, saveDB, sameJid } = services;
+        const { formatMoney, getUser, saveDB, sameJid, getCachedGroupMeta } = services;
+        const { dispOf, resolveJid } = require('../../lib/jid');
 
         if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+
+        let meta = null;
+        try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+        const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
 
         const target = targetJid || (mentioned && mentioned[0]);
         if (!target) return reply(`📌 *${command.toUpperCase()}*\n▸ Tagga un utente o rispondi al suo messaggio.\n▸ Esempio: \`.${command} 2000 @utente\``);
@@ -29,6 +34,6 @@ module.exports = {
         const verb = diff >= 0 ? 'aggiunti' : 'rimossi';
         const emoji = diff >= 0 ? '➕' : '➖';
 
-        return reply(`💵 *_SOLDI_IMPOSTATI!_*\n━━━━━━━━━━━━━━\n▸ @${target.split('@')[0]}: _${prevMoney}€_ → _${amount}€_\n▸ ${emoji} ${verb} _${Math.abs(diff)}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo attuale: _${formatMoney(targetData.money)}_`);
+        return reply(`💵 *_SOLDI_IMPOSTATI!_*\n━━━━━━━━━━━━━━\n▸ @${disp(target)}: _${prevMoney}€_ → _${amount}€_\n▸ ${emoji} ${verb} _${Math.abs(diff)}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo attuale: _${formatMoney(targetData.money)}_\n◈ _Vex Bot_`);
     },
 };

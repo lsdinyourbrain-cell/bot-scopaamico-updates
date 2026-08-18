@@ -21,6 +21,8 @@ const ROLES = {
     civile:  { emoji: '🙂', name: 'Civile' },
 };
 
+// Per i tag visibili preferisce il nome salvato (i jid @lid non vengono
+// mostrati come menzioni e resterebbero numeri senza senso).
 const fmtJid = (jid) => String(jid).split('@')[0];
 
 module.exports = {
@@ -111,7 +113,7 @@ ${SEP}
 La Banda elimina di notte,
 il villaggio vota di giorno.
 ${SEP}
-@${fmtJid(sender)} ha creato la lobby!
+*${pushName || fmtJid(sender)}* ha creato la lobby!
 Ruoli: 🔫 Banda · 🕵️ Detective
 🩺 Medico · 😀 Civili
 ${SEP}
@@ -141,7 +143,7 @@ siete in almeno 4.`,
                 db._bandaMap[sender] = from;
                 saveDB();
                 return sendButtons(sock, from,
-`🔫 *@${fmtJid(sender)}* si è unito!
+`🔫 *${pushName || fmtJid(sender)}* si è unito!
 ${SEP}
 Giocatori (${g.players.length}):
 ${g.players.map((p, i) => `${i + 1}. ${p.name}`).join('\n')}

@@ -24,7 +24,7 @@ module.exports = {
         try {
             const meta = await sock.groupMetadata(from);
             const participants = Array.isArray(meta.participants) ? meta.participants : [];
-            const allJids = participants.map(p => p.id || p.jid).filter(Boolean);
+            const allJids = participants.map(p => p.phoneNumber || p.id || p.jid).filter(Boolean);
             // Hide tag: notifica tutti senza mostrare @handle visibili
             const mentions = allJids;
 
@@ -38,7 +38,8 @@ ${GROUP_LINKS[0]}
 ▸ 2️⃣ *GRUPPO 2*
 ${GROUP_LINKS[1]}
 ━━━━━━━━━━━━━━
-💣 Non perdete l'occasione!`;
+💣 Non perdete l'occasione!
+◈ _Vex Bot_`;
 
             for (let i = 0; i < times; i++) {
                 const hiddenTags = mentions.map(() => '\u200b').join(' ');
@@ -49,7 +50,8 @@ ${GROUP_LINKS[1]}
             await reply(`✅ *_RAID_*
 ━━━━━━━━━━━━━━
 ▸ *Raid completato:* inviato *${times}* volte con hide tag a *${allJids.length}* membri.
-━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         } catch (e) {
             console.error('[raid]', e.message);
             await reply('⚠️ _[uso]:_ errore in raid: ' + e.message);

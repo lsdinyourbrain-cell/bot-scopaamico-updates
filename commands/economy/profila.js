@@ -1,6 +1,7 @@
 'use strict';
 
 const xpLib = require('../../lib/xp');
+const { dispOf, resolveJid } = require('../../lib/jid');
 
 module.exports = {
     name: 'profilo',
@@ -9,14 +10,17 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
 
             const target = targetJid || sender;
+            let meta = null;
+            try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+            const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
             const uDB = getUser(target, from);
             // pushName è il nome di chi invia il comando: lo usiamo solo per il proprio profilo
             const isSelf = sameJid(target, sender);
-            const name = isSelf ? (pushName || target.split('@')[0]) : target.split('@')[0];
+            const name = isSelf ? (pushName || disp(target)) : disp(target);
             const wallet = uDB.money || 0;
             const bank = uDB.bank || 0;
             const msgCount = uDB.msgCount || 0;
@@ -52,7 +56,7 @@ module.exports = {
 ▸ 🏦 Banca: _${bank}€_
 ▸ 💵 Totale: _${wallet + bank}€_
 ━━━━━━━━━━━━━━
-▸ 💍 Sposato: ${spouse ? `@${spouse.split('@')[0]}` : '_No_'}
+▸ 💍 Sposato: ${spouse ? `@${disp(spouse)}` : '_No_'}
 ▸ 👴 Genitori: _${parents}_
 ▸ 🍼 Figli: _${children}_
 ━━━━━━━━━━━━━━

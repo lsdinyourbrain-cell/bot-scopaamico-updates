@@ -16,7 +16,8 @@ module.exports = {
 ━━━━━━━━━━━━━━━━━━
 ▸ Questo comando funziona solo
   all'interno di un _gruppo_. 👥
-━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             }
 
@@ -29,9 +30,10 @@ module.exports = {
                 const superAdmins = participants.filter(p => p.admin === 'superadmin');
                 const admins      = participants.filter(p => p.admin === 'admin');
 
-                // Costruisce le righe degli admin con icona di ruolo
+                // Costruisce le righe degli admin con icona di ruolo (usa il numero
+                // di telefono reale quando disponibile: i @lid non si mostrano)
                 const buildAdminLine = (p, icon) =>
-                    `${icon} ▸ _@${(p.id || p.jid || '').split('@')[0]}_`;
+                    `${icon} ▸ _@${((p.phoneNumber || p.id || p.jid) || '').split('@')[0]}_`;
 
                 const superAdminLines = superAdmins.map(p => buildAdminLine(p, '👑')).join('\n');
                 const adminLines      = admins.map(p => buildAdminLine(p, '⚙️')).join('\n');
@@ -51,7 +53,7 @@ module.exports = {
 
                 // Raccoglie tutti i JID admin per il parametro mentions
                 const adminMentions = [...superAdmins, ...admins]
-                    .map(p => p.id || p.jid)
+                    .map(p => p.phoneNumber || p.id || p.jid)
                     .filter(Boolean);
 
                 const txt =

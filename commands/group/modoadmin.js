@@ -36,7 +36,8 @@ module.exports = {
 ${next
     ? '▸ Da ora solo gli *admin del gruppo* possono usare il bot.\n▸ Chi non è admin riceverà una reazione ❌ e nessuna risposta.'
     : '▸ Il bot è di nuovo utilizzabile da tutti i membri del gruppo.'}
-━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
 
         await sendButtons(sock, from, text, [
             { label: next ? '.modoadmin off' : '.modoadmin on', id: next ? 'modoadmin off' : 'modoadmin on' },

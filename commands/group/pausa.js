@@ -24,7 +24,8 @@ Il bot non risponde
 più in questo gruppo.
 Premi il pulsante
 per riattivarlo.
-━━━━━━━━━━━━━━`,
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`,
                 [{ label: '.riprendi', id: 'riprendi' }],
                 msg);
         } else {
@@ -36,7 +37,8 @@ per riattivarlo.
 Il bot è di nuovo
 attivo in questo
 gruppo! 🚀
-━━━━━━━━━━━━━━`);
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
         }
     },
 };

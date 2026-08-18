@@ -1,5 +1,7 @@
 'use strict';
 
+const EV = require('../../lib/events');
+
 module.exports = {
     name: 'russia',
     aliases: ['revolver', 'roulettarussa'],
@@ -7,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { getUser, saveDB, sendButtons, randomInt, formatMoney } = services;
+        const { getUser, saveDB, sendButtons, randomInt, db, formatMoney } = services;
 
         const cooldownKey = 'russia';
         const userData = getUser(sender, from);
@@ -29,9 +31,11 @@ const cdMs = 10000;
             if (uDB.money < puntata) return reply(`❌ Saldo insufficiente. Hai *${uDB.money}€*.`);
 
             // 4 colpi su 6 sono fatali; se sopravvivi il premio è 2x la puntata
+            // (x3 con l'evento slotoro attivo)
+            const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
             const fatale = randomInt(1, 6) <= 4;
             if (fatale) uDB.money -= puntata;
-            else uDB.money += puntata * 2;
+            else uDB.money += puntata * 2 * evMult;
         saveDB();
 
         const resultText =
@@ -42,7 +46,7 @@ premi il grilletto...
 
 ${fatale ? '💥 *BANG!* Colpito!' : '😅 *CLACK!* Sei vivo!'}
 
-${fatale ? `❌ Perduti: -${formatMoney(puntata)}€` : `✅ Vincita: +${formatMoney(puntata * 2)}€`}
+${fatale ? `❌ Perduti: -${formatMoney(puntata)}€` : `✅ Vincita: +${formatMoney(puntata * 2 * evMult)}€${evMult > 1 ? ' (x3 slotoro 🎰)' : ''}`}
 ▸ *Saldo:* _${formatMoney(uDB.money)}€_
 ◈ _Vex Bot_`;
 

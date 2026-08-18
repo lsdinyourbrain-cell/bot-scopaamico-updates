@@ -15,13 +15,14 @@ module.exports = {
         try {
             const meta = await sock.groupMetadata(from);
             const admins = (meta?.participants || []).filter(p => p.admin === 'admin' || p.admin === 'superadmin');
-            const mentions = admins.map(a => a.id || a.jid).filter(Boolean);
+            const mentions = admins.map(a => a.phoneNumber || a.id || a.jid).filter(Boolean);
             if (!mentions.length) return reply("⚠️ _[uso]:_ nessun admin trovato.");
-            const tag = admins.map(a => `@${(a.id || a.jid).split('@')[0]}`).join(' ');
+            const tag = admins.map(a => `@${(a.phoneNumber || a.id || a.jid).split('@')[0]}`).join(' ');
             await sock.sendMessage(from, { text: `👑 *_ADMIN DEL GRUPPO_*
 ━━━━━━━━━━━━━━
 ${tag}
-━━━━━━━━━━━━━━`, mentions }, { quoted: msg });
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`, mentions }, { quoted: msg });
         } catch (e) {
             await reply("⚠️ _[uso]:_ errore: " + e.message);
         }

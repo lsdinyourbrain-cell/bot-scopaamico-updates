@@ -31,7 +31,8 @@ module.exports = {
 `✅ *_RICHIESTE ${verb.toUpperCase()}_*
 ━━━━━━━━━━━━━━
 ▸ Hai ${action === 'accetta' ? 'accettato' : 'rifiutato'} *${ok}* su *${jids.length}* richieste di adesione.
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             } catch (e) {
                 console.error('[richieste]', e.message);
@@ -44,10 +45,10 @@ module.exports = {
             const requests = await sock.groupRequestParticipantsList(from);
             if (!requests || requests.length === 0) return reply("⚠️ _[uso]:_ nessuna richiesta in sospeso.");
 
-            const rows = requests.map((r, i) => {
-                const num = (r.jid || '').split('@')[0] || r.phoneNumber || 'sconosciuto';
-                return `${String(i + 1).padStart(2, '0')} ☎️ +${num}`;
-            }).join('\n');
+const rows = requests.map((r, i) => {
+                    const num = r.phoneNumber || (r.jid || '').split('@')[0] || 'sconosciuto';
+                    return `${String(i + 1).padStart(2, '0')} ☎️ +${num}`;
+                }).join('\n');
 
             const text =
 `📥 *_RICHIESTE DI ADESIONE_*

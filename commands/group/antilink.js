@@ -20,7 +20,8 @@ module.exports = {
 solo nei *gruppi*.
 In chat privata non ci sono
 link da filtrare. 😊
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             }
 
@@ -30,7 +31,8 @@ link da filtrare. 😊
 ━━━━━━━━━━━━━━
 Il comando *.antilink* è
 riservato all'*Owner del bot*.
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             }
 
@@ -55,7 +57,8 @@ ${statusLines}
 .antilink tutti on/off
 *Piattaforme:*
 ${platformNames.filter(p => p !== 'altri').join(', ')}, altri
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             }
 
@@ -71,7 +74,8 @@ Specifica *on* o *off*.
 Esempio:
 *.antilink instagram on*
 *.antilink tutti off*
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             }
 
@@ -92,7 +96,8 @@ ${icon} Tutti i filtri → *${stateArg.toUpperCase()}*
 Ogni link sarà ${newState ? 'bloccato 🚫' : 'permesso ✅'}.
 (Gli admin del gruppo
 sono esentati.)
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             }
 
@@ -105,7 +110,8 @@ sono esentati.)
 piattaforma valida.
 Piattaforme disponibili:
 ${platformNames.join(', ')}
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
                 );
             }
 
@@ -123,7 +129,8 @@ ${newState
     : `I link *${sub}* sono ora *permessi*\nin questo gruppo. ✅`}
 (Admins del gruppo
 sempre esentati.)
-━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`
             );
     },
 };

@@ -1917,7 +1917,7 @@ const rainMsgCount = new Map();
                     uDB.money += reward;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `✅ *ENIGMA RISOLTO!* 🧠\n\n@${sender.split('@')[0]} ha risposto:\n*${eg.answer}*\n\n+${reward}€ 💰`,
+                        text: `✅ *ENIGMA RISOLTO!* 🧠\n\n@${senderAlt || sender.split('@')[0]} ha risposto:\n*${eg.answer}*\n\n+${reward}€ 💰`,
                         mentions: [sender],
                     });
                 }
@@ -1942,7 +1942,7 @@ const rainMsgCount = new Map();
                     uDB.money += reward;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `✅ *RISPOSTA ESATTA!* 🎉\n\n@${sender.split('@')[0]} ha risposto correttamente!\n+${reward}€ 💰`,
+                        text: `✅ *RISPOSTA ESATTA!* 🎉\n\n@${senderAlt || sender.split('@')[0]} ha risposto correttamente!\n+${reward}€ 💰`,
                         mentions: [sender],
                     });
                 } else if (guessedLetter !== -1) {
@@ -2739,6 +2739,7 @@ const rainMsgCount = new Map();
             await commandModule.run(sock, msg, args, {
                 command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned,
                 targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply,
+                senderAlt,
                 isButton: fromButton,
                 setBotActive: (value) => { isBotActive = Boolean(value); },
                 services: {
@@ -2760,7 +2761,7 @@ const rainMsgCount = new Map();
                     checkTrisWinner,
                     renderTrisBoard: (board) => renderTrisBoardRaw(sharp, board),
                     applyTax, taxRate, applyWealthTax, wealthTaxRate,
-                    logGroupEvent, isOwnerJid,
+                    logGroupEvent, isOwnerJid, getCachedGroupMeta,
                     // Mostra il numero "leggibile" di un JID: in LID mode usa il
                     // PN alternativo per non far apparire numeri casuali @lid.
                     dispOf: (jid, alt) => String(alt || jid || '').split('@')[0],

@@ -22,6 +22,7 @@ module.exports = {
 ▸ @${sender.split('@')[0]} è ora *AFK*.
 ▸ *Motivo:* _${reason.slice(0, 200)}_
 ━━━━━━━━━━━━━━
-_Torna scrivendo un messaggio in chat._`);
+_Torna scrivendo un messaggio in chat._
+◈ _Vex Bot_`);
     },
 };

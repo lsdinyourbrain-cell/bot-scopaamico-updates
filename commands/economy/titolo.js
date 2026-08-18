@@ -20,11 +20,11 @@ module.exports = {
         if (text === '-') {
             delete me.title;
             saveDB();
-            return reply("🗑️ Titolo rimosso.");
+            return reply("🗑️ Titolo rimosso.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
         }
 
         if (text.length > 25) {
-            return reply("⚠️ Massimo 25 caratteri per il titolo.");
+            return reply("⚠️ Massimo 25 caratteri per il titolo.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
         }
 
         me.title = text;

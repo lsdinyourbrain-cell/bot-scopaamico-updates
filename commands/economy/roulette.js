@@ -20,7 +20,7 @@ module.exports = {
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) return reply(`❌ Ti mancano soldi: hai _${formatMoney(uDB.money)}_.`);
 
-            const win = Math.random() < 0.44;
+            const win = Math.random() < 0.47;
             const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
             uDB.money += win ? puntata * evMult : -puntata;
             saveDB();

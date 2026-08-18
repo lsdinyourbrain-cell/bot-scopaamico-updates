@@ -1,5 +1,7 @@
 'use strict';
 
+const EV = require('../../lib/events');
+
 module.exports = {
     name: 'ruota',
     aliases: ['ruotafortuna', 'ruotadellafortuna'],
@@ -44,7 +46,8 @@ module.exports = {
             ];
 
             const win = randomChoice(sectors);
-            const amount = Math.round(puntata * win.mult);
+            const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
+            const amount = Math.round(puntata * win.mult * evMult);
 
             let esito;
             if (win.mult === 0) {
@@ -58,7 +61,7 @@ module.exports = {
                 esito = `😐 *x1* Non vinci né perdi.`;
             } else {
                 uDB.money += amount;
-                esito = `${win.emoji} *${win.name}!* Hai vinto ${formatMoney(amount)}.`;
+                esito = `${win.emoji} *${win.name}!* Hai vinto ${formatMoney(amount)}${evMult > 1 ? ' (x3 slotoro 🎰)' : ''}.`;
             }
 
             saveDB();

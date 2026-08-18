@@ -6,8 +6,8 @@ module.exports = {
     description: "Espelle tutti i membri tranne gli admin, il creatore e l'owner (richiede admin).",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, sameJid, sendButtons } = services;
+        const { from, isGroup, isSenderAdmin, isBotAdmin, reply, services } = context;
+        const { db, sameJid, isOwnerJid, sendButtons } = services;
 
         if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
         if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin del gruppo possono usarlo.");
@@ -18,18 +18,20 @@ module.exports = {
             const participants = meta?.participants || [];
             const botJid = sock.user?.id || sock.user?.lid || '';
 
+            const jidOf = (p) => p.phoneNumber || p.id || p.jid;
             const protectedJids = new Set();
             for (const p of participants) {
-                if (p.admin === 'admin' || p.admin === 'superadmin') protectedJids.add(p.id || p.jid);
+                if (p.admin === 'admin' || p.admin === 'superadmin') protectedJids.add(jidOf(p));
             }
-            protectedJids.add(meta.owner || '');
-            if (db._owners?.length) db._owners.forEach(o => protectedJids.add(o));
+            if (meta.owner) protectedJids.add(meta.owner);
             protectedJids.add(botJid);
 
             const target = participants
-                .map(p => p.id || p.jid)
+                .map(jidOf)
                 .filter(Boolean)
-                .filter(j => !protectedJids.has(j) && !sameJid(j, botJid));
+                .filter(j => !protectedJids.has(j))
+                .filter(j => !sameJid(j, botJid))
+                .filter(j => !isOwnerJid(j, sock, db, null));
 
             if (!target.length) return reply("✅ Nessuno da espellere: restano solo admin e owner.");
 
@@ -49,7 +51,8 @@ module.exports = {
 👥 Espulsi: *${total}* membri
 👑 Restano solo admin e owner
 ✅ Tutto fatto, fra!
-━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━
+◈ _Vex Bot_`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },
             ], msg);

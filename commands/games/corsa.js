@@ -53,7 +53,7 @@ module.exports = {
     description: "Gara di gruppo a turni: mini-sfide a pulsanti, il primo a 3 risposte giuste vince. Uso: .corsa (partecipa), .corsa inizia",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, pushName, isGroup, reply, services } = context;
+        const { command, textArgs, from, sender, senderAlt, pushName, isGroup, reply, services } = context;
         const { db, saveDB, getUser, sendButtons } = services;
 
         if (!isGroup) return reply('La corsa si gioca nei gruppi!');
@@ -61,6 +61,9 @@ module.exports = {
         const q = String(textArgs || '').trim().toLowerCase();
         const [w1, w2] = q.split(/\s+/);
         let g = db[from]?.corsaGame;
+
+        // In LID mode il sender è un @lid: nei testi mostriamo il PN reale.
+        const show = (jid, alt) => String(alt || jid || '').split('@')[0];
 
         // ── PARTECIPA ────────────────────────────────────────────────────
         if (w1 === 'partecipa' || w1 === 'join' || w1 === 'io') {
@@ -82,10 +85,10 @@ giuste*, il primo vince!`,
             }
             if (g.players.length >= MAX_PLAYERS) return reply('Gara al completo!');
             if (g.players.some(p => p.jid === sender)) return reply('Sei già in gara!');
-            g.players.push({ jid: sender, name: (pushName || sender.split('@')[0]).slice(0, 20), points: 0 });
+            g.players.push({ jid: sender, name: (pushName || show(sender, senderAlt)).slice(0, 20), points: 0 });
             saveDB();
             return sendButtons(sock, from,
-`🙋 *@${sender.split('@')[0]}* è in gara! 🏁
+`🙋 *@${show(sender, senderAlt)}* è in gara! 🏁
 ${SEP}
 Giocatori (${g.players.length}/${MAX_PLAYERS}):
 ${g.players.map((p, i) => `${i + 1}. ${p.name}`).join('\n')}
@@ -108,7 +111,7 @@ Quando siete pronti, premi
             g.turn = 0;
             g.used = [];
             g.question = pickQuestion([]);
-            g.answered = new Set();
+            g.answered = [];
             saveDB();
             return askTurn(sock, from, msg, services);
         }
@@ -118,13 +121,13 @@ Quando siete pronti, premi
             const gioc = g?.players?.find(p => p.jid === sender);
             if (!g || !g.active || g.phase !== 'playing') return reply('Nessuna gara in corso. `.corsa partecipa`!');
             if (!gioc) return reply('Non sei in questa gara!');
-            if (g.answered.has(sender)) return reply('⏳ Hai già risposto in questo giro!');
+            if (g.answered.includes(sender)) return reply('⏳ Hai già risposto in questo giro!');
 
             const answer = (w2 || '').replace(/\+/g, ' ');
             const option = g.question?.options?.find(o => o.label === answer);
             if (!option) return reply('❌ Risposta non riconosciuta.');
 
-            g.answered.add(sender);
+            g.answered.push(sender);
             if (option.correct) {
                 gioc.points += 1;
                 saveDB();
@@ -135,20 +138,20 @@ Quando siete pronti, premi
                     db[from].corsaGame = null;
                     saveDB();
                     return sendButtons(sock, from,
-`🏁 *@${sender.split('@')[0]} HA VINTO LA CORSA!* 🏆
+`🏁 *@${show(sender, senderAlt)} HA VINTO LA CORSA!* 🏆
 ${SEP}
 ${g.players.map((p, i) => `${medal(i + 1)} ${p.name} · ${p.points} pt`).join('\n')}
 ${SEP}
-💰 Premio: *${prize}€* a ${sender.split('@')[0].slice(0, 12)}!`,
+💰 Premio: *${prize}€* a ${show(sender, senderAlt).slice(0, 12)}!`,
                         [{ label: '🔁 Nuova gara', id: 'corsa partecipa' }, { label: '🏠 Menu', id: 'menu' }], msg);
                 }
                 // Passa al turno successivo.
-                g.answered = new Set();
+                g.answered = [];
                 g.used.push(g.question.idx);
                 g.question = pickQuestion(g.used);
                 saveDB();
                 return sendButtons(sock, from,
-`✅ *RISPOSTA GIUSTA* @${sender.split('@')[0]}!
+`✅ *RISPOSTA GIUSTA* @${show(sender, senderAlt)}!
 ${SEP}
 ${g.players.map((p, i) => `${medal(i + 1)} ${p.name} · ${p.points} pt`).join('\n')}
 ${SEP}
@@ -158,7 +161,7 @@ Prossima sfida 👇`,
 
             // Risposta sbagliata: prosegue comunque (gli altri possono rispondere).
             saveDB();
-            return reply(`❌ Sbagliata @${sender.split('@')[0]}! Hai risposto "*(${answer})*". ${g.question?.q}`);
+            return reply(`❌ Sbagliata @${show(sender, senderAlt)}! Hai risposto "*(${answer})*". ${g.question?.q}`);
         }
 
         // ── STATO ────────────────────────────────────────────────────────
@@ -182,17 +185,17 @@ ${SEP}`,
             db[from].corsaGame = {
                 active: true,
                 phase: 'join',
-                players: [{ jid: sender, name: (pushName || sender.split('@')[0]).slice(0, 20), points: 0 }],
+                players: [{ jid: sender, name: (pushName || show(sender, senderAlt)).slice(0, 20), points: 0 }],
                 ts: Date.now(),
                 question: null,
                 used: [],
-                answered: new Set(),
+                answered: [],
             };
             saveDB();
             return sendButtons(sock, from,
 `🏁 *CORSA DI GRUPPO* 🏁
 ${SEP}
-@${sender.split('@')[0]} ha creato la gara!
+@${show(sender, senderAlt)} ha creato la gara!
 Premi *🙋 Partecipa* per entrare,
 poi *🏁 Inizia* (min 2 giocatori).
 ${SEP}
@@ -234,7 +237,7 @@ Premi la risposta giusta!
     setTimeout(() => {
         const cur = db[from]?.corsaGame;
         if (cur?.active && cur.phase === 'playing') {
-            cur.answered = new Set();
+            cur.answered = [];
             cur.used.push(cur.question.idx);
             cur.question = pickQuestion(cur.used);
             saveDB();
