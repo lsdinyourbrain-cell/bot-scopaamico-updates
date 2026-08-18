@@ -53,6 +53,7 @@ const antibotLib = require('./lib/antibot');
 const duelQuiz = require('./lib/duel-quiz');
 const { applyTax, taxRate, applyWealthTax, wealthTaxRate } = require('./lib/tax');
 const { check: farmCheck } = require('./lib/farmguard');
+const Archiver = require('./lib/archiver');
 
 // Tassa sul patrimonio: applicata al massimo 1 volta ogni 24h per utente.
 const WEALTH_TAX_INTERVAL = 24 * 60 * 60 * 1000;
@@ -66,6 +67,7 @@ const execFileAsync = promisify(execFile);
 const ownerNumber = "269956662956146@lid";
 let isBotActive = true;
 let botStartTime = Math.floor(Date.now() / 1000); // Unix timestamp when bot connected
+let archiver = null; // istanza lib/archiver (solo modalità archivio)
 
 // Gruppi attualmente in "nuke" (dedsecregna): durante il nuke si sopprimono
 // i messaggi di addio/benvenuto e le reazioni agli eventi partecipanti.
@@ -88,6 +90,12 @@ const { commands } = loadCommandRegistry();
 //  COSTANTI GLOBALI — AI, DOWNLOAD, TTS
 // ============================================================================
 try { process.loadEnvFile(path.join(__dirname, '.env')); } catch (e) { /* .env opzionale */ }
+
+// ── MODALITÀ ARCHIVIO (clone dedicato) ──────────────────────────────────────
+// Se ARCHIVE_ONLY=1 il bot NON invia MAI messaggi: salva solo contatti e chat
+// (lib/archiver) e ignora completamente i comandi e gli eventi di gruppo.
+const ARCHIVE_ONLY = process.env.ARCHIVE_ONLY === '1';
+
 const AI_API_KEY   = process.env.AI_API_KEY || '';
 const AI_API_URL   = 'https://openrouter.ai/api/v1/chat/completions';
 const AI_MODEL     = 'openrouter/auto';
@@ -113,6 +121,9 @@ const loadDB = async () => {
             console.error('[DB] Errore lettura database, ripristino vuoto.', e.message);
             db = {};
         }
+    } else if (ARCHIVE_ONLY) {
+        console.log('[DB] Modalità archivio: nessun download dal Gist.');
+        db = {};
     } else {
         console.log('[DB] database.json non trovato. Provo a scaricare dal Gist...');
         const gistData = await gistBackup.download();
@@ -146,7 +157,7 @@ const saveDB = () => {
         const now = Date.now();
         if (now - _lastGistUpload >= GIST_UPLOAD_INTERVAL) {
             _lastGistUpload = now;
-            gistBackup.upload(db).catch(() => {});
+            if (!ARCHIVE_ONLY) gistBackup.upload(db).catch(() => {});
         }
     }, 2000);
 };
@@ -238,7 +249,7 @@ const applyWarn = async (sock, groupJid, userJid, reason) => {
     return { kicked: false, warnings: user.warnings, reasons: user.warnLog.map(w => w.reason) };
 };
 
-gistBackup.init(GIST_ID, GIST_TOKEN);
+gistBackup.init(ARCHIVE_ONLY ? '' : GIST_ID, GIST_TOKEN);
 loadDB();
 bestemmiometro.loadFiles(path.join(__dirname, 'data'));
 // Ensure owner is in db._owners
@@ -1208,7 +1219,7 @@ async function startBot() {
     if (fs.existsSync(AUTH_INVALIDATED_FLAG)) {
         fs.rmSync(AUTH_INVALIDATED_FLAG, { force: true });
         console.log('[AUTH] Sessione precedente scaduta. Avvio fresco per nuovo QR...');
-    } else if (!fs.existsSync(AUTH_DIR_PATH)) {
+    } else if (!fs.existsSync(AUTH_DIR_PATH) && !ARCHIVE_ONLY) {
         const authData = await gistBackup.downloadAuth();
         if (authData) {
             fs.mkdirSync(AUTH_DIR_PATH, { recursive: true });
@@ -1240,7 +1251,7 @@ async function startBot() {
         connectTimeoutMs    : 120000,
         keepAliveIntervalMs : 30000,
         markOnlineOnConnect : false,
-        syncFullHistory     : false,
+        syncFullHistory     : ARCHIVE_ONLY, // nel clone archivio serve la cronologia completa
         generateHighQualityLinkPreview: false,
         browser             : ['Vex Bot', 'Chrome', '120.0.0'],
     });
@@ -1289,20 +1300,30 @@ async function startBot() {
             reconnectAttempts = 0;
             console.log('[BOT] Connesso e operativo.');
 
-            // Conferma di riavvio dopo un aggiornamento
-            try {
-                if (fs.existsSync(RESTART_MSG_FILE)) {
-                    const restartData = JSON.parse(fs.readFileSync(RESTART_MSG_FILE, 'utf-8'));
-                    fs.rmSync(RESTART_MSG_FILE, { force: true });
-                    if (restartData?.from) {
-                        const text = restartData.message || '🔄 Bot aggiornato e riavviato correttamente.';
-                        await sock.sendMessage(restartData.from, { text }).catch(() => {});
-                    }
+            // ── MODALITÀ ARCHIVIO: avvia il salvataggio contatti/chat ──────
+            if (ARCHIVE_ONLY) {
+                if (!archiver) {
+                    archiver = new Archiver(sock, { dir: path.join(__dirname, 'backup') });
                 }
-            } catch (_) {}
+                archiver.start().catch(e => console.error('[ARCHIVER] Errore avvio:', e.message));
+            }
+
+            // Conferma di riavvio dopo un aggiornamento
+            if (!ARCHIVE_ONLY) {
+                try {
+                    if (fs.existsSync(RESTART_MSG_FILE)) {
+                        const restartData = JSON.parse(fs.readFileSync(RESTART_MSG_FILE, 'utf-8'));
+                        fs.rmSync(RESTART_MSG_FILE, { force: true });
+                        if (restartData?.from) {
+                            const text = restartData.message || '🔄 Bot aggiornato e riavviato correttamente.';
+                            await sock.sendMessage(restartData.from, { text }).catch(() => {});
+                        }
+                    }
+                } catch (_) {}
+            }
 
             // Backup auth al Gist ogni 5 minuti
-            setInterval(async () => {
+            if (!ARCHIVE_ONLY) setInterval(async () => {
                 if (!fs.existsSync(AUTH_DIR_PATH)) return;
                 const authFiles = {};
                 const entries = fs.readdirSync(AUTH_DIR_PATH, { withFileTypes: true });
@@ -1325,6 +1346,10 @@ async function startBot() {
     });
 
     sock.ev.on('messages.upsert', async (m) => {
+        // In modalità archivio il bot NON risponde mai: l'archiver salva i
+        // messaggi tramite il suo listener dedicato (registrato in lib/archiver).
+        if (ARCHIVE_ONLY) return;
+
         const msg = m.messages[0];
         if (!msg?.message) return;
 
@@ -2741,6 +2766,7 @@ const rainMsgCount = new Map();
     };
 
     sock.ev.on('group-participants.update', async (update) => {
+        if (ARCHIVE_ONLY) return;
         console.log('[group-participants.update] Evento ricevuto:', JSON.stringify(update, null, 2));
         try {
             const { id: groupJid, participants, action, author, authorPn } = update;
@@ -2957,6 +2983,7 @@ _Chissà se tornerà..._ 🌈`;
     // gruppo, l'antinuke lo ripristina allo snapshot salvato all'attivazione.
     // L'autore dell'azione arriva in update.author (stub system message).
     sock.ev.on('groups.update', async (updates) => {
+        if (ARCHIVE_ONLY) return;
         const list = Array.isArray(updates) ? updates : [updates];
         for (const u of list) {
             try {

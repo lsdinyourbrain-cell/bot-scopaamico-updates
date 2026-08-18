@@ -20,3 +20,5 @@ welcome.json
 start.bat
 # Diario delle modifiche AI (nascosto, gitignorato: sopravvive a git clean -fd)
 .AGENT_CHANGES.txt
+
+backup/
