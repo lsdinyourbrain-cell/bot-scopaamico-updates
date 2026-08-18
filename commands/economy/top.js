@@ -1,30 +1,72 @@
 'use strict';
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  TOP — Vex Bot
+//  .top → classifica dei 5 membri più attivi del gruppo (tabella).
+//  .top <n> → mostra i primi n (max 20).
+//  I gruppi esclusi con .escludi non mostrano la classifica.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const { renderTable } = require('../../lib/table');
+
 module.exports = {
     name: 'top',
-    aliases: [],
-    description: "Esegue il comando .top.",
+    aliases: ['topattivi', 'attivi', 'classifica'],
+    description: "Classifica dei membri più attivi del gruppo: .top oppure .top <n> (max 20).",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { textArgs, from, isGroup, reply, services } = context;
+        const { db, dispOf } = services;
 
+        if (!isGroup) return reply("❌ Comando disponibile solo nei gruppi.");
+        if (db._escludi?.[from]) {
+            return reply(
+`🚫 *CLASSIFICA DISATTIVATA*
+━━━━━━━━━━━━━━━━━━
+▸ Questo gruppo è escluso dalle
+  classifiche (con .escludi).
+▸ Un admin può riammetterlo con
+  \`.escludi off\`.
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
+        }
 
-            if (!isGroup) return reply("❌ Comando disponibile solo nei gruppi.");
-            const chatUsers = db[from] || {};
-            const sorted = Object.entries(chatUsers)
-                .filter(([jid, data]) => jid.includes('@') && data && typeof data === 'object')
-                .sort((a, b) => (b[1].msgCount || 0) - (a[1].msgCount || 0))
-                .slice(0, 5);
+        const want = parseInt(String(textArgs || '').trim(), 10);
+        const limit = Number.isInteger(want) && want > 0 ? Math.min(want, 20) : 5;
 
-            if (sorted.length === 0) return reply("📭 Nessun dato disponibile.");
+        const chatUsers = db[from] || {};
+        const sorted = Object.entries(chatUsers)
+            .filter(([jid, data]) => jid.includes('@') && data && typeof data === 'object' && (data.msgCount || 0) > 0)
+            .sort((a, b) => (b[1].msgCount || 0) - (a[1].msgCount || 0))
+            .slice(0, limit);
 
-            let txt = `🏆 *_TOP 5 ATTIVI_*\n━━━━━━━━━━━━━━\n`;
-            sorted.forEach(([jid, data], i) => {
-                const medals = ['🥇', '🥈', '🥉', '４', '５'];
-                txt += `▸ ${medals[i]} @${jid.split('@')[0]}: _${data.msgCount || 0} msg_\n`;
-            });
-            txt += `━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
-            await sock.sendMessage(from, { text: txt, mentions: sorted.map(([jid]) => jid) });
+        if (sorted.length === 0) return reply(
+`📭 *NESSUNA ATTIVITÀ*
+━━━━━━━━━━━━━━━━━━
+▸ Nessun dato disponibile.
+▸ Scrivi in chat e torna qui:
+  la tua attività verrà contata!
+━━━━━━━━━━━━━━━━━━
+◈ _Vex Bot_`);
+
+        const rows = sorted.map(([jid, data], i) => [
+            String(i + 1),
+            '@' + dispOf(jid),
+            String(data.msgCount || 0),
+        ]);
+
+        const txt =
+`🏆 *TOP ${limit} ATTIVI* 🏆
+${renderTable([
+    { header: 'NO', align: 'r', max: 3 },
+    { header: 'UTENTE', align: 'l', max: 18 },
+    { header: 'MSG', align: 'r', max: 7 },
+], rows)}
+▸ \`.top 10\` per la classifica estesa.`;
+
+        await sock.sendMessage(from, {
+            text: txt,
+            mentions: sorted.map(([jid]) => jid).slice(0, 10),
+        }, { quoted: msg }).catch(() => reply(txt));
     },
 };

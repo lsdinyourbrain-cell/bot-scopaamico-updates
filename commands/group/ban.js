@@ -1,31 +1,43 @@
 'use strict';
 
 const { toDecorated } = require('../../lib/font');
+const { dispOf, resolveJid } = require('../../lib/jid');
 
 module.exports = {
     name: 'ban',
     aliases: ['banna', 'espelli'],
-    description: "Esegue il comando .ban.",
+    description: "Rimuove un utente dal gruppo: .ban @utente.",
 
     async run(sock, msg, args, context) {
-        const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { from, sender, isGroup, isSenderAdmin, isBotAdmin, targetJid, reply, services } = context;
+        const { db, logGroupEvent, sameJid, isOwnerJid, getCachedGroupMeta, sendButtons } = services;
 
+        if (!isGroup) return reply("⚠️ _[uso]:_ questo comando funziona solo nei gruppi.");
+        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ questo comando è per gli admin del gruppo.");
+        if (!isBotAdmin) return reply("⚠️ _[uso]:_ prima rendimi amministratore, così posso farlo.");
+        if (!targetJid) return reply("⚠️ _[uso]:_ tagga la persona da rimuovere.");
+        if (sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ non puoi rimuovere te stesso/a con il bot.");
+        if (isOwnerJid(targetJid, sock, db, null)) return reply("⛔ Non posso rimuovere l'owner del bot.");
 
-            if (!isGroup) return reply("⚠️ _[uso]:_ questo comando funziona solo nei gruppi.");
-            if (!isSenderAdmin) return reply("⚠️ _[uso]:_ questo comando è per gli admin del gruppo.");
-            if (!isBotAdmin) return reply("⚠️ _[uso]:_ prima rendimi amministratore, così posso farlo.");
-            if (!targetJid) return reply("⚠️ _[uso]:_ tagga la persona da rimuovere.");
-            if (sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ non puoi rimuovere te stesso/a con il bot.");
-            try {
-                await sock.groupParticipantsUpdate(from, [targetJid], 'remove');
-                await sock.sendMessage(from, { text: `👋 ${toDecorated('BAN', 'mono', '⏣')}
-━━━━━━━━━━━━━━
-▸ @${targetJid.split('@')[0]} è stato/a *rimosso/a* dal gruppo.
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`, mentions: [targetJid] });
-            } catch (_) {
-                await reply("⚠️ _[uso]:_ non riesco a rimuovere questa persona. Controlla i permessi del bot.");
-            }
+        try {
+            let meta = null;
+            try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
+            const tgtPn = resolveJid(targetJid, meta);
+            const useJid = tgtPn || targetJid;
+            const short = dispOf(targetJid, tgtPn);
+
+            await sock.groupParticipantsUpdate(from, [useJid], 'remove');
+            logGroupEvent(from, 'ban', sender, null, targetJid, 'rimosso dal gruppo');
+
+            await sendButtons(sock, from,
+                `👋 ${toDecorated('BAN', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                [{ label: '📜 Registro modifiche', id: 'registro' }], msg)
+                .catch(() => sock.sendMessage(from, {
+                    text: `👋 ${toDecorated('BAN', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    mentions: [useJid],
+                }, { quoted: msg }));
+        } catch (_) {
+            await reply("⚠️ _[uso]:_ non riesco a rimuovere questa persona. Controlla i permessi del bot.");
+        }
     },
 };

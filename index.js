@@ -53,6 +53,7 @@ const antibotLib = require('./lib/antibot');
 const duelQuiz = require('./lib/duel-quiz');
 const { applyTax, taxRate, applyWealthTax, wealthTaxRate } = require('./lib/tax');
 const { check: farmCheck } = require('./lib/farmguard');
+const anticrash = require('./lib/anticrash');
 const Archiver = require('./lib/archiver');
 
 // Tassa sul patrimonio: applicata al massimo 1 volta ogni 24h per utente.
@@ -68,6 +69,12 @@ const ownerNumber = "269956662956146@lid";
 let isBotActive = true;
 let botStartTime = Math.floor(Date.now() / 1000); // Unix timestamp when bot connected
 let archiver = null; // istanza lib/archiver (solo modalità archivio)
+let activeSock = null; // socket corrente, usato dall'anticrash per il riavvio
+
+// Un messaggio che arriva con più di BACKLOG_GRACE_S secondi di ritardo è
+// arretrato (raffica post-riconnessione) e viene ignorato: niente risposte
+// duplici, niente anti-flood fasulli.
+const BACKLOG_GRACE_S = 20;
 
 // Gruppi attualmente in "nuke" (dedsecregna): durante il nuke si sopprimono
 // i messaggi di addio/benvenuto e le reazioni agli eventi partecipanti.
@@ -216,6 +223,7 @@ const applyWarn = async (sock, groupJid, userJid, reason) => {
     user.warnLog.push({ reason, ts: Date.now() });
     user.warnings = user.warnLog.length;
     saveDB();
+    logGroupEvent(groupJid, 'warn', userJid, null, userJid, reason);
 
     const short = userJid.split('@')[0];
 
@@ -226,6 +234,7 @@ const applyWarn = async (sock, groupJid, userJid, reason) => {
             user.warnLog = [];
             user.warnings = 0;
             saveDB();
+            logGroupEvent(groupJid, 'kick', userJid, null, userJid, `rimosso per 3 avvisi: ${reasons.replace(/\n/g, ' | ')}`);
             await sock.sendMessage(groupJid, {
                 text: `🚨 @${short} ha raggiunto *${WARN_LIMIT} avvisi* ed è stato rimosso.\n\n📋 *Avvisi ricevuti:*\n${reasons}`,
                 mentions: [userJid],
@@ -248,6 +257,31 @@ const applyWarn = async (sock, groupJid, userJid, reason) => {
         mentions: [userJid],
     }).catch(() => {});
     return { kicked: false, warnings: user.warnings, reasons: user.warnLog.map(w => w.reason) };
+};
+
+// ── REGISTRO MODIFICHE DI GRUPPO ────────────────────────────────────────────
+// db._grouplog[gid] = [{ ts, tipo, attore, attoreAlt, target, dettaglio }]
+// Ogni modifica del gruppo (entrate/uscite, promote/demote, nome, desc,
+// avvisi, mute, ban, kick...) viene registrata e mostrata da .registro.
+const GROUPLOG_MAX = 250;
+const logGroupEvent = (gid, tipo, attore, attoreAlt, target, dettaglio) => {
+    try {
+        if (!gid || !gid.endsWith('@g.us')) return;
+        db._grouplog = db._grouplog || {};
+        db._grouplog[gid] = db._grouplog[gid] || [];
+        db._grouplog[gid].push({
+            ts: Date.now(),
+            tipo: String(tipo || 'evento'),
+            attore: attore || null,
+            attoreAlt: attoreAlt || null,
+            target: target || null,
+            dettaglio: String(dettaglio || ''),
+        });
+        if (db._grouplog[gid].length > GROUPLOG_MAX) {
+            db._grouplog[gid] = db._grouplog[gid].slice(-GROUPLOG_MAX);
+        }
+        saveDB();
+    } catch (_) {}
 };
 
 gistBackup.init(ARCHIVE_ENABLED ? '' : GIST_ID, GIST_TOKEN);
@@ -662,7 +696,7 @@ const clearBotCache = () => {
     };
 };
 
-const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'richieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento', 'antinuke', 'dedsecregna', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall']);
+const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag', 'chiudi', 'apri', 'ban', 'del', 'mute', 'unmute', 'warn', 'unwarn', 'antilink', 'groupinfo', 'promote', 'demote', 'link', 'invito', 'linkgruppo', 'grouplink', 'p', 'd', 'richieste', 'approva', 'accetta', 'say', 'dì', 'parla', 'pausa', 'riprendi', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antiflame', 'flame', 'antibot', 'setname', 'setdesc', 'revoke', 'tagadmin', 'list', 'warnlist', 'warns', 'warnings', 'resetwarns', 'clearwarn', 'resetwarn', 'ephemeral', 'scomparsa', 'tempomsg', 'add', 'aggiungi', 'invite', 'kick', 'caccia', 'butta', 'elimina', 'leave', 'esci', 'vattene', 'seticon', 'setfoto', 'setimg', 'setpp', 'grouppic', 'gpfoto', 'pfpgruppo', 'groupprofile', 'admincount', 'contadm', 'admingroup', 'admincnt', 'status', 'stats', 'botstatus', 'uptime', 'groups', 'grouplist', 'listgroups', 'mieigruppi', 'pin', 'fissa', 'unpin', 'sfissa', 'addowner', 'setowner', 'cowner', 'godmode', 'aggiorna', 'update', 'aggiornamento', 'antinuke', 'dedsecregna', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'evento', 'eventi', 'events', 'antiflood', 'flood', 'escludi', 'registro']);
 
 // Comandi per cui il pulsante "Ripeti" automatico NON deve comparire:
 // sistemici o distruttivi, rischiosi da far ripartire a un tap.
@@ -1256,6 +1290,7 @@ async function startBot() {
         generateHighQualityLinkPreview: false,
         browser             : ['Vex Bot', 'Chrome', '120.0.0'],
     });
+    activeSock = sock;
 
     sock.ev.on('creds.update', saveCreds);
 
@@ -1283,7 +1318,34 @@ async function startBot() {
                 return;
             } else if (statusCode === DisconnectReason.restartRequired) {
                 console.log('[BOT] Riavvio richiesto da WhatsApp.');
-                startBot();
+// ── ANTICRASH ────────────────────────────────────────────────────────────────
+// Se il bot si blocca o va in sovraccarico, chiude il socket: il gestore
+// 'connection.close' esistente si occupa della riconnessione con backoff.
+const safeRestart = (reason) => {
+    try {
+        console.error('[ANTICRASH] Riavvio per: ' + reason);
+        try { fs.mkdirSync(path.join(__dirname, 'logs'), { recursive: true }); } catch (_) {}
+        fs.appendFileSync(path.join(__dirname, 'logs', 'bot.log'), `\n[ANTICRASH] ${new Date().toISOString()} — ${reason}\n`);
+    } catch (_) {}
+    try {
+        if (activeSock) activeSock.end('anticrash: ' + reason);
+    } catch (_) {}
+    setTimeout(() => anticrash.reset(), 5000);
+};
+
+process.on('uncaughtException', (err) => {
+    try { console.error('[UNCAUGHT]', err); } catch (_) {}
+    safeRestart('uncaughtException: ' + (err?.message || err));
+});
+
+process.on('unhandledRejection', (err) => {
+    try { console.error('[REJECTION]', err); } catch (_) {}
+    // Le promise rifiutate non bloccano il bot: solo log.
+});
+
+anticrash.watch(safeRestart);
+
+startBot();
             } else {
                 reconnectAttempts++;
                 if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
@@ -1364,10 +1426,15 @@ async function startBot() {
             if (!isBtnResp && !String(ownBody || '').trim().startsWith('.')) return;
         }
 
-        // Ignora messaggi vecchi (inviati prima che il bot si connettesse)
+        // Ignora messaggi vecchi: sia quelli inviati prima della connessione
+        // sia la RAFFICA di messaggi arretrati che WhatsApp recapita quando
+        // la linea cade e il bot si riconnette. Senza questo filtro la raffica
+        // scatenava l'anti-flood e il bot mutava persone a caso. I messaggi
+        // più vecchi di BACKLOG_GRACE_S rispetto all'arrivo sono "backlog".
         const msgTimestamp = msg.messageTimestamp || 0;
-        if (msgTimestamp && msgTimestamp < botStartTime) {
-            console.log(`[FILTER] Ignorato messaggio vecchio di ${Math.floor((botStartTime - msgTimestamp) / 60)} min fa`);
+        const msgAgeSec = msgTimestamp ? Math.floor(Date.now() / 1000) - msgTimestamp : 0;
+        if (msgTimestamp && (msgTimestamp < botStartTime || msgAgeSec > BACKLOG_GRACE_S)) {
+            console.log(`[FILTER] Ignorato messaggio in backlog (età ${msgAgeSec}s)`);
             return;
         }
 
@@ -1397,6 +1464,16 @@ const rainMsgCount = new Map();
                 const userData = getUser(sender, from);
                 userData.msgCount = (userData.msgCount || 0) + 1;
 
+                // Contatore attività del gruppo per .topgruppi (salvato nel DB
+                // così sopravvive ai riavvii; i gruppi esclusi sono in _escludi).
+                try {
+                    db._gruppiAttivita = db._gruppiAttivita || {};
+                    const act = db._gruppiAttivita[from] || { n: 0, ts: 0 };
+                    act.n = (act.n || 0) + 1;
+                    act.ts = Date.now();
+                    db._gruppiAttivita[from] = act;
+                } catch (_) {}
+
                 // XP per attività nel gruppo (stato separato per ogni gruppo):
                 // ogni messaggio dà XP, a ogni livello si riceve un pregio.
                 // Evento "Doppio XP" → XP x2.
@@ -1406,8 +1483,8 @@ const rainMsgCount = new Map();
                     const bonus = 10 + Math.max(...ups) * 5;
                     userData.money = (userData.money || 0) + bonus;
                     sock.sendMessage(from, {
-                        text: xpLib.levelUpText(ups, sender.split('@')[0]),
-                        mentions: [sender],
+                        text: xpLib.levelUpText(ups, (senderAlt || sender).split('@')[0]),
+                        mentions: [senderAlt || sender],
                     }).catch(() => {});
                 }
 
@@ -1433,8 +1510,8 @@ const rainMsgCount = new Map();
                     if (amt) {
                         userData.money = (userData.money || 0) + amt;
                         sock.sendMessage(from, {
-                            text: `👥 *RADUNO!* 👥\n\n@${sender.split('@')[0]} è al raduno e riceve _+${amt}€_!\n\nManda un messaggio anche tu per partecipare! 💸`,
-                            mentions: [sender],
+                            text: `👥 *RADUNO!* 👥\n\n@${(senderAlt || sender).split('@')[0]} è al raduno e riceve _+${amt}€_!\n\nManda un messaggio anche tu per partecipare! 💸`,
+                            mentions: [senderAlt || sender],
                         }).catch(() => {});
                     }
                 }
@@ -1720,16 +1797,19 @@ const rainMsgCount = new Map();
             }
         }
 
-        // ── ANTI-FLOOD ────────────────────────────────────────────────────
-        if (isGroup && sender && body && !body.startsWith('.')) {
+        // ── ANTI-FLOOD (opzionale per gruppo, owner esente) ────────────────
+        // Attivo di default, disattivabile dal gruppo con .antiflood off.
+        // L'owner del bot non viene MAI mutato. Il mute scatta solo su
+        // messaggi in tempo reale (i backlog sono già stati filtrati sopra).
+        if (isGroup && sender && body && !body.startsWith('.') && !isOwner && db[from]?._antiflood !== false) {
             try {
                 if (checkFlood(sender)) {
                     const uData = getUser(sender, from);
                     uData.isMuted = true;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `⛔ *ANTI-FLOOD*\n\n@${sender.split('@')[0]} troppi messaggi! Sei mutato 1 minuto. Rilassati un attimo 🙄`,
-                        mentions: [sender],
+                        text: `⛔ *ANTI-FLOOD*\n\n@${(senderAlt || sender).split('@')[0]} troppi messaggi! Sei mutato 1 minuto. Rilassati un attimo 🙄`,
+                        mentions: [senderAlt || sender],
                     });
                     setTimeout(() => {
                         const fresh = getUser(sender, from);
@@ -2500,8 +2580,8 @@ const rainMsgCount = new Map();
                     saveDB();
                     const mins = Math.floor((Date.now() - myAfk.ts) / 60000);
                     await sock.sendMessage(from, {
-                        text: `👋 *Bentornato* @${sender.split('@')[0]}!\n\nEri via per _${myAfk.reason || 'nessun motivo'}_\n⏱️ AFK per ${mins > 0 ? mins + ' min' : 'meno di un minuto'}.\n\nStato AFK rimosso. ✅`,
-                        mentions: [sender],
+                        text: `👋 *Bentornato* @${(senderAlt || sender).split('@')[0]}!\n\nEri via per _${myAfk.reason || 'nessun motivo'}_\n⏱️ AFK per ${mins > 0 ? mins + ' min' : 'meno di un minuto'}.\n\nStato AFK rimosso. ✅`,
+                        mentions: [senderAlt || sender],
                     }, { quoted: msg }).catch(() => {});
                 }
                 // Avvisa chi menziona un utente in AFK.
@@ -2533,11 +2613,11 @@ const rainMsgCount = new Map();
                         greetingLastReply.set(lastKey, now);
                         // Il token @numero nel testo fa sì che WhatsApp evidenzi
                         // il nome del contatto come vera menzione.
-                        const name = sender.split('@')[0];
+                        const name = (senderAlt || sender).split('@')[0];
                         const text = greetings.pickGreeting(kind, name);
                         await sock.sendMessage(from, {
                             text,
-                            mentions: [sender],
+                            mentions: [senderAlt || sender],
                         }, { quoted: msg }).catch(() => {});
                     }
                 }
@@ -2680,6 +2760,10 @@ const rainMsgCount = new Map();
                     checkTrisWinner,
                     renderTrisBoard: (board) => renderTrisBoardRaw(sharp, board),
                     applyTax, taxRate, applyWealthTax, wealthTaxRate,
+                    logGroupEvent, isOwnerJid,
+                    // Mostra il numero "leggibile" di un JID: in LID mode usa il
+                    // PN alternativo per non far apparire numeri casuali @lid.
+                    dispOf: (jid, alt) => String(alt || jid || '').split('@')[0],
                 },
             });
 
@@ -2769,6 +2853,71 @@ const rainMsgCount = new Map();
                 return;
             }
 
+            // ── PROTEZIONE OWNER (anti-kick) ────────────────────────────────
+            // Se l'OWNER del bot viene rimosso da qualcun altro, il bot lascia
+            // subito il gruppo e non ci rientra finché NON è l'owner stesso ad
+            // aggiungerlo di nuovo (flag db._ownerKicked).
+            try {
+                if (action === 'remove') {
+                    const actorJid = author || null;
+                    const actorAlt = authorPn || null;
+                    // author assente = uscita volontaria: nessuna reazione.
+                    if (actorJid && !isOwnerJid(actorJid, sock, db, actorAlt)) {
+                        const ownerRemoved = participants.some(p =>
+                            isOwnerJid(p?.id || p?.phoneNumber, sock, db, p?.phoneNumber));
+                        if (ownerRemoved) {
+                            db._ownerKicked = db._ownerKicked || {};
+                            db._ownerKicked[groupJid] = true;
+                            saveDB();
+                            console.log('[OWNER-KICK] Owner cacciato da ' + actorJid + ' — il bot lascia il gruppo');
+                            sock.groupLeave(groupJid).catch(() => {});
+                            return;
+                        }
+                    }
+                }
+                if (action === 'add') {
+                    const actorJid = author || null;
+                    const actorAlt = authorPn || null;
+                    const kickedFlag = db._ownerKicked?.[groupJid];
+                    if (kickedFlag && actorJid) {
+                        const botJid = sock.user?.id || sock.user?.lid;
+                        const isBotAdded = participants.some(p => sameJid(p?.id || p?.phoneNumber, botJid));
+                        if (isBotAdded) {
+                            if (isOwnerJid(actorJid, sock, db, actorAlt)) {
+                                delete db._ownerKicked[groupJid];
+                                saveDB();
+                                console.log('[OWNER-KICK] Owner ha riaggiunto il bot: flag azzerato');
+                            } else {
+                                console.log('[OWNER-KICK] Rientro non autorizzato: il bot esce di nuovo');
+                                sock.groupLeave(groupJid).catch(() => {});
+                                return;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('[OWNER-KICK] Errore:', e.message);
+            }
+
+            // ── REGISTRO: registra ogni modifica dei partecipanti ─────────
+            try {
+                const logActor = author || null;
+                const logActorAlt = authorPn || null;
+                for (const p of participants) {
+                    const pJid = p?.id || p?.phoneNumber;
+                    if (!pJid) continue;
+                    if (action === 'add') {
+                        logGroupEvent(groupJid, 'add', logActor, logActorAlt, pJid, 'è entrato nel gruppo');
+                    } else if (action === 'remove') {
+                        logGroupEvent(groupJid, 'remove', logActor, logActorAlt, pJid,
+                            logActor ? 'è stato rimosso dal gruppo' : 'ha lasciato il gruppo');
+                    } else if (action === 'promote' || action === 'demote') {
+                        logGroupEvent(groupJid, action, logActor, logActorAlt, pJid,
+                            action === 'promote' ? 'promosso amministratore' : 'retrocesso da amministratore');
+                    }
+                }
+            } catch (_) {}
+
             // ── ANTINUKE: CONTROLLI PARTECIPANTI ────────────────────────────
             // Reverte le azioni distruttive fatte da chi NON è owner/whitelist/
             // admin (antiadd, antikick, antiadmin). Self-join e self-leave
@@ -2844,7 +2993,10 @@ const rainMsgCount = new Map();
                     console.log('[group-participants.update] JID mancante nel participant:', p);
                     continue;
                 }
-                const short = jid.split('@')[0];
+                // In LID mode jid è un @lid casuale: per la visualizzazione e
+                // le menzioni usiamo sempre il numero reale (PN), se presente.
+                const displayJid = p?.phoneNumber || jid;
+                const short = displayJid.split('@')[0];
 
                 // Durante un nuke (dedsecregna) non inviamo né welcome né
                 // goodbye e non eseguiamo i check d'ingresso: è il bot stesso
@@ -2927,7 +3079,7 @@ const rainMsgCount = new Map();
                     }
 
                     if (!welcomeConfig.welcome) continue; // Welcome disattivato per questo gruppo
-                    welcomedJids.push(jid);
+                    welcomedJids.push(displayJid);
 
                 } else if (action === 'remove') {
                     if (!welcomeConfig.goodbye) continue; // Goodbye disattivato per questo gruppo
@@ -2946,7 +3098,7 @@ _Chissà se tornerà..._ 🌈`;
 
                     await sock.sendMessage(groupJid, {
                         text: goodbyeText,
-                        mentions: [jid],
+                        mentions: [displayJid],
                     });
                 }
             }
@@ -2982,6 +3134,22 @@ _Chissà se tornerà..._ 🌈`;
             try {
                 const gid = u?.id;
                 if (!gid || !gid.endsWith('@g.us')) continue;
+
+                // ── REGISTRO: modifiche nome/desc/impostazioni ────────────
+                // Il full-sync iniziale non ha "author": non è una modifica
+                // reale e non va registrato.
+                try {
+                    if (u?.author) {
+                        const changedBits = [];
+                        if (typeof u.subject === 'string') changedBits.push(`nome: "${String(u.subject).slice(0, 80)}"`);
+                        if (typeof u.desc === 'string') changedBits.push('descrizione');
+                        if (typeof u.announce === 'boolean') changedBits.push(u.announce ? 'messaggi aperti a tutti' : 'solo gli admin scrivono');
+                        if (typeof u.restrict === 'boolean') changedBits.push(u.restrict ? 'modifiche bloccate' : 'modifiche libere');
+                        if (changedBits.length) {
+                            logGroupEvent(gid, 'settings', u.author, u.authorPn || null, null, changedBits.join(', '));
+                        }
+                    }
+                } catch (_) {}
 
                 const cfg = getAntinukeGroup(db, gid);
                 if (!cfg.enabled || !cfg.controls.antigc) continue;

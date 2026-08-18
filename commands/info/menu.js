@@ -18,6 +18,10 @@ const pkg = require('../../package.json');
 // Riga decorativa: solo come separatore, mai per allineare (niente glitch).
 const SEP = '━━━━━━━━━━━━━━━━━━';
 
+// Cornice "a stelle" per il nuovo look del menu (niente box-drawing: si
+// disallinea con le emoji a larghezza variabile su WhatsApp).
+const STAR = '✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦';
+
 // Riga comando: `{emoji} .{cmd} — {hint}`
 const L = (emoji, cmd, hint = '') =>
     `${emoji} \`.${cmd}\`${hint ? ` — ${hint}` : ''}`;
@@ -197,6 +201,7 @@ const SECTIONS = [
             ['🔄', 'converti', 'unità'],
             ['⏳', 'timer', 'timer'],
             ['🌙', 'afklist', ''],
+            ['📜', 'registro', 'modifiche gruppo'],
             ['📘', 'aiuto', 'guida'],
         ],
     },
@@ -295,6 +300,9 @@ const SECTIONS = [
             ['📈', 'p', 'promuovi (rapido)'],
             ['📉', 'd', 'togli admin (rapido)'],
             ['⚡', 'evento', 'gestisci eventi'],
+            ['📜', 'registro', 'modifiche gruppo'],
+            ['🔁', 'antiflood', 'anti-flood on/off'],
+            ['🚫', 'escludi', 'fuori dalle top'],
         ],
     },
     {
@@ -318,6 +326,7 @@ const SECTIONS = [
             ['🧹', 'kickall', 'espelli tutti'],
             ['👑', 'promoteall', 'promuovi tutti'],
             ['⬇️', 'demoteall', 'togli admin a tutti'],
+            ['🚫', 'escludi', 'fuori dalle top'],
         ],
     },
     {
@@ -325,6 +334,7 @@ const SECTIONS = [
         items: [
             ['📊', 'status', 'stato del bot'],
             ['📦', 'groups', 'gruppi del bot'],
+            ['🏆', 'topgruppi', 'gruppi più attivi'],
             ['📋', 'infobot', 'info sul bot'],
             ['🧭', 'menu', 'questo menu'],
         ],
@@ -403,25 +413,26 @@ const TIPS = [
 
 // ── SCHERMATE ────────────────────────────────────────────────────────────────
 
-// HOME: contatori, istruzioni, suggerimento casuale.
+// HOME: contatori, istruzioni, suggerimento casuale — nuovo look ✦
 const homeScreen = (pushName, timeStr, dateStr, stats, tip) => {
     const name = (pushName || 'Utente').slice(0, 20);
     return (
-`🌟 *MENU* 🌟
-${SEP}
+`${STAR}
+      🌟 *VEX BOT* 🌟
+${STAR}
 👤 ${name}
 🕐 ${timeStr} · 📅 ${dateStr}
 📊 ${stats.cmds} comandi · 🔖 v${stats.version}
 ⏱ online da ${stats.uptime}
-${SEP}
-Apri una sezione con il bottone
-📂 Sezioni, oppure scrivi
-\`.menu giochi\` o \`.menu 5\`.
-
-Premi 📖 Guida per ricevere il
-file con tutti i comandi spiegati.
-${SEP}
-💡 ${tip}`);
+${STAR}
+📂 *Sezioni*: apri con il bottone
+   oppure scrivi \`.menu giochi\`
+   o \`.menu 5\`.
+📖 *Guida*: il file con tutti i
+   comandi spiegati.
+${STAR}
+💡 ${tip}
+${STAR}`);
 };
 
 // Elenco numerato di tutte le sezioni accessibili all'utente.
@@ -444,11 +455,13 @@ ${SEP}
 const sectionScreen = (section, index, total) => {
     const rows = section.items.map(([e, cmd, hint]) => L(e, cmd, hint)).join('\n');
     return (
-`${section.emoji} *${section.title}* · ${index + 1}/${total}
-${SEP}
+`${STAR}
+${section.emoji} *${section.title}* · ${index + 1}/${total}
+${STAR}
 ${rows}
-${SEP}
-💡 Dettagli: \`.aiuto <comando>\``);
+${STAR}
+💡 Dettagli: \`.aiuto <comando>\`
+${STAR}`);
 };
 
 module.exports = {
