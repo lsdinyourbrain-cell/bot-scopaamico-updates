@@ -1292,6 +1292,36 @@ async function startBot() {
     });
     activeSock = sock;
 
+    // ── RISOLUZIONE MENTIONS IN LID MODE ──────────────────────────────────
+    // In modalità LID il JID di un partecipante è un @lid casuale che
+    // WhatsApp NON riconosce come menzione: i tag non partono più.
+    // Prima di ogni invio con `mentions`, risolviamo ogni @lid nel PN reale
+    // del partecipante (groupMetadata.phoneNumber) usando la cache condivisa.
+    const resolveLidMentions = async (jid, content) => {
+        try {
+            if (!content || !Array.isArray(content.mentions) || !content.mentions.length) return content;
+            if (!String(jid).endsWith('@g.us')) return content;
+            if (!content.mentions.some(m => String(m).toLowerCase().endsWith('@lid'))) return content;
+            const meta = await getCachedGroupMeta(sock, jid);
+            const map = new Map();
+            for (const p of meta?.participants || []) {
+                const key = String(p?.id || p?.jid || '').toLowerCase().replace(/:\d+(?=@)/, '');
+                if (key && p?.phoneNumber) map.set(key, p.phoneNumber);
+            }
+            if (!map.size) return content;
+            return {
+                ...content,
+                mentions: content.mentions.map(m => {
+                    const k = String(m).toLowerCase().replace(/:\d+(?=@)/, '');
+                    return map.get(k) || m;
+                }),
+            };
+        } catch (_) { return content; }
+    };
+    const origSend = sock.sendMessage.bind(sock);
+    sock.sendMessage = async (jid, content, options) =>
+        origSend(jid, await resolveLidMentions(jid, content), options);
+
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('connection.update', async (update) => {

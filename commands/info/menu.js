@@ -16,11 +16,12 @@
 const pkg = require('../../package.json');
 
 // Riga decorativa: solo come separatore, mai per allineare (niente glitch).
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const LINE = '━'.repeat(28);
+const DOT = '·'.repeat(28);
 
-// Cornice "a stelle" per il nuovo look del menu (niente box-drawing: si
-// disallinea con le emoji a larghezza variabile su WhatsApp).
-const STAR = '✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦';
+// Banner compatto per l'intestazione (niente cornici box-drawing: si
+// disallineano con le emoji a larghezza variabile su WhatsApp).
+const BANNER = '✧ ✧  VEX BOT  ✧ ✧';
 
 // Riga comando: `{emoji} .{cmd} — {hint}`
 const L = (emoji, cmd, hint = '') =>
@@ -52,27 +53,27 @@ const SECTIONS = [
     {
         key: 'economia', emoji: '💰', title: 'ECONOMIA',
         items: [
-            ['🛍️', 'shop', 'negozio oggetti'],
-            ['⛏️', 'mine', 'miniera con zaino'],
+            ['🛍️', 'shop', 'negozio'],
+            ['⛏️', 'mine', 'miniera'],
             ['⛏️', 'scava', 'scava'],
-            ['🎰', 'casino', 'giochi da casinò'],
-            ['🎲', 'dadi', 'dadi con soldi'],
+            ['🎰', 'casino', 'casino'],
+            ['🎲', 'dadi', 'dadi'],
             ['🎰', 'slot', 'slot'],
             ['🔴', 'roulette', 'puntata'],
-            ['🪨', 'sasso', 'sasso carta forbici'],
-            ['📅', 'daily', 'bonus giornaliero'],
+            ['🪨', 'sasso', 'morra'],
+            ['📅', 'daily', 'bonus'],
             ['🏧', 'deposita', 'in banca'],
             ['💳', 'preleva', 'dalla banca'],
-            ['🦹', 'ruba', 'tenta un furto'],
-            ['🔫', 'spara', 'incassa taglia'],
-            ['🎟️', 'lotteria', 'biglietto 50€'],
+            ['🦹', 'ruba', 'furto'],
+            ['🔫', 'spara', 'taglia'],
+            ['🎟️', 'lotteria', 'biglietto'],
             ['🏆', 'top', 'più attivi'],
             ['🤑', 'ricchi', 'lista ricchi'],
             ['💝', 'famiglia', 'famiglia'],
             ['🎁', 'dona', 'dona soldi'],
             ['📈', 'investi', 'borsa'],
             ['💼', 'work', 'lavora'],
-            ['🔥', 'streak', 'serie di giorni'],
+            ['🔥', 'streak', 'giorni fila'],
             ['📦', 'cassaforte', 'proteggi'],
             ['⭐', 'reputazione', '⭐'],
             ['💪', 'lavoro2', 'freelance'],
@@ -84,28 +85,28 @@ const SECTIONS = [
     {
         key: 'giochi', emoji: '🎲', title: 'GIOCHI',
         items: [
-            ['🔮', 'indovina_emoji', 'rebus a emoji'],
-            ['🏁', 'corsa', 'gara di gruppo'],
-            ['🔫', 'banda', 'mafia a ruoli'],
-            ['❓', 'quiz', 'rispondi e vinci'],
+            ['🔮', 'indovina_emoji', 'rebus emoji'],
+            ['🏁', 'corsa', 'gara'],
+            ['🔫', 'banda', 'mafia'],
+            ['❓', 'quiz', 'vinci'],
             ['🏁', 'bandiera', 'nazione'],
             ['💞', 'compatibilita', 'affinità'],
             ['⚔️', 'duello', 'sfida a soldi'],
             ['🎯', 'indovina', '1-10'],
-            ['🪙', 'testa', 'testa o croce'],
-            ['🎲', 'parita', 'pari o dispari'],
+            ['🪙', 'testa', 'croce'],
+            ['🎲', 'parita', 'pari/dispari'],
             ['🃏', 'alta', 'alta o bassa'],
-            ['🃏', 'blackjack', 'batti il banco'],
+            ['🃏', 'blackjack', 'banco'],
             ['🎡', 'ruota', 'fortuna'],
             ['🎟️', 'gratta', 'gratta vinci'],
             ['⚡', 'reazione', 'riflessi'],
-            ['🧩', 'parola', 'parola segreta'],
+            ['🧩', 'parola', 'parola'],
             ['🧠', 'memoria', 'colori'],
             ['🧩', 'enigma', 'indovinello'],
             ['🃏', 'poker', 'a poker'],
-            ['🔫', 'russia', 'roulette russa'],
+            ['🔫', 'russia', 'revolver'],
             ['🎱', 'tombola', 'estrazione'],
-            ['🎯', 'impiccato', 'evita il boia'],
+            ['🎯', 'impiccato', 'boia'],
             ['⭕', 'tris', '3 in fila'],
             ['🔴', 'forza4', '4 in fila'],
             ['🟩', 'wordle', '6 tentativi'],
@@ -135,30 +136,30 @@ const SECTIONS = [
     {
         key: 'interazioni', emoji: '🔥', title: 'INTERAZIONI',
         items: [
-            ['🖐️', 'schiaffo', 'uno schiaffo'],
+            ['🖐️', 'schiaffo', 'schiaffo'],
             ['😘', 'bacia', 'bacio'],
-            ['🪙', 'flip', 'testa/croce'],
-            ['🎱', '8ball', 'palla magica'],
-            ['📊', 'rate', 'vota 1-10'],
-            ['🤔', 'wyr', 'preferisci?'],
+            ['🪙', 'flip', ''],
+            ['🎱', '8ball', 'magia'],
+            ['📊', 'rate', 'vota'],
+            ['🤔', 'wyr', 'scegli'],
             ['💭', 'quote', 'citazione'],
             ['🫂', 'abbraccia', 'abbraccio'],
             ['💍', 'sposa', 'sposati'],
             ['🍑', 'paccasulculo', 'pacca'],
-            ['🔪', 'uccidi', 'omicidio finto'],
+            ['🔪', 'uccidi', 'finto'],
             ['🤬', 'insulta', 'insulta'],
             ['🔞', 'scopa', 'ironico'],
             ['💦', 'sborra', 'ironico'],
             ['👉👌', 'ditalino', 'ironico'],
             ['🍆', 'sega', 'ironico'],
             ['💧', 'squirt', 'ironico'],
-            ['🤰', 'incinta', 'gravidanza?'],
+            ['🤰', 'incinta', 'incinta'],
             ['🍒', 'tette', 'tette'],
             ['😂', 'meme', 'audio'],
             ['🥊', 'rissa', 'botte'],
             ['🍆', 'cazzo', 'cazzo'],
             ['🤪', 'sclero', 'sclero'],
-            ['🍺', 'drink', 'offri drink'],
+            ['🍺', 'drink', 'drink'],
             ['🍀', 'fact', 'curiosità'],
             ['🗣️', 'gossip', 'gossip'],
             ['😂', 'joke', 'barzelletta'],
@@ -170,38 +171,38 @@ const SECTIONS = [
     {
         key: 'utility', emoji: '🛠️', title: 'UTILITY',
         items: [
-            ['🌤️', 'meteo7', 'meteo 7 giorni'],
-            ['📊', 'nastro', 'riepilogo gruppo'],
-            ['👤', 'profilo', 'statistiche'],
-            ['📡', 'ping', 'stato bot'],
-            ['ℹ️', 'groupinfo', 'info gruppo'],
+            ['🌤️', 'meteo7', '7 giorni'],
+            ['📊', 'nastro', 'riepilogo'],
+            ['👤', 'profilo', 'stats'],
+            ['📡', 'ping', 'ping'],
+            ['ℹ️', 'groupinfo', 'info'],
             ['🌤️', 'weather', 'meteo'],
-            ['🆔', 'id', 'il tuo ID'],
-            ['🧮', 'calc', 'calcola'],
-            ['🔢', 'base64', 'codifica'],
+            ['🆔', 'id', 'ID'],
+            ['🧮', 'calc', ''],
+            ['🔢', 'base64', ''],
             ['🔣', 'hex', 'hex'],
             ['📊', 'count', 'conta'],
-            ['🔐', 'password', 'password'],
+            ['🔐', 'password', 'pwd'],
             ['▦', 'qr', 'QR'],
             ['🔑', 'uuid', 'UUID'],
             ['🌐', 'translate', 'traduci'],
             ['🪙', 'crypto', 'crypto'],
             ['💱', 'currency', 'valute'],
             ['🔗', 'tinyurl', ''],
-            ['📚', 'wiki', 'Wikipedia'],
+            ['📚', 'wiki', 'wiki'],
             ['🕐', 'ora', 'ora'],
             ['🌙', 'afk', ''],
             ['📄', 'readmore', 'nascosto'],
-            ['👑', 'owner', 'creatore'],
-            ['🐛', 'report', 'segnala bug'],
+            ['👑', 'owner', ''],
+            ['🐛', 'report', 'bug'],
             ['🌟', 'sponsor', 'sponsor'],
             ['🛡️', 'admin', 'admin'],
-            ['⏰', 'promemoria', 'promemoria'],
+            ['⏰', 'promemoria', 'ricorda'],
             ['📊', 'sondaggio', 'sondaggio'],
             ['🔄', 'converti', 'unità'],
             ['⏳', 'timer', 'timer'],
             ['🌙', 'afklist', ''],
-            ['📜', 'registro', 'modifiche gruppo'],
+            ['📜', 'registro', 'modifiche'],
             ['📘', 'aiuto', 'guida'],
         ],
     },
@@ -278,31 +279,31 @@ const SECTIONS = [
     {
         key: 'admin', emoji: '⚙️', title: 'ADMIN', adminOnly: true,
         items: [
-            ['📢', 'tag', 'tagga tutti'],
-            ['📢', 'tagall', 'tagga tutti'],
-            ['🔒', 'chiudi', 'chiudi il gruppo'],
-            ['🔓', 'apri', 'apri il gruppo'],
+            ['📢', 'tag', 'tutti'],
+            ['📢', 'tagall', 'tutti'],
+            ['🔒', 'chiudi', 'chiudi'],
+            ['🔓', 'apri', 'apri'],
             ['🚫', 'ban', 'bandisci'],
-            ['🔗', 'link', 'link del gruppo'],
-            ['🗑️', 'del', 'cancella messaggio'],
+            ['🔗', 'link', 'link'],
+            ['🗑️', 'del', 'cancella'],
             ['🔇', 'mute', 'silenzia'],
             ['🔊', 'unmute', 'riattiva'],
-            ['⚠️', 'warn', 'ammonizione'],
-            ['✅', 'unwarn', 'togli ammonizione'],
-            ['📈', 'promote', 'promuovi admin'],
-            ['📉', 'demote', 'togli admin'],
-            ['✅', 'richieste', 'accetta richieste'],
-            ['🗣️', 'say', 'fai parlare il bot'],
-            ['🔗', 'invito', 'link invito'],
-            ['⏸️', 'pausa', 'pausa il bot'],
-            ['▶️', 'riprendi', 'riattiva il bot'],
-            ['🛡️', 'modoadmin', 'solo admin usano il bot'],
-            ['📈', 'p', 'promuovi (rapido)'],
-            ['📉', 'd', 'togli admin (rapido)'],
-            ['⚡', 'evento', 'gestisci eventi'],
-            ['📜', 'registro', 'modifiche gruppo'],
-            ['🔁', 'antiflood', 'anti-flood on/off'],
-            ['🚫', 'escludi', 'fuori dalle top'],
+            ['⚠️', 'warn', 'warn'],
+            ['✅', 'unwarn', 'unwarn'],
+            ['📈', 'promote', 'promuovi'],
+            ['📉', 'demote', 'demote'],
+            ['✅', 'richieste', 'richieste'],
+            ['🗣️', 'say', 'parla'],
+            ['🔗', 'invito', 'invito'],
+            ['⏸️', 'pausa', 'pausa'],
+            ['▶️', 'riprendi', 'riprendi'],
+            ['🛡️', 'modoadmin', 'solo admin'],
+            ['📈', 'p', 'promuovi'],
+            ['📉', 'd', 'demote'],
+            ['⚡', 'evento', 'eventi'],
+            ['📜', 'registro', 'modifiche'],
+            ['🔁', 'antiflood', 'flood'],
+            ['🚫', 'escludi', 'top'],
         ],
     },
     {
@@ -413,26 +414,21 @@ const TIPS = [
 
 // ── SCHERMATE ────────────────────────────────────────────────────────────────
 
-// HOME: contatori, istruzioni, suggerimento casuale — nuovo look ✦
+// HOME: contatori, istruzioni, suggerimento casuale — look compatto decorato.
 const homeScreen = (pushName, timeStr, dateStr, stats, tip) => {
     const name = (pushName || 'Utente').slice(0, 20);
     return (
-`${STAR}
-      🌟 *VEX BOT* 🌟
-${STAR}
-👤 ${name}
-🕐 ${timeStr} · 📅 ${dateStr}
-📊 ${stats.cmds} comandi · 🔖 v${stats.version}
-⏱ online da ${stats.uptime}
-${STAR}
-📂 *Sezioni*: apri con il bottone
-   oppure scrivi \`.menu giochi\`
-   o \`.menu 5\`.
-📖 *Guida*: il file con tutti i
-   comandi spiegati.
-${STAR}
+`${BANNER}
+${DOT}
+👤 ${name} · 🕐 ${timeStr} · ${dateStr}
+⚙️ ${stats.cmds} comandi · 🔖 v${stats.version} · ⏱ ${stats.uptime}
+${DOT}
+📂 *Sezioni* — bottone qui sotto
+   o scrivi \`.menu sezioni\`
+📖 *Guida* — \`.aiuto\`
+${DOT}
 💡 ${tip}
-${STAR}`);
+${LINE}`);
 };
 
 // Elenco numerato di tutte le sezioni accessibili all'utente.
@@ -440,12 +436,12 @@ const sezioniScreen = (visible) => {
     const lines = visible.map((s, i) =>
         `${String(i + 1).padStart(2, '0')} ${s.emoji} ${s.title}`).join('\n');
     return (
-`📂 *SEZIONI* · ${visible.length} sezioni
-${SEP}
+`✧ *SEZIONI* ✧ · ${visible.length}
+${LINE}
 ${lines}
-${SEP}
-➡️ Scrivi \`.menu 1\` … \`.menu ${visible.length}\`
-   oppure \`.menu <nome>\` per aprire`);
+${LINE}
+➡️ \`.menu 1\` … \`.menu ${visible.length}\`
+   oppure \`.menu <nome>\``);
 };
 
 // Schermata di una singola sezione: mostra TUTTI i comandi della sezione in
@@ -455,13 +451,11 @@ ${SEP}
 const sectionScreen = (section, index, total) => {
     const rows = section.items.map(([e, cmd, hint]) => L(e, cmd, hint)).join('\n');
     return (
-`${STAR}
-${section.emoji} *${section.title}* · ${index + 1}/${total}
-${STAR}
+`✧ ${section.emoji} *${section.title}* ✧ · ${index + 1}/${total}
+${LINE}
 ${rows}
-${STAR}
-💡 Dettagli: \`.aiuto <comando>\`
-${STAR}`);
+${LINE}
+💡 \`.aiuto <cmd>\``);
 };
 
 module.exports = {
