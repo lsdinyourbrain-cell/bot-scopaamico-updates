@@ -38,7 +38,7 @@ const {
 const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
-const { sendButtons, editButtons, sendButtonsWithKey, sendCarousel, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL, setMentionResolver } = require('./lib/buttons');
+const { sendButtons, editButtons, sendButtonsWithKey, sendCarousel, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL, setMentionResolver, rewriteTagText } = require('./lib/buttons');
 const { dispOf, resolveJid, setLidDisplayResolver } = require('./lib/jid');
 const greetings = require('./lib/greetings');
 const { checkTrisWinner, renderTrisBoard: renderTrisBoardRaw } = require('./lib/tris');
@@ -1342,23 +1342,15 @@ async function startBot() {
     // le mentions risolte: senza questo, WhatsApp NON evidenzia il tag (il testo
     // mostrava il numero casuale @lid mentre mentionedJid era il PN). Applicato
     // in un punto solo, vale per TUTTI i comandi che mandano text+mentions.
+    // La logica è condivisa con lib/buttons (percorso relayMessage dei pulsanti).
     const applyTextRewrite = (content, origMentions, resolvedMentions) => {
-        if (!content || !Array.isArray(origMentions) || !Array.isArray(resolvedMentions)) return content;
-        const text = content.text || content.caption;
+        if (!content) return content;
+        const isCaption = Object.prototype.hasOwnProperty.call(content, 'caption');
+        const text = isCaption ? content.caption : content.text;
         if (typeof text !== 'string' || !text.length) return content;
-        const replace = new Map();
-        for (let i = 0; i < origMentions.length; i++) {
-            const o = String(origMentions[i]).toLowerCase().replace(/:\d+(?=@)/, '');
-            const r = String(resolvedMentions[i]).toLowerCase().replace(/:\d+(?=@)/, '');
-            if (o !== r) replace.set(o.split('@')[0], r.split('@')[0]);
-        }
-        if (!replace.size) return content;
-        let newText = text;
-        for (const [lidNum, pnNum] of replace) {
-            newText = newText.split('@' + lidNum).join('@' + pnNum);
-        }
-        if (newText === text) return content;
-        return { ...content, ...(content.caption !== undefined ? { caption: newText } : { text: newText }) };
+        const next = rewriteTagText(text, origMentions, resolvedMentions);
+        if (next === text) return content;
+        return { ...content, ...(isCaption ? { caption: next } : { text: next }) };
     };
 
     sock.sendMessage = async (jid, content, options) => {

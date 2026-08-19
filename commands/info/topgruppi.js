@@ -2,13 +2,14 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  TOPGRUPPI — Vex Bot
-//  .topgruppi → classifica dei gruppi più attivi in LISTA NATIVA di WhatsApp
-//  (pannello a righe del pulsante nativo, niente tabella ASCII). Premendo una
-//  riga arriva `.topgruppi info <n>` con i dettagli del gruppo.
-//  I gruppi esclusi con .escludi non compaiono.
+//  .topgruppi → classifica dei gruppi più attivi del bot. Pulsante *📊 Vedi
+//  tabella* → VERA TABELLA in immagine (niente sezioni nate da pannelli
+//  nativi). *📊 Scegli un gruppo* → dettagli del gruppo. I gruppi esclusi
+//  con .escludi non compaiono.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
+const { renderLeaderboardImage } = require('../../lib/leaderboard');
 
 module.exports = {
     name: 'topgruppi',
@@ -68,13 +69,50 @@ ${SEP}
 ◈ _Vex Bot_`);
         }
 
-        // La classifica VIVE nel pannello nativo: il corpo del messaggio è
-        // solo il titolo, le righe le apre il pulsante a lista di WhatsApp.
+        // ── TABELLA IN IMMAGINE ───────────────────────────────────────────
+        // `.topgruppi tabella` (o il pulsante 📊) → VERA tabella PNG, non una
+        // sezione nativa. Nessun tag qui: i gruppi non sono utenti.
+        if (String(args[0] || '').toLowerCase() === 'tabella') {
+            const rows = list.map(([gid, data]) => ({
+                name: names.get(gid) || gid.split('@')[0],
+                value: `${data.n || 0} msg`,
+            }));
+            let png;
+            try {
+                png = await renderLeaderboardImage({
+                    title: 'TOP GRUPPI',
+                    subtitle: 'Gruppi più attivi del bot',
+                    accent: '#34d399',
+                    accent2: '#0ea5e9',
+                    rows,
+                });
+            } catch (e) {
+                console.error('[topgruppi] render tabella:', e.message);
+                return reply('⚠️ Errore generando la tabella, riprova.');
+            }
+            const [wGid, wData] = list[0];
+            await sock.sendMessage(from, {
+                image: png,
+                mimetype: 'image/png',
+                caption:
+`🏆 *TOP GRUPPI* 🏆
+${SEP}
+🥇 *${names.get(wGid) || wGid.split('@')[0]}*
+  è il gruppo più attivo
+  con *${wData.n || 0}* messaggi!
+${SEP}
+◈ _Vex Bot_`,
+            }, { quoted: msg });
+            return;
+        }
+
+        // Corpo del messaggio: titolo + hint.
         const txt =
 `🏆 *TOP GRUPPI* 🏆
-
-📲 Premi *📊* qui sotto e scegli
-un gruppo per vederne i dettagli.`;
+${SEP}
+📲 Premi *📊* per la tabella
+completa o per i dettagli
+di un gruppo.`;
 
         // Righe del pannello nativo (max 20): i gruppi + riga per aggiornare.
         const listRows = list.map(([gid, data], i) => ({
@@ -91,12 +129,14 @@ un gruppo per vederne i dettagli.`;
         });
 
         const btns = [
-            { type: 'single_select', label: '📊 Scegli un gruppo', title: '🏆 Top gruppi', sectionTitle: 'Classifica', rows: listRows },
+            { label: '📊 Vedi tabella', id: 'topgruppi tabella' },
+            { type: 'single_select', label: '🔍 Scegli un gruppo', title: '🏆 Top gruppi', sectionTitle: 'Classifica', rows: listRows },
         ];
         if (isGroup && (isOwner || isSenderAdmin)) {
             btns.push({ label: '🚫 Escludi questo gruppo', id: 'escludi' });
+        } else {
+            btns.push({ label: '🔄 Aggiorna', id: 'topgruppi' });
         }
-        btns.push({ label: '🔄 Aggiorna', id: 'topgruppi' });
 
         await sendButtons(sock, from, txt, btns, msg);
     },

@@ -2,14 +2,14 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  RICCHI — Vex Bot
-//  .ricchi → classifica dei membri più ricchi del gruppo in LISTA NATIVA di
-//  WhatsApp (pannello a righe del pulsante nativo, niente tabella ASCII).
-//  .ricchi <n> → primi n (max 20). Premendo una riga arriva `.ricchi profilo
-//  <n>` che mostra il profilo dell'utente TAGGANDOLO per davvero.
-//  I gruppi esclusi con .escludi non mostrano la classifica.
+//  .ricchi → classifica dei membri più ricchi del gruppo. Pulsante *📊 Vedi
+//  tabella* → VERA TABELLA in immagine (niente sezioni nate da pannelli
+//  nativi). *💎 Scegli un utente* → profilo con tag reale. I gruppi esclusi
+//  con .escludi non mostrano la classifica.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
+const { renderLeaderboardImage } = require('../../lib/leaderboard');
 
 module.exports = {
     name: 'ricchi',
@@ -67,6 +67,42 @@ ${SEP}
             return;
         }
 
+        // ── TABELLA IN IMMAGINE ───────────────────────────────────────────
+        // `.ricchi tabella` (o il pulsante 📊) → VERA tabella PNG, non una
+        // sezione nativa. La didascalia TAGG il più ricco con il PN reale.
+        if (String(args[0] || '').toLowerCase() === 'tabella') {
+            const top10 = allSorted.slice(0, 10);
+            if (!top10.length) return reply('📭 Nessun dato disponibile: lavora, gioca e vinci!');
+            const rows = top10.map(([jid, data]) => ({ name: dispOf(jid), value: formatMoney(data.money || 0) }));
+            let png;
+            try {
+                png = await renderLeaderboardImage({
+                    title: 'TOP RICCHI',
+                    subtitle: 'Saldo in contanti in questo gruppo',
+                    accent: '#fbbf24',
+                    accent2: '#f59e0b',
+                    rows,
+                });
+            } catch (e) {
+                console.error('[ricchi] render tabella:', e.message);
+                return reply('⚠️ Errore generando la tabella, riprova.');
+            }
+            const [wJid] = top10[0];
+            await sock.sendMessage(from, {
+                image: png,
+                mimetype: 'image/png',
+                caption:
+`💎 *TOP 10 RICCHI* 💎
+${SEP}
+🥇 @${dispOf(wJid)} è il più ricco
+  del gruppo! Che status!
+${SEP}
+◈ _Vex Bot_`,
+                mentions: [wJid],
+            }, { quoted: msg });
+            return;
+        }
+
         const sorted = allSorted.slice(0, limit);
 
         if (sorted.length === 0) return reply(
@@ -79,14 +115,16 @@ ${SEP}
 ${SEP}
 ◈ _Vex Bot_`);
 
-        // La classifica VIVE nel pannello nativo: il corpo del messaggio è
-        // solo il titolo, le righe le apre il pulsante a lista di WhatsApp.
+        // Corpo del messaggio: titolo + LEADER TAGGATO per davvero.
+        const [leaderJid] = allSorted[0];
         const txt =
 `💎 *TOP ${limit} RICCHI* 💎
-
-📲 Premi *💎* qui sotto e scegli
-un utente: ti mostrerò il suo
-profilo e lo TAGGERO' qui in chat.`;
+${SEP}
+🥇 @${dispOf(leaderJid)} domina!
+${SEP}
+📲 Premi *📊* per la tabella
+completa, *💎* per il profilo
+di un utente (lo TAGGO qui).`;
 
         // Righe del pannello nativo (max 20): i migliori + riga per aggiornare.
         const listRows = sorted.map(([jid, data], i) => ({
@@ -103,15 +141,15 @@ profilo e lo TAGGERO' qui in chat.`;
         });
 
         const btns = [
+            { label: '📊 Vedi tabella', id: 'ricchi tabella' },
             { type: 'single_select', label: '💎 Scegli un utente', title: '💎 Top ricchi', sectionTitle: 'Classifica', rows: listRows },
-            { label: '🔄 Aggiorna', id: 'ricchi' },
         ];
         if (isGroup && (isOwner || isSenderAdmin)) {
             btns.push({ label: '🚫 Escludi', id: 'escludi' });
         } else {
-            btns.push({ label: '🏆 Attivi', id: 'top' });
+            btns.push({ label: '🔄 Aggiorna', id: 'ricchi' });
         }
 
-        await sendButtons(sock, from, txt, btns, msg);
+        await sendButtons(sock, from, txt, btns, msg, [leaderJid]);
     },
 };
