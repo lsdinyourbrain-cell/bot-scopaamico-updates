@@ -38,7 +38,7 @@ const {
 const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBounty } = require('./lib/bounty');
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
-const { sendButtons, editButtons, sendButtonsWithKey, sendCarousel, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL } = require('./lib/buttons');
+const { sendButtons, editButtons, sendButtonsWithKey, sendCarousel, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL, setMentionResolver } = require('./lib/buttons');
 const greetings = require('./lib/greetings');
 const { checkTrisWinner, renderTrisBoard: renderTrisBoardRaw } = require('./lib/tris');
 const impiccatoCmd = require('./commands/games/impiccato');
@@ -1297,30 +1297,35 @@ async function startBot() {
     // WhatsApp NON riconosce come menzione: i tag non partono più.
     // Prima di ogni invio con `mentions`, risolviamo ogni @lid nel PN reale
     // del partecipante (groupMetadata.phoneNumber) usando la cache condivisa.
-    const resolveLidMentions = async (jid, content) => {
+    const resolveLidInMentions = async (jid, mentions) => {
         try {
-            if (!content || !Array.isArray(content.mentions) || !content.mentions.length) return content;
-            if (!String(jid).endsWith('@g.us')) return content;
-            if (!content.mentions.some(m => String(m).toLowerCase().endsWith('@lid'))) return content;
+            if (!Array.isArray(mentions) || !mentions.length) return mentions;
+            if (!String(jid).endsWith('@g.us')) return mentions;
+            if (!mentions.some(m => String(m).toLowerCase().endsWith('@lid'))) return mentions;
             const meta = await getCachedGroupMeta(sock, jid);
             const map = new Map();
             for (const p of meta?.participants || []) {
                 const key = String(p?.id || p?.jid || '').toLowerCase().replace(/:\d+(?=@)/, '');
                 if (key && p?.phoneNumber) map.set(key, p.phoneNumber);
             }
-            if (!map.size) return content;
-            return {
-                ...content,
-                mentions: content.mentions.map(m => {
-                    const k = String(m).toLowerCase().replace(/:\d+(?=@)/, '');
-                    return map.get(k) || m;
-                }),
-            };
-        } catch (_) { return content; }
+            if (!map.size) return mentions;
+            return mentions.map(m => {
+                const k = String(m).toLowerCase().replace(/:\d+(?=@)/, '');
+                return map.get(k) || m;
+            });
+        } catch (_) { return mentions; }
     };
+
     const origSend = sock.sendMessage.bind(sock);
     sock.sendMessage = async (jid, content, options) =>
-        origSend(jid, await resolveLidMentions(jid, content), options);
+        origSend(jid, await resolveLidInMentions(jid, content?.mentions).then(mentions => {
+            if (!content || !mentions || content.mentions === mentions) return content;
+            return { ...content, mentions };
+        }), options);
+
+    // I messaggi interactive (pulsanti nativi) partono via relayMessage, che
+    // NON passa dal wrapper sopra: iniettiamo lo stesso resolver in buttons.
+    setMentionResolver(resolveLidInMentions);
 
     sock.ev.on('creds.update', saveCreds);
 

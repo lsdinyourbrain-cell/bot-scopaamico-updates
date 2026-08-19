@@ -3,10 +3,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  TOPGRUPPI — Vex Bot
 //  .topgruppi → classifica dei gruppi più attivi (con nome, messaggi e
-//  utenti attivi). I gruppi esclusi con .escludi non compaiono.
+//  utenti attivi) in tabella nativa con pulsante a lista. I gruppi esclusi
+//  con .escludi non compaiono.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { renderTable } = require('../../lib/table');
+
+const SEP = '━━━━━━━━━━━━━━━━━━';
 
 module.exports = {
     name: 'topgruppi',
@@ -27,13 +30,37 @@ module.exports = {
         if (!list.length) {
             return reply(
 `🏆 *TOP GRUPPI* 🏆
-━━━━━━━━━━━━━━━━━━
+${SEP}
 ▸ Nessun dato ancora.
 ▸ Scrivi e gioca nei gruppi:
   l'attività viene contata e
   questi gruppi saliranno in
   classifica.
-━━━━━━━━━━━━━━━━━━
+${SEP}
+◈ _Vex Bot_`);
+        }
+
+        // ── INFO GRUPPO (dalla lista nativa) ──────────────────────────────
+        // Quando si preme una voce della lista, arriva `.topgruppi info <n>`.
+        if (String(args[0] || '').toLowerCase() === 'info') {
+            const idx = parseInt(args[1], 10);
+            const entry = list[idx - 1];
+            if (!entry) return reply('⚠️ Indice non valido: la classifica è cambiata, riprova.');
+            const [gid, data] = entry;
+            let name = gid.split('@')[0];
+            try {
+                const meta = await getCachedGroupMeta(sock, gid);
+                if (meta?.subject) name = String(meta.subject).slice(0, 25);
+            } catch (_) {}
+            const utenti = Object.keys(db[gid] || {})
+                .filter(k => k.includes('@') && db[gid][k] && typeof db[gid][k] === 'object' && (db[gid][k].msgCount || 0) > 0).length;
+            return reply(
+`🏆 *INFO GRUPPO*
+${SEP}
+▸ 📛 ${name}
+▸ 💬 Messaggi: *${data.n || 0}*
+▸ 👥 Utenti attivi: *${utenti}*
+${SEP}
 ◈ _Vex Bot_`);
         }
 
@@ -55,20 +82,24 @@ ${renderTable([
     { header: 'GRUPPO', align: 'l', max: 25 },
     { header: 'MSG', align: 'r', max: 7 },
 ], rows)}
-▸ Il nome è quello attuale del gruppo.
-▸ Per togliere un gruppo dalla
-  classifica: \`.escludi\` (admin).`;
+▸ Premi *📊* e scegli un gruppo
+  per vederne i dettagli.`;
 
-        const btns = [];
+        const listRows = list.map(([gid, data], i) => ({
+            header: `#${i + 1}`,
+            title: String(rows[i][1]),
+            description: `${data.n || 0} messaggi`,
+            id: `topgruppi info ${i + 1}`,
+        }));
+
+        const btns = [
+            { type: 'single_select', label: '📊 Scegli un gruppo', title: '🏆 Top gruppi', sectionTitle: 'Classifica', rows: listRows },
+        ];
         if (isGroup && (isOwner || isSenderAdmin)) {
             btns.push({ label: '🚫 Escludi questo gruppo', id: 'escludi' });
         }
         btns.push({ label: '🔄 Aggiorna', id: 'topgruppi' });
 
-        try {
-            await sendButtons(sock, from, txt, btns, msg);
-        } catch (_) {
-            await reply(txt);
-        }
+        await sendButtons(sock, from, txt, btns, msg);
     },
 };
