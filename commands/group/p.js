@@ -23,13 +23,13 @@ module.exports = {
             try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
             const tgtPn = resolveJid(targetJid, meta);
             const useJid = tgtPn || targetJid;
-            const short = dispOf(targetJid, tgtPn);
+            const short = dispOf(useJid);
 
             await sock.groupParticipantsUpdate(from, [useJid], 'promote');
 
             await sendButtons(sock, from,
                 `👑 ${toDecorated('PROMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
-                [{ label: '📜 Registro modifiche', id: 'registro' }], msg)
+                [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
                     text: `👑 ${toDecorated('PROMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [useJid],

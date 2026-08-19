@@ -39,6 +39,7 @@ const { trySpawnBounty, claimBounty, getBounty, removeBounty, shouldTrySpawnBoun
 const bestemmiometro = require('./lib/bestemmiometro');
 const gistBackup = require('./lib/gist-backup');
 const { sendButtons, editButtons, sendButtonsWithKey, sendCarousel, buttonRegistry, stripEmoji, normalizeBtnText, BTN_REGISTER_TTL, setMentionResolver } = require('./lib/buttons');
+const { dispOf, resolveJid, setLidDisplayResolver } = require('./lib/jid');
 const greetings = require('./lib/greetings');
 const { checkTrisWinner, renderTrisBoard: renderTrisBoardRaw } = require('./lib/tris');
 const impiccatoCmd = require('./commands/games/impiccato');
@@ -626,6 +627,18 @@ const isAdminParticipant = (participant, jid) => {
 const groupMetaCache = new Map();
 const GROUP_META_CACHE_TTL = 15000; // 15 secondi
 
+// Mappa @lid → PN reale: riempita da getCachedGroupMeta e dal resolver delle
+// mentions. Permette a dispOf() di mostrare il numero vero nei testi (così il
+// testo @<numero> coincide con mentionedJid e WhatsApp evidenzia davvero il tag).
+const lidToPn = new Map();
+const normLidKey = (jid) => String(jid || '').toLowerCase().replace(/:\d+(?=@)/, '');
+const fillLidMap = (meta) => {
+    for (const p of meta?.participants || []) {
+        const id = p?.id || p?.jid || '';
+        if (id && p?.phoneNumber) lidToPn.set(normLidKey(id), p.phoneNumber);
+    }
+};
+
 // Legge groupMetadata usando la cache condivisa: evita round-trip di rete
 // su ogni messaggio (antiflame e bounty ne fanno pesantemente uso).
 const getCachedGroupMeta = async (sock, groupJid) => {
@@ -633,6 +646,7 @@ const getCachedGroupMeta = async (sock, groupJid) => {
     if (cached && Date.now() - cached.ts < GROUP_META_CACHE_TTL) return cached.data;
     const metadata = await sock.groupMetadata(groupJid);
     groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
+    fillLidMap(metadata);
     return metadata;
 };
 
@@ -1303,6 +1317,7 @@ async function startBot() {
             if (!String(jid).endsWith('@g.us')) return mentions;
             if (!mentions.some(m => String(m).toLowerCase().endsWith('@lid'))) return mentions;
             const meta = await getCachedGroupMeta(sock, jid);
+            fillLidMap(meta);
             const map = new Map();
             for (const p of meta?.participants || []) {
                 const key = String(p?.id || p?.jid || '').toLowerCase().replace(/:\d+(?=@)/, '');
@@ -1316,12 +1331,47 @@ async function startBot() {
         } catch (_) { return mentions; }
     };
 
+    // Permette a dispOf() di mostrare il PN reale quando il jid è un @lid:
+    // così il testo @<numero> coincide con il mentionedJid inviato e WhatsApp
+    // evidenzia davvero il tag (vale per TUTTI i comandi, non solo i pulsanti).
+    setLidDisplayResolver((jid) => lidToPn.get(normLidKey(jid)) || null);
+
     const origSend = sock.sendMessage.bind(sock);
-    sock.sendMessage = async (jid, content, options) =>
-        origSend(jid, await resolveLidInMentions(jid, content?.mentions).then(mentions => {
-            if (!content || !mentions || content.mentions === mentions) return content;
-            return { ...content, mentions };
-        }), options);
+
+    // Riscrive nel testo i @<lid> con il PN reale, così la scritta coincide con
+    // le mentions risolte: senza questo, WhatsApp NON evidenzia il tag (il testo
+    // mostrava il numero casuale @lid mentre mentionedJid era il PN). Applicato
+    // in un punto solo, vale per TUTTI i comandi che mandano text+mentions.
+    const applyTextRewrite = (content, origMentions, resolvedMentions) => {
+        if (!content || !Array.isArray(origMentions) || !Array.isArray(resolvedMentions)) return content;
+        const text = content.text || content.caption;
+        if (typeof text !== 'string' || !text.length) return content;
+        const replace = new Map();
+        for (let i = 0; i < origMentions.length; i++) {
+            const o = String(origMentions[i]).toLowerCase().replace(/:\d+(?=@)/, '');
+            const r = String(resolvedMentions[i]).toLowerCase().replace(/:\d+(?=@)/, '');
+            if (o !== r) replace.set(o.split('@')[0], r.split('@')[0]);
+        }
+        if (!replace.size) return content;
+        let newText = text;
+        for (const [lidNum, pnNum] of replace) {
+            newText = newText.split('@' + lidNum).join('@' + pnNum);
+        }
+        if (newText === text) return content;
+        return { ...content, ...(content.caption !== undefined ? { caption: newText } : { text: newText }) };
+    };
+
+    sock.sendMessage = async (jid, content, options) => {
+        if (!content) return origSend(jid, content, options);
+        const origMentions = content.mentions;
+        const resolved = await resolveLidInMentions(jid, origMentions);
+        let next = content;
+        if (origMentions && resolved && origMentions !== resolved) {
+            next = applyTextRewrite(content, origMentions, resolved);
+            next = { ...next, mentions: resolved };
+        }
+        return origSend(jid, next, options);
+    };
 
     // I messaggi interactive (pulsanti nativi) partono via relayMessage, che
     // NON passa dal wrapper sopra: iniettiamo lo stesso resolver in buttons.
@@ -1692,9 +1742,9 @@ const rainMsgCount = new Map();
                 const { isSenderAdmin } = await getGroupAdminState(sock, from, [sender, senderAlt]).catch(() => ({ isSenderAdmin: false }));
                 if (isSenderAdmin) return;
                 await sock.groupParticipantsUpdate(from, [res.jid], 'remove');
-                console.log(`[ANTIBOT] Rimosso ${res.jid.split('@')[0]} (${res.reason})`);
+                console.log(`[ANTIBOT] Rimosso ${dispOf(res.jid)} (${res.reason})`);
                 await sock.sendMessage(from, {
-                    text: `🤖 *ANTIBOT*\n━━━━━━━━━━━━━━━━━━\n@${res.jid.split('@')[0]} sembra un bot e\nè stato rimosso dal gruppo.\n_Rilevato: ${res.reason}_\n━━━━━━━━━━━━━━━━━━`,
+                    text: `🤖 *ANTIBOT*\n━━━━━━━━━━━━━━━━━━\n@${dispOf(res.jid)} sembra un bot e\nè stato rimosso dal gruppo.\n_Rilevato: ${res.reason}_\n━━━━━━━━━━━━━━━━━━`,
                     mentions: [res.jid],
                 }).catch(() => {});
             } catch (e) {
@@ -2625,7 +2675,7 @@ const rainMsgCount = new Map();
                     const afkEntry = db.afk[jid];
                     if (afkEntry) {
                         await sock.sendMessage(from, {
-                            text: `🌙 *@${jid.split('@')[0]} è AFK*\n\n📝 Motivo: _${(afkEntry.reason || 'nessun motivo').slice(0, 200)}_\n\nNon aspettarti una risposta immediata.`,
+                            text: `🌙 *@${dispOf(jid)} è AFK*\n\n📝 Motivo: _${(afkEntry.reason || 'nessun motivo').slice(0, 200)}_\n\nNon aspettarti una risposta immediata.`,
                             mentions: [jid],
                         });
                     }
@@ -2687,6 +2737,32 @@ const rainMsgCount = new Map();
         if (!isBotActive && !isOwner && command !== 'accendi') return;
         const targetJid = mentioned[0] || contextInfo.participant || null;
 
+        // Cerca nel testo i token @<numero> e li associa ai jid dei partecipanti del
+// gruppo (numero = PN reale oppure @lid): così `reply()` tagga da sola TUTTI
+// i comandi che mostrano @ nel testo, senza toccare ogni singolo comando.
+// Il wrapper poi risolve eventuali @lid nel PN e riscrive il testo di pari
+// passo, quindi il tag evidenzia davvero.
+const collectMentionsFromText = async (sock, text, from) => {
+    const nums = [...String(text || '').matchAll(/@(\d{5,})/g)].map(m => m[1]);
+    if (!nums.length || !String(from).endsWith('@g.us')) return null;
+    try {
+        const meta = await getCachedGroupMeta(sock, from);
+        const byNum = new Map();
+        for (const p of meta?.participants || []) {
+            const pn = p?.phoneNumber;
+            const id = p?.id || p?.jid;
+            if (pn) byNum.set(String(pn).split('@')[0], pn);
+            if (id) byNum.set(String(id).split('@')[0], id);
+        }
+        const jids = [];
+        for (const n of nums) {
+            const j = byNum.get(n);
+            if (j) jids.push(j);
+        }
+        return jids.length ? jids : null;
+    } catch (_) { return null; }
+};
+
         const reply = async (text) => {
             try {
                 const clean = String(text ?? '');
@@ -2695,13 +2771,14 @@ const rainMsgCount = new Map();
                 // NO_REPLAY_BUTTON, invio un semplice messaggio di testo.
                 const wantButton = command && !NO_REPLAY_BUTTON.has(command)
                     && clean.length > 0 && clean.length <= 900;
+                const mentions = await collectMentionsFromText(sock, clean, from);
                 if (wantButton) {
                     const replayId = `${command}${textArgs ? ' ' + textArgs : ''}`;
                     await sendButtons(sock, from, clean, [
                         { label: `${COMMAND_EMOJIS[command] || '🔁'} Ripeti`, id: replayId },
-                    ], msg);
+                    ], msg, mentions || undefined);
                 } else {
-                    await sock.sendMessage(from, { text: clean }, { quoted: msg });
+                    await sock.sendMessage(from, { text: clean, ...(mentions ? { mentions } : {}) }, { quoted: msg });
                 }
             } catch (e) { console.error(`[reply] Errore invio: ${e.message}`); }
         };
@@ -2798,8 +2875,10 @@ const rainMsgCount = new Map();
                     applyTax, taxRate, applyWealthTax, wealthTaxRate,
                     logGroupEvent, isOwnerJid, getCachedGroupMeta,
                     // Mostra il numero "leggibile" di un JID: in LID mode usa il
-                    // PN alternativo per non far apparire numeri casuali @lid.
-                    dispOf: (jid, alt) => String(alt || jid || '').split('@')[0],
+                    // PN reale (risolto dalla mappa condivisa) per non far
+                    // apparire numeri casuali @lid e per far coincidere il testo
+                    // del tag con mentionedJid (sennò WhatsApp non evidenzia).
+                    dispOf,
                 },
             });
 

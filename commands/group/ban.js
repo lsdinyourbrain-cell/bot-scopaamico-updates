@@ -24,14 +24,14 @@ module.exports = {
             try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
             const tgtPn = resolveJid(targetJid, meta);
             const useJid = tgtPn || targetJid;
-            const short = dispOf(targetJid, tgtPn);
+            const short = dispOf(useJid);
 
             await sock.groupParticipantsUpdate(from, [useJid], 'remove');
             logGroupEvent(from, 'ban', sender, null, targetJid, 'rimosso dal gruppo');
 
             await sendButtons(sock, from,
                 `👋 ${toDecorated('BAN', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
-                [{ label: '📜 Registro modifiche', id: 'registro' }], msg)
+                [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
                     text: `👋 ${toDecorated('BAN', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [useJid],

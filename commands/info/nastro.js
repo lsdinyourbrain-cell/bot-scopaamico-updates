@@ -18,9 +18,13 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { textArgs, from, sender, isGroup, reply, services } = context;
-        const { db, sendButtons } = services;
+        const { db, dispOf, sendButtons, getCachedGroupMeta } = services;
 
         if (!isGroup) return reply('📊 Disponibile solo nei gruppi.');
+
+        // Popola la mappa @lid→PN (usata da dispOf per mostrare i numeri veri
+        // e dal resolver delle mentions per i tag) prima di costruire il testo.
+        try { await getCachedGroupMeta(sock, from); } catch (_) {}
 
         const chat = db[from] || {};
         const users = Object.entries(chat)
@@ -62,7 +66,7 @@ ${SEP}
         const topXpList = users
             .sort((a, b) => (Number.isFinite(b[1].xp) ? b[1].xp : 0) - (Number.isFinite(a[1].xp) ? a[1].xp : 0))
             .slice(0, 5)
-            .map(([jid, d], i) => `${medal(i)} ▸ _@${jid.split('@')[0]}_ · liv. _${d.level || 1}_ · _${Number.isFinite(d.xp) ? d.xp : 0} XP_`)
+            .map(([jid, d], i) => `${medal(i)} ▸ _@${dispOf(jid)}_ · liv. _${d.level || 1}_ · _${Number.isFinite(d.xp) ? d.xp : 0} XP_`)
             .join('\n');
 
         const header = `📊 *_NASTRO DEL GRUPPO_*`;
@@ -74,21 +78,28 @@ ${SEP}
 ▸ 💰 Soldi in circolo: _${fmtMoney(totalMoney)}€_
 ${SEP}
 ⚡ *Più attivo*
-▸ _@${topMsg.jid.split('@')[0]}_ · _${topMsg.msgCount} messaggi_
+▸ _@${dispOf(topMsg.jid)}_ · _${topMsg.msgCount} messaggi_
 🎮 *Top livelli*
-▸ _@${topXp.jid.split('@')[0]}_ · _liv. ${topXp.level} · ${topXp.xp} XP_
+▸ _@${dispOf(topXp.jid)}_ · _liv. ${topXp.level} · ${topXp.xp} XP_
 💵 *Più ricco*
-▸ _@${topMoney.jid.split('@')[0]}_ · _${fmtMoney(topMoney.money)}€_
+▸ _@${dispOf(topMoney.jid)}_ · _${fmtMoney(topMoney.money)}€_
 ${SEP}
 🏆 *TOP 5 XP*
 ${topXpList}
 ${SEP}
 ◈ _Vex Bot_`;
 
+        // Tagga chi compare nel nastro: mostra i PN reali (dispOf) e passa le
+        // mentions risolte, così i tag evidenziano anche nei pulsanti nativi.
+        const tagJids = [...new Set([
+            topMsg.jid, topXp.jid, topMoney.jid,
+            ...users.sort((a, b) => (Number.isFinite(b[1].xp) ? b[1].xp : 0) - (Number.isFinite(a[1].xp) ? a[1].xp : 0)).slice(0, 5).map(([jid]) => jid),
+        ])];
+
         return sendButtons(sock, from, txt,
             [
                 { label: '💪 Classifica attivi', id: 'top' },
                 { label: '🏠 Menu', id: 'menu' },
-            ], msg);
+            ], msg, tagJids);
     },
 };

@@ -35,14 +35,14 @@ module.exports = {
                 isPromote ? 'promosso amministratore' : 'retrocesso da amministratore');
             saveDB();
 
-            const short = dispOf(targetJid, targetPn);
+            const short = dispOf(useJid);
             const text = isPromote
                 ? `👑 ${toDecorated('PROMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n▸ Ora può gestire il gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`
                 : `⬇️ ${toDecorated('DEMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} non è più admin.\n▸ I suoi privilegi sono stati tolti.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
 
             await sendButtons(sock, from, text, [
                 { label: '📜 Registro modifiche', id: 'registro' },
-            ], msg).catch(() => sock.sendMessage(from, { text, mentions: [useJid] }, { quoted: msg }));
+            ], msg, [useJid]).catch(() => sock.sendMessage(from, { text, mentions: [useJid] }, { quoted: msg }));
         } catch (e) {
             console.error('[promote/demote]', e.message);
             await reply("⚠️ _[uso]:_ impossibile cambiare i privilegi. Controlla i permessi del bot.");

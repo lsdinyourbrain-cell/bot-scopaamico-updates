@@ -10,12 +10,14 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, reply, services } = context;
-        const { db, sendButtons } = services;
+        const { db, sendButtons, getCachedGroupMeta } = services;
 
         if (!from || !from.endsWith('@g.us')) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
 
         try {
-            const metadata = await sock.groupMetadata(from);
+            // Passa dalla cache condivisa: popola anche la mappa @lid→PN usata
+            // da dispOf per mostrare i numeri reali (e dai tag via buttons).
+            const metadata = await getCachedGroupMeta(sock, from);
             const participants = Array.isArray(metadata?.participants) ? metadata.participants : [];
             const admins = participants.filter(p => p.admin === 'admin' || p.admin === 'superadmin');
             const total = participants.length;
@@ -67,7 +69,7 @@ ${botAdmins}
             await sendButtons(sock, from, txt, [
                 { label: '📜 Registro modifiche', id: 'registro' },
                 { label: '👥 Lista membri', id: 'list' },
-            ], msg).catch(() => sock.sendMessage(from, { text: txt, mentions: mentionJids }, { quoted: msg }));
+            ], msg, mentionJids).catch(() => sock.sendMessage(from, { text: txt, mentions: mentionJids }, { quoted: msg }));
         } catch (e) {
             console.error('[admin]', e.message);
             await reply("❌ Errore nel recupero della lista admin.");

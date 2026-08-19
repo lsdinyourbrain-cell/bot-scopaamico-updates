@@ -2,12 +2,11 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  TOPGRUPPI — Vex Bot
-//  .topgruppi → classifica dei gruppi più attivi (con nome, messaggi e
-//  utenti attivi) in tabella nativa con pulsante a lista. I gruppi esclusi
-//  con .escludi non compaiono.
+//  .topgruppi → classifica dei gruppi più attivi in LISTA NATIVA di WhatsApp
+//  (pannello a righe del pulsante nativo, niente tabella ASCII). Premendo una
+//  riga arriva `.topgruppi info <n>` con i dettagli del gruppo.
+//  I gruppi esclusi con .escludi non compaiono.
 // ─────────────────────────────────────────────────────────────────────────────
-
-const { renderTable } = require('../../lib/table');
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
 
@@ -26,6 +25,15 @@ module.exports = {
             .filter(([gid]) => gid.endsWith('@g.us') && !esclusi[gid])
             .sort((a, b) => (b[1].n || 0) - (a[1].n || 0))
             .slice(0, 10);
+
+        // Nomi dei gruppi (con cache) per il pannello nativo e per le info.
+        const names = new Map();
+        for (const [gid] of list) {
+            try {
+                const meta = await getCachedGroupMeta(sock, gid);
+                names.set(gid, meta?.subject ? String(meta.subject).slice(0, 25) : gid.split('@')[0]);
+            } catch (_) { names.set(gid, gid.split('@')[0]); }
+        }
 
         if (!list.length) {
             return reply(
@@ -47,11 +55,7 @@ ${SEP}
             const entry = list[idx - 1];
             if (!entry) return reply('⚠️ Indice non valido: la classifica è cambiata, riprova.');
             const [gid, data] = entry;
-            let name = gid.split('@')[0];
-            try {
-                const meta = await getCachedGroupMeta(sock, gid);
-                if (meta?.subject) name = String(meta.subject).slice(0, 25);
-            } catch (_) {}
+            const name = names.get(gid) || gid.split('@')[0];
             const utenti = Object.keys(db[gid] || {})
                 .filter(k => k.includes('@') && db[gid][k] && typeof db[gid][k] === 'object' && (db[gid][k].msgCount || 0) > 0).length;
             return reply(
@@ -64,33 +68,27 @@ ${SEP}
 ◈ _Vex Bot_`);
         }
 
-        const rows = [];
-        for (let i = 0; i < list.length; i++) {
-            const [gid, data] = list[i];
-            let name = gid.split('@')[0];
-            try {
-                const meta = await getCachedGroupMeta(sock, gid);
-                if (meta?.subject) name = String(meta.subject).slice(0, 25);
-            } catch (_) {}
-            rows.push([String(i + 1), name, String(data.n || 0)]);
-        }
-
+        // La classifica VIVE nel pannello nativo: il corpo del messaggio è
+        // solo il titolo, le righe le apre il pulsante a lista di WhatsApp.
         const txt =
 `🏆 *TOP GRUPPI* 🏆
-${renderTable([
-    { header: 'NO', align: 'r', max: 3 },
-    { header: 'GRUPPO', align: 'l', max: 25 },
-    { header: 'MSG', align: 'r', max: 7 },
-], rows)}
-▸ Premi *📊* e scegli un gruppo
-  per vederne i dettagli.`;
 
+📲 Premi *📊* qui sotto e scegli
+un gruppo per vederne i dettagli.`;
+
+        // Righe del pannello nativo (max 20): i gruppi + riga per aggiornare.
         const listRows = list.map(([gid, data], i) => ({
             header: `#${i + 1}`,
-            title: String(rows[i][1]),
+            title: names.get(gid) || gid.split('@')[0],
             description: `${data.n || 0} messaggi`,
             id: `topgruppi info ${i + 1}`,
         }));
+        listRows.push({
+            header: '⟳',
+            title: '🔄 Aggiorna classifica',
+            description: ' ',
+            id: 'topgruppi',
+        });
 
         const btns = [
             { type: 'single_select', label: '📊 Scegli un gruppo', title: '🏆 Top gruppi', sectionTitle: 'Classifica', rows: listRows },

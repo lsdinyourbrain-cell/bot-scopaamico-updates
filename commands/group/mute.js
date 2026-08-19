@@ -35,7 +35,7 @@ module.exports = {
         try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
         const tgtPn = resolveJid(tgt, meta);
         const useJid = tgtPn || tgt;
-        const short = dispOf(tgt, tgtPn);
+        const short = dispOf(useJid);
 
         if (command === 'unmute' || command === 'smuta' || command === 'riabilita') {
             targetData.isMuted = false;
@@ -43,7 +43,7 @@ module.exports = {
             logGroupEvent(from, 'unmute', sender, null, tgt, 'riabilitato (può scrivere)');
             return await sendButtons(sock, from,
                 `🔊 ${toDecorated('UNMUTE', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} può *scrivere di nuovo*.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
-                [{ label: '📜 Registro modifiche', id: 'registro' }], msg)
+                [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, { text: `🔊 ${toDecorated('UNMUTE', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} può *scrivere di nuovo*.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`, mentions: [useJid] }, { quoted: msg }));
         }
 
@@ -53,7 +53,7 @@ module.exports = {
 
         await sendButtons(sock, from,
             `🔇 ${toDecorated('MUTE', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *mutato* permanentemente.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
-            [{ label: '📜 Registro modifiche', id: 'registro' }], msg)
+            [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
             .catch(() => sock.sendMessage(from, {
                 text: `🔇 ${toDecorated('MUTE', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *mutato* permanentemente.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                 mentions: [useJid],

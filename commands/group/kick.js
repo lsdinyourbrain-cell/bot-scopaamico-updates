@@ -28,14 +28,14 @@ module.exports = {
             try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
             const tgtPn = resolveJid(tgt, meta);
             const useJid = tgtPn || tgt;
-            const short = dispOf(tgt, tgtPn);
+            const short = dispOf(useJid);
 
             await sock.groupParticipantsUpdate(from, [useJid], 'remove');
             logGroupEvent(from, 'kick', sender, null, tgt, 'cacciato dal gruppo');
 
             await sendButtons(sock, from,
                 `👋 ${toDecorated('KICK', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} *cacciato/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
-                [{ label: '📜 Registro modifiche', id: 'registro' }], msg)
+                [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
                     text: `👋 ${toDecorated('KICK', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} *cacciato/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
                     mentions: [useJid],

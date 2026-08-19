@@ -98,7 +98,7 @@ Quando siete pronti, premi
                 [
                     { label: '🙋 Partecipa', id: 'corsa partecipa' },
                     { label: '🏁 Inizia', id: 'corsa inizia' },
-                ], msg);
+                ], msg, [sender]);
         }
 
         // ── INIZIA ───────────────────────────────────────────────────────
@@ -143,7 +143,7 @@ ${SEP}
 ${g.players.map((p, i) => `${medal(i + 1)} ${p.name} · ${p.points} pt`).join('\n')}
 ${SEP}
 💰 Premio: *${prize}€* a ${show(sender, senderAlt).slice(0, 12)}!`,
-                        [{ label: '🔁 Nuova gara', id: 'corsa partecipa' }, { label: '🏠 Menu', id: 'menu' }], msg);
+                        [{ label: '🔁 Nuova gara', id: 'corsa partecipa' }, { label: '🏠 Menu', id: 'menu' }], msg, [sender]);
                 }
                 // Passa al turno successivo.
                 g.answered = [];
@@ -156,7 +156,7 @@ ${SEP}
 ${g.players.map((p, i) => `${medal(i + 1)} ${p.name} · ${p.points} pt`).join('\n')}
 ${SEP}
 Prossima sfida 👇`,
-                    [], msg).then(() => askTurn(sock, from, msg, services));
+                    [], msg, [sender]).then(() => askTurn(sock, from, msg, services));
             }
 
             // Risposta sbagliata: prosegue comunque (gli altri possono rispondere).
@@ -204,7 +204,7 @@ Primo arrivato, primo vince!`,
                 [
                     { label: '🙋 Partecipa', id: 'corsa partecipa' },
                     { label: '🏁 Inizia', id: 'corsa inizia' },
-                ], msg);
+                ], msg, [sender]);
         }
 
         return reply('⏳ Gara in corso. Aspetta il tuo turno o premi un pulsante!');

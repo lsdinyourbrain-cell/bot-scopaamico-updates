@@ -2,13 +2,12 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  RICCHI — Vex Bot
-//  .ricchi → classifica dei membri più ricchi del gruppo (tabella nativa con
-//  pulsante a lista: scegli un utente per vederne il profilo taggandolo).
-//  .ricchi <n> → mostra i primi n (max 20).
+//  .ricchi → classifica dei membri più ricchi del gruppo in LISTA NATIVA di
+//  WhatsApp (pannello a righe del pulsante nativo, niente tabella ASCII).
+//  .ricchi <n> → primi n (max 20). Premendo una riga arriva `.ricchi profilo
+//  <n>` che mostra il profilo dell'utente TAGGANDOLO per davvero.
 //  I gruppi esclusi con .escludi non mostrano la classifica.
 // ─────────────────────────────────────────────────────────────────────────────
-
-const { renderTable } = require('../../lib/table');
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
 
@@ -19,7 +18,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { textArgs, from, isGroup, isOwner, isSenderAdmin, reply, services } = context;
-        const { db, dispOf, formatMoney, sendButtons, getCachedGroupMeta } = services;
+        const { db, dispOf, formatMoney, sendButtons } = services;
 
         if (!isGroup) return reply("❌ Comando disponibile solo nei gruppi.");
         if (db._escludi?.[from]) {
@@ -33,20 +32,6 @@ ${SEP}
 ${SEP}
 ◈ _Vex Bot_`);
         }
-
-        // In LID mode i jid salvati sono @lid: risolviamo il PN reale per
-        // mostrare i numeri veri nella tabella e nei tag.
-        let metaMap = null;
-        try {
-            const meta = await getCachedGroupMeta(sock, from);
-            metaMap = new Map((meta?.participants || [])
-                .map(p => [String(p?.id || p?.jid || '').toLowerCase().replace(/:\d+(?=@)/, ''), p?.phoneNumber])
-                .filter(([k, v]) => k && v));
-        } catch (_) {}
-        const disp = (jid) => {
-            const pn = metaMap?.get(String(jid).toLowerCase().replace(/:\d+(?=@)/, ''));
-            return pn ? pn.split('@')[0] : dispOf(jid);
-        };
 
         const want = parseInt(String(textArgs || '').trim(), 10);
         const limit = Number.isInteger(want) && want > 0 ? Math.min(want, 20) : 5;
@@ -65,11 +50,14 @@ ${SEP}
             const entry = allSorted[idx - 1];
             if (!entry) return reply('⚠️ Indice non valido: la classifica è cambiata, riprova.');
             const [jid, data] = entry;
+            // `dispOf` mostra il PN reale (mai il numero casuale @lid) e le
+            // mentions vengono risolte dal wrapper prima dell'invio: così il
+            // testo @<numero> coincide con mentionedJid e il tag evidenzia.
             await sock.sendMessage(from, {
                 text:
 `💎 *PROFILO RICCHEZZA*
 ${SEP}
-▸ @${disp(jid)}
+▸ @${dispOf(jid)}
 ▸ 💰 Saldo: *${formatMoney(data.money || 0)}*
 ▸ 🏦 Banca: *${formatMoney(data.bank || 0)}*
 ${SEP}
@@ -91,28 +79,28 @@ ${SEP}
 ${SEP}
 ◈ _Vex Bot_`);
 
-        const rows = sorted.map(([jid, data], i) => [
-            String(i + 1),
-            '@' + disp(jid),
-            (data.money || 0) > 0 ? formatMoney(data.money) : '0€',
-        ]);
-
+        // La classifica VIVE nel pannello nativo: il corpo del messaggio è
+        // solo il titolo, le righe le apre il pulsante a lista di WhatsApp.
         const txt =
 `💎 *TOP ${limit} RICCHI* 💎
-${renderTable([
-    { header: 'NO', align: 'r', max: 3 },
-    { header: 'UTENTE', align: 'l', max: 18 },
-    { header: 'SALDO', align: 'r', max: 14 },
-], rows)}
-▸ Premi *💎* e scegli un utente
-  per vederne il profilo.`;
 
-        const listRows = sorted.slice(0, 10).map(([jid, data], i) => ({
+📲 Premi *💎* qui sotto e scegli
+un utente: ti mostrerò il suo
+profilo e lo TAGGERO' qui in chat.`;
+
+        // Righe del pannello nativo (max 20): i migliori + riga per aggiornare.
+        const listRows = sorted.map(([jid, data], i) => ({
             header: `#${i + 1}`,
-            title: disp(jid),
+            title: dispOf(jid),
             description: `${formatMoney(data.money || 0)}`,
             id: `ricchi profilo ${i + 1}`,
         }));
+        listRows.push({
+            header: '⟳',
+            title: '🔄 Aggiorna classifica',
+            description: ' ',
+            id: 'ricchi',
+        });
 
         const btns = [
             { type: 'single_select', label: '💎 Scegli un utente', title: '💎 Top ricchi', sectionTitle: 'Classifica', rows: listRows },
@@ -124,6 +112,6 @@ ${renderTable([
             btns.push({ label: '🏆 Attivi', id: 'top' });
         }
 
-        await sendButtons(sock, from, txt, btns, msg, sorted.map(([jid]) => jid).slice(0, 20));
+        await sendButtons(sock, from, txt, btns, msg);
     },
 };
