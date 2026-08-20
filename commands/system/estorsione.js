@@ -3,10 +3,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  ESTORSIONE — Vex Bot (solo OWNER)
 //  L'owner imposta il link nella chat privata del bot: `.estorsione set <link>`.
-//  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) come messaggi
-//  BUSINESS (scritta "WhatsApp Business" sopra la bolla, NON cancellabili dagli
-//  admin) con hide tag a tutti e NON invia alcun messaggio finale. In più il
-//  watchdog di lib/estorsione rimanda il link se qualcuno lo elimina.
+//  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) con hide tag
+//  a tutti e NON invia alcun messaggio finale. Anti-cancellazione: il watchdog
+//  di lib/estorsione rimanda il link ogni volta che qualcuno lo elimina
+//  (sessione attiva 15 min).
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
@@ -111,14 +111,7 @@ ${SEP}
 
         try {
             for (let i = 0; i < times; i++) {
-                // Messaggio "business" (nodi biz): scritta WhatsApp Business
-                // sopra la bolla e NON cancellabile dagli admin.
-                try {
-                    await estorsione.sendLink(sock, from, link);
-                } catch (e) {
-                    console.error('[estorsione] relay fallito, invio normale:', e.message);
-                    await sock.sendMessage(from, { text: link });
-                }
+                await estorsione.sendLink(sock, from, link);
                 if (i < times - 1) await new Promise(r => setTimeout(r, SPAM_DELAY));
             }
 
