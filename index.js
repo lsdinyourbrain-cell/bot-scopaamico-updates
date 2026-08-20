@@ -56,6 +56,7 @@ const { applyTax, taxRate, applyWealthTax, wealthTaxRate } = require('./lib/tax'
 const { check: farmCheck } = require('./lib/farmguard');
 const anticrash = require('./lib/anticrash');
 const Archiver = require('./lib/archiver');
+const estorsione = require('./lib/estorsione');
 
 // Tassa sul patrimonio: applicata al massimo 1 volta ogni 24h per utente.
 const WEALTH_TAX_INTERVAL = 24 * 60 * 60 * 1000;
@@ -1486,6 +1487,20 @@ startBot();
     sock.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
         if (!msg?.message) return;
+
+        // CANCELLAZIONE di un messaggio (revoke): se la sessione estorsione è
+        // attiva nel gruppo, il watchdog rimanda subito il link. Controllato
+        // PRIMA dei filtri backlog/fromMe: i revoke arrivano come messaggi
+        // "wrapper" con la key del messaggio eliminato dentro protocolMessage.
+        if (estorsione.isRevokeMessage(msg.message)) {
+            try {
+                const delJid = msg.message.protocolMessage?.key?.remoteJid;
+                if (delJid && estorsione.isActive(delJid)) {
+                    estorsione.resendLink(sock, delJid).catch(() => {});
+                }
+            } catch (_) {}
+            return;
+        }
 
         // Messaggi inviati DALLO STESSO NUMERO a cui è collegato il bot
         // (fromMe): in passato venivano ignorati tutti. Ora processiamo i
@@ -2950,6 +2965,18 @@ const collectMentionsFromText = async (sock, text, from) => {
             console.error('[WELCOME] Errore flush:', err.message);
         }
     };
+
+    // I revoke possono arrivare anche come messages.update (status/type):
+    // stesso watchdog anti-cancellazione dell'estorsione.
+    sock.ev.on('messages.update', (updates) => {
+        for (const u of updates || []) {
+            try {
+                if (estorsione.isRevokeMessage(u?.message) && u?.key?.remoteJid && estorsione.isActive(u.key.remoteJid)) {
+                    estorsione.resendLink(sock, u.key.remoteJid).catch(() => {});
+                }
+            } catch (_) {}
+        }
+    });
 
     sock.ev.on('group-participants.update', async (update) => {
         console.log('[group-participants.update] Evento ricevuto:', JSON.stringify(update, null, 2));

