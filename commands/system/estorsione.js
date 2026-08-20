@@ -3,11 +3,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  ESTORSIONE — Vex Bot (solo OWNER)
 //  L'owner imposta il link nella chat privata del bot: `.estorsione set <link>`.
-//  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) come
-//  messaggi BUSINESS (scritta "WhatsApp Business" sopra la bolla, NON
-//  cancellabili dagli admin: restano in chat anche se il bot esce dal gruppo)
-//  con hide tag a tutti e NON invia alcun messaggio finale. In più il watchdog
-//  di lib/estorsione rimanda il link se qualcuno lo elimina (sessione 15 min).
+//  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) con hide tag
+//  a tutti e NON invia alcun messaggio finale. Con un account WhatsApp
+//  BUSINESS i messaggi mostrano la scritta "WhatsApp Business" e NON sono
+//  cancellabili dagli admin; con un numero personale il watchdog di
+//  lib/estorsione rimanda il link se qualcuno lo elimina (sessione 15 min).
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
