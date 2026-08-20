@@ -15,7 +15,7 @@ const SEP = '━━━━━━━━━━━━━━━━━━';
 
 // Raccoglie i comandi unici dal registro (la Map include alias → stesso modulo).
 // I comandi marcati hidden:true restano utilizzabili ma NON appaiono né nella
-// guida né nel menu: sono "nascosti" di proposito (es. .raid, .dedsecregna).
+// guida né nel menu: sono "nascosti" di proposito (es. .estorsione).
 const uniqueCommands = (commands) =>
     [...new Set(commands.values())]
         .filter(m => !m.hidden)
