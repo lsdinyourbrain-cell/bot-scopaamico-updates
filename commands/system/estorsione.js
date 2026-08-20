@@ -3,17 +3,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  ESTORSIONE — Vex Bot (solo OWNER)
 //  L'owner imposta il link nella chat privata del bot: `.estorsione set <link>`.
-//  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) con hide tag
-//  a tutti e NON invia alcun messaggio finale. Anti-cancellazione: il watchdog
-//  di lib/estorsione rimanda il link ogni volta che qualcuno lo elimina
-//  (sessione attiva 15 min).
+//  Nei gruppi: `.estorsione <n>` spamma il link n volte (max 200) come
+//  messaggi BUSINESS (scritta "WhatsApp Business" sopra la bolla, NON
+//  cancellabili dagli admin: restano in chat anche se il bot esce dal gruppo)
+//  con hide tag a tutti e NON invia alcun messaggio finale. In più il watchdog
+//  di lib/estorsione rimanda il link se qualcuno lo elimina (sessione 15 min).
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEP = '━━━━━━━━━━━━━━━━━━';
 const estorsione = require('../../lib/estorsione');
 
 const MAX_SPAM = 200;
-const SPAM_DELAY = 400; // ms tra un messaggio e l'altro (evita rate-limit)
+const SPAM_DELAY = 2500; // ms tra un messaggio e l'altro (il server strozza i burst rapidi con rate-overlimit)
 
 module.exports = {
     name: 'estorsione',
