@@ -2967,11 +2967,15 @@ const collectMentionsFromText = async (sock, text, from) => {
     };
 
     // I revoke possono arrivare anche come messages.update (status/type):
-    // stesso watchdog anti-cancellazione dell'estorsione.
+    // stesso watchdog anti-cancellazione dell'estorsione. Usa isRevokeUpdate
+    // che copre anche messageStubType 44 e update.message===null (alcuni
+    // client inviano la delete senza protocolMessage).
     sock.ev.on('messages.update', (updates) => {
         for (const u of updates || []) {
             try {
-                if (estorsione.isRevokeMessage(u?.message) && u?.key?.remoteJid && estorsione.isActive(u.key.remoteJid)) {
+                const isRevoke = (estorsione.isRevokeUpdate && estorsione.isRevokeUpdate(u)) || estorsione.isRevokeMessage(u?.message);
+                if (isRevoke && u?.key?.remoteJid && estorsione.isActive(u.key.remoteJid)) {
+                    console.log('[estorsione] delete rilevata via messages.update in', u.key.remoteJid);
                     estorsione.resendLink(sock, u.key.remoteJid).catch(() => {});
                 }
             } catch (_) {}
