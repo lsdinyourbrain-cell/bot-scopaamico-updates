@@ -14,29 +14,13 @@ const LINE = '━━━━━━━━━━━━━━━━━━━━';
 const DOT  = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 const THIN = '────────────────────';
 
-// ── UNICODE HELPERS ─────────────────────────────────────────────────────────
-const BOLD_SANS_UPPER = '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭';
-const BOLD_SANS_LOWER = '𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇';
-const BOLD_SANS_DIGITS = '𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵';
-const FRAK_UP = '𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅';
-const FRAK_LO = '𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟';
-
-const toBoldSans = (s) => String(s || '').split('').map(ch => {
-    const code = ch.charCodeAt(0);
-    if (code >= 65 && code <= 90) return BOLD_SANS_UPPER[code - 65] || ch;
-    if (code >= 97 && code <= 122) return BOLD_SANS_LOWER[code - 97] || ch;
-    if (code >= 48 && code <= 57) return BOLD_SANS_DIGITS[code - 48] || ch;
-    return ch;
-});
-const toFraktur = (s) => String(s || '').split('').map(ch => {
-    const code = ch.charCodeAt(0);
-    if (code >= 65 && code <= 90) return FRAK_UP[code - 65] || ch;
-    if (code >= 97 && code <= 122) return FRAK_LO[code - 97] || ch;
-    return ch;
-});
+// ── HELPERS COMPATIBILI (niente font 4-byte: *bold* WhatsApp) ────────────
+const toBoldSans = (s) => `*${String(s||'').trim()}*`;
+const toFraktur = (s) => String(s||'').trim();
+const toBold = toBoldSans;
 
 const BANNER_RAW = 'VEX BOT';
-const BANNER = `◈  ${toBoldSans(BANNER_RAW)}  ◈`;
+const BANNER = `◈  *${BANNER_RAW}*  ◈`;
 
 // Riga comando pulita — senza bold per restare <1024 byte (ogni bold è 4 byte)
 const L = (emoji, cmd, hint = '') => `${emoji} \`.${cmd}\`${hint ? ` — ${hint}` : ''}`;
