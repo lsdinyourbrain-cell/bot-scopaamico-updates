@@ -1,15 +1,25 @@
 'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  TOPGRUPPI — Vex Bot
-//  .topgruppi → classifica dei gruppi più attivi del bot. Pulsante *📊 Vedi
-//  tabella* → VERA TABELLA in immagine (niente sezioni nate da pannelli
-//  nativi). *📊 Scegli un gruppo* → dettagli del gruppo. I gruppi esclusi
-//  con .escludi non compaiono.
+//  TOPGRUPPI — Vex Bot · v2 Premium
+//  .topgruppi → classifica gruppi: ENTRAMBI immagine PNG + pulsanti
+//  Tabella vera con POS | GRUPPO | MESSAGGI | MEMBRI
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '━━━━━━━━━━━━━━━━━━━━';
+const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 const { renderLeaderboardImage } = require('../../lib/leaderboard');
+
+const BOLD_UP = '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭';
+const BOLD_LO = '𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇';
+const BOLD_DI = '𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵';
+const toBold = (s) => String(s||'').split('').map(ch=>{
+    const c=ch.charCodeAt(0);
+    if(c>=65&&c<=90) return BOLD_UP[c-65]||ch;
+    if(c>=97&&c<=122) return BOLD_LO[c-97]||ch;
+    if(c>=48&&c<=57) return BOLD_DI[c-48]||ch;
+    return ch;
+});
 
 module.exports = {
     name: 'topgruppi',
@@ -27,117 +37,120 @@ module.exports = {
             .sort((a, b) => (b[1].n || 0) - (a[1].n || 0))
             .slice(0, 10);
 
-        // Nomi dei gruppi (con cache) per il pannello nativo e per le info.
         const names = new Map();
+        const membersCount = new Map();
         for (const [gid] of list) {
             try {
                 const meta = await getCachedGroupMeta(sock, gid);
-                names.set(gid, meta?.subject ? String(meta.subject).slice(0, 25) : gid.split('@')[0]);
-            } catch (_) { names.set(gid, gid.split('@')[0]); }
+                names.set(gid, meta?.subject ? String(meta.subject).slice(0, 24) : gid.split('@')[0]);
+                const partCount = Array.isArray(meta?.participants) ? meta.participants.length : 0;
+                membersCount.set(gid, partCount);
+            } catch (_) {
+                names.set(gid, gid.split('@')[0]);
+                // fallback: conta utenti attivi dal db
+                const dbCount = Object.keys(db[gid]||{}).filter(k=>k.includes('@') && db[gid][k]?.msgCount).length;
+                membersCount.set(gid, dbCount);
+            }
         }
 
         if (!list.length) {
             return reply(
-`🏆 *TOP GRUPPI* 🏆
+`🏆  ${toBold('TOP GRUPPI')}
 ${SEP}
 ▸ Nessun dato ancora.
 ▸ Scrivi e gioca nei gruppi:
-  l'attività viene contata e
-  questi gruppi saliranno in
-  classifica.
+  l'attività verrà contata.
 ${SEP}
-◈ _Vex Bot_`);
+◈ Vex Bot`);
         }
 
-        // ── INFO GRUPPO (dalla lista nativa) ──────────────────────────────
-        // Quando si preme una voce della lista, arriva `.topgruppi info <n>`.
         if (String(args[0] || '').toLowerCase() === 'info') {
             const idx = parseInt(args[1], 10);
             const entry = list[idx - 1];
-            if (!entry) return reply('⚠️ Indice non valido: la classifica è cambiata, riprova.');
+            if (!entry) return reply('⚠️ Indice non valido: classifica cambiata, riprova.');
             const [gid, data] = entry;
             const name = names.get(gid) || gid.split('@')[0];
-            const utenti = Object.keys(db[gid] || {})
-                .filter(k => k.includes('@') && db[gid][k] && typeof db[gid][k] === 'object' && (db[gid][k].msgCount || 0) > 0).length;
-            return reply(
-`🏆 *INFO GRUPPO*
+            const utenti = membersCount.get(gid) ?? Object.keys(db[gid]||{}).filter(k=>k.includes('@') && db[gid][k]?.msgCount).length;
+            const txt =
+`${toBold('INFO GRUPPO')}  ·  #${idx}
 ${SEP}
-▸ 📛 ${name}
-▸ 💬 Messaggi: *${data.n || 0}*
-▸ 👥 Utenti attivi: *${utenti}*
+📛  ${name}
+💬  Messaggi: ${toBold(String(data.n||0))}
+👥  Membri: ${toBold(String(utenti))}
+🆔  ${gid.split('@')[0]}
 ${SEP}
-◈ _Vex Bot_`);
-        }
-
-        // ── TABELLA IN IMMAGINE ───────────────────────────────────────────
-        // `.topgruppi tabella` (o il pulsante 📊) → VERA tabella PNG, non una
-        // sezione nativa. Nessun tag qui: i gruppi non sono utenti.
-        if (String(args[0] || '').toLowerCase() === 'tabella') {
-            const rows = list.map(([gid, data]) => ({
-                name: names.get(gid) || gid.split('@')[0],
-                value: `${data.n || 0} msg`,
-            }));
-            let png;
-            try {
-                png = await renderLeaderboardImage({
-                    title: 'TOP GRUPPI',
-                    subtitle: 'Gruppi più attivi del bot',
-                    accent: '#34d399',
-                    accent2: '#0ea5e9',
-                    rows,
-                });
-            } catch (e) {
-                console.error('[topgruppi] render tabella:', e.message);
-                return reply('⚠️ Errore generando la tabella, riprova.');
-            }
-            const [wGid, wData] = list[0];
-            await sock.sendMessage(from, {
-                image: png,
-                mimetype: 'image/png',
-                caption:
-`🏆 *TOP GRUPPI* 🏆
-${SEP}
-🥇 *${names.get(wGid) || wGid.split('@')[0]}*
-  è il gruppo più attivo
-  con *${wData.n || 0}* messaggi!
-${SEP}
-◈ _Vex Bot_`,
-            }, { quoted: msg });
+◈ Vex Bot`;
+            await sock.sendMessage(from, { text: txt }, { quoted: msg });
+            const btns = [
+                { label: '📊 Tabella', id: 'topgruppi' },
+                { label: '🏠 Menu', id: 'menu' },
+            ];
+            await sendButtons(sock, from, `${toBold('AZIONI')} — ${name}`, btns, msg, null, { headerTitle: '🏆 Info Gruppo', footerText: '⬇️ Torna alla top' });
             return;
         }
 
-        // Corpo del messaggio: titolo + hint.
-        const txt =
-`🏆 *TOP GRUPPI* 🏆
-${SEP}
-📲 Premi *📊* per la tabella
-completa o per i dettagli
-di un gruppo.`;
-
-        // Righe del pannello nativo (max 20): i gruppi + riga per aggiornare.
-        const listRows = list.map(([gid, data], i) => ({
-            header: `#${i + 1}`,
-            title: names.get(gid) || gid.split('@')[0],
-            description: `${data.n || 0} messaggi`,
-            id: `topgruppi info ${i + 1}`,
+        // Tabella immagine con 4 colonne
+        const rowsImg = list.map(([gid, data]) => ({
+            name: names.get(gid) || gid.split('@')[0],
+            msg: `${data.n||0} msg`,
+            members: `${membersCount.get(gid)||0}`,
         }));
-        listRows.push({
-            header: '⟳',
-            title: '🔄 Aggiorna classifica',
-            description: ' ',
-            id: 'topgruppi',
-        });
 
-        const btns = [
-            { label: '📊 Vedi tabella', id: 'topgruppi tabella' },
-            { type: 'single_select', label: '🔍 Scegli un gruppo', title: '🏆 Top gruppi', sectionTitle: 'Classifica', rows: listRows },
-        ];
-        if (isGroup && (isOwner || isSenderAdmin)) {
-            btns.push({ label: '🚫 Escludi questo gruppo', id: 'escludi' });
-        } else {
-            btns.push({ label: '🔄 Aggiorna', id: 'topgruppi' });
+        let png;
+        try {
+            png = await renderLeaderboardImage({
+                title: 'TOP GRUPPI',
+                subtitle: 'Gruppi più attivi del bot',
+                accent: '#34d399',
+                accent2: '#0ea5e9',
+                rows: rowsImg,
+            });
+        } catch (e) {
+            console.error('[topgruppi] render:', e.message);
+            return reply('⚠️ Errore tabella, riprova.');
         }
 
-        await sendButtons(sock, from, txt, btns, msg);
+        const [wGid, wData] = list[0];
+        const wName = names.get(wGid) || wGid.split('@')[0];
+
+        await sock.sendMessage(from, {
+            image: png,
+            mimetype: 'image/png',
+            caption:
+`🏆  ${toBold('TOP GRUPPI')}  🏆
+${SEP}
+🥇  ${toBold(wName)}
+   ${wData.n||0} messaggi  ·  ${membersCount.get(wGid)||0} membri
+${DOT}
+${toBold('Classifica reale')} — dal vivo
+${SEP}
+◈ Vex Bot`,
+        }, { quoted: msg });
+
+        const txt =
+`${toBold('TOP GRUPPI')}  ·  ${list.length} gruppi
+${SEP}
+🥇  ${toBold(wName)}  —  ${wData.n||0} msg
+👥  ${membersCount.get(wGid)||0} membri
+${DOT}
+${toBold('Dettaglio')} → info gruppo
+${toBold('Aggiorna')} → ricalcola
+${SEP}
+◈ Vex Bot`;
+
+        const listRows = list.map(([gid, data], i) => ({
+            header: `#${i+1}`,
+            title: names.get(gid) || gid.split('@')[0],
+            description: `${data.n||0} msg · ${membersCount.get(gid)||0} membri`,
+            id: `topgruppi info ${i+1}`,
+        }));
+
+        const btns = [
+            { type: 'single_select', label: '👑 Dettaglio', title: '🏆 Top gruppi', sectionTitle: 'Scegli gruppo', rows: listRows },
+            { label: '📊 Aggiorna', id: 'topgruppi' },
+            { label: '🏠 Menu', id: 'menu' },
+        ];
+
+        await sendButtons(sock, from, txt, btns, msg, null, { headerTitle: '🏆 TOP GRUPPI', footerText: '⬇️ Scegli un gruppo' });
     },
 };

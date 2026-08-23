@@ -367,10 +367,16 @@ const DEFAULT_ANTILINK_GROUP = () =>
  * Se il file non esiste o è corrotto, restituisce un oggetto vuoto.
  * @returns {{ [groupJid: string]: { [platform: string]: boolean } }}
  */
+let _antilinkCache = null;
+let _antilinkCacheTs = 0;
+const ANTILINK_CACHE_TTL = 4000;
 const loadAntilink = () => {
+    if (_antilinkCache && Date.now() - _antilinkCacheTs < ANTILINK_CACHE_TTL) return _antilinkCache;
     try {
-        if (!fs.existsSync(ANTILINK_FILE)) return {};
-        return JSON.parse(fs.readFileSync(ANTILINK_FILE, 'utf-8'));
+        if (!fs.existsSync(ANTILINK_FILE)) { _antilinkCache = {}; _antilinkCacheTs = Date.now(); return _antilinkCache; }
+        _antilinkCache = JSON.parse(fs.readFileSync(ANTILINK_FILE, 'utf-8'));
+        _antilinkCacheTs = Date.now();
+        return _antilinkCache;
     } catch (e) {
         console.error('[ANTILINK] Errore lettura file, ripristino vuoto.', e.message);
         return {};
@@ -385,6 +391,8 @@ const loadAntilink = () => {
  * @param {{ [groupJid: string]: { [platform: string]: boolean } }} data
  */
 const saveAntilink = (data) => {
+    _antilinkCache = data;
+    _antilinkCacheTs = Date.now();
     try {
         fs.writeFileSync(ANTILINK_FILE, JSON.stringify(data, null, 2), 'utf-8');
     } catch (e) {
@@ -1723,9 +1731,7 @@ const rainMsgCount = new Map();
         } catch (_) {}
 
         // ── ANTIBOT "CACCIA BOT" (reazione ai comandi) ────────────────────
-        // Se la chat ha .antibot attivo e c'è una finestra armata (qualcuno
-        // ha appena eseguito un comando del bot), osserva se un ALTRO account
-        // risponde con output da bot e in tal caso lo rimuove subito.
+        // Finestra 10s dopo un comando: punteggi su pulsanti/box/header/high-rate.
         (async () => {
             try {
                 const abCfg = db._antibot?.[from];
@@ -1733,14 +1739,28 @@ const rainMsgCount = new Map();
                 if (!antibotLib.isArmed(from)) return;
                 const numClean = String(sender || '').replace(/[^0-9]/g, '');
                 if (abCfg.whitelist?.some(w => numClean.includes(String(w).replace(/[^0-9]/g, '')))) return;
-                // L'input durante la finestra può essere un comando o testo.
-                const quotedStanzaId = getContextInfo(msg.message)?.quotedMessage ? getContextInfo(msg.message)?.stanzaId : null;
+                // Estrai artefatti da bot dal messaggio raw (senza I/O)
+                const rawM = msg.message || {};
+                const unwrap = (mm) => mm?.viewOnceMessage?.message || mm?.viewOnceMessageV2?.message || mm?.viewOnceMessageV2Extension?.message || mm;
+                const um = unwrap(rawM) || rawM;
+                const hasButtons = !!um.buttonsMessage || !!um.templateMessage?.hydratedTemplate?.hydratedButtons?.length;
+                const hasInteractive = !!(um.interactiveMessage || um.interactiveResponseMessage || um.nativeFlowResponseMessage || um.nativeFlowMessage || um.interactiveMessage?.nativeFlowMessage || um.interactiveResponseMessage?.nativeFlowResponseMessage || um.templateMessage);
+                const hasList = !!(um.listMessage || um.listResponseMessage || um.templateMessage?.hydratedTemplate?.hydratedButtons?.some(b => b.listMessage));
+                let messageType = null;
+                if (hasButtons) messageType = 'buttonsMessage';
+                else if (hasInteractive) messageType = 'interactiveMessage';
+                else if (hasList) messageType = 'listMessage';
+                else if (rawM) messageType = Object.keys(rawM)[0] || null;
+                const isCommand = body?.startsWith('.') === true;
                 const res = antibotLib.scan(from, {
                     sender,
-                    quotedStanzaId,
-                    isCommand: body?.startsWith('.') === true,
-                    isKnownCommand: body?.startsWith('.') ? commands.has(body.slice(1).trim().split(/\s+/)[0].toLowerCase()) : false,
                     body: body || '',
+                    isCommand,
+                    messageType,
+                    hasButtons,
+                    hasInteractive,
+                    hasList,
+                    isHighRate: false,
                 });
                 if (!res.hit) return;
                 // Non toccare mai admin/whitelist antinuke.
@@ -2717,6 +2737,28 @@ const rainMsgCount = new Map();
         }
 
         if (!body.startsWith('.')) return;
+
+        // ── OWNER OBBLIGATORIO NEL GRUPPO ────────────────────────────────
+        // Il bot risponde SOLO nei gruppi dove l'owner è presente come membro.
+        // Se l'owner non è nel gruppo, il comando viene ignorato silenziosamente.
+        if (isGroup) {
+            try {
+                const metaOwner = await getCachedGroupMeta(sock, from);
+                const parts = Array.isArray(metaOwner?.participants) ? metaOwner.participants : [];
+                const ownerIds = [ownerNumber, sock.user?.id, sock.user?.lid, ...((db._owners||[]).map(o=>o.number)), ...((db._owners||[]).map(o=>o.lid))].filter(Boolean);
+                const ownerInGroup = parts.some(p => {
+                    const pid = p?.id || p?.jid || '';
+                    const phone = p?.phoneNumber || '';
+                    return ownerIds.some(oid => sameJid(pid, oid) || (phone && sameJid(phone, oid)));
+                });
+                if (!ownerInGroup) {
+                    // Silenzioso: non rispondere, non reagire
+                    return;
+                }
+            } catch (_) {
+                // Se non riesco a leggere i partecipanti, lascia passare (non bloccare)
+            }
+        }
 
         // ── MODO ADMIN ────────────────────────────────────────────────────
         // Se il gruppo ha .modoadmin attivo, SOLO gli admin possono usare il

@@ -1,0 +1,143 @@
+'use strict';
+const fs = require('fs');
+const path = require('path');
+
+const SANS_UPPER = '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭';
+const SANS_LOWER = '𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇';
+function toSansBold(str) {
+    if (!str) return str;
+    const _up = Array.from(SANS_UPPER);
+    const _lo = Array.from(SANS_LOWER);
+    let out = '';
+    for (const ch of str) {
+        if (ch >= 'A' && ch <= 'Z') out += _up[ch.charCodeAt(0)-65];
+        else if (ch >= 'a' && ch <= 'z') out += _lo[ch.charCodeAt(0)-97];
+        else out += ch;
+    }
+    return out;
+}
+
+module.exports = {
+    name: 'sicurezza',
+    aliases: ['security','secur','protezione'],
+    description: 'Mostra tutte le impostazioni di sicurezza del gruppo.',
+    async run(sock, msg, args, context) {
+        const { from, isGroup, sender, services } = context;
+        const { db, sendButtons, getAntilinkGroup, getAntinukeGroup, getWelcomeGroup } = services || {};
+
+        if (!isGroup) {
+            const txt = `🛡️  ${toSansBold('SICUREZZA')}\n${'━'.repeat(20)}\n▸ Funziona solo nei gruppi.\n▸ In privato non ci sono\n  protezioni da gestire.\n${'━'.repeat(20)}\n◈ _Vex Bot_`;
+            if (typeof sendButtons === 'function') return sendButtons(sock, from, txt, [{ label: '🏠 Menu', id: 'menu' }], msg);
+            return sock.sendMessage(from, { text: txt }, { quoted: msg });
+        }
+
+        // ── ANTILINK (dettaglio piattaforme) ─────────────────────────
+        let antilinkCfg = null;
+        let antilinkActiveList = [];
+        let antilinkCountActive = 0;
+        try {
+            if (typeof getAntilinkGroup === 'function') {
+                antilinkCfg = getAntilinkGroup(from);
+            } else {
+                const p = path.join(__dirname, '..', '..', 'antilink.json');
+                if (fs.existsSync(p)) {
+                    const all = JSON.parse(fs.readFileSync(p, 'utf-8'));
+                    antilinkCfg = all[from] || null;
+                }
+            }
+        } catch (_) { antilinkCfg = null; }
+        if (antilinkCfg && typeof antilinkCfg === 'object') {
+            for (const [k,v] of Object.entries(antilinkCfg)) {
+                if (v) { antilinkActiveList.push(k); antilinkCountActive++; }
+            }
+        }
+        const antilinkOn = antilinkCountActive > 0;
+        const antilinkDetail = antilinkCfg ? Object.entries(antilinkCfg).map(([k,v]) => `${v?'✅':'❌'} ${k}`).join('  ') : '❌ non configurato';
+
+        // ── ANTINUKE ─────────────────────────────────────────────────
+        let antinukeCfg = null;
+        try {
+            if (typeof getAntinukeGroup === 'function' && db) antinukeCfg = getAntinukeGroup(db, from);
+            else if (db && db._antinuke && db._antinuke[from]) antinukeCfg = db._antinuke[from];
+        } catch (_) {}
+        const antinukeOn = !!(antinukeCfg && antinukeCfg.enabled);
+        let antinukeControlsTxt = '';
+        if (antinukeCfg && antinukeCfg.controls) {
+            const onCtrls = Object.entries(antinukeCfg.controls).filter(([,v])=>v).map(([k])=>k).join(', ');
+            antinukeControlsTxt = onCtrls ? `▸ Controlli: ${onCtrls}` : '▸ Nessun controllo attivo';
+        } else {
+            antinukeControlsTxt = '▸ Non configurato';
+        }
+        const antinukeWl = antinukeCfg && Array.isArray(antinukeCfg.whitelist) ? antinukeCfg.whitelist.length : 0;
+
+        // ── ANTIFLOOD ────────────────────────────────────────────────
+        const antifloodOn = db && db[from] ? db[from]._antiflood !== false : true;
+        // ── ANTIBOT ──────────────────────────────────────────────────
+        const antibotOn = !!(db && db._antibot && db._antibot[from] && db._antibot[from].enabled);
+        const antibotWl = db && db._antibot && db._antibot[from] && Array.isArray(db._antibot[from].whitelist) ? db._antibot[from].whitelist.length : 0;
+        // ── ANTIFLAME ────────────────────────────────────────────────
+        const antiflameOn = !!(db && db._antiflame && db._antiflame[from] && db._antiflame[from].enabled);
+        // ── BESTEMMIOMETRO ───────────────────────────────────────────
+        const bestOn = !(db && db._bestemmiometro && db._bestemmiometro[from] === false);
+        // ── MODOADMIN ────────────────────────────────────────────────
+        const modoAdminOn = !!(db && db[from] && db[from]._modoadmin);
+        // ── WELCOME / GOODBYE ────────────────────────────────────────
+        let welcomeOn = true, goodbyeOn = true;
+        try {
+            if (typeof getWelcomeGroup === 'function') {
+                const w = getWelcomeGroup(from);
+                welcomeOn = !!w.welcome;
+                goodbyeOn = !!w.goodbye;
+            } else {
+                const p2 = path.join(__dirname, '..', '..', 'welcome.json');
+                if (fs.existsSync(p2)) {
+                    const allW = JSON.parse(fs.readFileSync(p2, 'utf-8'));
+                    if (allW[from]) { welcomeOn = !!allW[from].welcome; goodbyeOn = !!allW[from].goodbye; }
+                }
+            }
+        } catch (_) {}
+
+        // ── GRAFICA ──────────────────────────────────────────────────
+        const title = toSansBold('SICUREZZA');
+        const sec = (t) => `▸ ${toSansBold(t)}`;
+        const ok = (b) => b ? '✅ ATTIVO' : '❌ SPENTO';
+        const line = '━'.repeat(22);
+        const thin = '─'.repeat(22);
+
+        const text = `🛡️  ${title}  🛡️\n${line}\n`+
+        `${sec('ANTILINK')}  ${ok(antilinkOn)}\n`+
+        `▸ Filtri attivi: ${antilinkCountActive}/8\n`+
+        `▸ ${antilinkDetail}\n`+
+        `${thin}\n`+
+        `${sec('ANTINUKE')}  ${ok(antinukeOn)}\n`+
+        `${antinukeControlsTxt}\n`+
+        `▸ Whitelist: ${antinukeWl} utenti\n`+
+        `${thin}\n`+
+        `${sec('ANTIFLOOD')}  ${ok(antifloodOn)}\n`+
+        `▸ Muta chi flodda (6 msg/4s)\n`+
+        `${sec('ANTIBOT')}  ${ok(antibotOn)}  ${antibotWl?`(${antibotWl} wl)`:''}\n`+
+        `${sec('ANTIFLAME')}  ${ok(antiflameOn)}\n`+
+        `${sec('BESTEMMIOMETRO')}  ${ok(bestOn)}\n`+
+        `${sec('MODOADMIN')}  ${ok(modoAdminOn)}\n`+
+        `${sec('WELCOME')}  ${welcomeOn?'✅':'❌'}  ${sec('GOODBYE')}  ${goodbyeOn?'✅':'❌'}\n`+
+        `${line}\n`+
+        `💡 Gestisci con i pulsanti sotto\n`+
+        `${line}\n◈ _Vex Bot_`;
+
+        const buttons = [
+            { label: '🔧 Gestisci antilink', id: 'antilink' },
+            { label: '🛡️ Antinuke', id: 'antinuke' },
+            { label: '🤖 Antibot', id: 'antibot' }
+        ];
+
+        try {
+            if (typeof sendButtons === 'function') {
+                await sendButtons(sock, from, text, buttons, msg);
+            } else {
+                await sock.sendMessage(from, { text }, { quoted: msg });
+            }
+        } catch (e) {
+            await sock.sendMessage(from, { text }, { quoted: msg });
+        }
+    }
+};

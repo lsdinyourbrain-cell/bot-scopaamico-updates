@@ -1,15 +1,25 @@
 'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  RICCHI — Vex Bot
-//  .ricchi → classifica dei membri più ricchi del gruppo. Pulsante *📊 Vedi
-//  tabella* → VERA TABELLA in immagine (niente sezioni nate da pannelli
-//  nativi). *💎 Scegli un utente* → profilo con tag reale. I gruppi esclusi
-//  con .escludi non mostrano la classifica.
+//  RICCHI — Vex Bot · v2 Premium
+//  .ricchi → classifica ricchi: ENTRAMBI immagine + pulsanti
+//  Tabella vera con POS | UTENTE | CONTANTI | BANCA
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '━━━━━━━━━━━━━━━━━━━━';
+const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 const { renderLeaderboardImage } = require('../../lib/leaderboard');
+
+const BOLD_UP = '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭';
+const BOLD_LO = '𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇';
+const BOLD_DI = '𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵';
+const toBold = (s) => String(s||'').split('').map(ch=>{
+    const c=ch.charCodeAt(0);
+    if(c>=65&&c<=90) return BOLD_UP[c-65]||ch;
+    if(c>=97&&c<=122) return BOLD_LO[c-97]||ch;
+    if(c>=48&&c<=57) return BOLD_DI[c-48]||ch;
+    return ch;
+});
 
 module.exports = {
     name: 'ricchi',
@@ -20,136 +30,135 @@ module.exports = {
         const { textArgs, from, isGroup, isOwner, isSenderAdmin, reply, services } = context;
         const { db, dispOf, formatMoney, sendButtons } = services;
 
-        if (!isGroup) return reply("❌ Comando disponibile solo nei gruppi.");
+        if (!isGroup) return reply("❌ Comando solo nei gruppi.");
         if (db._escludi?.[from]) {
             return reply(
-`🚫 *CLASSIFICA DISATTIVATA*
+`🚫  ${toBold('CLASSIFICA DISATTIVATA')}
 ${SEP}
-▸ Questo gruppo è escluso dalle
-  classifiche (con .escludi).
-▸ Un admin può riammetterlo con
-  \`.escludi off\`.
+▸ Gruppo escluso con ${toBold('.escludi')}
+▸ Un admin può riammettere con
+  ${toBold('.escludi off')}
 ${SEP}
-◈ _Vex Bot_`);
+◈ Vex Bot`);
         }
 
         const want = parseInt(String(textArgs || '').trim(), 10);
         const limit = Number.isInteger(want) && want > 0 ? Math.min(want, 20) : 5;
 
         const chatUsers = db[from] || {};
-        // Classifica completa (top 20): usata per il display e per i pulsanti.
         const allSorted = Object.entries(chatUsers)
             .filter(([jid, data]) => jid.includes('@') && data && typeof data === 'object')
             .sort((a, b) => (b[1].money || 0) - (a[1].money || 0))
             .slice(0, 20);
 
-        // ── PROFILO UTENTE (dalla lista nativa) ───────────────────────────
-        // Quando si preme una voce della lista, arriva `.ricchi profilo <n>`.
         if (String(args[0] || '').toLowerCase() === 'profilo') {
             const idx = parseInt(args[1], 10);
             const entry = allSorted[idx - 1];
-            if (!entry) return reply('⚠️ Indice non valido: la classifica è cambiata, riprova.');
+            if (!entry) return reply('⚠️ Indice non valido: classifica cambiata, riprova.');
             const [jid, data] = entry;
-            // `dispOf` mostra il PN reale (mai il numero casuale @lid) e le
-            // mentions vengono risolte dal wrapper prima dell'invio: così il
-            // testo @<numero> coincide con mentionedJid e il tag evidenzia.
-            await sock.sendMessage(from, {
-                text:
-`💎 *PROFILO RICCHEZZA*
+            const txt =
+`${toBold('PROFILO RICCHEZZA')}  ·  #${idx}
 ${SEP}
-▸ @${dispOf(jid)}
-▸ 💰 Saldo: *${formatMoney(data.money || 0)}*
-▸ 🏦 Banca: *${formatMoney(data.bank || 0)}*
+👤  @${dispOf(jid)}
+💰  Contanti: ${toBold(formatMoney(data.money||0))}
+🏦  Banca: ${toBold(formatMoney(data.bank||0))}
+💎  Totale: ${toBold(formatMoney((data.money||0)+(data.bank||0)))}
 ${SEP}
-◈ _Vex Bot_`,
-                mentions: [jid],
-            }, { quoted: msg });
+◈ Vex Bot`;
+            await sock.sendMessage(from, { text: txt, mentions: [jid] }, { quoted: msg });
+            const btns = [
+                { label: '📊 Tabella', id: 'ricchi' },
+                { label: '🏠 Menu', id: 'menu' },
+            ];
+            await sendButtons(sock, from, `${toBold('AZIONI')} — @${dispOf(jid)}`, btns, msg, [jid], { headerTitle: '💎 Profilo', footerText: '⬇️ Scegli' });
             return;
         }
 
-        // ── TABELLA IN IMMAGINE ───────────────────────────────────────────
-        // `.ricchi tabella` (o il pulsante 📊) → VERA tabella PNG, non una
-        // sezione nativa. La didascalia TAGG il più ricco con il PN reale.
-        if (String(args[0] || '').toLowerCase() === 'tabella') {
-            const top10 = allSorted.slice(0, 10);
-            if (!top10.length) return reply('📭 Nessun dato disponibile: lavora, gioca e vinci!');
-            const rows = top10.map(([jid, data]) => ({ name: dispOf(jid), value: formatMoney(data.money || 0) }));
-            let png;
-            try {
-                png = await renderLeaderboardImage({
-                    title: 'TOP RICCHI',
-                    subtitle: 'Saldo in contanti in questo gruppo',
-                    accent: '#fbbf24',
-                    accent2: '#f59e0b',
-                    rows,
-                });
-            } catch (e) {
-                console.error('[ricchi] render tabella:', e.message);
-                return reply('⚠️ Errore generando la tabella, riprova.');
-            }
-            const [wJid] = top10[0];
-            await sock.sendMessage(from, {
-                image: png,
-                mimetype: 'image/png',
-                caption:
-`💎 *TOP 10 RICCHI* 💎
-${SEP}
-🥇 @${dispOf(wJid)} è il più ricco
-  del gruppo! Che status!
-${SEP}
-◈ _Vex Bot_`,
-                mentions: [wJid],
-            }, { quoted: msg });
-            return;
-        }
-
-        const sorted = allSorted.slice(0, limit);
-
-        if (sorted.length === 0) return reply(
-`📭 *NESSUNA RICCHEZZA*
+        if (!allSorted.length) return reply(
+`📭  ${toBold('NESSUNA RICCHEZZA')}
 ${SEP}
 ▸ Nessun dato disponibile.
-▸ Lavora, gioca e vinci:
-  la tua ricchezza verrà
-  mostrata qui!
+▸ Lavora, gioca e vinci!
 ${SEP}
-◈ _Vex Bot_`);
+◈ Vex Bot`);
 
-        // Corpo del messaggio: titolo + LEADER TAGGATO per davvero.
-        const [leaderJid] = allSorted[0];
-        const txt =
-`💎 *TOP ${limit} RICCHI* 💎
-${SEP}
-🥇 @${dispOf(leaderJid)} domina!
-${SEP}
-📲 Premi *📊* per la tabella
-completa, *💎* per il profilo
-di un utente (lo TAGGO qui).`;
+        const sorted = allSorted.slice(0, limit);
+        const top10 = allSorted.slice(0, 10);
 
-        // Righe del pannello nativo (max 20): i migliori + riga per aggiornare.
-        const listRows = sorted.map(([jid, data], i) => ({
-            header: `#${i + 1}`,
-            title: dispOf(jid),
-            description: `${formatMoney(data.money || 0)}`,
-            id: `ricchi profilo ${i + 1}`,
+        const rowsImg = top10.map(([jid, data]) => ({
+            name: dispOf(jid),
+            money: formatMoney(data.money||0),
+            bank: formatMoney(data.bank||0),
         }));
-        listRows.push({
-            header: '⟳',
-            title: '🔄 Aggiorna classifica',
-            description: ' ',
-            id: 'ricchi',
-        });
 
-        const btns = [
-            { label: '📊 Vedi tabella', id: 'ricchi tabella' },
-            { type: 'single_select', label: '💎 Scegli un utente', title: '💎 Top ricchi', sectionTitle: 'Classifica', rows: listRows },
-        ];
-        if (isGroup && (isOwner || isSenderAdmin)) {
-            btns.push({ label: '🚫 Escludi', id: 'escludi' });
-        } else {
-            btns.push({ label: '🔄 Aggiorna', id: 'ricchi' });
+        let png;
+        try {
+            png = await renderLeaderboardImage({
+                title: 'TOP RICCHI',
+                subtitle: 'Patrimonio: contanti + banca',
+                accent: '#fbbf24',
+                accent2: '#f59e0b',
+                rows: rowsImg,
+            });
+        } catch (e) {
+            console.error('[ricchi] render:', e.message);
+            return reply('⚠️ Errore tabella, riprova.');
         }
 
-        await sendButtons(sock, from, txt, btns, msg, [leaderJid]);
+        const [leaderJid, leaderData] = allSorted[0];
+        const leaderName = dispOf(leaderJid);
+
+        await sock.sendMessage(from, {
+            image: png,
+            mimetype: 'image/png',
+            caption:
+`💎  ${toBold('TOP 10 RICCHI')}  💎
+${SEP}
+🥇  @${leaderName}  ·  ${formatMoney(leaderData.money||0)}  ·  banca ${formatMoney(leaderData.bank||0)}
+${DOT}
+${toBold('Classifica reale')} — dati live
+${SEP}
+◈ Vex Bot`,
+            mentions: [leaderJid],
+        }, { quoted: msg });
+
+        const txt =
+`${toBold('TOP')} ${toBold(String(limit))} ${toBold('RICCHI')}  ·  ${sorted.length}/${allSorted.length}
+${SEP}
+🥇  @${leaderName}  —  ${toBold(formatMoney(leaderData.money||0))}  ·  banca ${formatMoney(leaderData.bank||0)}
+${DOT}
+${toBold('Dettaglio')} → profilo utente
+${toBold('Aggiorna')} → ricalcola
+${SEP}
+◈ Vex Bot`;
+
+        const listRows = sorted.map(([jid, data], i) => ({
+            header: `#${i+1}`,
+            title: dispOf(jid),
+            description: `${formatMoney(data.money||0)} · banca ${formatMoney(data.bank||0)}`,
+            id: `ricchi profilo ${i+1}`,
+        }));
+        if (allSorted.length > limit) {
+            const extra = allSorted.slice(limit, Math.min(limit+7,20));
+            for(let i=0;i<extra.length;i++){
+                const idx=limit+i+1;
+                const [jid,data]=extra[i];
+                listRows.push({
+                    header: `#${idx}`,
+                    title: dispOf(jid),
+                    description: `${formatMoney(data.money||0)} · banca ${formatMoney(data.bank||0)}`,
+                    id: `ricchi profilo ${idx}`,
+                });
+                if(listRows.length>=20) break;
+            }
+        }
+
+        const btns = [
+            { type: 'single_select', label: '👑 Dettaglio', title: '💎 Top ricchi', sectionTitle: 'Scegli utente', rows: listRows },
+            { label: '📊 Aggiorna', id: 'ricchi' },
+            { label: '🏠 Menu', id: 'menu' },
+        ];
+
+        await sendButtons(sock, from, txt, btns, msg, [leaderJid], { headerTitle: '💎 TOP RICCHI', footerText: '⬇️ Dettaglio o aggiorna' });
     },
 };
