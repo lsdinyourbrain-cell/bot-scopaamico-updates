@@ -2,20 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const SANS_UPPER = '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭';
-const SANS_LOWER = '𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇';
-function toSansBold(str) {
-    if (!str) return str;
-    const _up = Array.from(SANS_UPPER);
-    const _lo = Array.from(SANS_LOWER);
-    let out = '';
-    for (const ch of str) {
-        if (ch >= 'A' && ch <= 'Z') out += _up[ch.charCodeAt(0)-65];
-        else if (ch >= 'a' && ch <= 'z') out += _lo[ch.charCodeAt(0)-97];
-        else out += ch;
-    }
-    return out;
-}
+function toSansBold(str) { return '*' + String(str||'').trim() + '*'; }
 
 module.exports = {
     name: 'sicurezza',
