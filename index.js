@@ -362,6 +362,9 @@ const ANTILINK_PLATFORMS = {
 const DEFAULT_ANTILINK_GROUP = () =>
     Object.fromEntries(Object.keys(ANTILINK_PLATFORMS).map(k => [k, false]));
 
+const FLAME_WORDS = ['ucciditi','ammazzati','fucilati','impiccati','impiccat','sgozzati','sgozzat','suicidati','suicidio','ammazz','fucil','buttati','buttat','lasciati','lasciat','muori','crepa','stermina','stermin'];
+const FLAME_REGEXES = FLAME_WORDS.map(w => new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+
 /**
  * Legge antilink.json da disco in modo sicuro.
  * Se il file non esiste o è corrotto, restituisce un oggetto vuoto.
@@ -450,10 +453,16 @@ const DEFAULT_WELCOME_GROUP = () => ({
     goodbye: true,
 });
 
+let _welcomeCache = null;
+let _welcomeCacheTs = 0;
+const WELCOME_CACHE_TTL = 4000;
 const loadWelcome = () => {
+    if (_welcomeCache && Date.now() - _welcomeCacheTs < WELCOME_CACHE_TTL) return _welcomeCache;
     try {
-        if (!fs.existsSync(WELCOME_FILE)) return {};
-        return JSON.parse(fs.readFileSync(WELCOME_FILE, 'utf-8'));
+        if (!fs.existsSync(WELCOME_FILE)) { _welcomeCache = {}; _welcomeCacheTs = Date.now(); return _welcomeCache; }
+        _welcomeCache = JSON.parse(fs.readFileSync(WELCOME_FILE, 'utf-8'));
+        _welcomeCacheTs = Date.now();
+        return _welcomeCache;
     } catch (e) {
         console.error('[WELCOME] Errore lettura file, ripristino vuoto.', e.message);
         return {};
@@ -461,6 +470,8 @@ const loadWelcome = () => {
 };
 
 const saveWelcome = (data) => {
+    _welcomeCache = data;
+    _welcomeCacheTs = Date.now();
     try {
         fs.writeFileSync(WELCOME_FILE, JSON.stringify(data, null, 2), 'utf-8');
     } catch (e) {
@@ -657,6 +668,26 @@ const getCachedGroupMeta = async (sock, groupJid) => {
     groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
     fillLidMap(metadata);
     return metadata;
+};
+
+// Cache presenza owner per gruppo (evita groupMetadata extra per ogni comando)
+const ownerPresenceCache = new Map(); // groupJid -> {hasOwner, ts}
+const OWNER_PRESENCE_TTL = 30000;
+const isOwnerInGroupCached = async (sock, groupJid, db) => {
+    const c = ownerPresenceCache.get(groupJid);
+    if (c && Date.now() - c.ts < OWNER_PRESENCE_TTL) return c.hasOwner;
+    try {
+        const meta = await getCachedGroupMeta(sock, groupJid);
+        const parts = Array.isArray(meta?.participants) ? meta.participants : [];
+        const ownerIds = [ownerNumber, sock.user?.id, sock.user?.lid, ...((db._owners||[]).map(o=>o.number)), ...((db._owners||[]).map(o=>o.lid))].filter(Boolean);
+        const hasOwner = parts.some(p => {
+            const pid = p?.id || p?.jid || '';
+            const phone = p?.phoneNumber || '';
+            return ownerIds.some(oid => sameJid(pid, oid) || (phone && sameJid(phone, oid)));
+        });
+        ownerPresenceCache.set(groupJid, {hasOwner, ts: Date.now()});
+        return hasOwner;
+    } catch (_) { return true; } // se non leggo, non bloccare
 };
 
 const getGroupAdminState = async (sock, groupJid, senderJids) => {
@@ -1795,33 +1826,28 @@ const rainMsgCount = new Map();
         const anCfg = getAntinukeGroup(db, from);
         const anEnabled = Boolean(anCfg.enabled);
         const anWl = anEnabled && (isAntinukeWhitelisted(anCfg, sender) || (senderAlt && isAntinukeWhitelisted(anCfg, senderAlt)));
-        let warnedForMsg = false; // evita doppi avvisi sullo stesso messaggio
+        let warnedForMsg = false;
+        // Cache admin per questo messaggio (evita 2 round-trip)
+        let _adminCache = null;
+        const getAdminCached = async () => {
+            if (_adminCache) return _adminCache;
+            try { _adminCache = await getGroupAdminState(sock, from, [sender, senderAlt]); } catch (_) { _adminCache = {isSenderAdmin:false, isBotAdmin:false}; }
+            return _adminCache;
+        };
         if (isGroup && linkBody) {
             try {
                 const antilinkConfig = getAntilinkGroup(from);
-                // Determina se almeno un filtro è attivo per questo gruppo
                 const hasActiveFilter = Object.values(antilinkConfig).some(Boolean);
 
                 if (hasActiveFilter && !anWl) {
-                    // Scorri le piattaforme nell'ordine definito in ANTILINK_PLATFORMS
                     for (const [platform, regex] of Object.entries(ANTILINK_PLATFORMS)) {
-                        if (!antilinkConfig[platform]) continue; // filtro disattivo: salta
-                        if (!regex.test(linkBody)) continue;     // nessun match: salta
+                        if (!antilinkConfig[platform]) continue;
+                        if (!regex.test(linkBody)) continue;
 
-                        // Trovato un link vietato — controlla se il mittente è esente
-                        const isOwnerCheck = isOwnerJid(sender, sock, db, senderAlt);
-                        if (isOwnerCheck) break; // owner: lascia passare tutto
+                        if (isOwnerJid(sender, sock, db, senderAlt)) break;
 
-                        // Recupera lo stato admin del mittente per questo gruppo
-                        let senderIsAdmin = false;
-                        try {
-                            const { isSenderAdmin: adminCheck } = await getGroupAdminState(
-                                sock, from, [sender, senderAlt]
-                            );
-                            senderIsAdmin = adminCheck;
-                        } catch (_) {}
-
-                        if (senderIsAdmin) break; // admin: esente
+                        const { isSenderAdmin } = await getAdminCached();
+                        if (isSenderAdmin) break;
 
                         // Utente normale con link vietato → elimina + 1 avviso progressivo
                         try {
@@ -1854,12 +1880,8 @@ const rainMsgCount = new Map();
         //
         if (isGroup && anEnabled && !anWl) {
             try {
-                // Verifica admin del mittente (una sola chiamata per questo blocco)
-                let senderIsAdmin = false;
-                try {
-                    const { isSenderAdmin: adminCheck } = await getGroupAdminState(sock, from, [sender, senderAlt]);
-                    senderIsAdmin = adminCheck;
-                } catch (_) {}
+                const { isSenderAdmin } = await getAdminCached();
+                let senderIsAdmin = isSenderAdmin;
                 const anIsOwner = isOwnerJid(sender, sock, db, senderAlt);
                 if (!anIsOwner && !senderIsAdmin) {
                     // 1) ANTILINK antinuke: blocca qualunque link
@@ -1968,12 +1990,8 @@ const rainMsgCount = new Map();
                 const admins = (meta?.participants || []).filter(p => ['admin','superadmin'].includes(p.admin));
                 const isAdm = admins.some(p => isAdminParticipant(p, sender) || (senderAlt && isAdminParticipant(p, senderAlt)));
                 if (!isAdm) {
-                    const FLAME_WORDS = ['ucciditi','ammazzati','fucilati','impiccati','impiccat','sgozzati','sgozzat','suicidati','suicidio','ammazz','fucil','buttati','buttat','lasciati','lasciat','muori','crepa','stermina','stermin'];
                     const lower = body.toLowerCase();
-                    const hasFlame = FLAME_WORDS.some(w => {
-                        const regex = new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-                        return regex.test(lower);
-                    });
+                    const hasFlame = FLAME_REGEXES.some(rx => rx.test(lower));
                     if (hasFlame) {
                         try {
                             await sock.sendMessage(from, { delete: msg.key });
@@ -2739,25 +2757,9 @@ const rainMsgCount = new Map();
         if (!body.startsWith('.')) return;
 
         // ── OWNER OBBLIGATORIO NEL GRUPPO ────────────────────────────────
-        // Il bot risponde SOLO nei gruppi dove l'owner è presente come membro.
-        // Se l'owner non è nel gruppo, il comando viene ignorato silenziosamente.
         if (isGroup) {
-            try {
-                const metaOwner = await getCachedGroupMeta(sock, from);
-                const parts = Array.isArray(metaOwner?.participants) ? metaOwner.participants : [];
-                const ownerIds = [ownerNumber, sock.user?.id, sock.user?.lid, ...((db._owners||[]).map(o=>o.number)), ...((db._owners||[]).map(o=>o.lid))].filter(Boolean);
-                const ownerInGroup = parts.some(p => {
-                    const pid = p?.id || p?.jid || '';
-                    const phone = p?.phoneNumber || '';
-                    return ownerIds.some(oid => sameJid(pid, oid) || (phone && sameJid(phone, oid)));
-                });
-                if (!ownerInGroup) {
-                    // Silenzioso: non rispondere, non reagire
-                    return;
-                }
-            } catch (_) {
-                // Se non riesco a leggere i partecipanti, lascia passare (non bloccare)
-            }
+            const hasOwner = await isOwnerInGroupCached(sock, from, db);
+            if (!hasOwner) return;
         }
 
         // ── MODO ADMIN ────────────────────────────────────────────────────
@@ -2791,17 +2793,24 @@ const rainMsgCount = new Map();
 // i comandi che mostrano @ nel testo, senza toccare ogni singolo comando.
 // Il wrapper poi risolve eventuali @lid nel PN e riscrive il testo di pari
 // passo, quindi il tag evidenzia davvero.
+const mentionsByNumCache = new Map(); // groupJid -> {map, ts}
 const collectMentionsFromText = async (sock, text, from) => {
     const nums = [...String(text || '').matchAll(/@(\d{5,})/g)].map(m => m[1]);
     if (!nums.length || !String(from).endsWith('@g.us')) return null;
     try {
-        const meta = await getCachedGroupMeta(sock, from);
-        const byNum = new Map();
-        for (const p of meta?.participants || []) {
-            const pn = p?.phoneNumber;
-            const id = p?.id || p?.jid;
-            if (pn) byNum.set(String(pn).split('@')[0], pn);
-            if (id) byNum.set(String(id).split('@')[0], id);
+        let byNum = null;
+        const cached = mentionsByNumCache.get(from);
+        if (cached && Date.now() - cached.ts < 15000) byNum = cached.map;
+        else {
+            const meta = await getCachedGroupMeta(sock, from);
+            byNum = new Map();
+            for (const p of meta?.participants || []) {
+                const pn = p?.phoneNumber;
+                const id = p?.id || p?.jid;
+                if (pn) byNum.set(String(pn).split('@')[0], pn);
+                if (id) byNum.set(String(id).split('@')[0], id);
+            }
+            mentionsByNumCache.set(from, {map: byNum, ts: Date.now()});
         }
         const jids = [];
         for (const n of nums) {

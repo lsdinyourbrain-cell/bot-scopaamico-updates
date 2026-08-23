@@ -39,7 +39,7 @@ module.exports = {
 
         const names = new Map();
         const membersCount = new Map();
-        for (const [gid] of list) {
+        await Promise.all(list.map(async ([gid]) => {
             try {
                 const meta = await getCachedGroupMeta(sock, gid);
                 names.set(gid, meta?.subject ? String(meta.subject).slice(0, 24) : gid.split('@')[0]);
@@ -47,11 +47,10 @@ module.exports = {
                 membersCount.set(gid, partCount);
             } catch (_) {
                 names.set(gid, gid.split('@')[0]);
-                // fallback: conta utenti attivi dal db
                 const dbCount = Object.keys(db[gid]||{}).filter(k=>k.includes('@') && db[gid][k]?.msgCount).length;
                 membersCount.set(gid, dbCount);
             }
-        }
+        }));
 
         if (!list.length) {
             return reply(
