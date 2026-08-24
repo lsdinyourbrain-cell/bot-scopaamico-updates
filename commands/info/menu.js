@@ -1,26 +1,21 @@
 ﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  MENU — Vex Bot · Redesign 2026
-//  Grafica premium: unicode 𝗕𝗢𝗟𝗗 𝗦𝗔𝗡𝗦 + 𝖋𝖗𝖆𝖐𝖙𝖚𝖗 𝖇𝖔𝖑𝖉, box puliti ━━━━━━
-//  header/footer eleganti via sendButtons (native_flow)
-//  SECTIONS 15 — ogni sezione ha pulsanti rapidi (single_select)
-//  Home: 3 quick_reply + single_select con tutte le sezioni
+//  MENU — Vex Bot · 2026 Minimal (no glitch, 1× VEX BOT)
+//  Stile totalmente nuovo: bordi ┏━┓  ┗━┛  •  ▸  senza doppi titoli
 // ─────────────────────────────────────────────────────────────────────────────
 
 const pkg = require('../../package.json');
 
-const LINE = '━━━━━━━━━━━━━━━━━━━━';
-const DOT  = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
-const THIN = '────────────────────';
+const LINE = '─'.repeat(22);
+const DOT  = '·'.repeat(22);
 
-// ── HELPERS COMPATIBILI (niente font 4-byte: *bold* WhatsApp) ────────────
+// Compatibile: solo *bold* WhatsApp, niente font 4-byte
 const toBoldSans = (s) => `*${String(s||'').trim()}*`;
 const toFraktur = (s) => String(s||'').trim();
 const toBold = toBoldSans;
 
-const BANNER_RAW = 'VEX BOT';
-const BANNER = `◈  *${BANNER_RAW}*  ◈`;
+const BANNER = `*VEX BOT*`;
 
 // Riga comando pulita — senza bold per restare <1024 byte (ogni bold è 4 byte)
 const L = (emoji, cmd, hint = '') => `${emoji} \`.${cmd}\`${hint ? ` — ${hint}` : ''}`;
@@ -431,43 +426,38 @@ const TIPS = [
     '.mp3 titolo: scarica audio.',
 ];
 
-// ── SCHERMATE ────────────────────────────────────────────────────────────────
+// ── SCHERMATE — stile nuovo minimal, 1 solo VEX BOT ───────────────────
 const homeScreen = (pushName, timeStr, dateStr, stats, tip) => {
     const name = (pushName || 'Utente').slice(0, 18);
     return (
-`${BANNER}
-${LINE}
-👤  ${toFraktur(name)}  ·  🕐 ${timeStr}  ·  ${dateStr}
-⚙️  ${toBoldSans(String(stats.cmds))} ${toFraktur('comandi')}  ·  🔖 ${toBoldSans('v' + stats.version)}  ·  ⏱ ${stats.uptime}
-${DOT}
-📂  ${toBoldSans('SEZIONI')}  —  ${toFraktur('scegli dal pulsante qui sotto')}
-📖  ${toBoldSans('GUIDA')}  —  ${toFraktur('.aiuto')} ${toFraktur('lista completa')}
-${DOT}
-💡  ${tip}
-${LINE}`);
+`┏━━  ${BANNER}  ━━┓
+┃  ${stats.cmds} comandi  •  v${stats.version}  •  ${stats.uptime}
+┃  👤 ${name}  •  ${timeStr}  ${dateStr}
+┗${LINE}┛
+
+📂 *SEZIONI* — scegli qui sotto
+📖 *GUIDA* →  .aiuto  per lista completa
+
+💡 ${tip}`);
 };
 
 const sezioniScreen = (visible) => {
     const lines = visible.map((s, i) =>
-        `${String(i + 1).padStart(2, '0')} ${s.emoji} ${s.title} · ${s.items.length} comandi`).join('\n');
+        `${String(i + 1).padStart(2, '0')}. ${s.emoji}  *${s.title}*  — ${s.items.length} comandi`).join('\n');
     return (
-`✧ SEZIONI · ${visible.length} disponibili
-${LINE}
+`┏━━  *SEZIONI* (${visible.length})  ━━┓
 ${lines}
-${LINE}
-Tocca un pulsante o scrivi .menu 1 … .menu ${visible.length}
-oppure .menu <nome>`);
+┗${LINE}┛
+▸ Scrivi  .menu 1 … .menu ${visible.length}  o  .menu <nome>`);
 };
 
 const sectionScreen = (section, index, total) => {
     const rows = section.items.map(([e, cmd, hint]) => L(e, cmd, hint)).join('\n');
     return (
-`✧ ${section.emoji} ${section.title} · ${index + 1}/${total}
-${LINE}
+`┏━━  ${section.emoji}  *${section.title}*  [${index + 1}/${total}]  ━━┓
 ${rows}
-${LINE}
-💡 .aiuto <comando> per dettagli
-Naviga con i pulsanti ↓`);
+┗${LINE}┛
+▸ *.aiuto <comando>* per dettagli`);
 };
 
 module.exports = {
@@ -494,7 +484,7 @@ module.exports = {
             : null;
 
         const show = async (txt, buttons, headerTitle, footerText) => {
-            const opts = { headerTitle: headerTitle || '◈ VEX BOT ◈', footerText: footerText || '⬇️ Tocca un pulsante' };
+            const opts = { headerTitle: headerTitle || 'VEX BOT', footerText: footerText || 'Scegli dal menu' };
             // buttons length 4 max (3 quick + 1 select) — lib/buttons gestisce
             await sendButtons(sock, from, txt, buttons, msg, null, opts);
             if (editKey?.id) {
