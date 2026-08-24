@@ -2,7 +2,7 @@
 
 module.exports = {
     name: 'rate',
-    aliases: ['valuta', 'giudizio'],
+    aliases: ['valuta'],
     description: "Il bot giudica qualcosa da 1 a 10.",
 
     async run(sock, msg, args, context) {
