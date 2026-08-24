@@ -30,15 +30,27 @@ module.exports = {
                 });
             }
 
+            const frasiIroniche = [
+                "Sei il Robin Hood del gruppo, rubi ai poveri per dare a te stesso 😏",
+                "Hai le mani più veloci di un borseggiatore a Napoli 🏃‍♂️",
+                "A questo punto potresti comprare il gruppo... o rapinarlo direttamente 🏦💰",
+                "Sei così ricco che la banca ti chiama per chiedere prestiti 😂",
+                "Hai più soldi di Paperone, ma continui a rubare come un ragazzino 🦆💸",
+                "Attento, con tutto quel malloppo la Finanza ti sta già cercando 🕵️‍♂️"
+            ];
+            const pickFrase = () => frasiIroniche[Math.floor(Math.random() * frasiIroniche.length)];
+
             const success = Math.random() < 0.45;
             if (!success) {
                 const penalty = Math.floor(Math.random() * 30) + 10;
                 thiefData.money = Math.max(0, thiefData.money - penalty);
                 saveDB();
+                const isRiccoFail = (thiefData.money > 5000) || ((thiefData.totaleRubato || 0) > 5000);
+                const extraFail = isRiccoFail ? `\n▸ _${pickFrase()}_` : '';
                 return reply(
 `🚔 *_BECCATO!_*
 ━━━━━━━━━━━━━━
-▸ 😱 Il proprietario ti ha fatto una multa di _${penalty}€_!
+▸ 😱 Il proprietario ti ha fatto una multa di _${penalty}€_!${extraFail}
 ━━━━━━━━━━━━━━
 ▸ 💰 Saldo: _${thiefData.money}€_
 ◈ _Vex Bot_`);
@@ -47,10 +59,13 @@ module.exports = {
             const stolen = Math.min(targetData.money, Math.floor(Math.random() * 100) + 20);
             targetData.money -= stolen;
             thiefData.money += stolen;
+            thiefData.totaleRubato = (thiefData.totaleRubato || 0) + stolen;
             saveDB();
 
+            const isRicco = (thiefData.money > 5000) || (thiefData.totaleRubato > 5000);
+            const extraRicco = isRicco ? `\n▸ _${pickFrase()}_` : '';
             await sock.sendMessage(from, {
-                text: `🕵️ *_FURTO!_*\n━━━━━━━━━━━━━━\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n◈ _Vex Bot_`,
+                text: `🕵️ *_FURTO!_*\n━━━━━━━━━━━━━━\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!${extraRicco}\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n◈ _Vex Bot_`,
                 mentions: [sender, targetJid],
             });
     },

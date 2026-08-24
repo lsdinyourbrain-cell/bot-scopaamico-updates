@@ -1,16 +1,8 @@
 'use strict';
 
-const SB = (s) => s.split('').map(c => {
-    const cc = c.charCodeAt(0);
-    if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
-    if (cc >= 97 && cc <= 122) return String.fromCodePoint(0x1D5EE + cc - 97);
-    if (cc >= 48 && cc <= 57) return String.fromCodePoint(0x1D7E2 + cc - 48);
-    return c;
-}).join('');
-
 module.exports = {
     name: 'clear',
-    aliases: ['pulizia', 'cache', 'svuota'],
+    aliases: ['pulizia', 'cache', 'svuota', 'ds'],
     description: "Pulisce le cache e i file temporanei del bot per renderlo più veloce.",
 
     async run(sock, msg, args, context) {
@@ -30,25 +22,18 @@ module.exports = {
         const logKB = (result.logBytes / 1024).toFixed(1);
 
         await reply(
-`🧹 *_CACHE PULITA_*
-━━━━━━━━━━━━━━━━━━
-▸ ✨ Tutto pulito, fra!
-  in _${elapsed} ms_.
-▸ 🗑️ File temporanei rimossi:
-  _${result.deletedFiles}_
-▸ 💾 Spazio liberato:
-  _${freedMB} KB_
-▸ 📦 Cache gruppi azzerata:
-  _${result.groupEntries}_
-━━━━━━━━━━━━━━━━━━
+`🧹 *CACHE PULITA* — *DS* ✅
+━━━━━━━━━━━━━━━━━━━━
+✨ Pulito in *${elapsed}ms* — il bot vola ora!
+
+🗑️ File rimossi: *${result.deletedFiles}*
+💾 Spazio liberato: *${freedMB} KB*
+📦 Cache gruppi: *${result.groupEntries}* azzerate
+━━━━━━━━━━━━━━━━━━━━
 📊 *Stato attuale*
-▸ 💾 DB: _${dbKB} KB_
-▸ 📄 Log: _${logKB} KB_
-▸ 🗂️ Temp (prima):
-  _${tempBeforeMB} KB_
-▸ ⚡ Il bot ora risponde
-  più veloce! 🚀
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+💾 DB: *${dbKB} KB*  •  📄 Log: *${logKB} KB*
+🗂️ Temp prima: *${tempBeforeMB} KB*
+━━━━━━━━━━━━━━━━━━━━
+⚡ *VEX BOT* — più veloce! 🚀`);
     },
 };

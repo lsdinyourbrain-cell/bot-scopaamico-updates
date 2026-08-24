@@ -50,13 +50,23 @@ module.exports = {
 
             saveDB();
 
+            const frasiIronicheDadi = [
+                "Sei il Robin Hood del gruppo, rubi ai poveri per dare a te stesso 😏",
+                "Hai le mani più veloci di un borseggiatore a Napoli 🏃‍♂️",
+                "A questo punto potresti comprare il gruppo... o rapinarlo direttamente 🏦💰",
+                "Sei così ricco che i dadi ti pagano l'affitto 😂",
+                "Hai più soldi di Paperone, ma continui a lanciare dadi come un ragazzino 🦆💸",
+                "Attento, con tutto quel malloppo la Finanza ti sta già cercando 🕵️‍♂️"
+            ];
+            const extraRiccoDadi = uDB.money > 5000 ? `\n▸ _${frasiIronicheDadi[Math.floor(Math.random()*frasiIronicheDadi.length)]}_` : '';
+
             const resultText =
 `🎲 *_LANCIO DADI_*
 ━━━━━━━━━━━━━━
 ▸ 🧑 Tu: _${userRoll}_
 ▸ 🤖 Bot: _${botRoll}_
 ━━━━━━━━━━━━━━
-▸ ${esito}
+▸ ${esito}${extraRiccoDadi}
 ▸ 💰 Saldo attuale: _${uDB.money}€_
 ◈ _Vex Bot_`;
             await sendButtons(sock, from, resultText, [

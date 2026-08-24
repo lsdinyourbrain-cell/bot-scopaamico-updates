@@ -32,13 +32,23 @@ module.exports = {
             uDB.money += taxed.net;
             saveDB();
 
+            const frasiIronicheSlot = [
+                "Sei il Robin Hood del gruppo, rubi ai poveri per dare a te stesso 😏",
+                "Hai le mani più veloci di un borseggiatore a Napoli 🏃‍♂️",
+                "A questo punto potresti comprare il gruppo... o rapinarlo direttamente 🏦💰",
+                "Sei così ricco che la slot ti paga l'affitto 😂",
+                "Hai più soldi di Paperone, ma continui a giocare come un ragazzino 🦆💸",
+                "Attento, con tutto quel malloppo la Finanza ti sta già cercando 🕵️‍♂️"
+            ];
+            const extraRiccoSlot = uDB.money > 5000 ? `\n▸ _${frasiIronicheSlot[Math.floor(Math.random()*frasiIronicheSlot.length)]}_` : '';
+
             const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
             const evLine = evMult > 1 && win > 0 ? `\n▸ 🎰 _Evento: vincita x${evMult}_` : '';
             const risultato = win > 0 ? `🎊 Vinci ${win}€!` : `💀 Hai perso ${puntata}€`;
 
             const resultText =
 `🎰 _[ ${r[0]} | ${r[1]} | ${r[2]} ]_
-▸ ${risultato}${evLine}
+▸ ${risultato}${evLine}${extraRiccoSlot}
 ▸ ${win > 0 ? `Lordo: _+${win}€_ ▸ Netto: _+${taxed.net}€_${taxLine}\n▸ Saldo: _${uDB.money}€_` : `Saldo: _${uDB.money}€_`}
 ▸ Vex Bot`;
             await sendButtons(sock, from, toDarkFont(resultText), [

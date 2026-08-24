@@ -1,23 +1,16 @@
 'use strict';
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  RICCHI — Vex Bot · v2 Premium
-//  .ricchi → classifica ricchi: ENTRAMBI immagine + pulsanti
-//  Tabella vera con POS | UTENTE | CONTANTI | BANCA
-// ─────────────────────────────────────────────────────────────────────────────
-
 const SEP = '━━━━━━━━━━━━━━━━━━━━';
 const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
-const { renderLeaderboardImage } = require('../../lib/leaderboard');
-
 const toBold = (s) => '*' + String(s||'').trim() + '*';
+
 module.exports = {
     name: 'ricchi',
     aliases: ['topricchi', 'ricchi-top', 'classificaricchi'],
     description: "Classifica dei membri più ricchi del gruppo: .ricchi oppure .ricchi <n> (max 20).",
 
     async run(sock, msg, args, context) {
-        const { textArgs, from, isGroup, isOwner, isSenderAdmin, reply, services } = context;
+        const { textArgs, from, isGroup, reply, services } = context;
         const { db, dispOf, formatMoney, sendButtons } = services;
 
         if (!isGroup) return reply("❌ Comando solo nei gruppi.");
@@ -26,8 +19,6 @@ module.exports = {
 `🚫  ${toBold('CLASSIFICA DISATTIVATA')}
 ${SEP}
 ▸ Gruppo escluso con ${toBold('.escludi')}
-▸ Un admin può riammettere con
-  ${toBold('.escludi off')}
 ${SEP}
 ◈ Vex Bot`);
         }
@@ -50,92 +41,44 @@ ${SEP}
         if (String(args[0] || '').toLowerCase() === 'profilo') {
             const idx = parseInt(args[1], 10);
             const entry = allSorted[idx - 1];
-            if (!entry) return reply('⚠️ Indice non valido: classifica cambiata, riprova.');
+            if (!entry) return reply('⚠️ Indice non valido.');
             const [jid, data] = entry;
             const txt =
 `${toBold('PROFILO RICCHEZZA')}  ·  #${idx}
 ${SEP}
-👤  @${dispOf(jid)}
+👤  @${dispOf(jid)} (${getNick(jid)})
 💰  Contanti: ${toBold(formatMoney(data.money||0))}
 🏦  Banca: ${toBold(formatMoney(data.bank||0))}
-💎  Totale: ${toBold(formatMoney((data.money||0)+(data.bank||0)))}
 ${SEP}
 ◈ Vex Bot`;
-            await sock.sendMessage(from, { text: txt, mentions: [jid] }, { quoted: msg });
-            const btns = [
-                { label: '📊 Tabella', id: 'ricchi' },
-                { label: '🏠 Menu', id: 'menu' },
-            ];
-            await sendButtons(sock, from, `${toBold('AZIONI')} — @${dispOf(jid)}`, btns, msg, [jid], { headerTitle: '💎 Profilo', footerText: '⬇️ Scegli' });
+            await sendButtons(sock, from, txt, [{label:'📊 Classifica', id:'ricchi'}, {label:'🏠 Menu', id:'menu'}], msg, [jid], { headerTitle:'💎 Profilo', footerText:'⬇️' });
             return;
         }
 
-        if (!allSorted.length) return reply(
-`📭  ${toBold('NESSUNA RICCHEZZA')}
-${SEP}
-▸ Nessun dato disponibile.
-▸ Lavora, gioca e vinci!
-${SEP}
-◈ Vex Bot`);
+        if (!allSorted.length) return reply(`📭  ${toBold('NESSUNA RICCHEZZA')}\n${SEP}\n▸ Nessun dato.\n${SEP}\n◈ Vex Bot`);
 
         const sorted = allSorted.slice(0, limit);
-        const top10 = allSorted.slice(0, 10);
-
-        const rowsImg = top10.map(([jid, data]) => ({
-            name: getNick(jid),
-            money: formatMoney(data.money||0),
-            bank: formatMoney(data.bank||0),
-        }));
-
-        let png;
-        try {
-            png = await renderLeaderboardImage({
-                title: 'TOP RICCHI',
-                subtitle: 'Patrimonio: contanti + banca',
-                accent: '#fbbf24',
-                accent2: '#f59e0b',
-                rows: rowsImg,
-            });
-        } catch (e) {
-            console.error('[ricchi] render:', e.message);
-            return reply('⚠️ Errore tabella, riprova.');
-        }
-
-        const [leaderJid, leaderData] = allSorted[0];
-        const leaderName = getNick(leaderJid);
-
-        await sock.sendMessage(from, {
-            image: png,
-            mimetype: 'image/png',
-            caption:
-`💎  ${toBold('TOP 10 RICCHI')}  💎
-${SEP}
-🥇  @${leaderName}  ·  ${formatMoney(leaderData.money||0)}  ·  banca ${formatMoney(leaderData.bank||0)}
-${DOT}
-${toBold('Classifica reale')} — dati live
-${SEP}
-◈ Vex Bot`,
-            mentions: [leaderJid],
-        }, { quoted: msg });
+        const mentions = sorted.map(([jid])=>jid);
+        const lines = sorted.map(([jid,data], i)=>{
+            const rank=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
+            const nick=getNick(jid);
+            return `${rank} @${dispOf(jid)} (${nick}) — ${formatMoney(data.money||0)}`;
+        }).join('\n');
 
         const txt =
-`${toBold('TOP')} ${toBold(String(limit))} ${toBold('RICCHI')}  ·  ${sorted.length}/${allSorted.length}
+`${toBold('TOP ' + limit + ' RICCHI')}
 ${SEP}
-🥇  @${leaderName}  —  ${toBold(formatMoney(leaderData.money||0))}  ·  banca ${formatMoney(leaderData.bank||0)}
-${DOT}
-${toBold('Dettaglio')} → profilo utente
-${toBold('Aggiorna')} → ricalcola
+${lines}
 ${SEP}
 ◈ Vex Bot`;
 
         const secondJid = allSorted[1]?.[0];
-        const secondName = secondJid ? dispOf(secondJid) : null;
         const btns = [
-            { label: `🥇 ${leaderName.slice(0,12)}`, id: 'ricchi profilo 1' },
-            secondName ? { label: `🥈 ${secondName.slice(0,12)}`, id: 'ricchi profilo 2' } : null,
-            { label: '📊 Aggiorna', id: 'ricchi' },
+            { label: `🥇 ${getNick(allSorted[0][0]).slice(0,12)}`, id:'ricchi profilo 1' },
+            secondJid ? { label: `🥈 ${getNick(secondJid).slice(0,12)}`, id:'ricchi profilo 2' } : null,
+            { label:'📊 Aggiorna', id:'ricchi' },
         ].filter(Boolean);
 
-        await sendButtons(sock, from, txt, btns, msg, [leaderJid, secondJid].filter(Boolean), { headerTitle: '💎 TOP RICCHI', footerText: '⬇️ Tocca un pulsante' });
+        await sendButtons(sock, from, txt, btns, msg, mentions, { headerTitle:'💎 TOP RICCHI', footerText:'⬇️ Tocca' });
     },
 };

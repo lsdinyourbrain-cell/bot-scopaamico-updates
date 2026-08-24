@@ -646,6 +646,7 @@ const isAdminParticipant = (participant, jid) => {
 // Cache per groupMetadata (evita rate-limit di WhatsApp)
 const groupMetaCache = new Map();
 const GROUP_META_CACHE_TTL = 15000; // 15 secondi
+const rainMsgCount = new Map();
 
 // Mappa @lid → PN reale: riempita da getCachedGroupMeta e dal resolver delle
 // mentions. Permette a dispOf() di mostrare il numero vero nei testi (così il
@@ -1587,8 +1588,56 @@ startBot();
 
         const isOwner  = isOwnerJid(sender, sock, db, senderAlt);
 
-// Contatore messaggi per chat per la pioggia di soldi (evento pioggia)
-const rainMsgCount = new Map();
+        // ── TAG OWNER: se qualcuno tagga l'owner, rispondi con frase ironica ──
+        if (isGroup && !isOwner && sender) {
+            try {
+                const ctxInfo = msg.message?.extendedTextMessage?.contextInfo
+                    || msg.message?.conversation && null
+                    || msg.message?.imageMessage?.contextInfo
+                    || msg.message?.videoMessage?.contextInfo
+                    || msg.message?.documentMessage?.contextInfo
+                    || msg.message?.extendedTextMessage?.contextInfo;
+                // prova estrazione generica
+                const getCtx = (m) => {
+                    if (!m) return null;
+                    if (m.extendedTextMessage?.contextInfo) return m.extendedTextMessage.contextInfo;
+                    if (m.imageMessage?.contextInfo) return m.imageMessage.contextInfo;
+                    if (m.videoMessage?.contextInfo) return m.videoMessage.contextInfo;
+                    if (m.documentMessage?.contextInfo) return m.documentMessage.contextInfo;
+                    if (m.interactiveResponseMessage?.contextInfo) return m.interactiveResponseMessage.contextInfo;
+                    if (m.buttonsResponseMessage?.contextInfo) return m.buttonsResponseMessage.contextInfo;
+                    return m?.contextInfo || null;
+                };
+                const cInfo = getCtx(msg.message);
+                const mentioned = Array.isArray(cInfo?.mentionedJid) ? cInfo.mentionedJid : [];
+                const isMentioningOwner = mentioned.some(j => isOwnerJid(j, sock, db, null));
+                // fallback: testo contiene @numero owner
+                const bodyTmp = (msg.message?.extendedTextMessage?.text || msg.message?.conversation || '').toLowerCase();
+                const ownerDigits = [ownerNumber, ...((db._owners||[]).map(o=>o.number))].map(j=>String(j).split('@')[0].replace(/\D/g,'')).filter(Boolean);
+                const textMentionsOwner = ownerDigits.some(d => d && bodyTmp.includes('@' + d));
+                if ((isMentioningOwner || textMentionsOwner) && Math.random() < 0.45) {
+                    const phrases = [
+                        "𝓺𝓾𝓮𝓵𝓵𝓸 𝓮' 𝓲𝓵 𝓶𝓲𝓸 𝓸𝔀𝓷𝓮𝓻! 𝓪𝓽𝓽𝓮𝓷𝓽𝓸/𝓪 𝓪 𝓺𝓾𝓪𝓷𝓭𝓸 𝓵𝓸 𝓽𝓪𝓰𝓰𝓱𝓲  𝓬𝓱𝓮 𝓻𝓲𝓷𝓰𝓱𝓲𝓪 𝓬𝓸𝓶𝓮 𝓾𝓷 𝓬𝓪𝓷𝓮😒",
+                        "Hai taggato il capo, complimenti per il coraggio 😏 Vuoi un premio o solo attenzioni?",
+                        "L'owner dorme, non svegliarlo a caso... o ti morde 😤",
+                        "Tagga l'owner e poi scappa? Classico 😒",
+                        "Il mio owner non è un call center, ma ti ascolta... forse 😏",
+                        "Attento a come parli del mio owner, ha il tasto ban caldo 🔥",
+                        "Owner taggato con successo! Ora attendi il giudizio divino 😈",
+                        "Vuoi l'owner? Prenota un appuntamento, non è il tuo amico del bar 😒",
+                    ];
+                    const pick = phrases[Math.floor(Math.random()*phrases.length)];
+                    // evita spam: cooldown 25s per gruppo
+                    const key = `ownerTag:${from}`;
+                    const last = global._ownerTagCooldown?.get(key) || 0;
+                    if (Date.now() - last > 25000) {
+                        if (!global._ownerTagCooldown) global._ownerTagCooldown = new Map();
+                        global._ownerTagCooldown.set(key, Date.now());
+                        sock.sendMessage(from, { text: pick }, { quoted: msg }).catch(()=>{});
+                    }
+                }
+            } catch (_) {}
+        }
 
         if (isGroup && sender) {
             try {
@@ -2767,14 +2816,27 @@ const rainMsgCount = new Map();
 
         // ── MODO ADMIN ────────────────────────────────────────────────────
         // Se il gruppo ha .modoadmin attivo, SOLO gli admin possono usare il
-        // bot. Un non-admin che invoca un comando riceve una reazione "X"
-        // rossa sul suo messaggio e nessuna risposta. (l'owner è esente)
+        // bot. Un non-admin che invoca un comando riceve un messaggio ironico
+        // con grafica unicode e pulsante "Diventa admin". (l'owner è esente)
         if (isGroup && db[from]?._modoadmin && !isOwner) {
             try {
                 const { isSenderAdmin: sa } = await getGroupAdminState(sock, from, [sender, senderAlt]);
                 if (!sa) {
-                    sock.sendMessage(from, { react: { key: msg.key, text: '❌' } }).catch(() => {});
-                    return;
+                    // Non intercettare .clear/.ds (owner only) — lascia il deny owner del comando
+                    const _quickCmd = String(body || '').slice(1).trim().split(/\s+/)[0]?.toLowerCase();
+                    const _ownerOnlyQuick = new Set(['clear', 'pulizia', 'cache', 'svuota', 'ds']);
+                    if (_ownerOnlyQuick.has(_quickCmd)) {
+                        // lascia proseguire: il comando clear gestirà il deny owner
+                    } else {
+                        const denyModoAdmin = `🚫 *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ci hai provato, ma non sei admin 😒\n▸ Questo gruppo è in *modalità admin* — solo gli admin possono usare il bot\n▸ Torna quando avrai i poteri 👑\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                        try {
+                            await sendButtons(sock, from, denyModoAdmin, [{ label: '🛡️ Diventa admin', id: 'admin' }], msg, [sender]);
+                        } catch (_) {
+                            await sock.sendMessage(from, { text: denyModoAdmin, mentions: [sender] }, { quoted: msg }).catch(() => {});
+                        }
+                        try { await sock.sendMessage(from, { react: { key: msg.key, text: '❌' } }).catch(() => {}); } catch (_) {}
+                        return;
+                    }
                 }
             } catch (_) {}
         }
@@ -2902,6 +2964,24 @@ const collectMentionsFromText = async (sock, text, from) => {
                 console.error('[admin] Impossibile leggere i permessi del gruppo:', error.message);
                 if (command === 'godmode') return; // godmode resta invisibile
                 return reply("⚠️ *ERRORE*\n━━━━━━━━━━━━━━━━━━\nNon riesco a verificare i\npermessi del gruppo.\nRiprova tra poco.");
+            }
+        }
+
+        // ── DENY IRONICO PER NON-ADMIN SU COMANDI ADMIN ──────────────────────
+        // Se un non-admin prova un comando admin, invia messaggio ironico con
+        // grafica unicode, menzione e pulsante "Diventa admin".
+        // Esclusi .clear/.ds (owner only) — lì mantiene il deny owner del comando.
+        if (isGroup && ADMIN_COMMANDS.has(command) && !isSenderAdmin && !isOwner) {
+            const ownerOnlyDeny = new Set(['clear', 'pulizia', 'cache', 'svuota', 'ds']);
+            if (!ownerOnlyDeny.has(command) && command !== 'godmode') {
+                const denyAdmin = `🚫 *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ci hai provato, ma non sei admin 😒\n▸ Il comando *.${command}* è solo per gli admin del gruppo\n▸ Torna quando avrai i poteri 👑\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                try {
+                    await sendButtons(sock, from, denyAdmin, [{ label: '🛡️ Diventa admin', id: 'admin' }], msg, [sender]);
+                } catch (_) {
+                    await sock.sendMessage(from, { text: denyAdmin, mentions: [sender] }, { quoted: msg }).catch(() => {});
+                }
+                try { await sock.sendMessage(from, { react: { key: msg.key, text: '❌' } }).catch(() => {}); } catch (_) {}
+                return;
             }
         }
 
