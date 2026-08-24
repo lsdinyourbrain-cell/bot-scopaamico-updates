@@ -93,7 +93,7 @@ const buildCards = (results) => results.map((v, i) => {
         buttons: [
             { label: '🎵 MP3', id: `cerca download ${n} audio` },
             { label: '🎥 MP4', id: `cerca download ${n} video` },
-            { label: 'ⓘ Info', id: `cerca pick ${n}` },
+            { label: '🔗 Apri su YT', url: v.url },
         ],
     };
 });
