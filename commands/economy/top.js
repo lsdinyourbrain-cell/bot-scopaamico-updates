@@ -41,6 +41,12 @@ ${SEP}
             .filter(([jid, data]) => jid.includes('@') && data && typeof data === 'object' && (data.msgCount || 0) > 0)
             .sort((a, b) => (b[1].msgCount || 0) - (a[1].msgCount || 0))
             .slice(0, 20);
+        const getNick = (jid) => {
+            const n = db[from]?.[jid]?.name;
+            if (n && String(n).trim()) return String(n).trim();
+            const d = dispOf(jid);
+            return /^\d+$/.test(d) ? '+' + d : d;
+        };
 
         // ── PROFILO UTENTE (single_select) ────────────────────────────────
         if (String(args[0] || '').toLowerCase() === 'profilo') {
@@ -88,7 +94,7 @@ ${SEP}
 
         // ── PREPARA RIGHE PER IMMAGINE ────────────────────────────────────
         const rowsImg = top10.map(([jid, data]) => ({
-            name: dispOf(jid),
+            name: getNick(jid),
             msg: `${data.msgCount||0} msg`,
             level: `Lv ${data.level||1}`,
         }));
@@ -108,7 +114,7 @@ ${SEP}
         }
 
         const [leaderJid, leaderData] = allSorted[0];
-        const leaderName = dispOf(leaderJid);
+        const leaderName = (db[from]?.[leaderJid]?.name || dispOf(leaderJid));
 
         // ── INVIA IMMAGINE + CAPTION TAGGATA ──────────────────────────────
         await sock.sendMessage(from, {

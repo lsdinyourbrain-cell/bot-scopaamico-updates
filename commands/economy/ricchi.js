@@ -40,6 +40,12 @@ ${SEP}
             .filter(([jid, data]) => jid.includes('@') && data && typeof data === 'object')
             .sort((a, b) => (b[1].money || 0) - (a[1].money || 0))
             .slice(0, 20);
+        const getNick = (jid) => {
+            const n = db[from]?.[jid]?.name;
+            if (n && String(n).trim()) return String(n).trim();
+            const d = dispOf(jid);
+            return /^\d+$/.test(d) ? '+' + d : d;
+        };
 
         if (String(args[0] || '').toLowerCase() === 'profilo') {
             const idx = parseInt(args[1], 10);
@@ -76,7 +82,7 @@ ${SEP}
         const top10 = allSorted.slice(0, 10);
 
         const rowsImg = top10.map(([jid, data]) => ({
-            name: dispOf(jid),
+            name: getNick(jid),
             money: formatMoney(data.money||0),
             bank: formatMoney(data.bank||0),
         }));
@@ -96,7 +102,7 @@ ${SEP}
         }
 
         const [leaderJid, leaderData] = allSorted[0];
-        const leaderName = dispOf(leaderJid);
+        const leaderName = getNick(leaderJid);
 
         await sock.sendMessage(from, {
             image: png,

@@ -1594,6 +1594,9 @@ const rainMsgCount = new Map();
             try {
                 const userData = getUser(sender, from);
                 userData.msgCount = (userData.msgCount || 0) + 1;
+                if (pushName && pushName !== 'Utente' && String(pushName).trim().length >= 2) {
+                    userData.name = String(pushName).trim().slice(0, 32);
+                }
 
                 // Contatore attività del gruppo per .topgruppi (salvato nel DB
                 // così sopravvive ai riavvii; i gruppi esclusi sono in _escludi).
