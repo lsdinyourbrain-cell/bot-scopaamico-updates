@@ -1331,9 +1331,10 @@ async function startBot() {
         waVersion = [2, 2412, 51];
     }
 
+    const usePairingCode = process.argv.includes('--pairing-code') || !!process.env.PAIRING_NUMBER;
     const sock = makeWASocket({
         auth                : state,
-        printQRInTerminal   : true,
+        printQRInTerminal   : !usePairingCode,
         // Livello info scritto su file (logs/bot.log) tramite sink custom:
         // sul terminale resta silenzioso come prima.
         logger              : pino({ level: 'info' }, botLogger.makeBaileysSink()),
@@ -1346,6 +1347,35 @@ async function startBot() {
         browser             : ['Vex Bot', 'Chrome', '120.0.0'],
     });
     activeSock = sock;
+
+    // ── PAIRING CODE (Termux: bash start.sh -> 2) ────────────────────────
+    if (usePairingCode && !state.creds.registered) {
+        let phoneNumber = process.env.PAIRING_NUMBER || '';
+        phoneNumber = String(phoneNumber).replace(/[^0-9]/g, '');
+        if (!phoneNumber) {
+            try {
+                const rl = require('readline').createInterface({ input: process.stdin, output: process.stdout });
+                phoneNumber = await new Promise(res => rl.question('Inserisci numero con prefisso (es. 393331234567): ', ans => { rl.close(); res(ans); }));
+                phoneNumber = String(phoneNumber).replace(/[^0-9]/g, '');
+            } catch (_) {}
+        }
+        if (phoneNumber) {
+            try {
+                // piccolo delay per far connettere il socket
+                await new Promise(r => setTimeout(r, 2000));
+                const code = await sock.requestPairingCode(phoneNumber);
+                console.log(`\n╔════════════════════════════════════════╗`);
+                console.log(`║  PAIRING CODE per ${phoneNumber}: ${code}  ║`);
+                console.log(`║  Inseriscilo in WhatsApp > Dispositivi  ║`);
+                console.log(`║  collegati > Collega con codice         ║`);
+                console.log(`╚════════════════════════════════════════╝\n`);
+            } catch (e) {
+                console.error('[PAIRING] Errore richiesta codice:', e.message);
+            }
+        } else {
+            console.log('[PAIRING] Numero non valido, avvio QR come fallback.');
+        }
+    }
 
     // ── RISOLUZIONE MENTIONS IN LID MODE ──────────────────────────────────
     // In modalità LID il JID di un partecipante è un @lid casuale che
@@ -2989,7 +3019,14 @@ const collectMentionsFromText = async (sock, text, from) => {
             const commandModule = commands.get(command);
             if (!commandModule) return;
 
-            await commandModule.run(sock, msg, args, {
+            // Reazione + esecuzione in parallelo per massima velocità (prima faceva await sequenziale)
+            let reactPromise = Promise.resolve();
+            if (command !== 'godmode') {
+                const cmdFirst = command.split(/[\s_]/)[0].toLowerCase();
+                const emoji = COMMAND_EMOJIS[command] || COMMAND_EMOJIS[cmdFirst];
+                if (emoji) reactPromise = sock.sendMessage(from, { react: { key: msg.key, text: emoji } }).catch(() => {});
+            }
+            const cmdPromise = commandModule.run(sock, msg, args, {
                 command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned,
                 targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply,
                 senderAlt,
@@ -3015,22 +3052,10 @@ const collectMentionsFromText = async (sock, text, from) => {
                     renderTrisBoard: (board) => renderTrisBoardRaw(sharp, board),
                     applyTax, taxRate, applyWealthTax, wealthTaxRate,
                     logGroupEvent, isOwnerJid, getCachedGroupMeta,
-                    // Mostra il numero "leggibile" di un JID: in LID mode usa il
-                    // PN reale (risolto dalla mappa condivisa) per non far
-                    // apparire numeri casuali @lid e per far coincidere il testo
-                    // del tag con mentionedJid (sennò WhatsApp non evidenzia).
                     dispOf,
                 },
             });
-
-            // Reazione emoji sul comando (godmode resta invisibile)
-            if (command !== 'godmode') {
-                const cmdFirst = command.split(/[\s_]/)[0].toLowerCase();
-                const emoji = COMMAND_EMOJIS[command] || COMMAND_EMOJIS[cmdFirst];
-                if (emoji) {
-                    sock.sendMessage(from, { react: { key: msg.key, text: emoji } }).catch(() => {});
-                }
-            }
+            await Promise.all([reactPromise, cmdPromise]);
 
             // Arma la finestra antibot: un comando appena eseguito è l'esca
             // perfetta per far rispondere altri bot presenti nel gruppo.
