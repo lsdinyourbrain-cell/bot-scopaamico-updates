@@ -1,15 +1,15 @@
-'use strict';
+﻿'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  PIXSCHIATTA — Vex Bot (solo OWNER)
+//  OBITORIO — Vex Bot (solo OWNER)
 //  Link propri (fino a 3), indipendenti da quelli del .giudizio:
-//   `.pixschiatta set link1 <url>`  (oppure `.pixschiatta set link <url>`)
-//   `.pixschiatta set link2 <url>`
-//   `.pixschiatta set link3 <url>`
-//  `.pixschiatta <n>`   → spamma n link (max 500) con hide tag a tutti,
-//                         ruotando i link impostati, alla massima velocità
-//                         sicura. Ogni messaggio è stile "WhatsApp Business".
-//  `.pixschiatta stop`  → ferma spam e watchdog.
+//   `.obitorio set link1 <url>`  (oppure `.obitorio set link <url>`)
+//   `.obitorio set link2 <url>`
+//   `.obitorio set link3 <url>`
+//  `.obitorio <n>`   → spamma n link (max 500) con hide tag a tutti,
+//                      ruotando i link impostati, alla massima velocità
+//                      sicura. Ogni messaggio è stile "WhatsApp Business".
+//  `.obitorio stop`  → ferma spam e watchdog.
 //  ANTI-CANCELLAZIONE: mentre la sessione è attiva (15 min, prolungata a
 //  ogni reinvio), se un admin cancella un messaggio il bot lo rimanda
 //  SUBITO. Solo l'owner può cancellare davvero (nessun reinvio).
@@ -27,7 +27,7 @@ const MAX_CONSECUTIVE_ERRORS = 25;
 const spamActive = new Map();
 
 module.exports = {
-    name: 'pixschiatta',
+    name: 'obitorio',
     aliases: [],
     hidden: true,
     description: "Spamma fino a 500 link con hide tag, ultra veloce, anti-cancellazione (solo owner).",
@@ -42,16 +42,16 @@ module.exports = {
 
         const sub = String(args[0] || '').toLowerCase();
 
-        // ── SET DEI LINK (max 3, propri di .pixschiatta) ─────────────────
+        // ── SET DEI LINK (max 3, propri di .obitorio) ─────────────────────
         if (sub === 'set') {
             const slotRaw = String(args[1] || '').toLowerCase();
             const mSlot = slotRaw.match(/^links?([123])?$/);
             const link = String(textArgs || '').replace(/^set\s+(?:links?[123]?\s+)?/i, '').trim();
             if (!mSlot || !/^https?:\/\/\S+$/i.test(link)) {
-                return reply("⚠️ *USO*\n━━━━━━━━━━━━━━\n▸ `.pixschiatta set link1 <url>`\n▸ `.pixschiatta set link2 <url>`\n▸ `.pixschiatta set link3 <url>`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+                return reply("⚠️ *USO*\n━━━━━━━━━━━━━━\n▸ `.obitorio set link1 <url>`\n▸ `.obitorio set link2 <url>`\n▸ `.obitorio set link3 <url>`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
             }
             const slot = mSlot[1] || '1';
-            db._pixschiatta = { ...(db._pixschiatta || {}), ['link' + slot]: link };
+            db._obitorio = { ...(db._obitorio || {}), ['link' + slot]: link };
             saveDB();
             return reply(`✅ *LINK${slot} IMPOSTATO*\n━━━━━━━━━━━━━━\n▸ ${link}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
         }
@@ -68,20 +68,20 @@ module.exports = {
 
         // ── CHAT PRIVATA ──────────────────────────────────────────────────
         if (!isGroup) {
-            const cfg = db._pixschiatta || {};
+            const cfg = db._obitorio || {};
             const lines = [1, 2, 3].map(n => cfg['link' + n] ? `▸ link${n}: ${cfg['link' + n]}` : `▸ link${n}: —`).join('\n');
-            return reply(`💥 *PIXSCHIATTA*\n━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━\n▸ Imposta: \`.pixschiatta set link1/2/3 <url>\`\n▸ Nei gruppi: \`.pixschiatta <n>\`\n▸ Ferma: \`.pixschiatta stop\`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`⚰️ *OBITORIO*\n━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━\n▸ Imposta: \`.obitorio set link1/2/3 <url>\`\n▸ Nei gruppi: \`.obitorio <n>\`\n▸ Ferma: \`.obitorio stop\`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
         }
 
         if (spamActive.has(from)) {
-            return reply("⏳ Spam già in corso qui.\nFerma prima con `.pixschiatta stop`");
+            return reply("⏳ Spam già in corso qui.\nFerma prima con `.obitorio stop`");
         }
 
         // ── LINKS DA ROTARE ───────────────────────────────────────────────
-        const cfg = db._pixschiatta || {};
+        const cfg = db._obitorio || {};
         const links = [cfg.link1, cfg.link2, cfg.link3].filter(l => typeof l === 'string' && /^https?:\/\//i.test(l));
         if (!links.length) {
-            return reply("⚠️ *NESSUN LINK*\n━━━━━━━━━━━━━━\n▸ Prima imposta i link:\n▸ `.pixschiatta set link1 <url>`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+            return reply("⚠️ *NESSUN LINK*\n━━━━━━━━━━━━━━\n▸ Prima imposta i link:\n▸ `.obitorio set link1 <url>`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
         }
 
         let times = parseInt(String(textArgs || '').trim(), 10);
@@ -104,14 +104,14 @@ module.exports = {
             let consecutiveErrors = 0;
 
             for (let i = 0; i < times; i++) {
-                if (!spamActive.get(from)) break; // fermato con .pixschiatta stop
+                if (!spamActive.get(from)) break; // fermato con .obitorio stop
                 const link = links[i % links.length];
                 try {
                     await estorsione.sendBareLink(sock, from, link, allJids);
                     consecutiveErrors = 0;
                 } catch (e) {
                     consecutiveErrors++;
-                    console.error('[pixschiatta] errore invio:', e.message);
+                    console.error('[obitorio] errore invio:', e.message);
                     if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) break;
                     await new Promise(r => setTimeout(r, ERROR_BACKOFF));
                     continue;
@@ -125,7 +125,7 @@ module.exports = {
             return;
         } catch (e) {
             spamActive.delete(from);
-            console.error('[pixschiatta]', e.message);
+            console.error('[obitorio]', e.message);
             return reply(`⚠️ *_ERRORE_*\n━━━━━━━━━━━━━━\n▸ ${e.message}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
         }
     },
