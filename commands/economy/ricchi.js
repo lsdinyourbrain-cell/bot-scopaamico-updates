@@ -10,17 +10,7 @@ const SEP = '━━━━━━━━━━━━━━━━━━━━';
 const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 const { renderLeaderboardImage } = require('../../lib/leaderboard');
 
-const BOLD_UP = '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭';
-const BOLD_LO = '𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇';
-const BOLD_DI = '𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵';
-const toBold = (s) => String(s||'').split('').map(ch=>{
-    const c=ch.charCodeAt(0);
-    if(c>=65&&c<=90) return BOLD_UP[c-65]||ch;
-    if(c>=97&&c<=122) return BOLD_LO[c-97]||ch;
-    if(c>=48&&c<=57) return BOLD_DI[c-48]||ch;
-    return ch;
-});
-
+const toBold = (s) => '*' + String(s||'').trim() + '*';
 module.exports = {
     name: 'ricchi',
     aliases: ['topricchi', 'ricchi-top', 'classificaricchi'],
@@ -132,33 +122,14 @@ ${toBold('Aggiorna')} → ricalcola
 ${SEP}
 ◈ Vex Bot`;
 
-        const listRows = sorted.map(([jid, data], i) => ({
-            header: `#${i+1}`,
-            title: dispOf(jid),
-            description: `${formatMoney(data.money||0)} · banca ${formatMoney(data.bank||0)}`,
-            id: `ricchi profilo ${i+1}`,
-        }));
-        if (allSorted.length > limit) {
-            const extra = allSorted.slice(limit, Math.min(limit+7,20));
-            for(let i=0;i<extra.length;i++){
-                const idx=limit+i+1;
-                const [jid,data]=extra[i];
-                listRows.push({
-                    header: `#${idx}`,
-                    title: dispOf(jid),
-                    description: `${formatMoney(data.money||0)} · banca ${formatMoney(data.bank||0)}`,
-                    id: `ricchi profilo ${idx}`,
-                });
-                if(listRows.length>=20) break;
-            }
-        }
-
+        const secondJid = allSorted[1]?.[0];
+        const secondName = secondJid ? dispOf(secondJid) : null;
         const btns = [
-            { type: 'single_select', label: '👑 Dettaglio', title: '💎 Top ricchi', sectionTitle: 'Scegli utente', rows: listRows },
+            { label: `🥇 ${leaderName.slice(0,12)}`, id: 'ricchi profilo 1' },
+            secondName ? { label: `🥈 ${secondName.slice(0,12)}`, id: 'ricchi profilo 2' } : null,
             { label: '📊 Aggiorna', id: 'ricchi' },
-            { label: '🏠 Menu', id: 'menu' },
-        ];
+        ].filter(Boolean);
 
-        await sendButtons(sock, from, txt, btns, msg, [leaderJid], { headerTitle: '💎 TOP RICCHI', footerText: '⬇️ Dettaglio o aggiorna' });
+        await sendButtons(sock, from, txt, btns, msg, [leaderJid, secondJid].filter(Boolean), { headerTitle: '💎 TOP RICCHI', footerText: '⬇️ Tocca un pulsante' });
     },
 };

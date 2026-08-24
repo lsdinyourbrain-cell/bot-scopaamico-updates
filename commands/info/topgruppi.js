@@ -10,17 +10,7 @@ const SEP = '━━━━━━━━━━━━━━━━━━━━';
 const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 const { renderLeaderboardImage } = require('../../lib/leaderboard');
 
-const BOLD_UP = '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭';
-const BOLD_LO = '𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇';
-const BOLD_DI = '𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵';
-const toBold = (s) => String(s||'').split('').map(ch=>{
-    const c=ch.charCodeAt(0);
-    if(c>=65&&c<=90) return BOLD_UP[c-65]||ch;
-    if(c>=97&&c<=122) return BOLD_LO[c-97]||ch;
-    if(c>=48&&c<=57) return BOLD_DI[c-48]||ch;
-    return ch;
-});
-
+const toBold = (s) => '*' + String(s||'').trim() + '*';
 module.exports = {
     name: 'topgruppi',
     aliases: ['topgroup', 'topchat', 'classificagruppi', 'topgruppiactivi'],
@@ -137,19 +127,12 @@ ${toBold('Aggiorna')} → ricalcola
 ${SEP}
 ◈ Vex Bot`;
 
-        const listRows = list.map(([gid, data], i) => ({
-            header: `#${i+1}`,
-            title: names.get(gid) || gid.split('@')[0],
-            description: `${data.n||0} msg · ${membersCount.get(gid)||0} membri`,
-            id: `topgruppi info ${i+1}`,
-        }));
-
         const btns = [
-            { type: 'single_select', label: '👑 Dettaglio', title: '🏆 Top gruppi', sectionTitle: 'Scegli gruppo', rows: listRows },
+            { label: `🥇 ${String(names.get(list[0]?.[0])||'').slice(0,12)}`, id: 'topgruppi info 1' },
+            list[1] ? { label: `🥈 ${String(names.get(list[1][0])||'').slice(0,12)}`, id: 'topgruppi info 2' } : null,
             { label: '📊 Aggiorna', id: 'topgruppi' },
-            { label: '🏠 Menu', id: 'menu' },
-        ];
+        ].filter(Boolean);
 
-        await sendButtons(sock, from, txt, btns, msg, null, { headerTitle: '🏆 TOP GRUPPI', footerText: '⬇️ Scegli un gruppo' });
+        await sendButtons(sock, from, txt, btns, msg, null, { headerTitle: '🏆 TOP GRUPPI', footerText: '⬇️ Tocca un pulsante' });
     },
 };
