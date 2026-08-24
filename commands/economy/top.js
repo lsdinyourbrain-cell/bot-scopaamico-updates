@@ -9,7 +9,7 @@
 
 const SEP = '━━━━━━━━━━━━━━━━━━━━';
 const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
-const { renderLeaderboardImage } = require('../../lib/leaderboard');
+const { renderLeaderboardImage, buildTextTable } = require('../../lib/leaderboard');
 
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 module.exports = {
@@ -99,7 +99,7 @@ ${SEP}
             level: `Lv ${data.level||1}`,
         }));
 
-        let png;
+        let png = null;
         try {
             png = await renderLeaderboardImage({
                 title: 'TOP ATTIVI',
@@ -108,34 +108,53 @@ ${SEP}
                 accent2: '#6366f1',
                 rows: rowsImg,
             });
+            if (!png || png.length < 8000) throw new Error('PNG vuota o troppo piccola');
         } catch (e) {
-            console.error('[top] render:', e.message);
-            return reply('⚠️ Errore tabella, riprova.');
+            console.error('[top] render fallback to testo:', e.message);
+            png = null;
         }
 
         const [leaderJid, leaderData] = allSorted[0];
-        const leaderName = (db[from]?.[leaderJid]?.name || dispOf(leaderJid));
+        const leaderNick = getNick(leaderJid);
+        const leaderTag = dispOf(leaderJid);
 
-        // ── INVIA IMMAGINE + CAPTION TAGGATA ──────────────────────────────
-        await sock.sendMessage(from, {
-            image: png,
-            mimetype: 'image/png',
-            caption:
+        // ── INVIA TABELLA: se PNG ok manda foto, altrimenti tabella di testo con nick/+numero
+        if (png) {
+            await sock.sendMessage(from, {
+                image: png,
+                mimetype: 'image/png',
+                caption:
 `🏆  ${toBold('TOP 10 ATTIVI')}  🏆
 ${SEP}
-🥇  @${leaderName}  ·  ${leaderData.msgCount||0} msg  ·  Lv ${leaderData.level||1}
+🥇  @${leaderTag} (${leaderNick})  ·  ${leaderData.msgCount||0} msg  ·  Lv ${leaderData.level||1}
 ${DOT}
 ${toBold('Classifica reale')} — dati dal vivo
 ${SEP}
 ◈ Vex Bot`,
-            mentions: [leaderJid],
-        }, { quoted: msg });
+                mentions: [leaderJid],
+            }, { quoted: msg });
+        } else {
+            const textTable = buildTextTable(rowsImg, {
+                title: 'TOP 10 ATTIVI',
+                subtitle: 'Messaggi inviati in questo gruppo',
+                columns: [
+                    { key:'rank', label:'POS', width:4, align:'center' },
+                    { key:'name', label:'UTENTE', width:22, align:'left' },
+                    { key:'msg', label:'MESSAGGI', width:10, align:'right' },
+                    { key:'level', label:'LIVELLO', width:8, align:'right' },
+                ]
+            });
+            await sock.sendMessage(from, {
+                text: `${textTable}\n\n🥇 @${leaderTag} — ${leaderData.msgCount||0} msg`,
+                mentions: [leaderJid],
+            }, { quoted: msg });
+        }
 
         // ── MESSAGGIO SOTTO CON PULSANTI (Entrambi) ───────────────────────
         const txt =
 `${toBold('TOP')} ${toBold(String(limit))} ${toBold('ATTIVI')}  ·  ${sorted.length}/${allSorted.length}
 ${SEP}
-🥇  @${leaderName}  —  ${toBold(String(leaderData.msgCount||0))} msg  ·  Lv ${leaderData.level||1}
+🥇  @${leaderTag} (${leaderNick})  —  ${toBold(String(leaderData.msgCount||0))} msg  ·  Lv ${leaderData.level||1}
 ${DOT}
 ${toBold('Dettaglio')} → scegli un utente
 ${toBold('Aggiorna')} → ricalcola classifica
@@ -144,10 +163,10 @@ ${SEP}
 
         // Pulsanti veri (quick_reply, non single_select): 3 bottoni sotto al messaggio
         const secondJid = allSorted[1]?.[0];
-        const secondName = secondJid ? dispOf(secondJid) : null;
+        const secondNick = secondJid ? getNick(secondJid) : null;
         const btns = [
-            { label: `🥇 ${leaderName.slice(0,12)}`, id: 'top profilo 1' },
-            secondName ? { label: `🥈 ${secondName.slice(0,12)}`, id: 'top profilo 2' } : null,
+            { label: `🥇 ${leaderNick.slice(0,12)}`, id: 'top profilo 1' },
+            secondNick ? { label: `🥈 ${secondNick.slice(0,12)}`, id: 'top profilo 2' } : null,
             { label: '📊 Aggiorna', id: 'top' },
         ].filter(Boolean);
 
