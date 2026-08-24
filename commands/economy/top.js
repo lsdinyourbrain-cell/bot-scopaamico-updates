@@ -105,6 +105,6 @@ ${SEP}
             { label: '📊 Aggiorna', id: 'top' },
         ].filter(Boolean);
 
-        await sendButtons(sock, from, txt, btns, msg, mentions, { headerTitle: '🏆 TOP ATTIVI', footerText: '⬇️ Tocca per profilo' });
+        await sendButtons(sock, from, txt, btns, msg, mentions, { headerTitle: '🏆 TOP ATTIVI', footerText: '⬇️ Tocca' });
     },
 };

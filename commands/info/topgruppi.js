@@ -56,7 +56,7 @@ module.exports = {
         }).join('\n');
 
         const txt =
-`${toBold('TOP GRUPPI')}
+`${toBold('TOP GRUPPI')}  ·  ${list.length} gruppi
 ${SEP}
 ${lines}
 ${SEP}

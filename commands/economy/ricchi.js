@@ -66,7 +66,7 @@ ${SEP}
         }).join('\n');
 
         const txt =
-`${toBold('TOP ' + limit + ' RICCHI')}
+`${toBold('TOP ' + limit + ' RICCHI')}  ·  ${sorted.length}/${allSorted.length}
 ${SEP}
 ${lines}
 ${SEP}
