@@ -45,17 +45,18 @@ module.exports = {
             const requests = await sock.groupRequestParticipantsList(from);
             if (!requests || requests.length === 0) return reply("⚠️ _[uso]:_ nessuna richiesta in sospeso.");
 
-const rows = requests.map((r, i) => {
-                    const num = r.phoneNumber || (r.jid || '').split('@')[0] || 'sconosciuto';
-                    return `${String(i + 1).padStart(2, '0')} ☎️ +${num}`;
-                }).join('\n');
-
+            const display = requests.slice(0, 20);
+            const rows = display.map((r, i) => {
+                const num = r.phoneNumber || (r.jid || '').split('@')[0] || 'sconosciuto';
+                return `${String(i + 1).padStart(2, '0')} ☎️ +${num}`;
+            }).join('\n');
+            const extra = requests.length > 20 ? `\n… e altre *${requests.length - 20}* richieste` : '';
             const text =
-`📥 *_RICHIESTE DI ADESIONE_*
+`📥 *_RICHIESTE DI ADESIONE_* — *${requests.length}* in attesa
 ━━━━━━━━━━━━━━
-${rows}
+${rows}${extra}
 ━━━━━━━━━━━━━━
-▸ Cosa vuoi fare?`;
+▸ Usa i pulsanti o *.accettarichieste 50*`;
 
             await sendButtons(sock, from, text, [
                 { label: '✅ Accetta tutte', id: 'richieste accetta' },
