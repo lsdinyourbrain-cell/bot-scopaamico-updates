@@ -755,7 +755,7 @@ const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag
 
 // Comandi per cui il pulsante "Ripeti" automatico NON deve comparire:
 // sistemici o distruttivi, rischiosi da far ripartire a un tap.
-const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'diagnostica', 'clear', 'giudizio', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara', 'evento', 'events', 'eventi',
+const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'diagnostica', 'clear', 'giudizio', 'pixschiatta', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara', 'evento', 'events', 'eventi',
     // Nuovi giochi nativi: niente pulsante Ripeti sulle risposte di gioco
     'forza4', 'connect4', 'forza-4', 'wordle', 'wordle-ita', 'wordleita',
     'labirinto', 'maze', 'labyrinth', 'trivia2', 'quiz2', 'triviasfida',
@@ -805,7 +805,7 @@ const COMMAND_EMOJIS = {
     pin: '📌', fissa: '📌', unpin: '🔓', sfissa: '🔓',
     // Security
     antivoip: '📞', antiwzbusiness: '💼', antiwb: '💼', awb: '💼',
-    antiflame: '🔥', flame: '🔥', antibot: '🤖', antinuke: '🛡️', giudizio: '⚖️',
+    antiflame: '🔥', flame: '🔥', antibot: '🤖', antinuke: '🛡️', giudizio: '⚖️', pixschiatta: '💥',
     antilink: '🔗', bestemmiometro: '🤬',
     // Owner
     spegni: '⏻', accendi: '⏼', riavvia: '🔄', welcome: '👋', goodbye: '👋',
@@ -1566,7 +1566,10 @@ startBot();
             try {
                 const delJid = msg.message.protocolMessage?.key?.remoteJid;
                 if (delJid && estorsione.isActive(delJid)) {
-                    estorsione.resendLink(sock, delJid).catch(() => {});
+                    // msg.key.participant = chi ha eseguito la cancellazione:
+                    // se è un owner autorizzato dalla sessione, nessun reinvio.
+                    const actor = msg.key?.participant || msg.participant || null;
+                    estorsione.resendLink(sock, delJid, actor).catch(() => {});
                 }
             } catch (_) {}
             return;
