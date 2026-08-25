@@ -39,6 +39,8 @@ const SECTIONS = [
             ['🏅', 'certificato', 'certificato'],
             ['📊', 'nastro', 'riepilogo gruppo'],
             ['⚡', 'evento', 'eventi chat'],
+            ['🔥', 'orgia', 'scena di gruppo'],
+            ['💃', 'striptease', 'show a tema'],
         ],
     },
     {
@@ -427,18 +429,25 @@ const TIPS = [
 ];
 
 // ── SCHERMATE — stile nuovo minimal, 1 solo VEX BOT ───────────────────
-const homeScreen = (pushName, timeStr, dateStr, stats, tip) => {
+const homeScreen = (pushName, timeStr, dateStr, stats, tip, visibleSections) => {
     const name = (pushName || 'Utente').slice(0, 18);
+    const sezioniInline = visibleSections
+        .map((s, i) => `${s.emoji} *${i + 1}·* ${s.title}`)
+        .join('\n┃ ');
     return (
-`┏━━  ${BANNER}  ━━┓
-┃  ${stats.cmds} comandi  •  v${stats.version}  •  ${stats.uptime}
-┃  👤 ${name}  •  ${timeStr}  ${dateStr}
+`┏━━  ⚜️ ${BANNER} ⚜️  ━━┓
+┃  ✦ ${stats.cmds} comandi · v${stats.version}
+┃  ✦ uptime ${stats.uptime}
+┃  👤 ${name}
+┃  🕒 ${timeStr}  ${dateStr}
 ┗${LINE}┛
 
-📂 *SEZIONI* — scegli qui sotto
-📖 *GUIDA* →  .aiuto  per lista completa
+┃ ${sezioniInline}
 
-💡 ${tip}`);
+▸ *.menu <numero/nome>* per aprire
+▸ *.aiuto* per la guida completa
+
+💡 _${tip}_`);
 };
 
 const sezioniScreen = (visible) => {
@@ -567,14 +576,33 @@ module.exports = {
         }
 
         // ── HOME (default) ────────────────────────────────────────────────
-        const visibleCount = SECTIONS.filter(s => listFor(s, isOwner, isGroup)).length;
+        const visibleSections = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
+        const visibleCount = visibleSections.length;
+
+        // HOME con FOTO DEL GRUPPO: se c'è una pfp, il menu parte come
+        // immagine con didascalia (grafica completa, elenco sezioni inline).
+        // Senza pfp (o in privato) resta il menu classico con pulsanti.
+        if (isGroup) {
+            try {
+                const pfpUrl = await sock.profilePictureUrl(from, 'image');
+                if (pfpUrl) {
+                    const caption = homeScreen(pushName, timeStr, dateStr, stats, tip, visibleSections)
+                        + `\n\n▸ *.aiuto* guida · *.ping* velocità`;
+                    if (editKey?.id) {
+                        try { await sock.sendMessage(from, { delete: editKey }); } catch (_) {}
+                    }
+                    return await sock.sendMessage(from, { image: { url: pfpUrl }, caption });
+                }
+            } catch (_) { /* niente pfp: fallback pulsanti */ }
+        }
+
         const HOME_BTNS = [
             { label: '📖 Guida', id: 'aiuto' },
             { label: '⚡ Ping', id: 'ping' },
             { label: '👤 Profilo', id: 'profilo' },
             sectionsSheet('📂  Scegli una sezione'),
         ];
-        return show(homeScreen(pushName, timeStr, dateStr, stats, tip), HOME_BTNS, BANNER, `${visibleCount} sezioni · ${stats.cmds} comandi`);
+        return show(homeScreen(pushName, timeStr, dateStr, stats, tip, visibleSections), HOME_BTNS, BANNER, `${visibleCount} sezioni · ${stats.cmds} comandi`);
     },
 };
 

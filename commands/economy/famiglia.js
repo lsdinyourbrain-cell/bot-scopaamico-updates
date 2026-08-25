@@ -1,6 +1,12 @@
 'use strict';
 
 const { dispOf, resolveJid } = require('../../lib/jid');
+const { toStyle } = require('../../lib/font');
+
+// Titoli in corsivo elegante (Script Bold): leggibile e compatibile
+const T = (s) => toStyle(s.toUpperCase(), 'scriptBold');
+// Separatore corto: niente linee ASCII lunghe che si rompono
+const SEP = '✦ ✦ ✦';
 
 module.exports = {
     name: 'famiglia',
@@ -24,13 +30,13 @@ module.exports = {
             if ((subCmd === 'si' || subCmd === 'sì' || subCmd === 'no') && proposalId) {
                 const proposals = db[from]?.familyProposals || {};
                 const prop = proposals[proposalId];
-                if (!prop) return reply("❌ Proposta scaduta o non più valida.");
+                if (!prop) return reply(`❌ ${T('Proposta scaduta')}\n${SEP}\n▸ Questa proposta non è\n  più valida.`);
                 // Solo la persona designata può accettare/rifiutare.
-                if (!sameJid(sender, prop.target)) return reply("❌ Questa proposta non è per te.");
+                if (!sameJid(sender, prop.target)) return reply(`❌ ${T('Errore')}\n${SEP}\n▸ Questa proposta non è per te.`);
                 if (Date.now() - prop.timestamp > 120000) {
                     delete proposals[proposalId];
                     saveDB();
-                    return reply("⏰ Proposta scaduta (2 minuti). Rifai la richiesta.");
+                    return reply(`⏰ ${T('Tempo scaduto')}\n${SEP}\n▸ La proposta è durata\n  2 minuti.\n▸ Rifai la richiesta.`);
                 }
 
                 const isAccept = subCmd === 'si' || subCmd === 'sì';
@@ -39,7 +45,7 @@ module.exports = {
 
                 if (!isAccept) {
                     await sock.sendMessage(from, {
-                        text: `❌ *_RIFIUTATO_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha rifiutato\n▸ la proposta di @${disp(prop.proposer)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                        text: `💔 ${T('Rifiuto')}\n${SEP}\n▸ @${disp(sender)} ha detto *no*\n▸ alla proposta di @${disp(prop.proposer)}\n\n◈ _Vex Bot_`,
                         mentions: [sender, prop.proposer],
                     });
                     return;
@@ -50,24 +56,24 @@ module.exports = {
 
                 if (prop.type === 'sposa') {
                     if (proposerDB.spouse || targetDB.spouse) {
-                        return reply("❌ Uno dei due è già sposato/a: la proposta è annullata.");
+                        return reply(`❌ ${T('Annullato')}\n${SEP}\n▸ Uno dei due risulta\n  già sposato/a.`);
                     }
                     proposerDB.spouse = prop.target;
                     targetDB.spouse = prop.proposer;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `💒 *_MATRIMONIO_*\n━━━━━━━━━━━━━━\n▸ @${disp(prop.proposer)} 💞 @${disp(prop.target)}\n▸ _Vi siete appena sposati!_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                        text: `💒 ${T('Matrimonio')}\n${SEP}\n▸ @${disp(prop.proposer)}\n▸ 　💞 💞 💞\n▸ @${disp(prop.target)}\n\n🎊 _Ora siete marito e moglie!_\n💍 _Che il bot benedica questa unione._\n\n◈ _Vex Bot_`,
                         mentions: [prop.proposer, prop.target],
                     });
                 } else if (prop.type === 'adotta') {
                     if (proposerDB.children.includes(prop.target)) {
-                        return reply("❌ Fa già parte della famiglia.");
+                        return reply(`❌ ${T('Errore')}\n${SEP}\n▸ Fa già parte della famiglia.`);
                     }
                     proposerDB.children.push(prop.target);
                     if (!targetDB.parents.includes(prop.proposer)) targetDB.parents.push(prop.proposer);
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🍼 *_ADOZIONE_*\n━━━━━━━━━━━━━━\n▸ @${disp(prop.proposer)} ha adottato @${disp(prop.target)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                        text: `🍼 ${T('Adozione')}\n${SEP}\n▸ @${disp(prop.proposer)} ha adottato\n▸ @${disp(prop.target)}\n\n🎈 _Benvenuto nella famiglia!_\n\n◈ _Vex Bot_`,
                         mentions: [prop.proposer, prop.target],
                     });
                 }
@@ -79,43 +85,49 @@ module.exports = {
                 let partnerLine, parentsLine, childrenLine;
 
                 if (uDB.spouse) {
-                    partnerLine = `💍 *Coniuge:* @${disp(uDB.spouse)}`;
+                    partnerLine = `💍 Coniuge → @${disp(uDB.spouse)}`;
                     familyMentions.push(uDB.spouse);
                 } else {
-                    partnerLine = '💍 *Coniuge:* _Nessuno_';
+                    partnerLine = `💍 Coniuge → _single di ferro_`;
                 }
 
                 if (uDB.parents.length > 0) {
-                    parentsLine = `👴 *Genitori:*\n${uDB.parents.map(p => `🧑 @${disp(p)}`).join('\n')}`;
+                    parentsLine = uDB.parents.map(p => `🧑 @${disp(p)}`).join('\n');
                     familyMentions.push(...uDB.parents);
                 } else {
-                    parentsLine = '👴 *Genitori:* _Nessuno_';
+                    parentsLine = '_nessuno_';
                 }
 
                 if (uDB.children.length > 0) {
-                    childrenLine = `🍼 *Figli:*\n${uDB.children.map(c => `🧑 @${disp(c)}`).join('\n')}`;
+                    childrenLine = uDB.children.map(c => `🧒 @${disp(c)}`).join('\n');
                     familyMentions.push(...uDB.children);
                 } else {
-                    childrenLine = '🍼 *Figli:* _Nessuno_';
+                    childrenLine = '_nessuno_';
                 }
 
                 const albero =
-`🌳 *_FAMIGLIA_*
-━━━━━━━━━━━━━━
-▸ 👤 _${pushName.slice(0, 20)}_
-▸ ${partnerLine}
-▸ ${parentsLine}
-▸ ${childrenLine}
-━━━━━━━━━━━━━━
+`${T('Famiglia')} 🌳
+${SEP}
+▸ 👤 *${pushName.slice(0, 20)}*
+
+${T('coniuge')} 💍
+${partnerLine}
+
+${T('genitori')} 👴
+${parentsLine}
+
+${T('figli')} 🍼
+${childrenLine}
+
 ◈ _Vex Bot_`;
 
                 await sock.sendMessage(from, { text: albero, mentions: familyMentions });
             }
             else if (subCmd === 'sposa' && target) {
-                if (sameJid(target, sender)) return reply("❌ Non puoi sposarti da solo.");
+                if (sameJid(target, sender)) return reply(`😅 ${T('Impossibile')}\n${SEP}\n▸ Non puoi sposare\n  te stesso/a.`);
                 const tDB = getUser(target, from);
-                if (uDB.spouse) return reply("❌ Sei già sposato/a in questo gruppo.");
-                if (tDB.spouse) return reply("❌ Questo utente è già sposato/a.");
+                if (uDB.spouse) return reply(`💔 ${T('Già sposato/a')}\n${SEP}\n▸ In questo gruppo hai già\n  una moglie/un marito.\n▸ Prima: _.famiglia divorzia_`);
+                if (tDB.spouse) return reply(`💔 ${T('Occupato/a')}\n${SEP}\n▸ Questo utente è già\n  sposato/a con qualcun altro.`);
 
                 // Creo una proposta: serve il consenso dell'altra persona.
                 const proposals = db[from]?.familyProposals || (db[from].familyProposals = {});
@@ -124,13 +136,12 @@ module.exports = {
                 saveDB();
 
                 return sendButtons(sock, from,
-`💍 *_PROPOSTA DI MATRIMONIO_*
-━━━━━━━━━━━━━━
-▸ @${disp(sender)} ti chiede di sposarlo/a! 💞
-▸ _Accetti?_
+`💍 ${T('Proposta di matrimonio')}
+${SEP}
+▸ @${disp(sender)} ti chiede
+▸ di sposarlo/a 🥺
 ▸ ⏳ _2 minuti di tempo_
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`,
+${SEP}`,
                     [
                         { label: '💍 Sì, accetto!', id: `famiglia si ${proposalId}` },
                         { label: '❌ No, grazie', id: `famiglia no ${proposalId}` },
@@ -138,21 +149,21 @@ module.exports = {
                     msg);
             }
             else if (subCmd === 'divorzia') {
-                if (!uDB.spouse) return reply("❌ Non sei sposato/a.");
+                if (!uDB.spouse) return reply(`💔 ${T('Single')}\n${SEP}\n▸ Non sei sposato/a\n  con nessuno qui.`);
                 const ex = uDB.spouse;
                 const exDB = getUser(ex, from);
                 uDB.spouse = null;
                 exDB.spouse = null;
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `💔 *_DIVORZIO_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha divorziato da @${disp(ex)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `🧾 ${T('Divorzio')}\n${SEP}\n▸ @${disp(sender)} ha divorziato\n▸ da @${disp(ex)}\n\n💸 _L'avvocato ringrazia,_\n_la metà dei soldi resta dove sta._\n\n◈ _Vex Bot_`,
                     mentions: [sender, ex],
                 });
             }
             else if (subCmd === 'adotta') {
-                if (!target) return reply("Tagga la persona che vuoi adottare.");
-                if (sameJid(target, sender)) return reply("Non puoi adottare te stesso/a, dai.");
-                if (uDB.children.includes(target)) return reply("Questa persona fa già parte della tua famiglia.");
+                if (!target) return reply(`🍼 ${T('Adotta')}\n${SEP}\n▸ Tagga la persona da\n  adottare: _.famiglia adotta @utente_`);
+                if (sameJid(target, sender)) return reply(`😅 ${T('Impossibile')}\n${SEP}\n▸ Non puoi adottare\n  te stesso/a, dai.`);
+                if (uDB.children.includes(target)) return reply(`❌ ${T('Già in famiglia')}\n${SEP}\n▸ Questa persona fa già\n  parte della tua famiglia.`);
 
                 // Creo una proposta: serve il consenso dell'altra persona.
                 const proposals = db[from]?.familyProposals || (db[from].familyProposals = {});
@@ -161,13 +172,11 @@ module.exports = {
                 saveDB();
 
                 return sendButtons(sock, from,
-`🍼 *_PROPOSTA DI ADOZIONE_*
-━━━━━━━━━━━━━━
-▸ @${disp(sender)} vuole adottarti! 👨‍👧
-▸ _Accetti?_
+`🍼 ${T('Proposta di adozione')}
+${SEP}
+▸ @${disp(sender)} vuole adottarti 👨‍👧
 ▸ ⏳ _2 minuti di tempo_
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`,
+${SEP}`,
                     [
                         { label: '🍼 Sì, accetto!', id: `famiglia si ${proposalId}` },
                         { label: '❌ No, grazie', id: `famiglia no ${proposalId}` },
@@ -175,20 +184,20 @@ module.exports = {
                     msg);
             }
             else if (subCmd === 'caccia') {
-                if (!target) return reply("Tagga la persona da rimuovere dalla famiglia.");
-                if (!uDB.children.includes(target)) return reply("Questa persona non è tra i tuoi figli nel bot.");
+                if (!target) return reply(`🚪 ${T('Caccia')}\n${SEP}\n▸ Tagga la persona da\n  rimuovere dalla famiglia.`);
+                if (!uDB.children.includes(target)) return reply(`❓ ${T('Non trovato')}\n${SEP}\n▸ Questa persona non è\n  tra i tuoi figli nel bot.`);
 
                 const tDB = getUser(target, from);
                 uDB.children = uDB.children.filter(child => child !== target);
                 tDB.parents = tDB.parents.filter(parent => parent !== sender);
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚪 *_CACCIATA_*\n━━━━━━━━━━━━━━\n▸ @${disp(target)} non è più nella famiglia di @${disp(sender)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `🚪 ${T('Cacciato/a')}\n${SEP}\n▸ @${disp(target)} non è più\n▸ nella famiglia di @${disp(sender)}\n\n🧳 _Fatti le valigie._\n\n◈ _Vex Bot_`,
                     mentions: [sender, target],
                 });
             }
             else if (subCmd === 'abbandona') {
-                if (uDB.parents.length === 0) return reply("Non hai genitori registrati nel bot.");
+                if (uDB.parents.length === 0) return reply(`🚶 ${T('Impossibile')}\n${SEP}\n▸ Non hai genitori\n  registrati nel bot.`);
                 const parents = [...uDB.parents];
                 for (const parent of parents) {
                     const parentDB = getUser(parent, from);
@@ -197,12 +206,25 @@ module.exports = {
                 uDB.parents = [];
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚶 *_ABBANDONO_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha scelto di andare per la sua strada\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `🚶 ${T('Abbandono')}\n${SEP}\n▸ @${disp(sender)} ha lasciato\n▸ la famiglia per la sua strada\n\n🌙 _In bocca al lupo._\n\n◈ _Vex Bot_`,
                     mentions: [sender],
                 });
             }
+            else if (subCmd === 'sposa' || subCmd === 'adotta' || subCmd === 'caccia') {
+                await reply(`❓ ${T('Manca il tag')}\n${SEP}\n▸ Tagga qualcuno:\n▸ _.famiglia ${subCmd} @utente_`);
+            }
             else {
-                await reply("❓ *_AIUTO FAMIGLIA_*\n━━━━━━━━━━━━━━\n▸ _.famiglia_\n▸ _.famiglia sposa @u_\n▸ _.famiglia adotta @u_\n▸ _.famiglia divorzia_\n▸ _.famiglia caccia @u_\n▸ _.famiglia abbandona_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+                await reply(
+`📖 ${T('Guida famiglia')}
+${SEP}
+▸ _.famiglia_ — il tuo albero
+▸ _.famiglia sposa @utente_ — proposta 💍
+▸ _.famiglia adotta @utente_ — adozione 🍼
+▸ _.famiglia divorzia_ — fine matrimonio 💔
+▸ _.famiglia caccia @utente_ — caccia figlio 🚪
+▸ _.famiglia abbandona_ — lascia i genitori 🚶
+${SEP}
+◈ _Vex Bot_`);
             }
     },
 };

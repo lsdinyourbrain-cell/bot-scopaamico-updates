@@ -86,6 +86,13 @@ const nukingGroups = new Set();
 // a ogni variante che qualcuno scrive nella stessa fascia).
 const greetingLastReply = new Map();
 
+// ── ANTI-SPAM PULSANTI (per persona) ────────────────────────────────────────
+// Se uno preme i pulsanti in raffica, il bot tace finché non passa almeno
+// BUTTON_SPAM_MS senza pressioni. Chiave "chat|sender" → timestamp ultima
+// pressione. Va a persona: il spam di uno non blocca gli altri.
+const BUTTON_SPAM_MS = 2000;
+const btnSpamGuard = new Map();
+
 const COMMANDS_DIRECTORY = path.join(__dirname, 'commands');
 const loadCommandRegistry = () => {
     // loadCommands percorre ricorsivamente commands/ e tutte le sottocartelle.
@@ -671,6 +678,16 @@ const getCachedGroupMeta = async (sock, groupJid) => {
     return metadata;
 };
 
+// Invalida TUTTE le cache legate ai partecipanti di un gruppo. Va chiamata a
+// ogni evento group-participants.update: senza questo, dopo un promote/demote
+// il bot legge per fino a 15s le vecchie metadata e sbaglia il controllo
+// admin ("non sei admin" fantasma).
+const invalidateGroupMeta = (groupJid) => {
+    if (!groupJid) return;
+    groupMetaCache.delete(groupJid);
+    ownerPresenceCache.delete(groupJid);
+};
+
 // Cache presenza owner per gruppo (evita groupMetadata extra per ogni comando)
 const ownerPresenceCache = new Map(); // groupJid -> {hasOwner, ts}
 const OWNER_PRESENCE_TTL = 30000;
@@ -691,12 +708,43 @@ const isOwnerInGroupCached = async (sock, groupJid, db) => {
     } catch (_) { return true; } // se non leggo, non bloccare
 };
 
+// Confronto admin ROBUSTO — fix del bug "dice che non è admin":
+//  1. confronta ogni identificatore del partecipante (id/jid/lid/phoneNumber)
+//     con ogni JID del mittente, in TUTTE le forme (con/senza dominio,
+//     con/senza suffisso dispositivo :12);
+//  2. usa la mappa LID→PN (lidToPn) per far coincidere un mittente visto come
+//     LID con un partecipante noto solo come numero (e viceversa);
+//  3. come extrema ratio confronta anche la sola parte numerica.
+const jidForms = (jid) => {
+    const s = String(jid || '').toLowerCase().trim();
+    if (!s) return [];
+    const noDevice = s.replace(/:\d+(?=@)/, '');
+    const num = noDevice.replace(/@.*$/, '').replace(/[^0-9]/g, '');
+    return [...new Set([s, noDevice, num].filter(Boolean))];
+};
+
+const senderMatchesAdmin = (participant, senderJids) => {
+    if (!['admin', 'superadmin'].includes(participant?.admin)) return false;
+    // Tutte le forme di identificatore DEL PARTICIPANTE
+    const pForms = new Set();
+    for (const j of [participant.id, participant.jid, participant.lid, participant.phoneNumber]) {
+        for (const f of jidForms(j)) pForms.add(f);
+        // Cross-map: se conosco il PN di questo LID, aggiungo anche quello
+        if (j && lidToPn.get(normLidKey(j))) for (const f of jidForms(lidToPn.get(normLidKey(j)))) pForms.add(f);
+    }
+    return senderJids.filter(Boolean).some(sjid => {
+        const sForms = jidForms(sjid);
+        if (sForms.some(f => pForms.has(f))) return true;
+        // Inverso: il mittente LID potrebbe corrispondere al phoneNumber del partecipante
+        const pn = lidToPn.get(normLidKey(sjid));
+        return Boolean(pn && jidForms(pn).some(f => pForms.has(f)));
+    });
+};
+
 const getGroupAdminState = async (sock, groupJid, senderJids) => {
     const metadata = await getCachedGroupMeta(sock, groupJid);
     const participants = Array.isArray(metadata?.participants) ? metadata.participants : [];
-    const isAdmin = (jids) => jids
-        .filter(Boolean)
-        .some(jid => participants.some(participant => isAdminParticipant(participant, jid)));
+    const isAdmin = (jids) => participants.some(p => senderMatchesAdmin(p, jids));
 
     return {
         isBotAdmin    : isAdmin([sock.user?.id, sock.user?.lid]),
@@ -755,7 +803,7 @@ const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag
 
 // Comandi per cui il pulsante "Ripeti" automatico NON deve comparire:
 // sistemici o distruttivi, rischiosi da far ripartire a un tap.
-const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'diagnostica', 'clear', 'giudizio', 'obitorio', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara', 'evento', 'events', 'eventi',
+const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'diagnostica', 'clear', 'giudizio', 'obitorio', 'struttura', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara', 'evento', 'events', 'eventi',
     // Nuovi giochi nativi: niente pulsante Ripeti sulle risposte di gioco
     'forza4', 'connect4', 'forza-4', 'wordle', 'wordle-ita', 'wordleita',
     'labirinto', 'maze', 'labyrinth', 'trivia2', 'quiz2', 'triviasfida',
@@ -810,7 +858,7 @@ const COMMAND_EMOJIS = {
     // Owner
     spegni: '⏻', accendi: '⏼', riavvia: '🔄', welcome: '👋', goodbye: '👋',
     setlink: '🔗', addowner: '👑', setowner: '👑', cowner: '👑',
-    aggiorna: '📦', update: '📦', aggiornamento: '📦',
+    aggiorna: '📦', update: '📦', aggiornamento: '📦', struttura: '🗂️',
     clear: '🧹', pulizia: '🧹', cache: '🧹', svuota: '🧹',
     // Media/Utility
     sticker: '🎨', vv: '📹', hack: '💻', clona: '👥', tts: '🔊',
@@ -843,6 +891,7 @@ const COMMAND_EMOJIS = {
     ship: '💞', gay: '🏳️‍🌈', simpatometro: '💖', percentuale: '📊',
     scelta: '🤔', fiore: '🌸', personaggio: '🦸', anime: '📺',
     assemblapc: '🖥️', verita: '🤫', obbligo: '🫣', oroscopo: '🔮', maranza: '🐺',
+    orgia: '🔥', striptease: '💃',
     // Games
     quiz: '❓', bandiera: '🏁', compatibilita: '💞', duello: '⚔️',
     indovina: '🎯', testa: '🪙', parita: '🎲', alta: '🃏',
@@ -1837,6 +1886,26 @@ startBot();
             console.log('[BTN-DEBUG] body finale:', JSON.stringify(body), '| fromButton:', fromButton);
         }
 
+        // ── ANTI-SPAM PULSANTI (per persona) ─────────────────────────────
+        // Pressioni ravvicinate (< BUTTON_SPAM_MS dalla precedente della
+        // STESSA persona in questa chat) vengono ignorate in silenzio.
+        // Il bot risponde di nuovo solo dopo ≥2s senza pressioni: ogni
+        // pressione durante lo spam riparte da zero. Gli altri non vengono
+        // bloccati (il guard è per chat+mittente).
+        if (fromButton && sender && isGroup) {
+            const _bsKey = `${from}|${sender}`;
+            const _bsNow = Date.now();
+            const _bsLast = btnSpamGuard.get(_bsKey) || 0;
+            btnSpamGuard.set(_bsKey, _bsNow);
+            if (_bsNow - _bsLast < BUTTON_SPAM_MS) return; // spam: silenzio totale
+            // Pulizia periodica della mappa (evita crescita senza fine)
+            if (btnSpamGuard.size > 1000) {
+                for (const [k, ts] of btnSpamGuard) {
+                    if (_bsNow - ts > 60000) btnSpamGuard.delete(k);
+                }
+            }
+        }
+
         // ── MUTE: elimina i messaggi degli utenti silenziati ──────────────
         try {
             const senderData = getUser(sender, from);
@@ -1899,13 +1968,15 @@ startBot();
         //
         //  Logica:
         //  1. Funziona solo nei gruppi (non in chat private).
-        //  2. Legge la config del gruppo corrente (remoteJid = `from`).
+        //  2. Legge la config del gruppo corrente (remoteJid = `from`),
+        //     inclusa la WHITELIST per-gruppo (antilink.json → "whitelist").
         //  3. Per ogni piattaforma con filtro attivo, verifica se il testo
         //     del messaggio (incluso il testo dei sondaggi) contiene un link.
-        //  4. Se il mittente NON è admin, elimina il messaggio e dà 1 avviso
-        //     progressivo; al 3° avviso viene rimosso con i motivi ricevuti.
-        //  5. Gli admin sono esentati: possono postare link liberamente.
-        //  6. L'Owner è sempre esente, così come la whitelist antinuke.
+        //  4. Utente NORMALE con link vietato → elimina il messaggio e dà
+        //     1 avviso progressivo; al 3° avviso viene rimosso.
+        //  5. ADMIN non in whitelist che postano un link vietato → DEMOTE
+        //     ISTANTANEO + messaggio eliminato: il gruppo torna com'era.
+        //  6. Esentati: Owner, whitelist antinuke, whitelist antilink.
         //
         const linkBody = (body || '') + ' ' + extractPollText(msg);
         const anCfg = getAntinukeGroup(db, from);
@@ -1919,12 +1990,28 @@ startBot();
             try { _adminCache = await getGroupAdminState(sock, from, [sender, senderAlt]); } catch (_) { _adminCache = {isSenderAdmin:false, isBotAdmin:false}; }
             return _adminCache;
         };
+        // Whitelist antilink: numeri/jid salvati come stringhe; il confronto
+        // è per cifre incluse (come fa l'antibot), così matcha LID, PN e tag.
+        const antilinkWlHit = (cfg) => {
+            const wl = Array.isArray(cfg?.whitelist) ? cfg.whitelist : [];
+            if (!wl.length) return false;
+            return [sender, senderAlt].filter(Boolean).some(j => {
+                const num = String(j).replace(/[^0-9]/g, '');
+                return wl.some(w => {
+                    const wnum = String(w).replace(/[^0-9]/g, '');
+                    return wnum.length >= 5 && num.includes(wnum);
+                });
+            });
+        };
         if (isGroup && linkBody) {
             try {
                 const antilinkConfig = getAntilinkGroup(from);
-                const hasActiveFilter = Object.values(antilinkConfig).some(Boolean);
+                // Solo i filtri piattaforma contano per "hasActiveFilter"
+                // (la chiave whitelist non è un filtro).
+                const hasActiveFilter = Object.entries(antilinkConfig)
+                    .some(([k, v]) => k !== 'whitelist' && Boolean(v));
 
-                if (hasActiveFilter && !anWl) {
+                if (hasActiveFilter && !anWl && !antilinkWlHit(antilinkConfig)) {
                     for (const [platform, regex] of Object.entries(ANTILINK_PLATFORMS)) {
                         if (!antilinkConfig[platform]) continue;
                         if (!regex.test(linkBody)) continue;
@@ -1932,20 +2019,37 @@ startBot();
                         if (isOwnerJid(sender, sock, db, senderAlt)) break;
 
                         const { isSenderAdmin } = await getAdminCached();
-                        if (isSenderAdmin) break;
 
-                        // Utente normale con link vietato → elimina + 1 avviso progressivo
-                        try {
-                            await sock.sendMessage(from, { delete: msg.key });
-                            if (!warnedForMsg) {
-                                warnedForMsg = true;
-                                await applyWarn(sock, from, sender, `Link *${platform}* inviato`);
+                        if (!isSenderAdmin) {
+                            // Utente normale con link vietato → elimina + 1 avviso progressivo
+                            try {
+                                await sock.sendMessage(from, { delete: msg.key });
+                                if (!warnedForMsg) {
+                                    warnedForMsg = true;
+                                    await applyWarn(sock, from, sender, `Link *${platform}* inviato`);
+                                }
+                            } catch (delErr) {
+                                // Se il bot non è admin, non può eliminare — logga senza crashare
+                                console.warn(`[ANTILINK] Impossibile eliminare il msg di ${sender}: ${delErr.message}`);
                             }
-                        } catch (delErr) {
-                            // Se il bot non è admin, non può eliminare — logga senza crashare
-                            console.warn(`[ANTILINK] Impossibile eliminare il msg di ${sender}: ${delErr.message}`);
+                        } else {
+                            // ── ADMIN NON IN WHITELIST: DEMOTE ISTANTANEO ──
+                            try { await sock.sendMessage(from, { delete: msg.key }); } catch (_) {}
+                            try {
+                                await sock.groupParticipantsUpdate(from, [sender], 'demote');
+                                invalidateGroupMeta(from); // stato admin aggiornato subito
+                            } catch (demoteErr) {
+                                console.warn(`[ANTILINK] Impossibile retrocedere l'admin ${sender}: ${demoteErr.message}`);
+                            }
+                            try {
+                                await sock.sendMessage(from, {
+                                    text: `⚖️ *ANTILINK — ADMIN RETROCESSO*\n▸ @${String(senderAlt || sender).split('@')[0]} era admin ma non è in whitelist.\n▸ Link *${platform}* bloccato: admin tolto, gruppo tornato com'era.`,
+                                    mentions: [senderAlt || sender].filter(Boolean),
+                                });
+                            } catch (_) {}
+                            warnedForMsg = true;
                         }
-                        break; // Un solo avviso anche se matchano più piattaforme
+                        break; // Un solo provvedimento anche se matchano più piattaforme
                     }
                 }
             } catch (antilinkErr) {
@@ -2847,30 +2951,15 @@ startBot();
             if (!hasOwner) return;
         }
 
-        // ── MODO ADMIN ────────────────────────────────────────────────────
-        // Se il gruppo ha .modoadmin attivo, SOLO gli admin possono usare il
-        // bot. Un non-admin che invoca un comando riceve un messaggio ironico
-        // con grafica unicode e pulsante "Diventa admin". (l'owner è esente)
+        // ── MODO ADMIN (SILENZIOSO) ───────────────────────────────────────
+        // Con .modoadmin attivo il bot è completamente MUTO per i non-admin:
+        // nessuna risposta, nessuna reazione, niente. Admin e owner usano
+        // tutto normalmente. Se i permessi non sono leggibili, non blocco
+        // nessuno (meglio un comando in più che il bot muto per tutti).
         if (isGroup && db[from]?._modoadmin && !isOwner) {
             try {
                 const { isSenderAdmin: sa } = await getGroupAdminState(sock, from, [sender, senderAlt]);
-                if (!sa) {
-                    // Non intercettare .clear/.ds (owner only) — lascia il deny owner del comando
-                    const _quickCmd = String(body || '').slice(1).trim().split(/\s+/)[0]?.toLowerCase();
-                    const _ownerOnlyQuick = new Set(['clear', 'pulizia', 'cache', 'svuota', 'ds']);
-                    if (_ownerOnlyQuick.has(_quickCmd)) {
-                        // lascia proseguire: il comando clear gestirà il deny owner
-                    } else {
-                        const denyModoAdmin = `🚫 *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ci hai provato, ma non sei admin 😒\n▸ Questo gruppo è in *modalità admin* — solo gli admin possono usare il bot\n▸ Torna quando avrai i poteri 👑\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
-                        try {
-                            await sendButtons(sock, from, denyModoAdmin, [{ label: '🛡️ Diventa admin', id: 'admin' }], msg, [sender]);
-                        } catch (_) {
-                            await sock.sendMessage(from, { text: denyModoAdmin, mentions: [sender] }, { quoted: msg }).catch(() => {});
-                        }
-                        try { await sock.sendMessage(from, { react: { key: msg.key, text: '❌' } }).catch(() => {}); } catch (_) {}
-                        return;
-                    }
-                }
+                if (!sa) return;
             } catch (_) {}
         }
 
@@ -3152,6 +3241,12 @@ const collectMentionsFromText = async (sock, text, from) => {
                 console.log('[group-participants.update] Dati mancanti, skip');
                 return;
             }
+
+            // FIX "non è admin": a ogni cambio partecipanti (promote/demote/
+            // add/remove) azzero SUBITO le cache del gruppo. Senza questo il
+            // bot legge fino a 15s le vecchie metadata e i nuovi admin
+            // risultavano non-admin ai suoi occhi.
+            invalidateGroupMeta(groupJid);
 
             // ── PROTEZIONE OWNER (anti-kick) ────────────────────────────────
             // Se l'OWNER del bot viene rimosso da qualcun altro, il bot lascia
