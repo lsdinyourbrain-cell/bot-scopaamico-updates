@@ -9,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux, ANTILINK_PLATFORMS, toggleAntilinkWhitelist } = services;
 
 
             if (!isGroup) {
@@ -47,23 +47,71 @@ riservato all'*Owner del bot*.
                     const label = alConfig[p] ? 'ON ' : 'OFF';
                     return `${icon} *${p}* ➔ ${label}`;
                 }).join('\n');
+                const wlNow = Array.isArray(alConfig.whitelist) ? alConfig.whitelist : [];
+                const guardOn = Object.entries(alConfig).some(([k, v]) => k !== 'whitelist' && Boolean(v));
 
                 return reply(
 `🔗 ${toDecorated('ANTILINK — STATO', 'outline', '✠')}
 ━━━━━━━━━━━━━━
 ${statusLines}
-💡 *Uso:*
-.antilink [piattaforma] [on/off]
-.antilink tutti on/off
-*Piattaforme:*
-${platformNames.filter(p => p !== 'altri').join(', ')}, altri
 ━━━━━━━━━━━━━━
+🛡️ *Guard impostazioni:* ${guardOn ? 'ATTIVO' : 'spento'}
+▸ (nome/foto/desc/promozioni)
+📋 *Whitelist:* ${wlNow.length} autorizzati
+💡 *Uso:*
+▸ _.antilink [piattaforma] [on/off]_
+▸ _.antilink tutti on/off_
+▸ _.antilink wl/unwl @utente_
+▸ _.antilink wlist_
 ◈ _Vex Bot_`
                 );
             }
 
-            const sub      = args[0].toLowerCase();  // piattaforma o "tutti"
+            const sub      = args[0].toLowerCase();  // piattaforma, "tutti" o whitelist
             const stateArg = args[1]?.toLowerCase();  // "on" o "off"
+
+            // ── WHITELIST: wl / unwl / wlist (admin e owner) ─────────────
+            // Si può autorizzare una persona anche solo TAGGANDOLA o
+            // rispondendo a un suo messaggio:
+            //   .antilink wl @utente   ·  rispondi a un suo msg: .antilink wl
+            if (['wl', 'whitelist', 'unwl', 'unwhitelist', 'wlist', 'whitelistlista'].includes(sub)) {
+                if (!isOwner && !isSenderAdmin) {
+                    return reply(`⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ Solo admin/owner gestiscono\n  la whitelist antilink.`);
+                }
+                if (sub === 'wlist' || sub === 'whitelistlista') {
+                    const cfgNow = getAntilinkGroup(from);
+                    const wl = Array.isArray(cfgNow.whitelist) ? cfgNow.whitelist : [];
+                    return reply(
+`📋 *WHITELIST ANTILINK*
+━━━━━━━━━━━━━━
+${wl.length ? wl.map((w, i) => `▸ ${i + 1}. +${String(w).replace(/[^0-9]/g, '')}`).join('\n') : '_Vuota._'}
+━━━━━━━━━━━━━━
+▸ Aggiungi: _.antilink wl @utente_
+▸ Rimuovi: _.antilink unwl @utente_
+◈ _Vex Bot_`);
+                }
+                const isAdd = sub.startsWith('wl') || sub === 'whitelist';
+                const targetWl = targetJid;
+                if (!targetWl) {
+                    return reply(
+`⚠️ *USO WHITELIST*
+━━━━━━━━━━━━━━
+▸ ${isAdd ? 'Aggiungi' : 'Rimuovi'} con tag:
+▸ _.antilink ${isAdd ? 'wl' : 'unwl'} @utente_
+▸ Oppure rispondi a un suo
+  messaggio con lo stesso comando.
+━━━━━━━━━━━━━━
+▸ Lista: _.antilink wlist_
+◈ _Vex Bot_`);
+                }
+                toggleAntilinkWhitelist(from, targetWl, isAdd);
+                const wlAfter = getAntilinkGroup(from).whitelist || [];
+                await sock.sendMessage(from, {
+                    text: `${isAdd ? '✅' : '🗑️'} *WHITELIST ${isAdd ? '+' : '−'}*\n━━━━━━━━━━━━━━\n▸ @${String(targetWl).split('@')[0]} ${isAdd ? 'ora è autorizzato/a.' : 'rimosso/a dalla whitelist.'}\n▸ Membri in lista: *${wlAfter.length}*\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    mentions: [targetWl],
+                });
+                return;
+            }
 
             // Validazione argomento on/off
             if (stateArg !== 'on' && stateArg !== 'off') {

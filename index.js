@@ -441,6 +441,111 @@ const setAntilinkPlatform = (groupJid, platform, enabled) => {
     saveAntilink(data);
 };
 
+// ── WHITELIST ANTILINK (condivisa con il GROUP GUARD) ───────────────────────
+// Il confronto è per cifre incluse (come l'antibot): matcha PN, LID e tag.
+const antilinkWlMatch = (cfg, jids) => {
+    const wl = Array.isArray(cfg?.whitelist) ? cfg.whitelist : [];
+    if (!wl.length) return false;
+    return (jids || []).filter(Boolean).some(j => {
+        const num = String(j).replace(/[^0-9]/g, '');
+        return wl.some(w => {
+            const wnum = String(w).replace(/[^0-9]/g, '');
+            return wnum.length >= 5 && num.includes(wnum);
+        });
+    });
+};
+
+// Aggiunge/rimuove un JID dalla whitelist antilink di un gruppo.
+const toggleAntilinkWhitelist = (groupJid, jid, add) => {
+    const data = loadAntilink();
+    if (!data[groupJid]) data[groupJid] = DEFAULT_ANTILINK_GROUP();
+    const wl = Array.isArray(data[groupJid].whitelist) ? data[groupJid].whitelist : [];
+    const numKey = String(jid).replace(/[^0-9]/g, '').slice(-10); // ultime 10 cifre
+    const cleaned = wl.filter(w => String(w).replace(/[^0-9]/g, '').slice(-10) !== numKey);
+    data[groupJid].whitelist = add ? [...cleaned, String(jid)] : cleaned;
+    saveAntilink(data);
+    return data[groupJid].whitelist;
+};
+
+// ── GROUP GUARD — protezione nome/foto/descrizione/promozioni ───────────────
+//
+//  Attivo nei gruppi con almeno un filtro antilink acceso. Se un admin NON in
+//  whitelist cambia nome, foto o descrizione (oppure promuove altri admin):
+//   → demote istantaneo dell'autore
+//   → ripristino dal BACKUP (nome/desc nel db, foto su disco in temp/groupguard)
+//  Owner, whitelist e il BOT stesso sono sempre autorizzati; le modifiche
+//  autorizzate AGGIORNANO il backup.
+const GUARD_DIR = path.join(__dirname, 'temp', 'groupguard');
+
+const guardActive = (gid) => {
+    const cfg = loadAntilink()[gid];
+    return Boolean(cfg && Object.entries(cfg).some(([k, v]) => k !== 'whitelist' && Boolean(v)));
+};
+
+const getGuardBackup = (gid) => {
+    db._groupguard = db._groupguard || {};
+    if (!db._groupguard[gid]) db._groupguard[gid] = { name: null, desc: null };
+    const b = db._groupguard[gid];
+    b.name ??= null;
+    b.desc ??= null;
+    return b;
+};
+
+const guardPhotoPath = (gid) => path.join(GUARD_DIR, `${String(gid).replace(/[^0-9]/g, '')}.jpg`);
+
+// Scarica la foto attuale del gruppo nel backup locale
+const backupGroupPhoto = async (sock, gid) => {
+    try {
+        const url = await sock.profilePictureUrl(gid, 'image');
+        if (!url) return false;
+        const res = await axios.get(url, { responseType: 'arraybuffer', timeout: 20000 });
+        fs.mkdirSync(GUARD_DIR, { recursive: true });
+        fs.writeFileSync(guardPhotoPath(gid), Buffer.from(res.data));
+        return true;
+    } catch (_) { return false; }
+};
+
+// Backup completo delle impostazioni protette del gruppo
+const fullGuardBackup = async (sock, gid) => {
+    try {
+        const meta = await sock.groupMetadata(gid);
+        const b = getGuardBackup(gid);
+        b.name = meta.subject ?? b.name;
+        b.desc = meta.desc ?? b.desc;
+        saveDB();
+        await backupGroupPhoto(sock, gid);
+    } catch (_) {}
+};
+
+// Ripristina dal backup l'impostazione appena cambiata da non autorizzato
+const rollbackGroupChange = async (sock, gid, what) => {
+    const b = getGuardBackup(gid);
+    try {
+        if (what === 'nome' && b.name) await sock.groupUpdateSubject(gid, b.name);
+        else if (what === 'descrizione') await sock.groupUpdateDescription(gid, b.desc || '');
+        else if (what === 'foto') {
+            const f = guardPhotoPath(gid);
+            if (fs.existsSync(f)) await sock.updateProfilePicture(gid, f);
+        }
+        return true;
+    } catch (e) {
+        console.error('[GUARD] ripristino fallito:', e.message);
+        return false;
+    }
+};
+
+// Dopo una modifica AUTORIZZATA il backup viene allineato al nuovo valore
+const updateGuardBackup = async (sock, gid, what) => {
+    try {
+        if (what === 'foto') { await backupGroupPhoto(sock, gid); return; }
+        const meta = await sock.groupMetadata(gid);
+        const b = getGuardBackup(gid);
+        if (what === 'nome') b.name = meta.subject ?? b.name;
+        if (what === 'descrizione') b.desc = meta.desc ?? b.desc;
+        saveDB();
+    } catch (_) {}
+};
+
 // ============================================================================
 //  WELCOME / GOODBYE — PERSISTENZA PER-GRUPPO
 // ============================================================================
@@ -1670,6 +1775,37 @@ startBot();
 
         const isOwner  = isOwnerJid(sender, sock, db, senderAlt);
 
+        // ── GROUP GUARD: nome/foto/descrizione modificate da non autorizzato ──
+        // Le notifiche di sistema arrivano qui come stub: 21 = nome, 22 = foto,
+        // 24 = descrizione. Se il guard è attivo nel gruppo (antilink acceso):
+        //  • autore autorizzato (owner / whitelist / bot stesso) → backup aggiornato
+        //  • autore NON autorizzato → demote istantaneo + ripristino dal backup
+        try {
+            const _gWhat = ({ 21: 'nome', 22: 'foto', 24: 'descrizione' })[msg.message?.messageStubType];
+            if (_gWhat && isGroup && guardActive(from) && !nukingGroups.has(from)) {
+                const actorMain = msg.key?.participant || null;
+                const actorJids = [actorMain, msg.key?.participantAlt].filter(Boolean);
+                const botSelf = [sock.user?.id, sock.user?.lid].filter(Boolean);
+                const authorized = actorJids.some(j => isOwnerJid(j, sock, db, null))
+                    || antilinkWlMatch(loadAntilink()[from], actorJids)
+                    || (actorMain && botSelf.some(b => sameJid(actorMain, b)));
+                if (!authorized) {
+                    try { await sock.groupParticipantsUpdate(from, [actorMain], 'demote'); } catch (_) {}
+                    invalidateGroupMeta(from);
+                    const restored = await rollbackGroupChange(sock, from, _gWhat);
+                    logGroupEvent(from, `guard-${_gWhat}`, actorMain, msg.key?.participantAlt || null, null,
+                        restored ? 'demote + ripristinato dal backup' : 'demote (ripristino fallito)');
+                    await sock.sendMessage(from, {
+                        text: `🛡️ *GRUPPO PROTETTO*\n▸ @${String(msg.key?.participantAlt || actorMain || '').split('@')[0]} era admin ma non è in whitelist.\n▸ ${_gWhat.charAt(0).toUpperCase() + _gWhat.slice(1)} ripristinato/a dal backup.\n▸ Admin revocato.`,
+                        mentions: [msg.key?.participantAlt || actorMain].filter(Boolean),
+                    }).catch(() => {});
+                } else {
+                    await updateGuardBackup(sock, from, _gWhat);
+                }
+                return; // notifica di sistema: nessun'altra elaborazione
+            }
+        } catch (_) {}
+
         // ── TAG OWNER: se qualcuno tagga l'owner, rispondi con frase ironica ──
         if (isGroup && !isOwner && sender) {
             try {
@@ -1972,11 +2108,13 @@ startBot();
         //     inclusa la WHITELIST per-gruppo (antilink.json → "whitelist").
         //  3. Per ogni piattaforma con filtro attivo, verifica se il testo
         //     del messaggio (incluso il testo dei sondaggi) contiene un link.
-        //  4. Utente NORMALE con link vietato → elimina il messaggio e dà
-        //     1 avviso progressivo; al 3° avviso viene rimosso.
-        //  5. ADMIN non in whitelist che postano un link vietato → DEMOTE
-        //     ISTANTANEO + messaggio eliminato: il gruppo torna com'era.
+        //  4. Utente NON autorizzato con link vietato → elimina il messaggio
+        //     e dà 1 avviso progressivo; al 3° avviso viene rimosso.
+        //  5. GLI ADMIN possono mandare link liberamente.
         //  6. Esentati: Owner, whitelist antinuke, whitelist antilink.
+        //  7. Il GUARD su nome/foto/descrizione/promozioni è più sotto e
+        //     negli eventi di gruppo: lì gli admin NON in whitelist vengono
+        //     retrocessi e le impostazioni ripristinate dal backup.
         //
         const linkBody = (body || '') + ' ' + extractPollText(msg);
         const anCfg = getAntinukeGroup(db, from);
@@ -1990,19 +2128,8 @@ startBot();
             try { _adminCache = await getGroupAdminState(sock, from, [sender, senderAlt]); } catch (_) { _adminCache = {isSenderAdmin:false, isBotAdmin:false}; }
             return _adminCache;
         };
-        // Whitelist antilink: numeri/jid salvati come stringhe; il confronto
-        // è per cifre incluse (come fa l'antibot), così matcha LID, PN e tag.
-        const antilinkWlHit = (cfg) => {
-            const wl = Array.isArray(cfg?.whitelist) ? cfg.whitelist : [];
-            if (!wl.length) return false;
-            return [sender, senderAlt].filter(Boolean).some(j => {
-                const num = String(j).replace(/[^0-9]/g, '');
-                return wl.some(w => {
-                    const wnum = String(w).replace(/[^0-9]/g, '');
-                    return wnum.length >= 5 && num.includes(wnum);
-                });
-            });
-        };
+        // Whitelist antilink: confronto per cifre incluse via helper di modulo.
+        const antilinkWlHit = (cfg) => antilinkWlMatch(cfg, [sender, senderAlt]);
         if (isGroup && linkBody) {
             try {
                 const antilinkConfig = getAntilinkGroup(from);
@@ -2019,37 +2146,9 @@ startBot();
                         if (isOwnerJid(sender, sock, db, senderAlt)) break;
 
                         const { isSenderAdmin } = await getAdminCached();
+                        if (isSenderAdmin) break; // gli admin possono mandare link
 
-                        if (!isSenderAdmin) {
-                            // Utente normale con link vietato → elimina + 1 avviso progressivo
-                            try {
-                                await sock.sendMessage(from, { delete: msg.key });
-                                if (!warnedForMsg) {
-                                    warnedForMsg = true;
-                                    await applyWarn(sock, from, sender, `Link *${platform}* inviato`);
-                                }
-                            } catch (delErr) {
-                                // Se il bot non è admin, non può eliminare — logga senza crashare
-                                console.warn(`[ANTILINK] Impossibile eliminare il msg di ${sender}: ${delErr.message}`);
-                            }
-                        } else {
-                            // ── ADMIN NON IN WHITELIST: DEMOTE ISTANTANEO ──
-                            try { await sock.sendMessage(from, { delete: msg.key }); } catch (_) {}
-                            try {
-                                await sock.groupParticipantsUpdate(from, [sender], 'demote');
-                                invalidateGroupMeta(from); // stato admin aggiornato subito
-                            } catch (demoteErr) {
-                                console.warn(`[ANTILINK] Impossibile retrocedere l'admin ${sender}: ${demoteErr.message}`);
-                            }
-                            try {
-                                await sock.sendMessage(from, {
-                                    text: `⚖️ *ANTILINK — ADMIN RETROCESSO*\n▸ @${String(senderAlt || sender).split('@')[0]} era admin ma non è in whitelist.\n▸ Link *${platform}* bloccato: admin tolto, gruppo tornato com'era.`,
-                                    mentions: [senderAlt || sender].filter(Boolean),
-                                });
-                            } catch (_) {}
-                            warnedForMsg = true;
-                        }
-                        break; // Un solo provvedimento anche se matchano più piattaforme
+                        // Utente normale con link vietato → elimina + 1 avviso progressivo
                     }
                 }
             } catch (antilinkErr) {
@@ -3132,6 +3231,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                     getContextInfo, getCpuUsage, getProcessCpu, getQuotedKey, getSysInfo, getUser, os, path,
                     projectDir: __dirname, randomChoice, randomInt,
                     sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
+                    toggleAntilinkWhitelist, antilinkWlMatch, guardActive, fullGuardBackup,
                     getWelcomeGroup, setWelcomeGroup,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
                     sendButtons, editButtons, sendButtonsWithKey, sendCarousel, clearBotCache, ownerNumber, showProgress,
@@ -3312,6 +3412,36 @@ const collectMentionsFromText = async (sock, text, from) => {
                     }
                 }
             } catch (_) {}
+
+            // ── GROUP GUARD: promozioni da admin non autorizzato ───────────
+            // Un admin NON in whitelist che promuove qualcuno viene retrocesso
+            // subito insieme a chi ha promosso (il gruppo torna com'era).
+            // Autorizzati: owner, whitelist, il bot stesso (comandi .promote),
+            // autore sconosciuto (non punibile con certezza).
+            if (action === 'promote' && guardActive(groupJid) && !nukingGroups.has(groupJid)) {
+                try {
+                    const gActorIds = [author, authorPn].filter(Boolean);
+                    const gBotSelf = [sock.user?.id, sock.user?.lid].filter(Boolean);
+                    const gAuthorized = !gActorIds.length
+                        || gActorIds.some(j => isOwnerJid(j, sock, db, null))
+                        || antilinkWlMatch(loadAntilink()[groupJid], gActorIds)
+                        || (author && gBotSelf.some(b => sameJid(author, b)));
+                    if (!gAuthorized) {
+                        const gTargets = participants.map(p => p?.id || p?.phoneNumber).filter(Boolean);
+                        for (const t of gTargets) {
+                            await sock.groupParticipantsUpdate(groupJid, [t], 'demote').catch(() => {});
+                        }
+                        invalidateGroupMeta(groupJid);
+                        logGroupEvent(groupJid, 'guard-promote', author || null, authorPn || null,
+                            gTargets.join(', ') || null, 'demote autore + promossi annullati');
+                        await sock.sendMessage(groupJid, {
+                            text: `🛡️ *GRUPPO PROTETTO*\n▸ @${String(authorPn || author || '').split('@')[0]} era admin ma non è in whitelist.\n▸ Promozione annullata e admin revocato.`,
+                            mentions: [authorPn || author].filter(Boolean),
+                        }).catch(() => {});
+                        return;
+                    }
+                } catch (_) {}
+            }
 
             // ── ANTINUKE: CONTROLLI PARTECIPANTI ────────────────────────────
             // Reverte le azioni distruttive fatte da chi NON è owner/whitelist/
