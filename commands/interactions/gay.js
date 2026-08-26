@@ -1,5 +1,7 @@
 'use strict';
 
+const { S, SEP, header, footer, bullet } = require('../../lib/ui');
+
 module.exports = {
     name: 'gay',
     aliases: [],
@@ -11,7 +13,7 @@ module.exports = {
         const person = targetJid || sender;
         const percent = randomInt(1, 100);
         await sock.sendMessage(from, {
-            text: `🌈 *_GAY O METRO_*\n━━━━━━━━━━━━━━\n▸ @${person.split('@')[0]} è gay al _*${percent}%*_! 🏳️‍🌈\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+            text: `${S.star} ${S.dia}  *GAY O METRO*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`@${person.split('@')[0]} è gay al _*${percent}%*_! 🏳️‍🌈`)}\n${SEP.stars}\n${footer()}`,
             mentions: [person],
         });
     },

@@ -1,5 +1,7 @@
 'use strict';
 
+const { S, SEP, footer, bullet } = require('../../lib/ui');
+
 module.exports = {
     name: 'ship',
     aliases: [],
@@ -37,7 +39,7 @@ module.exports = {
                 : '🫶 Meglio amici.';
 
             await sock.sendMessage(from, {
-                text: `💘 *_SHIP!_*\n━━━━━━━━━━━━━━\n▸ @${user1.split('@')[0]} + @${user2.split('@')[0]}\n▸ *Compatibilità:* _*${percent}%*_\n▸ _${mood}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                text: `${S.star} ${S.dia}  *SHIP!*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`💘 @${user1.split('@')[0]} + @${user2.split('@')[0]}`)}\n${bullet(`*Compatibilità:* _*${percent}%*_`)}\n${bullet(`${mood}`)}\n${SEP.stars}\n${footer()}`,
                 mentions: [user1, user2],
             }, { quoted: msg });
     },

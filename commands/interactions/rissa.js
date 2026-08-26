@@ -1,5 +1,7 @@
 'use strict';
 
+const { S, SEP, footer, bullet } = require('../../lib/ui');
+
 module.exports = {
     name: 'rissa',
     aliases: [],
@@ -13,12 +15,11 @@ module.exports = {
             if (!targetJid) return reply("⚠️ _Tagga qualcuno con cui fare a botte. Esempio: .rissa @nome_");
             const vincitore  = Math.random() > 0.5 ? sender : targetJid;
             const perdente   = vincitore === sender ? targetJid : sender;
-            // Sostituisce i placeholder X/Y con i nomi reali
             const frase = randomChoice(ARRAYS.rissa)
                 .replace(/X/g, `@${vincitore.split('@')[0]}`)
                 .replace(/Y/g, `@${perdente.split('@')[0]}`);
             await sock.sendMessage(from, {
-                text: `🥊 *_RISSA_*\n━━━━━━━━━━━━━━\n▸ ⚔️ @${sender.split('@')[0]} vs @${targetJid.split('@')[0]}\n▸ _💬 ${frase}_\n━━━━━━━━━━━━━━\n▸ 🏆 *Vincitore:* @${vincitore.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                text: `${S.star} ${S.dia}  *RISSA*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`⚔️ @${sender.split('@')[0]} vs @${targetJid.split('@')[0]}`)}\n${bullet(`💬 _${frase}_`)}\n${SEP.lineL}\n${bullet(`🏆 *Vincitore:* @${vincitore.split('@')[0]}`)}\n${SEP.stars}\n${footer()}`,
                 mentions: [sender, targetJid],
             });
     },

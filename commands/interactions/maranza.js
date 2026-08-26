@@ -1,5 +1,7 @@
 'use strict';
 
+const { S, SEP, header, footer, bullet } = require('../../lib/ui');
+
 module.exports = {
     name: 'maranza',
     aliases: [],
@@ -18,7 +20,7 @@ module.exports = {
                          : pct <= 80 ? 'Tuta in acetato e AirPods a palla 🎧'
                          : 'Borsello falso, cassa Bluetooth sulla metro, codice penale aperto 🚔';
             await sock.sendMessage(from, {
-                text: `🧢 *_MARANZA TEST_*\n━━━━━━━━━━━━━━\n▸ 👤 @${target.split('@')[0]}\n▸ 📊 *Percentuale:* _*${pct}%*_\n━━━━━━━━━━━━━━\n▸ _💬 ${frase}_\n◈ _Vex Bot_`,
+                text: `${S.star} ${S.dia}  *MARANZA TEST*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`👤 @${target.split('@')[0]}`)}\n${bullet(`📊 *Percentuale:* _*${pct}%*_`)}\n${SEP.lineL}\n${bullet(`💬 _${frase}_`)}\n${SEP.stars}\n${footer()}`,
                 mentions: [target],
             });
     },

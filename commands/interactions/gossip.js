@@ -1,5 +1,7 @@
 'use strict';
 
+const { S, SEP, header, footer, bullet, section } = require('../../lib/ui');
+
 module.exports = {
     name: 'gossip',
     aliases: [],
@@ -12,7 +14,7 @@ module.exports = {
 
             const frase = randomChoice(ARRAYS.gossip).replace('[sender]', `@${sender.split('@')[0]}`);
             await sock.sendMessage(from, {
-                text: `🤫 *_GOSSIP_*\n━━━━━━━━━━━━━━\n▸ _💬 ${frase}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                text: `${S.star} ${S.dia}  *GOSSIP*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`💬 _${frase}_`)}\n${SEP.stars}\n${footer()}`,
                 mentions: [sender],
             });
     },

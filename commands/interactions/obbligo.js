@@ -1,5 +1,7 @@
 'use strict';
 
+const { S, SEP, footer, bullet } = require('../../lib/ui');
+
 module.exports = {
     name: 'obbligo',
     aliases: [],
@@ -8,6 +10,6 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { reply, services } = context;
         const { ARRAYS, randomChoice } = services;
-        await reply(`🎯 *_OBBLIGO_*\n━━━━━━━━━━━━━━\n▸ ${randomChoice(ARRAYS.obbligo)}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        await reply(`${S.star} ${S.dia}  *OBBLIGO*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`🎯 _${randomChoice(ARRAYS.obbligo)}_`)}\n${SEP.stars}\n${footer()}`);
     },
 };

@@ -1,5 +1,7 @@
 'use strict';
 
+const { S, SEP, footer, bullet } = require('../../lib/ui');
+
 module.exports = {
     name: 'drink',
     aliases: [],
@@ -12,7 +14,7 @@ module.exports = {
 
             const target = targetJid || sender;
             await sock.sendMessage(from, {
-                text: `🍹 *_DRINK_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} offre a @${target.split('@')[0]}:\n▸ 🥂 _*${randomChoice(ARRAYS.drink)}*_\n▸ _Cin cin! 🎉_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                text: `${S.star} ${S.dia}  *DRINK*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`🍹 @${sender.split('@')[0]} offre a @${target.split('@')[0]}:`)}\n${bullet(`🥂 _*${randomChoice(ARRAYS.drink)}*_`)}\n${bullet(`_Cin cin! 🎉_`)}\n${SEP.stars}\n${footer()}`,
                 mentions: [sender, target],
             });
     },

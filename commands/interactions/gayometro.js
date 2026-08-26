@@ -1,5 +1,6 @@
 'use strict';
 const crypto = require('crypto');
+const { S, SEP, footer, bullet } = require('../../lib/ui');
 
 function toSansBold(str) { return '*' + String(str||'').trim() + '*'; }
 function hashPercent(jid, salt) {
@@ -53,10 +54,7 @@ module.exports = {
         const bar = buildBar(percent);
         const verdict = getVerdict(percent);
         const tag = '@' + targetJid.split('@')[0];
-        const title = toSansBold('GAYOMETRO');
-        const emoji = '🌈';
-        const line = '\u2501'.repeat(18);
-        const text = `${emoji}  ${title}  ${emoji}\n${line}\n\u25b8 Utente: ${tag}\n\u25b8 Valore: *${percent}%*\n\u25b8 ${bar} ${percent}%\n${line}\n${verdict}\n${line}\n\u25c8 _Vex Bot_ \u2014 gayometro`;
+        const text = `${S.star} ${S.dia}  *GAYOMETRO*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`👤 Utente: ${tag}`)}\n${bullet(`📊 *Valore:* _*${percent}%*_`)}\n${bullet(`${bar} ${percent}%`)}\n${SEP.lineL}\n${bullet(verdict)}\n${SEP.stars}\n${footer()}`;
         const buttons = [
             { label: '\uD83D\uDD04 Ricalcola', id: 'gayometro' },
             { label: '\uD83D\uDC65 Altro utente', id: 'gayometro' }

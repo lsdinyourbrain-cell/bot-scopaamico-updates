@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { S, SEP, footer, bullet } = require('../../lib/ui');
 
 module.exports = {
     name: 'schiaffo',
@@ -15,24 +16,41 @@ module.exports = {
 
             if (!targetJid) return reply("⚠️ _Tagga qualcuno oppure rispondi a un suo messaggio._");
 
-            let text;
+            let title, action, extra;
             if (command === 'schiaffo') {
-                text = `💥 *_SCHIAFFO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ${randomChoice(ARRAYS.schiaffi)} @${targetJid.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                title = 'SCHIAFFO'; action = randomChoice(ARRAYS.schiaffi); extra = null;
             } else if (command === 'insulta') {
-                text = `🤬 *_INSULTA_*\n━━━━━━━━━━━━━━\n▸ @${targetJid.split('@')[0]}:\n▸ _*«${randomChoice(ARRAYS.insulti)}»*_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                title = 'INSULTA'; action = null; extra = `_*«${randomChoice(ARRAYS.insulti)}»*_`;
             } else if (command === 'paccasulculo') {
-                text = `🍑 *_PACCASULCULO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ${randomChoice(ARRAYS.paccasulculo)} @${targetJid.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                title = 'PACCASULCULO'; action = randomChoice(ARRAYS.paccasulculo); extra = null;
             } else if (command === 'uccidi') {
-                text = `🎮 *_UCCIDI_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ${randomChoice(ARRAYS.uccidi)} @${targetJid.split('@')[0]}. _GG!_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                title = 'UCCIDI'; action = randomChoice(ARRAYS.uccidi); extra = '_GG!_';
             } else if (command === 'bacia') {
-                text = `💋 *_BACIA_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ${randomChoice(ARRAYS.bacia)} @${targetJid.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                title = 'BACIA'; action = randomChoice(ARRAYS.bacia); extra = null;
             } else if (command === 'abbraccia') {
-                text = `🫂 *_ABBRACCIA_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ${randomChoice(ARRAYS.abbraccia)} @${targetJid.split('@')[0]}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                title = 'ABBRACCIA'; action = randomChoice(ARRAYS.abbraccia); extra = null;
             } else if (command === 'sposa') {
-                text = `💍 *_SPOSA_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ${randomChoice(ARRAYS.sposa)} @${targetJid.split('@')[0]}\n▸ _Il gruppo aspetta la risposta!_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                title = 'SPOSA'; action = randomChoice(ARRAYS.sposa); extra = '_Il gruppo aspetta la risposta!_';
             } else {
-                text = `🔥 *_CAOS_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ${randomChoice(ARRAYS.caos)} @${targetJid.split('@')[0]}\n▸ _Fine dei dettagli, siamo in chat 😭_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                title = 'CAOS'; action = randomChoice(ARRAYS.caos); extra = '_Fine dei dettagli, siamo in chat 😭_';
             }
-            await sock.sendMessage(from, { text, mentions: [sender, targetJid] });
+
+            const lines = [
+                `${S.star} ${S.dia}  *${title}*  ${S.dia} ${S.star}`,
+                SEP.line,
+            ];
+
+            if (command === 'insulta') {
+                lines.push(bullet(`@${targetJid.split('@')[0]}:`));
+                lines.push(bullet(extra));
+            } else if (action) {
+                lines.push(bullet(`@${sender.split('@')[0]} ${action} @${targetJid.split('@')[0]}`));
+                if (extra) lines.push(bullet(extra));
+            }
+
+            lines.push(SEP.stars);
+            lines.push(footer());
+
+            await sock.sendMessage(from, { text: lines.join('\n'), mentions: [sender, targetJid] });
     },
 };
