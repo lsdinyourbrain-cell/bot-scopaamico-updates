@@ -525,7 +525,10 @@ const rollbackGroupChange = async (sock, gid, what) => {
         else if (what === 'descrizione') await sock.groupUpdateDescription(gid, b.desc || '');
         else if (what === 'foto') {
             const f = guardPhotoPath(gid);
-            if (fs.existsSync(f)) await sock.updateProfilePicture(gid, f);
+            if (fs.existsSync(f)) {
+                const img = fs.readFileSync(f);
+                await sock.updateProfilePicture(gid, img);
+            }
         }
         return true;
     } catch (e) {
@@ -2149,6 +2152,14 @@ startBot();
                         if (isSenderAdmin) break; // gli admin possono mandare link
 
                         // Utente normale con link vietato → elimina + 1 avviso progressivo
+                        try {
+                            await sock.sendMessage(from, { delete: msg.key });
+                            warnedForMsg = true;
+                            await applyWarn(sock, from, sender, `Link *${platform}* non consentito`);
+                        } catch (delErr) {
+                            console.warn(`[ANTILINK] Impossibile eliminare il msg di ${sender}: ${delErr.message}`);
+                        }
+                        break;
                     }
                 }
             } catch (antilinkErr) {
