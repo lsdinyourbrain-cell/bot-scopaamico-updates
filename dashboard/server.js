@@ -161,8 +161,62 @@ app.get('/api/owners', (req, res) => {
     try {
         const db = safeReadJSON(DB_FILE, {});
         const owners = Array.isArray(db._owners) ? db._owners : [];
-        const mainJid = db._mainOwner || (owners[0] ? (owners[0].jid || owners[0].number) : null);
-        res.json({ ok: true, owners, main: mainJid });
+        const mainJid = db._mainOwner || (owners[0] ? (owners[0].jid || owners[0].number || owners[0].lid) : null);
+
+        // Arricchisci con nome/telefono/pfp reali dal DB utenti (se disponibili)
+        const enriched = owners.map(o => {
+            const rawJid = String(o.jid || o.number || o.lid || '').trim();
+            const rawNum = String(o.number || o.jid || o.lid || '').split(':')[0].replace(/[^0-9]/g,'');
+            const isLid = rawJid.endsWith('@lid') || (o.lid && String(o.lid).endsWith('@lid'));
+            // Cerca nei gruppi un utente con questo jid/lid/numero per prendere nome e telefono veri
+            let bestName = null, bestPhone = null, bestPfp = null;
+            // Cerca per lid o jid esatto
+            for (const gid of Object.keys(db)) {
+                if (!gid.endsWith('@g.us')) continue;
+                const chat = db[gid];
+                if (!chat || typeof chat !== 'object') continue;
+                // Prova lid, jid, number
+                for (const key of [rawJid, o.lid, o.number].filter(Boolean)) {
+                    const cleanKey = String(key).split('@')[0].replace(/[^0-9]/g,'');
+                    // Cerca per chiave esatta o per numero contenuto
+                    for (const [ujid, udata] of Object.entries(chat)) {
+                        if (!udata || typeof udata !== 'object') continue;
+                        const uNum = String(udata.phoneNumber || '').replace(/[^0-9]/g,'');
+                        const uJidNum = String(ujid).replace(/[^0-9]/g,'');
+                        const oNum = rawNum;
+                        // Match per lid esatto o per telefono
+                        if (ujid === key || ujid === rawJid || (uNum && oNum && (uNum === oNum || uNum.includes(oNum) || oNum.includes(uNum))) || (uJidNum === cleanKey)) {
+                            if (!bestName && (udata.name || udata.nickname)) bestName = udata.name || udata.nickname;
+                            if (!bestPhone && udata.phoneNumber) bestPhone = udata.phoneNumber;
+                            if (!bestPfp && udata.pfpUrl) bestPfp = udata.pfpUrl;
+                            if (bestName && bestPhone && bestPfp) break;
+                        }
+                    }
+                    if (bestName && bestPhone && bestPfp) break;
+                }
+                if (bestName && bestPhone && bestPfp) break;
+            }
+            // Fallback: se è un lid senza phone, prova a cercare in _groupInfo o in altri owner con stesso lid
+            if (!bestPhone && isLid) {
+                // Cerca un altro owner con stesso lid che ha phone
+                const other = owners.find(x => String(x.lid||'').replace(/[^0-9]/g,'') === String(o.lid||'').replace(/[^0-9]/g,'') && x.number && String(x.number).includes('@s.whatsapp.net'));
+                if (other) bestPhone = other.number;
+            }
+            // Per display, usa sempre +telefono se disponibile, altrimenti JID
+            const displayPhone = bestPhone ? `+${String(bestPhone).split(':')[0].replace(/[^0-9]/g,'')}` : (rawNum.length >= 7 ? `+${rawNum}` : rawJid);
+            const phoneForPfp = bestPhone ? String(bestPhone).split(':')[0].replace(/[^0-9]/g,'') + '@s.whatsapp.net' : rawJid;
+            return {
+                ...o,
+                displayName: bestName || null,
+                displayPhone,
+                phoneForPfp,
+                bestPfp,
+                rawNum,
+                isLid,
+            };
+        });
+
+        res.json({ ok: true, owners: enriched, main: mainJid });
     } catch (e) {
         res.status(500).json({ ok: false, error: e.message });
     }
