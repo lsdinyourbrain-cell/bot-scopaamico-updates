@@ -161,44 +161,34 @@ let _dbDirty = false; // true se ci sono modifiche non ancora scritte su disco
 let _lastDBMtime = 0;
 try { _lastDBMtime = fs.existsSync(DB_FILE) ? fs.statSync(DB_FILE).mtimeMs : 0; } catch (_) {}
 
+const DASHBOARD_FIELDS = ['isMuted','money','warnings','nickname','bio','spouse','msgCount','name','pfpUrl','phoneNumber','lid','warnLog'];
 const writeDBFile = () => {
-    // Prima di sovrascrivere, ricarica eventuali modifiche esterne (dashboard) e fai merge
+    // Priorità al sito: prima di scrivere, leggi il file su disco e prendi i campi dashboard se diversi
     try {
         if (fs.existsSync(DB_FILE)) {
             const stat = fs.statSync(DB_FILE);
+            // Leggi sempre se il file è più nuovo, anche se _dbDirty — il sito ha priorità
             if (stat.mtimeMs !== _lastDBMtime) {
                 const fresh = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-                // Merge superficiale: per ogni gid, se il bot non ha modifiche pending su quel gid, usa il fresh
-                // Per semplicità, se il file è più nuovo e non siamo dirty su quel gid, aggiorna
                 for (const k of Object.keys(fresh)) {
-                    if (!(k in db)) db[k] = fresh[k];
-                    else if (k.startsWith('120') || k.startsWith('269') || k.includes('@')) {
-                        // È un gruppo o utente — merge campi utente se presenti nel fresh
+                    if (!(k in db)) {
+                        db[k] = fresh[k];
+                    } else if (k.includes('@') || k.startsWith('120') || k.startsWith('269')) {
                         if (typeof fresh[k] === 'object' && typeof db[k] === 'object') {
                             for (const jid of Object.keys(fresh[k])) {
                                 if (!(jid in db[k]) && fresh[k][jid] && typeof fresh[k][jid] === 'object') {
                                     db[k][jid] = fresh[k][jid];
                                 } else if (fresh[k][jid] && typeof fresh[k][jid] === 'object' && db[k][jid] && typeof db[k][jid] === 'object') {
-                                    // Aggiorna campi che il bot non ha toccato di recente
-                                    for (const field of Object.keys(fresh[k][jid])) {
-                                        if (!(field in db[k][jid]) || JSON.stringify(db[k][jid][field]) !== JSON.stringify(fresh[k][jid][field])) {
-                                            // Se il campo è diverso, prendi il fresh solo se non è un campo che il bot modifica spesso (msgCount, money)
-                                            if (!['msgCount','money','warnings','warnLog','isMuted'].includes(field) || fresh[k][jid][field] !== db[k][jid][field]) {
-                                                // Per isMuted, money, warnings, prendi sempre il fresh (dashboard ha precedenza)
-                                                if (['isMuted','money','warnings','nickname','bio','spouse','msgCount'].includes(field)) {
-                                                    db[k][jid][field] = fresh[k][jid][field];
-                                                }
-                                            }
+                                    for (const field of DASHBOARD_FIELDS) {
+                                        if (field in fresh[k][jid] && JSON.stringify(db[k][jid][field]) !== JSON.stringify(fresh[k][jid][field])) {
+                                            db[k][jid][field] = fresh[k][jid][field];
                                         }
                                     }
                                 }
                             }
                         }
-                    } else if (!(k in db) || JSON.stringify(db[k]) !== JSON.stringify(fresh[k])) {
-                        // Chiavi top-level come _owners, _groupInfo, _mainOwner — prendi fresh se diverso
-                        if (['_owners','_mainOwner','_groupInfo','_groupguard','_antibot','_antinuke'].includes(k)) {
-                            db[k] = fresh[k];
-                        }
+                    } else if (['_owners','_mainOwner','_groupInfo','_groupguard','_antibot','_antinuke','_antivoip','_antiwzb','_bestemmiometro'].includes(k)) {
+                        if (JSON.stringify(db[k]) !== JSON.stringify(fresh[k])) db[k] = fresh[k];
                     }
                 }
             }
@@ -224,19 +214,35 @@ const saveDB = () => {
     }, 2000);
 };
 
-// Watch dashboard modifiche a database.json — ricarica se cambia fuori
+// Watch dashboard modifiche — priorità al sito, merge immediato anche se dirty
 try {
-    fs.watchFile(DB_FILE, { interval: 2000 }, (curr, prev) => {
+    fs.watchFile(DB_FILE, { interval: 1500 }, (curr, prev) => {
         if (curr.mtimeMs === prev.mtimeMs || curr.mtimeMs === _lastDBMtime) return;
         _lastDBMtime = curr.mtimeMs;
-        if (_dbDirty) {
-            console.log('[DB] File cambiato esternamente ma ho modifiche pending, rimando reload');
-            return;
-        }
         try {
             const fresh = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-            db = fresh;
-            console.log('[DB] Ricaricato da dashboard/file esterno');
+            // Merge con priorità al sito per i campi che il sito modifica
+            for (const k of Object.keys(fresh)) {
+                if (!(k in db)) db[k] = fresh[k];
+                else if (k.includes('@') || k.startsWith('120')) {
+                    if (typeof fresh[k] === 'object' && typeof db[k] === 'object') {
+                        for (const jid of Object.keys(fresh[k])) {
+                            if (!(jid in db[k])) {
+                                db[k][jid] = fresh[k][jid];
+                            } else if (fresh[k][jid] && typeof fresh[k][jid] === 'object' && db[k][jid] && typeof db[k][jid] === 'object') {
+                                for (const field of DASHBOARD_FIELDS) {
+                                    if (field in fresh[k][jid] && JSON.stringify(db[k][jid][field]) !== JSON.stringify(fresh[k][jid][field])) {
+                                        db[k][jid][field] = fresh[k][jid][field];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (['_owners','_mainOwner','_groupInfo'].includes(k)) {
+                    if (JSON.stringify(db[k]) !== JSON.stringify(fresh[k])) db[k] = fresh[k];
+                }
+            }
+            console.log('[DB] Merge da dashboard — priorità al sito');
         } catch (e) { console.error('[DB] Reload fallito:', e.message); }
     });
 } catch (_) {}
