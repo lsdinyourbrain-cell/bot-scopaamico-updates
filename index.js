@@ -566,6 +566,8 @@ const WELCOME_FILE = path.join(__dirname, 'welcome.json');
 const DEFAULT_WELCOME_GROUP = () => ({
     welcome: true,
     goodbye: true,
+    welcomeText: null,
+    goodbyeText: null,
 });
 
 let _welcomeCache = null;
@@ -601,6 +603,9 @@ const getWelcomeGroup = (groupJid) => {
         saveWelcome(data);
         console.log(`[WELCOME] Gruppo ${groupJid} inizializzato con default.`);
     }
+    // retro-compatibilità: se il gruppo ha già welcome ma non i nuovi campi, aggiungili
+    if (data[groupJid].welcomeText === undefined) data[groupJid].welcomeText = null;
+    if (data[groupJid].goodbyeText === undefined) data[groupJid].goodbyeText = null;
     return data[groupJid];
 };
 
@@ -609,6 +614,37 @@ const setWelcomeGroup = (groupJid, key, enabled) => {
     if (!data[groupJid]) data[groupJid] = DEFAULT_WELCOME_GROUP();
     data[groupJid][key] = enabled;
     saveWelcome(data);
+};
+
+const setWelcomeCustom = (groupJid, type, text) => {
+    const data = loadWelcome();
+    if (!data[groupJid]) data[groupJid] = DEFAULT_WELCOME_GROUP();
+    if (type === 'welcome') data[groupJid].welcomeText = text || null;
+    if (type === 'goodbye') data[groupJid].goodbyeText = text || null;
+    saveWelcome(data);
+};
+
+const getWelcomeCustom = (groupJid, type) => {
+    const cfg = getWelcomeGroup(groupJid);
+    if (type === 'welcome') return cfg.welcomeText || null;
+    if (type === 'goodbye') return cfg.goodbyeText || null;
+    return null;
+};
+
+// Sostituisce i placeholder nel testo custom: @user, {user}, @group, {group}, @desc
+const formatWelcomeText = (template, { userJid, userMention, groupName, groupDesc, isSingle }) => {
+    let t = String(template || '');
+    const short = String(userJid || userMention || '').split('@')[0];
+    const mentionTag = `@${short}`;
+    t = t.replace(/\{user\}/gi, mentionTag).replace(/@user/gi, mentionTag);
+    t = t.replace(/\{group\}/gi, groupName || '').replace(/@group/gi, groupName || '');
+    t = t.replace(/\{desc\}/gi, (groupDesc || '').slice(0, 200)).replace(/@desc/gi, (groupDesc || '').slice(0, 200));
+    // @users per il caso multiplo
+    if (userMention && Array.isArray(userMention)) {
+        const all = userMention.map(j => '@' + String(j).split('@')[0]).join(' ');
+        t = t.replace(/\{users\}/gi, all).replace(/@users/gi, all);
+    }
+    return t;
 };
 
 const getCpuSnapshot = () => os.cpus().reduce((snapshot, cpu) => {
@@ -1427,6 +1463,21 @@ const COPY = {
 };
 
 const formatMoney = (value) => `${Math.max(0, Math.floor(Number(value) || 0))}€`;
+
+// ── FRASI ESTERNE — carica da phrases/*.txt se presenti ──────────────────
+try {
+    const phrasesLib = require('./lib/phrases');
+    for (const k of Object.keys(ARRAYS)) {
+        const fromFile = phrasesLib.getPhrases(k);
+        if (fromFile) ARRAYS[k] = fromFile;
+    }
+    for (const k of Object.keys(COPY)) {
+        const fromFile = phrasesLib.getPhrases('copy_' + k);
+        if (fromFile) COPY[k] = fromFile;
+    }
+    const _pc = phrasesLib.listKeys().length;
+    if (_pc) console.log(`[PHRASES] Caricate ${_pc} file frasi da phrases/`);
+} catch (e) { console.error('[PHRASES] Errore caricamento:', e.message); }
 
 // ── TRIS — RENDER BOARD ──────────────────────────────────────────────────
 //  Converte l'array board in una stringa con emoji.
@@ -3243,7 +3294,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                     projectDir: __dirname, randomChoice, randomInt,
                     sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
                     toggleAntilinkWhitelist, antilinkWlMatch, guardActive, fullGuardBackup,
-                    getWelcomeGroup, setWelcomeGroup,
+                    getWelcomeGroup, setWelcomeGroup, setWelcomeCustom, getWelcomeCustom, formatWelcomeText,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
                     sendButtons, editButtons, sendButtonsWithKey, sendCarousel, clearBotCache, ownerNumber, showProgress,
                     commands,
@@ -3294,10 +3345,22 @@ const collectMentionsFromText = async (sock, text, from) => {
         try {
             const meta = await sock.groupMetadata(groupJid);
             const groupName = (meta?.subject) || 'Questo gruppo';
+            const groupDesc = (meta?.desc || '').trim().slice(0, 200);
             const names = welcomedJids.map(j => '@' + j.split('@')[0]).join(' ');
-            const welcomeText = welcomedJids.length === 1
-                ? `☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖔 ☠️\n━━━━━━━━━━━━━━━━━━\n👤 ${names}\n📍 *${groupName}*\n━━━━━━━━━━━━━━━━━━\n📜 *Fatté*\n✦ _Regolamento in descrizione._\n✦ _Altro da lasciare in chat._\n✦ _Digita_ *".menu"* _per i comandi._`
-                : `☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖎 ☠️\n━━━━━━━━━━━━━━━━━━\n👥 ${names}\n📍 *${groupName}*\n━━━━━━━━━━━━━━━━━━\n📜 *Fatté*\n✦ _Regolamento in descrizione._\n✦ _Altro da lasciare in chat._\n✦ _Digita_ *".menu"* _per i comandi._`;
+            // Usa testo custom se impostato dall'admin (con placeholder @user/@group)
+            const customTpl = getWelcomeCustom(groupJid, 'welcome');
+            let welcomeText;
+            if (customTpl) {
+                const formatted = formatWelcomeText(customTpl, { userJid: welcomedJids[0], userMention: welcomedJids, groupName, groupDesc });
+                // Per multipli, sostituisci comunque @user con la lista
+                welcomeText = welcomedJids.length === 1 ? formatted : formatted.replace(names.split(' ')[0], names);
+                // Se il template non conteneva @user/@users, aggiungilo in testa
+                if (!formatted.includes('@')) welcomeText = `${names}\n${welcomeText}`;
+            } else {
+                welcomeText = welcomedJids.length === 1
+                    ? `☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖔 ☠️\n━━━━━━━━━━━━━━━━━━\n👤 ${names}\n📍 *${groupName}*\n━━━━━━━━━━━━━━━━━━\n📜 *Fatté*\n✦ _Regolamento in descrizione._\n✦ _Altro da lasciare in chat._\n✦ _Digita_ *".menu"* _per i comandi._`
+                    : `☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖎 ☠️\n━━━━━━━━━━━━━━━━━━\n👥 ${names}\n📍 *${groupName}*\n━━━━━━━━━━━━━━━━━━\n📜 *Fatté*\n✦ _Regolamento in descrizione._\n✦ _Altro da lasciare in chat._\n✦ _Digita_ *".menu"* _per i comandi._`;
+            }
 
             let pfpUrl;
             try { pfpUrl = await sock.profilePictureUrl(groupJid, 'image'); } catch (_) { pfpUrl = null; }
@@ -3619,8 +3682,14 @@ const collectMentionsFromText = async (sock, text, from) => {
 
                 } else if (action === 'remove') {
                     if (!welcomeConfig.goodbye) continue; // Goodbye disattivato per questo gruppo
-                    
-                    const goodbyeText =
+
+                    const customBye = getWelcomeCustom(groupJid, 'goodbye');
+                    let goodbyeText;
+                    if (customBye) {
+                        goodbyeText = formatWelcomeText(customBye, { userJid: displayJid, userMention: displayJid, groupName, groupDesc });
+                        if (!goodbyeText.includes('@')) goodbyeText = `👤 @${short}\n${goodbyeText}`;
+                    } else {
+                        goodbyeText =
 `👋 *ARRIVEDERCI* 👋
 ━━━━━━━━━━━━━━━━━━
 👤 @${short}
@@ -3631,6 +3700,7 @@ perde un membro,
 ma i ricordi restano. 🫂
 
 _Chissà se tornerà..._ 🌈`;
+                    }
 
                     await sock.sendMessage(groupJid, {
                         text: goodbyeText,

@@ -43,7 +43,8 @@ ${enable
         try {
             const inviteCode = await sock.groupInviteCode(from);
             const link = `https://chat.whatsapp.com/${inviteCode}`;
-            await sendButtons(sock, from, `🔗 *_LINK DEL GRUPPO_*\n━━━━━━━━━━━━━━\n${link}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`, [
+            const linkText = `✦ ◆ ✦  *LINK DEL GRUPPO*  ✦ ◆ ✦\n━━━━━━━━━━━━━━━━━━━━\n✦ e pigliate sto link down 👇\n✦ \`${link}\`\n━━━━━━━━━━━━━━━━━━━━\n✦ ✧ ◆ ✧ ✦\n◈ _Vex Bot_`;
+            await sendButtons(sock, from, linkText, [
                 { type: 'copy', label: '📋 Copia link', copy: link },
             ], msg);
         } catch (_) {
