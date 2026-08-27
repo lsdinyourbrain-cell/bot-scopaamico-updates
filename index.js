@@ -796,7 +796,7 @@ const isAdminParticipant = (participant, jid) => {
 
 // Cache per groupMetadata (evita rate-limit di WhatsApp)
 const groupMetaCache = new Map();
-const GROUP_META_CACHE_TTL = 60000; // 60s — meno fetch, stessa velocità di DM
+const GROUP_META_CACHE_TTL = 120000; // 120s — DM speed in gruppo
 const rainMsgCount = new Map();
 
 // Mappa @lid → PN reale: riempita da getCachedGroupMeta e dal resolver delle
@@ -816,6 +816,14 @@ const fillLidMap = (meta) => {
 const getCachedGroupMeta = async (sock, groupJid) => {
     const cached = groupMetaCache.get(groupJid);
     if (cached && Date.now() - cached.ts < GROUP_META_CACHE_TTL) return cached.data;
+    // stale-while-revalidate: se ho cache scaduta, ritorno subito e aggiorno in background
+    if (cached) {
+        sock.groupMetadata(groupJid).then(meta => {
+            groupMetaCache.set(groupJid, { data: meta, ts: Date.now() });
+            fillLidMap(meta);
+        }).catch(() => {});
+        return cached.data;
+    }
     const metadata = await sock.groupMetadata(groupJid);
     groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
     fillLidMap(metadata);
