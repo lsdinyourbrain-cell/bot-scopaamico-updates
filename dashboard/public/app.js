@@ -135,6 +135,8 @@ async function fetchOverview(){
 async function fetchGroups(){
     const listEl = $('#groupsList');
     const countEl = $('#groupCount');
+    const sortSel = $('#groupSortSel');
+    if (sortSel) sortSel.value = groupSort;
     if (listEl) listEl.innerHTML = '<div class="muted" style="padding:12px">✦ Caricamento gruppi...</div>';
     try{
         const { groups } = await fetchJSON('/api/groups');
@@ -163,28 +165,64 @@ function pfpHTML(jid, name, photoUrl, size=''){
     }
     return avatarHTML(jid, name, size);
 }
+let groupSort = localStorage.getItem('vex_groupSort') || 'name';
 function renderGroups(list){
-    const q = ($('#groupSearch')?.value || '').toLowerCase();
-    const filtered = q ? list.filter(g => (g.jid && g.jid.toLowerCase().includes(q)) || (g.name && g.name.toLowerCase().includes(q)) || (g.jid && g.jid.toLowerCase().includes(q))) : list;
+    const q = ($('#groupSearch')?.value || '').toLowerCase().trim();
+    let filtered = list.filter(g => g && typeof g === 'object');
+    // Filtra
+    if (q) {
+        filtered = filtered.filter(g => {
+            const name = String(g.name || '').toLowerCase();
+            const jid = String(g.jid || '').toLowerCase();
+            const idNum = jid.split('@')[0];
+            return name.includes(q) || jid.includes(q) || idNum.includes(q);
+        });
+    }
+    // Ordina — sempre per nome, mai disordinato
+    filtered.sort((a,b) => {
+        if (groupSort === 'name') {
+            const an = (a.name && a.name !== a.jid ? a.name : a.jid || '').toLowerCase();
+            const bn = (b.name && b.name !== b.jid ? b.name : b.jid || '').toLowerCase();
+            return an.localeCompare(bn, 'it');
+        }
+        if (groupSort === 'members') return (b.participantsCount ?? b.users ?? 0) - (a.participantsCount ?? a.users ?? 0);
+        if (groupSort === 'msgs') return (b.msgs ?? 0) - (a.msgs ?? 0);
+        return 0;
+    });
     const el = $('#groupsList');
     if (!el) return;
-    if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun gruppo trovato</div>'; return; }
-    el.innerHTML = filtered.filter(g => g && typeof g === 'object').map(g => {
-        const displayName = g.name && g.name !== g.jid ? g.name : g.jid;
-        const isName = g.name && g.name !== g.jid;
+    if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:14px;text-align:center">✦ Nessun gruppo trovato per “${esc(q)}”</div>'; return; }
+    el.innerHTML = filtered.map(g => {
+        const hasRealName = g.name && g.name !== g.jid;
+        const displayName = hasRealName ? g.name : g.jid;
+        // Evidenzia match
+        let titleHtml = esc(displayName);
+        if (q && hasRealName && displayName.toLowerCase().includes(q)) {
+            const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'ig');
+            titleHtml = esc(displayName).replace(re, '<mark style="background:rgba(var(--accent-rgb),0.25);color:var(--text);padding:0 2px;border-radius:4px">$1</mark>');
+        }
         return `
         <div class="row-item with-avatar" onclick="openGroup('${esc(g.jid)}')">
-            ${pfpHTML(g.jid, g.name || g.jid, g.photoUrl, 'sm')}
+            ${pfpHTML(g.jid, g.name || g.jid, g.photoUrl, '')}
             <div class="left">
-                <div class="title">${esc(displayName)} ${isName ? `<span class="muted mono" style="font-size:11px">· ${esc(g.jid)}</span>` : ''}</div>
-                <div class="sub">${g?.users ?? 0} utenti · ${g?.msgs ?? 0} messaggi · ${g?.participantsCount ? g.participantsCount + ' membri' : ''} ${g?.hasAntilink ? '· ◆ antilink' : ''}</div>
+                <div class="title" style="font-size:14px">${titleHtml} ${hasRealName ? `<span class="muted mono" style="font-size:10px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px">${esc(g.jid)}</span>` : ''}</div>
+                <div class="sub" style="margin-top:2px">
+                    <span style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:6px;border:1px solid var(--border);font-size:11px">👥 ${g?.participantsCount ?? g?.users ?? 0} membri</span>
+                    <span style="margin-left:6px">💬 ${g?.msgs ?? 0} msg</span>
+                    ${g?.hasAntilink ? '<span style="margin-left:6px;color:var(--accent)">◆ antilink</span>' : '<span style="margin-left:6px" class="muted">▫ antilink off</span>'}
+                </div>
             </div>
-            <div class="right">
-                <span class="badge ${g?.welcome ? 'on' : 'off'}">${g?.welcome ? 'on' : 'off'}</span>
-                <span class="badge ${g?.goodbye ? 'on' : 'off'}">${g?.goodbye ? 'on' : 'off'}</span>
+            <div class="right" style="flex-direction:column;align-items:flex-end;gap:4px">
+                <span class="badge ${g?.welcome ? 'on' : 'off'}" title="Welcome">${g?.welcome ? '✦ welcome' : '○ welcome'}</span>
+                <span class="badge ${g?.goodbye ? 'on' : 'off'}" title="Goodbye">${g?.goodbye ? '✦ goodbye' : '○ goodbye'}</span>
             </div>
         </div>
     `}).join('');
+}
+function setGroupSort(v){
+    groupSort = v;
+    localStorage.setItem('vex_groupSort', v);
+    renderGroups(groupsCache);
 }
 function filterGroups(){ renderGroups(groupsCache); }
 

@@ -247,6 +247,10 @@ app.get('/api/groups', (req, res) => {
                 msgs,
                 hasAntilink: Object.entries(al).some(([k, v]) => k !== 'whitelist' && v),
             };
+        }).sort((a,b) => {
+            const an = (a.name && a.name !== a.jid ? a.name : a.jid || '').toLowerCase();
+            const bn = (b.name && b.name !== b.jid ? b.name : b.jid || '').toLowerCase();
+            return an.localeCompare(bn, 'it');
         });
 
         res.json({ ok: true, groups });

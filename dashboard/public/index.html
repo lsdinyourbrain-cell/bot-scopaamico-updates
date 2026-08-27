@@ -83,9 +83,15 @@
     <!-- GROUPS -->
     <section id="page-groups" class="page">
       <div class="toolbar">
-        <input id="groupSearch" class="input" placeholder="✦ Cerca JID o nome..." oninput="filterGroups()">
-        <span id="groupCount" class="muted"></span>
+        <input id="groupSearch" class="input" placeholder="✦ Cerca per nome o JID..." oninput="filterGroups()" style="flex:1.4">
+        <select id="groupSortSel" class="input" style="max-width:160px" onchange="setGroupSort(this.value)">
+          <option value="name">⇅ Nome A-Z</option>
+          <option value="members">👥 Membri ↓</option>
+          <option value="msgs">💬 Messaggi ↓</option>
+        </select>
+        <span id="groupCount" class="muted" style="white-space:nowrap"></span>
       </div>
+      <div class="hint" style="margin-bottom:10px">Sempre ordinati per nome — la ricerca filtra istantanea su <code>nome</code> e <code>JID</code></div>
       <div id="groupsList" class="list"></div>
 
       <div id="groupDetail" class="panel hidden" style="margin-top:16px">
