@@ -19,7 +19,8 @@ module.exports = {
                 user2 = targetJid;
             } else if (isGroup) {
                 try {
-                    const meta = await sock.groupMetadata(from);
+                    const { getCachedGroupMeta } = services;
+                    const meta = typeof getCachedGroupMeta === 'function' ? await getCachedGroupMeta(sock, from) : await sock.groupMetadata(from);
                     const parts = (meta?.participants || []).filter(p => !sameJid(p.id || p.jid, sock.user?.id));
                     if (parts.length < 2) return reply("⚠️ _Non ci sono abbastanza membri nel gruppo per fare ship!_");
                     const shuffled = parts.sort(() => Math.random() - 0.5).slice(0, 2);

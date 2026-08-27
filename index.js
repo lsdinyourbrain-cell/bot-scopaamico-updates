@@ -796,7 +796,7 @@ const isAdminParticipant = (participant, jid) => {
 
 // Cache per groupMetadata (evita rate-limit di WhatsApp)
 const groupMetaCache = new Map();
-const GROUP_META_CACHE_TTL = 15000; // 15 secondi
+const GROUP_META_CACHE_TTL = 60000; // 60s — meno fetch, stessa velocità di DM
 const rainMsgCount = new Map();
 
 // Mappa @lid → PN reale: riempita da getCachedGroupMeta e dal resolver delle
@@ -2184,7 +2184,9 @@ startBot();
         };
         // Whitelist antilink: confronto per cifre incluse via helper di modulo.
         const antilinkWlHit = (cfg) => antilinkWlMatch(cfg, [sender, senderAlt]);
-        if (isGroup && linkBody) {
+        // Fast-path: se il testo non sembra un link, salta tutto (evita regex + admin check inutili)
+        const _hasLinkHint = linkBody && /https?:\/\/|www\.|chat\.whatsapp|wa\.me|t\.me|discord\.gg|instagram|facebook|fb\.com|youtube|youtu\.be|twitter|x\.com|t\.co|tiktok|\.com|\.me|\.gg|\.be/i.test(linkBody);
+        if (isGroup && linkBody && _hasLinkHint) {
             try {
                 const antilinkConfig = getAntilinkGroup(from);
                 // Solo i filtri piattaforma contano per "hasActiveFilter"
@@ -3177,7 +3179,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                 // NO_REPLAY_BUTTON, invio un semplice messaggio di testo.
                 const wantButton = command && !NO_REPLAY_BUTTON.has(command)
                     && clean.length > 0 && clean.length <= 900;
-                const mentions = await collectMentionsFromText(sock, clean, from);
+                const mentions = (isGroup && clean.includes('@')) ? await collectMentionsFromText(sock, clean, from) : null;
                 if (wantButton) {
                     const replayId = `${command}${textArgs ? ' ' + textArgs : ''}`;
                     await sendButtons(sock, from, clean, [
