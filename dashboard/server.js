@@ -557,6 +557,102 @@ app.get('/api/logs', (req, res) => {
     }
 });
 
+// ── API: Files / Directory ────────────────────────────────────────────
+const ALLOWED_ROOTS = [ROOT];
+const isPathAllowed = (p) => {
+    const resolved = path.resolve(p);
+    return ALLOWED_ROOTS.some(r => resolved === r || resolved.startsWith(r + path.sep));
+};
+const BLOCKED_NAMES = new Set(['node_modules', '.git', 'auth_info_baileys', '.env']);
+
+app.get('/api/files/list', (req, res) => {
+    try {
+        const rel = String(req.query.path || '').replace(/\\/g, '/');
+        const target = path.resolve(ROOT, rel);
+        if (!isPathAllowed(target)) return res.status(403).json({ ok: false, error: 'Percorso non consentito' });
+        if (!fs.existsSync(target)) return res.status(404).json({ ok: false, error: 'Non trovato' });
+        const stat = fs.statSync(target);
+        if (!stat.isDirectory()) return res.status(400).json({ ok: false, error: 'Non è una directory' });
+
+        const entries = fs.readdirSync(target, { withFileTypes: true })
+            .filter(e => !BLOCKED_NAMES.has(e.name) && !e.name.startsWith('.'))
+            .map(e => {
+                const full = path.join(target, e.name);
+                let size = 0, mtime = null;
+                try { const s = fs.statSync(full); size = s.size; mtime = s.mtime; } catch (_) {}
+                return {
+                    name: e.name,
+                    path: path.relative(ROOT, full).replace(/\\/g, '/'),
+                    isDir: e.isDirectory(),
+                    size,
+                    mtime,
+                    ext: path.extname(e.name).toLowerCase(),
+                };
+            })
+            .sort((a, b) => (b.isDir - a.isDir) || a.name.localeCompare(b.name));
+
+        const relRoot = path.relative(ROOT, target).replace(/\\/g, '/');
+        res.json({ ok: true, path: relRoot, entries, parent: relRoot ? path.dirname(relRoot).replace(/\\/g, '/') : null });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+app.get('/api/files/read', (req, res) => {
+    try {
+        const rel = String(req.query.path || '');
+        if (!rel) return res.status(400).json({ ok: false, error: 'path mancante' });
+        const target = path.resolve(ROOT, rel);
+        if (!isPathAllowed(target)) return res.status(403).json({ ok: false, error: 'Non consentito' });
+        if (!fs.existsSync(target)) return res.status(404).json({ ok: false, error: 'Non trovato' });
+        const stat = fs.statSync(target);
+        if (stat.isDirectory()) return res.status(400).json({ ok: false, error: 'È una directory' });
+        if (stat.size > 500000) return res.status(400).json({ ok: false, error: 'File troppo grande (max 500KB)' });
+        const content = fs.readFileSync(target, 'utf-8');
+        res.json({ ok: true, path: rel, content, size: stat.size });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+app.put('/api/files/write', (req, res) => {
+    try {
+        const { path: rel, content } = req.body || {};
+        if (!rel) return res.status(400).json({ ok: false, error: 'path mancante' });
+        if (typeof content !== 'string') return res.status(400).json({ ok: false, error: 'content deve essere stringa' });
+        if (content.length > 500000) return res.status(400).json({ ok: false, error: 'Contenuto troppo grande (max 500KB)' });
+        const target = path.resolve(ROOT, rel);
+        if (!isPathAllowed(target)) return res.status(403).json({ ok: false, error: 'Non consentito' });
+        if (BLOCKED_NAMES.has(path.basename(target))) return res.status(403).json({ ok: false, error: 'File bloccato' });
+        const dir = path.dirname(target);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        if (!safeWriteText(target, content)) return res.status(500).json({ ok: false, error: 'Scrittura fallita' });
+        res.json({ ok: true, path: rel });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+app.delete('/api/files', (req, res) => {
+    try {
+        const rel = String(req.query.path || '');
+        if (!rel) return res.status(400).json({ ok: false, error: 'path mancante' });
+        const target = path.resolve(ROOT, rel);
+        if (!isPathAllowed(target)) return res.status(403).json({ ok: false, error: 'Non consentito' });
+        if (BLOCKED_NAMES.has(path.basename(target)) || target === ROOT) return res.status(403).json({ ok: false, error: 'Non consentito' });
+        if (!fs.existsSync(target)) return res.status(404).json({ ok: false, error: 'Non trovato' });
+        const stat = fs.statSync(target);
+        if (stat.isDirectory()) fs.rmSync(target, { recursive: true, force: true });
+        else fs.unlinkSync(target);
+        res.json({ ok: true });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+app.post('/api/files/mkdir', (req, res) => {
+    try {
+        const { path: rel } = req.body || {};
+        if (!rel) return res.status(400).json({ ok: false, error: 'path mancante' });
+        const target = path.resolve(ROOT, rel);
+        if (!isPathAllowed(target)) return res.status(403).json({ ok: false, error: 'Non consentito' });
+        fs.mkdirSync(target, { recursive: true });
+        res.json({ ok: true, path: rel });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 // ── API: Raw DB (solo lettura) ─────────────────────────────────────────
 app.get('/api/db', (req, res) => {
     try {

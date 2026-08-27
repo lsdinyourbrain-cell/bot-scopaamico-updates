@@ -6,12 +6,15 @@ let currentPhraseKey = null;
 let currentPhraseLines = [];
 let groupsCache = [];
 let phrasesCache = [];
+let currentFilePath = '';
+let currentFileContent = '';
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 const toast = (msg, type = 'ok') => {
     const el = $('#toast');
+    if (!el) return;
     el.textContent = msg;
     el.className = `toast ${type}`;
     el.classList.remove('hidden');
@@ -33,6 +36,32 @@ const fmtBytes = (n) => {
     return (n/1024/1024).toFixed(1) + ' MB';
 };
 
+// Avatar con iniziali e colore hash — mostra PFP placeholder
+function avatarColor(str){
+    let h = 0;
+    for (let i = 0; i < String(str).length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    const hue = h % 360;
+    return `hsl(${hue}, 65%, 45%)`;
+}
+function initialsFrom(jid, fallback){
+    const raw = String(jid || fallback || '').split('@')[0].replace(/[^a-zA-Z0-9]/g,'');
+    if (!raw) return '?';
+    if (raw.length <= 2) return raw.toUpperCase();
+    // Prendi prime 2 lettere/numeri significativi
+    const letters = raw.replace(/[^a-zA-Z]/g,'');
+    if (letters.length >= 2) return (letters[0] + letters[1]).toUpperCase();
+    return raw.slice(0,2).toUpperCase();
+}
+function avatarHTML(jid, name, size=''){
+    const init = initialsFrom(jid, name);
+    const bg = avatarColor(jid || name || 'x');
+    const cls = size ? `avatar ${size}` : 'avatar';
+    return `<div class="${cls}" style="background:${bg}">${esc(init)}</div>`;
+}
+function formatDate(iso){
+    try { return new Date(iso).toLocaleString('it-IT'); } catch { return String(iso||''); }
+}
+
 // ── Navigation ──────────────────────────────────────────────────────────
 function navigate(page){
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
@@ -42,51 +71,56 @@ function navigate(page){
         groups: ['Gruppi','Gestisci impostazioni per gruppo'],
         users: ['Utenti','Economia e moderazione per gruppo'],
         phrases: ['Frasi','Modifica i file phrases/*.txt'],
+        files: ['File','Esplora e modifica le directory del bot'],
         owners: ['Owner','Gestisci gli owner del bot'],
         config: ['Config','Impostazioni e file grezzi'],
         logs: ['Logs','Ultime righe di logs/bot.log'],
     };
     const [t, s] = titles[page] || [page, ''];
-    $('#pageTitle').textContent = t;
-    $('#pageSub').textContent = s;
-    // Load on demand
+    const pt = $('#pageTitle'), ps = $('#pageSub');
+    if (pt) pt.textContent = t;
+    if (ps) ps.textContent = s;
     if (page === 'overview') fetchOverview();
     if (page === 'groups') fetchGroups();
     if (page === 'users') initUsersPage();
     if (page === 'phrases') fetchPhrases();
+    if (page === 'files') loadFiles('');
     if (page === 'owners') fetchOwners();
     if (page === 'config') loadConfig();
     if (page === 'logs') loadLogs();
 }
 $$('.nav-btn').forEach(b => b.addEventListener('click', () => navigate(b.dataset.page)));
-$('#refreshBtn').addEventListener('click', () => {
+const refreshBtn = $('#refreshBtn');
+if (refreshBtn) refreshBtn.addEventListener('click', () => {
     const active = $('.page.active')?.id?.replace('page-','') || 'overview';
     navigate(active);
 });
 setInterval(() => { const el=$('#topTime'); if(el) el.textContent = new Date().toLocaleTimeString('it-IT'); }, 1000);
-$('#topTime').textContent = new Date().toLocaleTimeString('it-IT');
-
-// Live dot
+const topTimeEl = $('#topTime');
+if (topTimeEl) topTimeEl.textContent = new Date().toLocaleTimeString('it-IT');
 setInterval(async () => {
-    try { await fetch('/api/overview'); $('#liveDot').classList.remove('off'); } catch { $('#liveDot').classList.add('off'); }
+    try { await fetch('/api/overview'); const d=$('#liveDot'); if(d) d.classList.remove('off'); } catch { const d=$('#liveDot'); if(d) d.classList.add('off'); }
 }, 10000);
 
 // ── Overview ────────────────────────────────────────────────────────────
 async function fetchOverview(){
     try{
         const { bot, stats, system } = await fetchJSON('/api/overview');
-        $('#statGroups').textContent = stats.groups;
-        $('#statUsers').textContent = stats.users;
-        $('#statPhrases').textContent = stats.phrases;
-        $('#statOwners').textContent = stats.owners;
-        $('#botInfo').innerHTML = `
+        const sg = $('#statGroups'), su = $('#statUsers'), sp = $('#statPhrases'), so = $('#statOwners');
+        if (sg) sg.textContent = stats.groups;
+        if (su) su.textContent = stats.users;
+        if (sp) sp.textContent = stats.phrases;
+        if (so) so.textContent = stats.owners;
+        const bi = $('#botInfo');
+        if (bi) bi.innerHTML = `
             ✦ Nome: <b>${esc(bot.name)}</b><br>
             ✦ Versione: <b>${esc(bot.version)}</b><br>
             ✦ Uptime: <b>${esc(bot.uptime)}</b><br>
             ✦ PID: <b>${bot.pid}</b><br>
             ✦ Node: <b>${esc(bot.node)}</b><br>
             ✦ Piattaforma: <b>${esc(bot.platform)}</b>`;
-        $('#sysInfo').innerHTML = `
+        const si = $('#sysInfo');
+        if (si) si.innerHTML = `
             ◆ Host: <b>${esc(system.hostname)}</b><br>
             ◆ CPU: <b>${esc(system.cpuModel)}</b> (${system.cores} core)<br>
             ◆ RAM: <b>${esc(system.ramUsed)} / ${esc(system.ramTotal)} (${system.ramPercent})</b><br>
@@ -98,27 +132,34 @@ async function fetchOverview(){
 
 // ── Groups ──────────────────────────────────────────────────────────────
 async function fetchGroups(){
+    const listEl = $('#groupsList');
+    const countEl = $('#groupCount');
+    if (listEl) listEl.innerHTML = '<div class="muted" style="padding:12px">✦ Caricamento gruppi...</div>';
     try{
         const { groups } = await fetchJSON('/api/groups');
-        groupsCache = groups;
-        $('#groupCount').textContent = `${groups.length} gruppi`;
-        renderGroups(groups);
-        // Popola anche select utenti
+        groupsCache = Array.isArray(groups) ? groups : [];
+        if (countEl) countEl.textContent = `${groupsCache.length} gruppi`;
+        renderGroups(groupsCache);
         const sel = $('#userGroupSelect');
         if (sel) {
             const cur = sel.value;
-            sel.innerHTML = '<option value="">— Seleziona gruppo —</option>' + groups.map(g => `<option value="${esc(g.jid)}">${esc(g.jid)} — ${g.users} utenti</option>`).join('');
+            sel.innerHTML = '<option value="">— Seleziona gruppo —</option>' + groupsCache.map(g => `<option value="${esc(g.jid)}">${esc(g.jid)} — ${g.users} utenti</option>`).join('');
             if (cur) sel.value = cur;
         }
-    }catch(e){ toast('Gruppi: '+e.message,'err'); }
+    }catch(e){
+        if (listEl) listEl.innerHTML = `<div class="muted" style="padding:12px">Errore: ${esc(e.message)}</div>`;
+        toast('Gruppi: '+e.message,'err');
+    }
 }
 function renderGroups(list){
-    const q = ($('#groupSearch').value || '').toLowerCase();
+    const q = ($('#groupSearch')?.value || '').toLowerCase();
     const filtered = q ? list.filter(g => g.jid.toLowerCase().includes(q)) : list;
     const el = $('#groupsList');
+    if (!el) return;
     if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun gruppo trovato</div>'; return; }
     el.innerHTML = filtered.map(g => `
-        <div class="row-item" onclick="openGroup('${esc(g.jid)}')">
+        <div class="row-item with-avatar" onclick="openGroup('${esc(g.jid)}')">
+            ${avatarHTML(g.jid, g.jid, 'sm')}
             <div class="left">
                 <div class="title mono">${esc(g.jid)}</div>
                 <div class="sub">${g.users} utenti · ${g.msgs} messaggi · ${g.hasAntilink ? '◆ antilink attivo' : '▫ antilink off'}</div>
@@ -135,38 +176,43 @@ function filterGroups(){ renderGroups(groupsCache); }
 
 async function openGroup(jid){
     currentGroupJid = jid;
-    $('#detailJid').textContent = jid;
-    $('#groupDetail').classList.remove('hidden');
+    const detail = $('#groupDetail');
+    const jidEl = $('#detailJid');
+    if (jidEl) jidEl.textContent = jid;
+    if (detail) detail.classList.remove('hidden');
     switchGroupTab('welcome');
-    // Scroll into view on mobile
-    $('#groupDetail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
     try{
         const { config, users } = await fetchJSON(`/api/groups/${encodeURIComponent(jid)}`);
-        // Welcome tab
-        $('#welcomeOn').checked = !!config.welcome.welcome;
-        $('#goodbyeOn').checked = !!config.welcome.goodbye;
-        $('#welcomeText').value = config.welcome.welcomeText || '';
-        $('#goodbyeText').value = config.welcome.goodbyeText || '';
-        // Antilink
+        const wOn = $('#welcomeOn'), gOn = $('#goodbyeOn'), wText = $('#welcomeText'), gText = $('#goodbyeText');
+        if (wOn) wOn.checked = !!config.welcome.welcome;
+        if (gOn) gOn.checked = !!config.welcome.goodbye;
+        if (wText) wText.value = config.welcome.welcomeText || '';
+        if (gText) gText.value = config.welcome.goodbyeText || '';
         const grid = $('#antilinkGrid');
-        const plats = ['whatsapp','instagram','telegram','tiktok','facebook','youtube','twitter','altri'];
-        grid.innerHTML = plats.map(p => `
-            <label class="check"><input type="checkbox" data-plat="${p}" ${config.antilink[p] ? 'checked' : ''}> ${p}</label>
-        `).join('');
-        $('#antilinkWl').value = (config.antilink.whitelist || []).join('\n');
-        // Settings
-        $('#linkOpen').checked = !!config.linkOpen;
-        $('#modoadmin').checked = !!config.modoadmin;
-        $('#antiflood').checked = config.antiflood !== false;
-        // Users tab preview
+        if (grid) {
+            const plats = ['whatsapp','instagram','telegram','tiktok','facebook','youtube','twitter','altri'];
+            grid.innerHTML = plats.map(p => `
+                <label class="check"><input type="checkbox" data-plat="${p}" ${config.antilink[p] ? 'checked' : ''}> ${p}</label>
+            `).join('');
+        }
+        const wl = $('#antilinkWl');
+        if (wl) wl.value = (config.antilink.whitelist || []).join('\n');
+        const lo = $('#linkOpen'), mo = $('#modoadmin'), af = $('#antiflood');
+        if (lo) lo.checked = !!config.linkOpen;
+        if (mo) mo.checked = !!config.modoadmin;
+        if (af) af.checked = config.antiflood !== false;
         const ulist = $('#groupUsersList');
-        if (!users.length) ulist.innerHTML = '<div class="muted">Nessun utente tracciato in questo gruppo</div>';
-        else ulist.innerHTML = users.slice(0, 30).map(u => `
-            <div class="row-item">
-                <div class="left"><div class="title mono">${esc(u.jid)}</div><div class="sub">💰 ${u.money ?? 0}€ · ⚠️ ${u.warnings ?? 0} · 💬 ${u.msgCount ?? 0} · ${u.isMuted ? '🔇 mutato' : '✓ attivo'}</div></div>
-                <div class="right"><span class="badge">${u.spouse ? '💍 ' + esc(String(u.spouse).split('@')[0]) : 'single'}</span></div>
-            </div>
-        `).join('') + (users.length > 30 ? `<div class="muted small" style="padding:8px">… e altri ${users.length - 30} utenti</div>` : '');
+        if (ulist) {
+            if (!users || !users.length) ulist.innerHTML = '<div class="muted">Nessun utente tracciato in questo gruppo</div>';
+            else ulist.innerHTML = users.slice(0, 30).map(u => `
+                <div class="row-item with-avatar">
+                    ${avatarHTML(u.jid, u.nickname || u.jid, 'sm')}
+                    <div class="left"><div class="title mono">${esc(u.jid)} ${u.nickname ? '— <b>'+esc(u.nickname)+'</b>' : ''}</div><div class="sub">💰 ${u.money ?? 0}€ · ⚠️ ${u.warnings ?? 0} · 💬 ${u.msgCount ?? 0} ${u.isMuted ? '· 🔇 mutato' : ''}</div></div>
+                    <div class="right"><span class="badge">${u.spouse ? '💍 ' + esc(String(u.spouse).split('@')[0]) : 'single'}</span></div>
+                </div>
+            `).join('') + (users.length > 30 ? `<div class="muted small" style="padding:8px">… e altri ${users.length - 30} utenti</div>` : '');
+        }
     }catch(e){ toast('Dettaglio gruppo: '+e.message,'err'); }
 }
 function switchGroupTab(name){
@@ -174,11 +220,11 @@ function switchGroupTab(name){
     $$('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${name}`));
 }
 async function saveWelcome(){
-    if (!currentGroupJid) return;
-    const welcome = $('#welcomeOn').checked;
-    const goodbye = $('#goodbyeOn').checked;
-    const welcomeText = $('#welcomeText').value.trim() || null;
-    const goodbyeText = $('#goodbyeText').value.trim() || null;
+    if (!currentGroupJid) return toast('Seleziona un gruppo','err');
+    const welcome = $('#welcomeOn')?.checked;
+    const goodbye = $('#goodbyeOn')?.checked;
+    const welcomeText = $('#welcomeText')?.value.trim() || null;
+    const goodbyeText = $('#goodbyeText')?.value.trim() || null;
     if (welcomeText && welcomeText.length > 800) return toast('Welcome troppo lunga (max 800)','err');
     if (goodbyeText && goodbyeText.length > 800) return toast('Goodbye troppo lunga','err');
     try{
@@ -193,17 +239,18 @@ async function saveWelcome(){
 async function resetWelcome(){
     if (!currentGroupJid) return;
     if (!confirm('Resettare welcome/goodbye a default (rimuove custom)?')) return;
-    $('#welcomeText').value = ''; $('#goodbyeText').value = '';
+    const w = $('#welcomeText'), g = $('#goodbyeText');
+    if (w) w.value = ''; if (g) g.value = '';
     await saveWelcome();
 }
 function toggleAllAntilink(on){
     $$('#antilinkGrid input').forEach(cb => cb.checked = on);
 }
 async function saveAntilink(){
-    if (!currentGroupJid) return;
+    if (!currentGroupJid) return toast('Seleziona gruppo','err');
     const body = {};
     $$('#antilinkGrid input').forEach(cb => body[cb.dataset.plat] = cb.checked);
-    const wlRaw = $('#antilinkWl').value.trim();
+    const wlRaw = $('#antilinkWl')?.value.trim() || '';
     body.whitelist = wlRaw ? wlRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean) : [];
     try{
         await fetchJSON(`/api/groups/${encodeURIComponent(currentGroupJid)}/antilink`, {
@@ -215,11 +262,11 @@ async function saveAntilink(){
     }catch(e){ toast(e.message,'err'); }
 }
 async function saveGroupSettings(){
-    if (!currentGroupJid) return;
+    if (!currentGroupJid) return toast('Seleziona gruppo','err');
     const body = {
-        _linkOpen: $('#linkOpen').checked,
-        _modoadmin: $('#modoadmin').checked,
-        _antiflood: $('#antiflood').checked,
+        _linkOpen: $('#linkOpen')?.checked,
+        _modoadmin: $('#modoadmin')?.checked,
+        _antiflood: $('#antiflood')?.checked,
     };
     try{
         await fetchJSON(`/api/groups/${encodeURIComponent(currentGroupJid)}/settings`, {
@@ -235,38 +282,52 @@ async function deleteGroup(){
     try{
         await fetchJSON(`/api/groups/${encodeURIComponent(currentGroupJid)}`, { method: 'DELETE' });
         toast('Gruppo eliminato');
-        $('#groupDetail').classList.add('hidden');
+        const d = $('#groupDetail'); if (d) d.classList.add('hidden');
         currentGroupJid = null;
         fetchGroups();
     }catch(e){ toast(e.message,'err'); }
 }
 
 // ── Users ───────────────────────────────────────────────────────────────
-function initUsersPage(){
-    if (!groupsCache.length) fetchGroups();
+async function initUsersPage(){
+    if (!groupsCache.length) {
+        await fetchGroups().catch(()=>{});
+    }
+    // Se ancora vuoto, mostra hint
+    const sel = $('#userGroupSelect');
+    if (sel && sel.options.length <= 1 && groupsCache.length) {
+        sel.innerHTML = '<option value="">— Seleziona gruppo —</option>' + groupsCache.map(g => `<option value="${esc(g.jid)}">${esc(g.jid)} — ${g.users} utenti</option>`).join('');
+    }
 }
 async function loadUsers(){
-    const gid = $('#userGroupSelect').value;
-    if (!gid) { $('#usersList').innerHTML = '<div class="muted">Seleziona un gruppo</div>'; $('#userCount').textContent=''; return; }
+    const gid = $('#userGroupSelect')?.value;
+    const listEl = $('#usersList');
+    const countEl = $('#userCount');
+    if (!gid) { if(listEl) listEl.innerHTML = '<div class="muted">Seleziona un gruppo</div>'; if(countEl) countEl.textContent=''; return; }
+    if (listEl) listEl.innerHTML = '<div class="muted" style="padding:12px">◇ Caricamento utenti...</div>';
     try{
         const { users } = await fetchJSON(`/api/users/${encodeURIComponent(gid)}`);
-        $('#userCount').textContent = `${users.length} utenti`;
-        renderUsers(users);
-        // store for filter
+        if (countEl) countEl.textContent = `${users.length} utenti`;
         loadUsers._cache = users;
         loadUsers._gid = gid;
-    }catch(e){ toast(e.message,'err'); }
+        renderUsers(users);
+    }catch(e){
+        if (listEl) listEl.innerHTML = `<div class="muted">Errore: ${esc(e.message)}</div>`;
+        toast(e.message,'err');
+    }
 }
 function renderUsers(list){
-    const q = ($('#userSearch').value || '').toLowerCase();
-    const filtered = q ? list.filter(u => u.jid.toLowerCase().includes(q) || String(u.nickname||'').toLowerCase().includes(q)) : list;
+    const q = ($('#userSearch')?.value || '').toLowerCase();
+    const filtered = q ? list.filter(u => u.jid.toLowerCase().includes(q) || String(u.nickname||'').toLowerCase().includes(q) || String(u.bio||'').toLowerCase().includes(q)) : list;
     const el = $('#usersList');
+    if (!el) return;
     if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun utente</div>'; return; }
     el.innerHTML = filtered.map(u => `
-        <div class="row-item">
+        <div class="row-item with-avatar">
+            ${avatarHTML(u.jid, u.nickname || u.jid)}
             <div class="left">
                 <div class="title mono">${esc(u.jid)} ${u.nickname ? '— <b>'+esc(u.nickname)+'</b>' : ''}</div>
-                <div class="sub">💰 ${u.money ?? 0}€ · ⚠️ ${u.warnings ?? 0} · 💬 ${u.msgCount ?? 0} · ${u.bio ? '📝 '+esc(u.bio.slice(0,40)) : ''} ${u.isMuted ? '· 🔇 mutato' : ''}</div>
+                <div class="sub">💰 ${u.money ?? 0}€ · ⚠️ ${u.warnings ?? 0} · 💬 ${u.msgCount ?? 0} ${u.bio ? '· 📝 '+esc(u.bio.slice(0,30)) : ''} ${u.isMuted ? '· 🔇 mutato' : ''} ${u.spouse ? '· 💍 '+esc(String(u.spouse).split('@')[0]) : ''}</div>
             </div>
             <div class="right">
                 <button class="btn btn-sm btn-ghost" onclick="editUserPrompt('${esc(u.jid)}')">✎</button>
@@ -296,6 +357,7 @@ async function editUserPrompt(jid){
         });
         toast('Utente aggiornato');
         loadUsers();
+        if (currentGroupJid === gid) openGroup(gid);
     }catch(e){ toast(e.message,'err'); }
 }
 async function deleteUser(jid){
@@ -312,17 +374,24 @@ async function deleteUser(jid){
 
 // ── Phrases ─────────────────────────────────────────────────────────────
 async function fetchPhrases(){
+    const listEl = $('#phrasesList');
+    const countEl = $('#phraseCount');
+    if (listEl) listEl.innerHTML = '<div class="muted" style="padding:12px">✧ Caricamento...</div>';
     try{
         const { phrases } = await fetchJSON('/api/phrases');
-        phrasesCache = phrases;
-        $('#phraseCount').textContent = `${phrases.length} file`;
-        renderPhrases(phrases);
-    }catch(e){ toast(e.message,'err'); }
+        phrasesCache = Array.isArray(phrases) ? phrases : [];
+        if (countEl) countEl.textContent = `${phrasesCache.length} file`;
+        renderPhrases(phrasesCache);
+    }catch(e){
+        if (listEl) listEl.innerHTML = `<div class="muted">Errore: ${esc(e.message)}</div>`;
+        toast(e.message,'err');
+    }
 }
 function renderPhrases(list){
-    const q = ($('#phraseSearch').value || '').toLowerCase();
+    const q = ($('#phraseSearch')?.value || '').toLowerCase();
     const filtered = q ? list.filter(p => p.key.toLowerCase().includes(q)) : list;
     const el = $('#phrasesList');
+    if (!el) return;
     if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun file</div>'; return; }
     el.innerHTML = filtered.map(p => `
         <div class="row-item" onclick="openPhrase('${esc(p.key)}')">
@@ -332,21 +401,44 @@ function renderPhrases(list){
     `).join('');
 }
 function filterPhrases(){ renderPhrases(phrasesCache); }
-
+function switchPhraseTab(name){
+    $$('#phraseEditor .tab').forEach(t => t.classList.toggle('active', t.dataset.ptab === name));
+    $$('#phraseEditor .tab-pane').forEach(p => p.classList.toggle('active', p.id === `phraseTab-${name}`));
+    if (name === 'bulk' && currentPhraseKey) {
+        const bulk = $('#phraseBulk');
+        if (bulk) bulk.value = currentPhraseLines.join('\n');
+    }
+    if (name === 'list' && currentPhraseKey) {
+        const bulk = $('#phraseBulk');
+        if (bulk && bulk.value.trim()) {
+            // Sincronizza bulk → lista se bulk è stato modificato
+            const lines = bulk.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+            if (lines.length && lines.join('\n') !== currentPhraseLines.join('\n')) {
+                currentPhraseLines = lines;
+                renderPhraseLines();
+                const c2 = $('#phraseCount2'); if(c2) c2.textContent = `(${currentPhraseLines.length} frasi)`;
+            }
+        }
+    }
+}
 async function openPhrase(key){
     currentPhraseKey = key;
-    $('#phraseKey').textContent = key + '.txt';
-    $('#phraseEditor').classList.remove('hidden');
+    const kEl = $('#phraseKey'), ed = $('#phraseEditor');
+    if (kEl) kEl.textContent = key + '.txt';
+    if (ed) ed.classList.remove('hidden');
+    switchPhraseTab('list');
     try{
         const { phrases } = await fetchJSON(`/api/phrases/${encodeURIComponent(key)}`);
-        currentPhraseLines = [...phrases];
-        $('#phraseCount2').textContent = `(${phrases.length} frasi)`;
+        currentPhraseLines = Array.isArray(phrases) ? [...phrases] : [];
+        const c2 = $('#phraseCount2'); if(c2) c2.textContent = `(${currentPhraseLines.length} frasi)`;
         renderPhraseLines();
-        $('#phraseEditor').scrollIntoView({ behavior: 'smooth' });
+        const bulk = $('#phraseBulk'); if(bulk) bulk.value = currentPhraseLines.join('\n');
+        if (ed) ed.scrollIntoView({ behavior: 'smooth' });
     }catch(e){ toast(e.message,'err'); }
 }
 function renderPhraseLines(){
     const el = $('#phraseLines');
+    if (!el) return;
     if (!currentPhraseLines.length) { el.innerHTML = '<div class="muted" style="padding:8px">Nessuna frase — aggiungine una sotto</div>'; return; }
     el.innerHTML = currentPhraseLines.map((line, i) => `
         <div class="phrase-row">
@@ -359,9 +451,10 @@ function renderPhraseLines(){
         </div>
     `).join('');
 }
-function closePhraseEditor(){ $('#phraseEditor').classList.add('hidden'); currentPhraseKey=null; }
+function closePhraseEditor(){ const ed=$('#phraseEditor'); if(ed) ed.classList.add('hidden'); currentPhraseKey=null; }
 async function addPhraseLine(){
     const input = $('#newPhraseInput');
+    if (!input) return;
     const phrase = input.value.trim();
     if (!phrase) return toast('Scrivi una frase','err');
     if (phrase.length > 400) return toast('Max 400 caratteri','err');
@@ -374,7 +467,8 @@ async function addPhraseLine(){
         input.value = '';
         currentPhraseLines.push(phrase);
         renderPhraseLines();
-        $('#phraseCount2').textContent = `(${currentPhraseLines.length} frasi)`;
+        const bulk = $('#phraseBulk'); if(bulk) bulk.value = currentPhraseLines.join('\n');
+        const c2 = $('#phraseCount2'); if(c2) c2.textContent = `(${currentPhraseLines.length} frasi)`;
         toast('Frase aggiunta ✧');
         fetchPhrases();
     }catch(e){ toast(e.message,'err'); }
@@ -385,7 +479,8 @@ async function removePhraseLine(idx){
         await fetchJSON(`/api/phrases/${encodeURIComponent(currentPhraseKey)}/${idx}`, { method: 'DELETE' });
         currentPhraseLines.splice(idx, 1);
         renderPhraseLines();
-        $('#phraseCount2').textContent = `(${currentPhraseLines.length} frasi)`;
+        const bulk = $('#phraseBulk'); if(bulk) bulk.value = currentPhraseLines.join('\n');
+        const c2 = $('#phraseCount2'); if(c2) c2.textContent = `(${currentPhraseLines.length} frasi)`;
         toast('Frase rimossa');
         fetchPhrases();
     }catch(e){ toast(e.message,'err'); }
@@ -397,17 +492,29 @@ function editPhraseLine(idx){
     const trimmed = next.trim();
     if (!trimmed) return toast('Frase vuota','err');
     if (trimmed.length > 400) return toast('Max 400','err');
-    // Edit = remove + add at same position → per semplicità, salva tutto il file
     currentPhraseLines[idx] = trimmed;
+    renderPhraseLines();
+    const bulk = $('#phraseBulk'); if(bulk) bulk.value = currentPhraseLines.join('\n');
+    // Auto-save per facilità
     savePhrases();
 }
 async function savePhrases(){
     if (!currentPhraseKey) return;
+    // Se bulk è attivo e modificato, usa bulk
+    const bulkEl = $('#phraseBulk');
+    const activeBulk = $$('#phraseEditor .tab.active').some(t => t.dataset.ptab === 'bulk');
+    if (activeBulk && bulkEl) {
+        const bulkLines = bulkEl.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+        if (bulkLines.some(l=>l.length>400)) return toast('Una riga supera 400','err');
+        currentPhraseLines = bulkLines;
+        renderPhraseLines();
+    }
     try{
         await fetchJSON(`/api/phrases/${encodeURIComponent(currentPhraseKey)}`, {
             method: 'PUT',
             body: JSON.stringify({ phrases: currentPhraseLines })
         });
+        const c2 = $('#phraseCount2'); if(c2) c2.textContent = `(${currentPhraseLines.length} frasi)`;
         toast('File salvato ✦');
         fetchPhrases();
     }catch(e){ toast(e.message,'err'); }
@@ -432,25 +539,158 @@ async function createPhraseFile(){
     }catch(e){ toast(e.message,'err'); }
 }
 
+// ── Files ───────────────────────────────────────────────────────────────
+async function loadFiles(pathRel=''){
+    currentFilePath = pathRel;
+    const pathEl = $('#filePath');
+    if (pathEl) pathEl.textContent = '/' + (pathRel || '');
+    const listEl = $('#filesList');
+    if (listEl) listEl.innerHTML = '<div class="muted" style="padding:12px">⬥ Caricamento...</div>';
+    try{
+        const { entries, parent } = await fetchJSON(`/api/files/list?path=${encodeURIComponent(pathRel)}`);
+        loadFiles._parent = parent;
+        if (!entries || !entries.length) {
+            if (listEl) listEl.innerHTML = '<div class="muted" style="padding:12px">Cartella vuota</div>';
+            return;
+        }
+        if (listEl) listEl.innerHTML = entries.map(e => {
+            const icon = e.isDir ? '📁' : (e.ext==='.js'?'⬥': e.ext==='.json'?'◆': e.ext==='.txt'?'▸': '⬦');
+            const cls = e.isDir ? 'dir' : e.ext.replace('.','');
+            const size = e.isDir ? '' : fmtBytes(e.size);
+            const click = e.isDir ? `loadFiles('${esc(e.path)}')` : `openFile('${esc(e.path)}')`;
+            const del = `deleteFile('${esc(e.path)}', ${e.isDir})`;
+            return `
+                <div class="row-item file-row">
+                    <div class="file-icon ${cls}">${icon}</div>
+                    <div class="left" onclick="${click}" style="cursor:pointer">
+                        <div class="title mono">${esc(e.name)} ${e.isDir?'<span class="muted">/</span>':''}</div>
+                        <div class="sub">${e.isDir?'cartella':esc(e.ext||'file')} ${size? '· '+size:''} ${e.mtime ? '· '+new Date(e.mtime).toLocaleDateString('it-IT') : ''}</div>
+                    </div>
+                    <div class="right">
+                        ${!e.isDir ? `<button class="btn btn-sm btn-ghost" onclick="${click}">✎</button>` : `<button class="btn btn-sm btn-ghost" onclick="${click}">→</button>`}
+                        <button class="btn btn-sm btn-danger" onclick="${del}">🗑</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }catch(e){
+        if (listEl) listEl.innerHTML = `<div class="muted" style="padding:12px">Errore: ${esc(e.message)}</div>`;
+    }
+}
+function navUp(){
+    const parent = loadFiles._parent;
+    if (parent === null || parent === undefined) return;
+    loadFiles(parent === '.' ? '' : parent);
+}
+async function openFile(rel){
+    try{
+        const { content, size } = await fetchJSON(`/api/files/read?path=${encodeURIComponent(rel)}`);
+        currentFilePath = rel;
+        currentFileContent = content;
+        const nameEl = $('#fileName'), sizeEl = $('#fileSize'), contentEl = $('#fileContent'), editor = $('#fileEditor');
+        if (nameEl) nameEl.textContent = rel;
+        if (sizeEl) sizeEl.textContent = `(${fmtBytes(size)})`;
+        if (contentEl) contentEl.value = content;
+        if (editor) editor.classList.remove('hidden');
+        if (editor) editor.scrollIntoView({ behavior: 'smooth' });
+        // Ctrl+S
+        if (contentEl) {
+            contentEl.onkeydown = (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); }
+            };
+        }
+    }catch(e){ toast(e.message,'err'); }
+}
+function closeFileEditor(){ const ed=$('#fileEditor'); if(ed) ed.classList.add('hidden'); }
+async function saveFile(){
+    const contentEl = $('#fileContent');
+    if (!contentEl || !currentFilePath) return;
+    const content = contentEl.value;
+    if (content.length > 500000) return toast('File troppo grande (max 500KB)','err');
+    try{
+        await fetchJSON('/api/files/write', { method:'PUT', body: JSON.stringify({ path: currentFilePath, content }) });
+        toast('File salvato ✦');
+        loadFiles(currentFilePath.includes('/') ? currentFilePath.substring(0, currentFilePath.lastIndexOf('/')) : '');
+    }catch(e){ toast(e.message,'err'); }
+}
+async function deleteFile(rel, isDir){
+    if (!confirm(`Eliminare ${isDir?'cartella e tutto il contenuto':'file'} "${rel}"?`)) return;
+    try{
+        await fetchJSON(`/api/files?path=${encodeURIComponent(rel)}`, { method: 'DELETE' });
+        toast(isDir ? 'Cartella eliminata' : 'File eliminato');
+        const parent = rel.includes('/') ? rel.substring(0, rel.lastIndexOf('/')) : '';
+        loadFiles(parent);
+        if (currentFilePath === rel) closeFileEditor();
+    }catch(e){ toast(e.message,'err'); }
+}
+async function createFolderPrompt(){
+    const name = prompt('Nome nuova cartella:');
+    if (!name) return;
+    const clean = name.trim().replace(/[\\/]/g,'');
+    if (!clean) return toast('Nome non valido','err');
+    const rel = (currentFilePath ? currentFilePath + '/' : '') + clean;
+    // Se currentFilePath è un file, usa la sua cartella
+    let base = currentFilePath;
+    // Se siamo in un file, prendi la cartella
+    try{
+        const stat = await fetchJSON(`/api/files/list?path=${encodeURIComponent(currentFilePath)}`).catch(()=>null);
+        if (stat && !stat.entries) base = currentFilePath.substring(0, currentFilePath.lastIndexOf('/'));
+    }catch{}
+    const target = (base && !base.includes('.') ? base : (currentFilePath.includes('/') ? currentFilePath.substring(0, currentFilePath.lastIndexOf('/')) : '')) ;
+    // Semplice: usa current folder da filePath
+    const folder = $('#filePath')?.textContent?.replace(/^\//,'') || '';
+    const full = (folder ? folder + '/' : '') + clean;
+    try{
+        await fetchJSON('/api/files/mkdir', { method:'POST', body: JSON.stringify({ path: full }) });
+        toast('Cartella creata');
+        loadFiles(folder);
+    }catch(e){ toast(e.message,'err'); }
+}
+async function createFilePrompt(){
+    const name = prompt('Nome nuovo file (es. note.txt):');
+    if (!name) return;
+    const clean = name.trim();
+    if (!clean || clean.includes('/') || clean.includes('\\')) return toast('Nome non valido','err');
+    const folder = $('#filePath')?.textContent?.replace(/^\//,'') || '';
+    const full = (folder ? folder + '/' : '') + clean;
+    try{
+        await fetchJSON('/api/files/write', { method:'PUT', body: JSON.stringify({ path: full, content: '' }) });
+        toast('File creato');
+        loadFiles(folder);
+        openFile(full);
+    }catch(e){ toast(e.message,'err'); }
+}
+
 // ── Owners ──────────────────────────────────────────────────────────────
 async function fetchOwners(){
+    const listEl = $('#ownersList');
+    if (listEl) listEl.innerHTML = '<div class="muted">Caricamento...</div>';
     try{
         const { owners } = await fetchJSON('/api/owners');
         const el = $('#ownersList');
-        if (!owners.length) el.innerHTML = '<div class="muted">Nessun owner — aggiungine uno</div>';
+        if (!el) return;
+        if (!owners || !owners.length) el.innerHTML = '<div class="muted">Nessun owner — aggiungine uno</div>';
         else el.innerHTML = owners.map((o, i) => {
             const disp = esc(o.jid || o.number || JSON.stringify(o));
             const num = esc(String(o.number || o.jid || '').replace(/[^0-9]/g,'').slice(-12));
-            return `<div class="row-item"><div class="left"><div class="title mono">${disp}</div><div class="sub">${num}</div></div><div class="right"><button class="btn btn-sm btn-danger" onclick="removeOwner('${esc(String(o.jid||o.number||''))}')">🗑 Rimuovi</button></div></div>`;
+            return `<div class="row-item with-avatar">
+                ${avatarHTML(o.jid || o.number, disp)}
+                <div class="left"><div class="title mono">${disp}</div><div class="sub">${num}</div></div>
+                <div class="right"><button class="btn btn-sm btn-danger" onclick="removeOwner('${esc(String(o.jid||o.number||''))}')">🗑 Rimuovi</button></div>
+            </div>`;
         }).join('');
-    }catch(e){ toast(e.message,'err'); }
+    }catch(e){
+        const el=$('#ownersList'); if(el) el.innerHTML = `<div class="muted">Errore: ${esc(e.message)}</div>`;
+        toast(e.message,'err');
+    }
 }
 async function addOwner(){
-    const val = $('#newOwnerInput').value.trim();
+    const input = $('#newOwnerInput');
+    const val = input?.value.trim() || '';
     if (!val) return toast('Inserisci un numero','err');
     try{
         await fetchJSON('/api/owners', { method: 'POST', body: JSON.stringify({ action:'add', number: val }) });
-        $('#newOwnerInput').value='';
+        if (input) input.value='';
         toast('Owner aggiunto ★');
         fetchOwners(); fetchOverview();
     }catch(e){ toast(e.message,'err'); }
@@ -466,21 +706,26 @@ async function removeOwner(jid){
 
 // ── Config ──────────────────────────────────────────────────────────────
 async function loadConfig(){
+    const view = $('#configView');
+    if (view) view.textContent = 'Caricamento...';
     try{
-        const { config, raw } = await fetchJSON('/api/config');
-        $('#configView').textContent = raw || JSON.stringify(config, null, 2);
-    }catch(e){ toast(e.message,'err'); }
+        const { raw } = await fetchJSON('/api/config');
+        if (view) view.textContent = raw || '(vuoto)';
+    }catch(e){ if(view) view.textContent = 'Errore: '+e.message; toast(e.message,'err'); }
 }
 
 // ── Logs ────────────────────────────────────────────────────────────────
 async function loadLogs(){
-    const lines = $('#logLines').value;
+    const lines = $('#logLines')?.value || 200;
+    const view = $('#logsView'), info = $('#logInfo');
+    if (view) view.textContent = 'Caricamento...';
     try{
         const { lines: text, exists } = await fetchJSON(`/api/logs?lines=${lines}`);
-        $('#logsView').textContent = exists ? (text || '(vuoto)') : 'File logs/bot.log non trovato';
-        $('#logInfo').textContent = exists ? `${lines} righe` : 'non trovato';
-    }catch(e){ toast(e.message,'err'); }
+        if (view) view.textContent = exists ? (text || '(vuoto)') : 'File logs/bot.log non trovato';
+        if (info) info.textContent = exists ? `${lines} righe` : 'non trovato';
+    }catch(e){ if(view) view.textContent = 'Errore: '+e.message; toast(e.message,'err'); }
 }
 
 // ── Init ────────────────────────────────────────────────────────────────
 fetchOverview();
+// Fix per utenti: se si apre pagina utenti, assicura che gruppi siano caricati

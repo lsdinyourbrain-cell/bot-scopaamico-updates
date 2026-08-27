@@ -21,6 +21,7 @@
       <button class="nav-btn" data-page="groups">◆ Gruppi</button>
       <button class="nav-btn" data-page="users">◇ Utenti</button>
       <button class="nav-btn" data-page="phrases">✧ Frasi</button>
+      <button class="nav-btn" data-page="files">⬥ File</button>
       <button class="nav-btn" data-page="owners">★ Owner</button>
       <button class="nav-btn" data-page="config">⬥ Config</button>
       <button class="nav-btn" data-page="logs">▸ Logs</button>
@@ -161,16 +162,49 @@
       <div id="phraseEditor" class="panel hidden" style="margin-top:16px">
         <div class="panel-head">✧ Editor — <span id="phraseKey" class="mono"></span> <span id="phraseCount2" class="muted"></span> <button class="btn btn-sm" style="float:right" onclick="closePhraseEditor()">✕</button></div>
         <div class="panel-body">
-          <div id="phraseLines" class="phrase-lines"></div>
-          <div class="row gap" style="margin-top:10px">
-            <input id="newPhraseInput" class="input" placeholder="Nuova frase..." style="flex:1" onkeydown="if(event.key==='Enter') addPhraseLine()">
-            <button class="btn" onclick="addPhraseLine()">＋ Aggiungi</button>
+          <div class="tabs" style="margin-bottom:10px">
+            <button class="tab active" data-ptab="list" onclick="switchPhraseTab('list')">Lista</button>
+            <button class="tab" data-ptab="bulk" onclick="switchPhraseTab('bulk')">Testo (bulk)</button>
+          </div>
+          <div id="phraseTab-list" class="tab-pane active">
+            <div id="phraseLines" class="phrase-lines"></div>
+            <div class="row gap" style="margin-top:10px">
+              <input id="newPhraseInput" class="input" placeholder="Nuova frase..." style="flex:1" onkeydown="if(event.key==='Enter') addPhraseLine()">
+              <button class="btn" onclick="addPhraseLine()">＋ Aggiungi</button>
+            </div>
+          </div>
+          <div id="phraseTab-bulk" class="tab-pane">
+            <textarea id="phraseBulk" class="input textarea" rows="14" style="font-family:monospace;font-size:12px" placeholder="Una frase per riga..."></textarea>
           </div>
           <div class="row gap" style="margin-top:10px">
             <button class="btn" onclick="savePhrases()">✦ Salva file</button>
             <button class="btn btn-ghost" onclick="reloadPhrases()">↻ Ricarica</button>
           </div>
-          <div class="hint">Una frase per riga. Righe vuote e che iniziano con <code>#</code> sono ignorate. Max 400 caratteri per frase.</div>
+          <div class="hint">Lista: aggiungi/rimuovi singole frasi. Bulk: incolla/modifica tutto il file (una per riga). Max 400 per frase.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILES -->
+    <section id="page-files" class="page">
+      <div class="toolbar">
+        <button class="btn btn-sm btn-ghost" onclick="navUp()">⬆ Su</button>
+        <span id="filePath" class="mono small" style="flex:1;background:var(--panel);padding:8px 12px;border-radius:8px;border:1px solid var(--border)">/</span>
+        <button class="btn btn-sm" onclick="createFolderPrompt()">＋ Cartella</button>
+        <button class="btn btn-sm" onclick="createFilePrompt()">＋ File</button>
+        <button class="btn btn-sm btn-ghost" onclick="loadFiles()">↻</button>
+      </div>
+      <div id="filesList" class="list"></div>
+
+      <div id="fileEditor" class="panel hidden" style="margin-top:16px">
+        <div class="panel-head">⬥ Editor — <span id="fileName" class="mono"></span> <span id="fileSize" class="muted"></span> <button class="btn btn-sm" style="float:right" onclick="closeFileEditor()">✕</button></div>
+        <div class="panel-body">
+          <textarea id="fileContent" class="input textarea" rows="20" style="font-family:monospace;font-size:12px;min-height:340px" placeholder="Contenuto file..."></textarea>
+          <div class="row gap" style="margin-top:10px">
+            <button class="btn" onclick="saveFile()">✦ Salva</button>
+            <button class="btn btn-ghost" onclick="closeFileEditor()">Annulla</button>
+            <span class="muted small">Ctrl+S per salvare · Max 500KB</span>
+          </div>
         </div>
       </div>
     </section>
