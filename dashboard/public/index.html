@@ -25,6 +25,7 @@
       <button class="nav-btn" data-page="owners">★ Owner</button>
       <button class="nav-btn" data-page="config">⬥ Config</button>
       <button class="nav-btn" data-page="logs">▸ Logs</button>
+      <button class="nav-btn" data-page="settings">⚙ Tema</button>
     </nav>
     <div class="sidebar-foot">
       <div class="foot-line">✦ ◆ ✦</div>
@@ -259,6 +260,55 @@
         <span id="logInfo" class="muted"></span>
       </div>
       <pre id="logsView" class="logs"></pre>
+    </section>
+
+    <!-- SETTINGS / TEMA -->
+    <section id="page-settings" class="page">
+      <div class="panel">
+        <div class="panel-head">⚙ Tema — Vetro Traslucido</div>
+        <div class="panel-body">
+          <div class="color-grid">
+            <div class="color-item">
+              <label>Accento primario</label>
+              <input type="color" id="colorAccent" value="#7c5cff" oninput="updateTheme()">
+              <div class="color-preview" id="previewAccent" style="background:#7c5cff"></div>
+            </div>
+            <div class="color-item">
+              <label>Accento secondario</label>
+              <input type="color" id="colorAccent2" value="#ff4ecd" oninput="updateTheme()">
+              <div class="color-preview" id="previewAccent2" style="background:#ff4ecd"></div>
+            </div>
+            <div class="color-item">
+              <label>Sfondo</label>
+              <input type="color" id="colorBg" value="#08080c" oninput="updateTheme()">
+              <div class="color-preview" id="previewBg" style="background:#08080c"></div>
+            </div>
+            <div class="color-item">
+              <label>Pannelli</label>
+              <input type="color" id="colorPanel" value="#15151d" oninput="updateTheme()">
+              <div class="color-preview" id="previewPanel" style="background:#15151d"></div>
+            </div>
+          </div>
+          <div class="row gap" style="margin-top:14px">
+            <button class="btn" onclick="saveTheme()">✦ Salva tema</button>
+            <button class="btn btn-ghost" onclick="resetTheme()">↻ Reset default</button>
+            <span class="muted small">Salvato in locale (localStorage) — vetro con blur 20px + saturate</span>
+          </div>
+          <div class="form-grid" style="margin-top:14px">
+            <label class="check"><input type="range" id="blurRange" min="0" max="40" value="20" oninput="updateTheme()"> Blur: <span id="blurVal">20px</span></label>
+            <label class="check"><input type="range" id="opacityRange" min="30" max="90" value="55" oninput="updateTheme()"> Opacità: <span id="opacityVal">55%</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">⬥ Anteprima vetro</div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="card"><div class="card-icon">✦</div><div><div class="card-val">Test</div><div class="card-label">Card vetro</div></div></div>
+            <div class="row-item"><div class="left"><div class="title">Riga vetro</div><div class="sub">Con blur e bordo traslucido</div></div><div class="right"><span class="badge on">on</span></div></div>
+          </div>
+        </div>
+      </div>
     </section>
 
   </main>

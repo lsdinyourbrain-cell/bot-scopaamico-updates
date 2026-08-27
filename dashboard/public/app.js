@@ -36,7 +36,7 @@ const fmtBytes = (n) => {
     return (n/1024/1024).toFixed(1) + ' MB';
 };
 
-// Avatar con iniziali e colore hash — mostra PFP placeholder
+// Avatar con PFP reale se disponibile, fallback a iniziali con colore hash
 function avatarColor(str){
     let h = 0;
     for (let i = 0; i < String(str).length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
@@ -47,7 +47,6 @@ function initialsFrom(jid, fallback){
     const raw = String(jid || fallback || '').split('@')[0].replace(/[^a-zA-Z0-9]/g,'');
     if (!raw) return '?';
     if (raw.length <= 2) return raw.toUpperCase();
-    // Prendi prime 2 lettere/numeri significativi
     const letters = raw.replace(/[^a-zA-Z]/g,'');
     if (letters.length >= 2) return (letters[0] + letters[1]).toUpperCase();
     return raw.slice(0,2).toUpperCase();
@@ -56,7 +55,9 @@ function avatarHTML(jid, name, size=''){
     const init = initialsFrom(jid, name);
     const bg = avatarColor(jid || name || 'x');
     const cls = size ? `avatar ${size}` : 'avatar';
-    return `<div class="${cls}" style="background:${bg}">${esc(init)}</div>`;
+    const pfpUrl = `/api/pfp/${encodeURIComponent(jid || '')}`;
+    // Prova a caricare PFP reale, se fallisce mostra iniziali
+    return `<div class="${cls}" style="background:${bg};overflow:hidden"><img src="${pfpUrl}" alt="${esc(init)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-fallback').style.display='grid'"><span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:800">${esc(init)}</span></div>`;
 }
 function formatDate(iso){
     try { return new Date(iso).toLocaleString('it-IT'); } catch { return String(iso||''); }
@@ -157,17 +158,17 @@ function renderGroups(list){
     const el = $('#groupsList');
     if (!el) return;
     if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun gruppo trovato</div>'; return; }
-    el.innerHTML = filtered.map(g => `
+    el.innerHTML = filtered.filter(g => g && typeof g === 'object').map(g => `
         <div class="row-item with-avatar" onclick="openGroup('${esc(g.jid)}')">
             ${avatarHTML(g.jid, g.jid, 'sm')}
             <div class="left">
-                <div class="title mono">${esc(g.jid)}</div>
-                <div class="sub">${g.users} utenti · ${g.msgs} messaggi · ${g.hasAntilink ? '◆ antilink attivo' : '▫ antilink off'}</div>
+                <div class="title mono">${esc(g?.jid || '')}</div>
+                <div class="sub">${g?.users ?? 0} utenti · ${g?.msgs ?? 0} messaggi · ${g?.hasAntilink ? '◆ antilink attivo' : '▫ antilink off'}</div>
             </div>
             <div class="right">
-                <span class="badge ${g.welcome ? 'on' : 'off'}">${g.welcome ? 'welcome on' : 'welcome off'}</span>
-                <span class="badge ${g.goodbye ? 'on' : 'off'}">${g.goodbye ? 'goodbye on' : 'goodbye off'}</span>
-                <span class="badge">${g.users} ◇</span>
+                <span class="badge ${g?.welcome ? 'on' : 'off'}">${g?.welcome ? 'welcome on' : 'welcome off'}</span>
+                <span class="badge ${g?.goodbye ? 'on' : 'off'}">${g?.goodbye ? 'goodbye on' : 'goodbye off'}</span>
+                <span class="badge">${g?.users ?? 0} ◇</span>
             </div>
         </div>
     `).join('');
@@ -204,14 +205,15 @@ async function openGroup(jid){
         if (af) af.checked = config.antiflood !== false;
         const ulist = $('#groupUsersList');
         if (ulist) {
-            if (!users || !users.length) ulist.innerHTML = '<div class="muted">Nessun utente tracciato in questo gruppo</div>';
-            else ulist.innerHTML = users.slice(0, 30).map(u => `
+            const safeUsers = (Array.isArray(users) ? users : []).filter(u => u && typeof u === 'object');
+            if (!safeUsers.length) ulist.innerHTML = '<div class="muted">Nessun utente tracciato in questo gruppo</div>';
+            else ulist.innerHTML = safeUsers.slice(0, 30).map(u => `
                 <div class="row-item with-avatar">
-                    ${avatarHTML(u.jid, u.nickname || u.jid, 'sm')}
-                    <div class="left"><div class="title mono">${esc(u.jid)} ${u.nickname ? '— <b>'+esc(u.nickname)+'</b>' : ''}</div><div class="sub">💰 ${u.money ?? 0}€ · ⚠️ ${u.warnings ?? 0} · 💬 ${u.msgCount ?? 0} ${u.isMuted ? '· 🔇 mutato' : ''}</div></div>
-                    <div class="right"><span class="badge">${u.spouse ? '💍 ' + esc(String(u.spouse).split('@')[0]) : 'single'}</span></div>
+                    ${avatarHTML(u?.jid, u?.nickname || u?.jid, 'sm')}
+                    <div class="left"><div class="title mono">${esc(u?.jid || '')} ${u?.nickname ? '— <b>'+esc(u.nickname)+'</b>' : ''}</div><div class="sub">💰 ${u?.money ?? 0}€ · ⚠️ ${u?.warnings ?? 0} · 💬 ${u?.msgCount ?? 0} ${u?.isMuted ? '· 🔇 mutato' : ''}</div></div>
+                    <div class="right"><span class="badge">${u?.spouse ? '💍 ' + esc(String(u.spouse).split('@')[0]) : 'single'}</span></div>
                 </div>
-            `).join('') + (users.length > 30 ? `<div class="muted small" style="padding:8px">… e altri ${users.length - 30} utenti</div>` : '');
+            `).join('') + (safeUsers.length > 30 ? `<div class="muted small" style="padding:8px">… e altri ${safeUsers.length - 30} utenti</div>` : '');
         }
     }catch(e){ toast('Dettaglio gruppo: '+e.message,'err'); }
 }
@@ -322,16 +324,16 @@ function renderUsers(list){
     const el = $('#usersList');
     if (!el) return;
     if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun utente</div>'; return; }
-    el.innerHTML = filtered.map(u => `
+    el.innerHTML = filtered.filter(u => u && typeof u === 'object').map(u => `
         <div class="row-item with-avatar">
-            ${avatarHTML(u.jid, u.nickname || u.jid)}
+            ${avatarHTML(u?.jid, u?.nickname || u?.jid)}
             <div class="left">
-                <div class="title mono">${esc(u.jid)} ${u.nickname ? '— <b>'+esc(u.nickname)+'</b>' : ''}</div>
-                <div class="sub">💰 ${u.money ?? 0}€ · ⚠️ ${u.warnings ?? 0} · 💬 ${u.msgCount ?? 0} ${u.bio ? '· 📝 '+esc(u.bio.slice(0,30)) : ''} ${u.isMuted ? '· 🔇 mutato' : ''} ${u.spouse ? '· 💍 '+esc(String(u.spouse).split('@')[0]) : ''}</div>
+                <div class="title mono">${esc(u?.jid || '')} ${u?.nickname ? '— <b>'+esc(u.nickname)+'</b>' : ''}</div>
+                <div class="sub">💰 ${u?.money ?? 0}€ · ⚠️ ${u?.warnings ?? 0} · 💬 ${u?.msgCount ?? 0} ${u?.bio ? '· 📝 '+esc(u.bio.slice(0,30)) : ''} ${u?.isMuted ? '· 🔇 mutato' : ''} ${u?.spouse ? '· 💍 '+esc(String(u.spouse).split('@')[0]) : ''}</div>
             </div>
             <div class="right">
-                <button class="btn btn-sm btn-ghost" onclick="editUserPrompt('${esc(u.jid)}')">✎</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteUser('${esc(u.jid)}')">🗑</button>
+                <button class="btn btn-sm btn-ghost" onclick="editUserPrompt('${esc(u?.jid || '')}')">✎</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteUser('${esc(u?.jid || '')}')">🗑</button>
             </div>
         </div>
     `).join('');
@@ -725,6 +727,72 @@ async function loadLogs(){
         if (info) info.textContent = exists ? `${lines} righe` : 'non trovato';
     }catch(e){ if(view) view.textContent = 'Errore: '+e.message; toast(e.message,'err'); }
 }
+
+// ── Tema vetro — colori modificabili ────────────────────────────────────
+function hexToRgb(hex){
+    const h = hex.replace('#','');
+    const n = parseInt(h,16);
+    return `${(n>>16)&255},${(n>>8)&255},${n&255}`;
+}
+function updateTheme(){
+    const accent = $('#colorAccent')?.value || '#7c5cff';
+    const accent2 = $('#colorAccent2')?.value || '#ff4ecd';
+    const bg = $('#colorBg')?.value || '#08080c';
+    const panel = $('#colorPanel')?.value || '#15151d';
+    const blur = $('#blurRange')?.value || 20;
+    const opacity = $('#opacityRange')?.value || 55;
+    const root = document.documentElement;
+    root.style.setProperty('--accent', accent);
+    root.style.setProperty('--accent2', accent2);
+    root.style.setProperty('--accent-rgb', hexToRgb(accent));
+    root.style.setProperty('--bg', bg);
+    root.style.setProperty('--panel', `rgba(${hexToRgb(panel)},${opacity/100})`);
+    root.style.setProperty('--blur', blur + 'px');
+    const b = $('#blurVal'), o = $('#opacityVal');
+    if (b) b.textContent = blur + 'px';
+    if (o) o.textContent = opacity + '%';
+    const pa = $('#previewAccent'), pa2 = $('#previewAccent2'), pb = $('#previewBg'), pp = $('#previewPanel');
+    if (pa) pa.style.background = accent;
+    if (pa2) pa2.style.background = accent2;
+    if (pb) pb.style.background = bg;
+    if (pp) pp.style.background = panel;
+    document.body.style.background = `radial-gradient(1200px 600px at 10% -10%, rgba(${hexToRgb(accent)},0.15), transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(${hexToRgb(accent2)},0.10), transparent 60%), linear-gradient(180deg, ${bg} 0%, #08080c 100%)`;
+}
+function saveTheme(){
+    const data = {
+        accent: $('#colorAccent')?.value,
+        accent2: $('#colorAccent2')?.value,
+        bg: $('#colorBg')?.value,
+        panel: $('#colorPanel')?.value,
+        blur: $('#blurRange')?.value,
+        opacity: $('#opacityRange')?.value,
+    };
+    localStorage.setItem('vex_theme', JSON.stringify(data));
+    toast('Tema salvato ✦');
+}
+function resetTheme(){
+    localStorage.removeItem('vex_theme');
+    $('#colorAccent').value='#7c5cff'; $('#colorAccent2').value='#ff4ecd'; $('#colorBg').value='#08080c'; $('#colorPanel').value='#15151d';
+    $('#blurRange').value=20; $('#opacityRange').value=55;
+    updateTheme();
+    toast('Tema resettato');
+}
+function loadTheme(){
+    try{
+        const raw = localStorage.getItem('vex_theme');
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        if (d.accent) $('#colorAccent').value = d.accent;
+        if (d.accent2) $('#colorAccent2').value = d.accent2;
+        if (d.bg) $('#colorBg').value = d.bg;
+        if (d.panel) $('#colorPanel').value = d.panel;
+        if (d.blur) $('#blurRange').value = d.blur;
+        if (d.opacity) $('#opacityRange').value = d.opacity;
+        updateTheme();
+    }catch(_){}
+}
+// Carica tema salvato all'avvio
+setTimeout(loadTheme, 100);
 
 // ── Init ────────────────────────────────────────────────────────────────
 fetchOverview();

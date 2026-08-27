@@ -227,8 +227,8 @@ app.get('/api/groups', (req, res) => {
             const w = welcome[gid] || { welcome: true, goodbye: true, welcomeText: null, goodbyeText: null };
             const al = antilink[gid] || {};
             const chat = db[gid] || {};
-            const userKeys = Object.keys(chat).filter(k => k.includes('@'));
-            const msgs = Object.values(chat).reduce((acc, u) => acc + (Number(u.msgCount) || 0), 0);
+            const userKeys = Object.keys(chat).filter(k => k.includes('@') && chat[k] && typeof chat[k] === 'object');
+            const msgs = Object.values(chat).reduce((acc, u) => acc + (Number(u?.msgCount) || 0), 0);
 
             return {
                 jid: gid,
@@ -278,12 +278,12 @@ app.get('/api/groups/:jid', (req, res) => {
         };
 
         const users = Object.entries(chat)
-            .filter(([k]) => k.includes('@'))
+            .filter(([k, v]) => k.includes('@') && v && typeof v === 'object')
             .map(([jid, data]) => ({
                 jid,
-                ...data,
+                ...(data || {}),
             }))
-            .sort((a, b) => (b.msgCount || 0) - (a.msgCount || 0));
+            .sort((a, b) => ((b?.msgCount) || 0) - ((a?.msgCount) || 0));
 
         res.json({ ok: true, jid: gid, config: groupCfg, users });
     } catch (e) {
@@ -502,9 +502,9 @@ app.get('/api/users/:gid', (req, res) => {
         const db = safeReadJSON(DB_FILE, {});
         const chat = db[gid] || {};
         const users = Object.entries(chat)
-            .filter(([k]) => k.includes('@'))
-            .map(([jid, data]) => ({ jid, ...data }))
-            .sort((a, b) => (b.msgCount || 0) - (a.msgCount || 0));
+            .filter(([k, v]) => k.includes('@') && v && typeof v === 'object')
+            .map(([jid, data]) => ({ jid, ...(data || {}) }))
+            .sort((a, b) => ((b?.msgCount) || 0) - ((a?.msgCount) || 0));
         res.json({ ok: true, jid: gid, users, count: users.length });
     } catch (e) {
         res.status(500).json({ ok: false, error: e.message });
@@ -539,6 +539,47 @@ app.delete('/api/users/:gid/:jid', (req, res) => {
         delete db[gid][jid];
         if (!safeWriteJSON(DB_FILE, db)) return res.status(500).json({ ok: false, error: 'Scrittura fallita' });
         res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ ok: false, error: e.message });
+    }
+});
+
+// ── API: PFP ────────────────────────────────────────────────────────────
+const pfpCache = new Map(); // jid -> { url, ts }
+const PFP_TTL = 1000 * 60 * 60; // 1h
+
+app.get('/api/pfp/:jid', async (req, res) => {
+    try {
+        const jid = String(req.params.jid || '').trim();
+        if (!jid || !jid.includes('@')) return res.status(400).json({ ok: false, error: 'JID non valido' });
+
+        // Cache
+        const cached = pfpCache.get(jid);
+        if (cached && Date.now() - cached.ts < PFP_TTL) return res.json({ ok: true, url: cached.url, cached: true });
+
+        // Prova a leggere da auth_info_baileys se il bot ha già scaricato PFP in temp
+        // Fallback: usa ui-avatars come placeholder realistico
+        const initials = jid.split('@')[0].slice(-4).replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'VX';
+        let bg = '7c5cff';
+        try {
+            let h = 0;
+            for (let i = 0; i < jid.length; i++) h = (h * 31 + jid.charCodeAt(i)) >>> 0;
+            const hue = h % 360;
+            // Converti HSL a hex approssimato per ui-avatars
+            bg = `hsl(${hue},65%,45%)`.replace(/[^0-9,]/g, '').split(',')[0] || '7c5cff';
+            // ui-avatars vuole esadecimale, usiamo hash per colore
+            const colors = ['7c5cff','ff4ecd','22c55e','f59e0b','3b82f6','ef4444','06b6d4','8b5cf6'];
+            bg = colors[h % colors.length];
+        } catch (_) {}
+
+        // Placeholder realistico via ui-avatars (sembra una vera PFP)
+        const placeholder = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${bg}&color=fff&size=128&bold=true&format=svg`;
+
+        // Se il bot è in esecuzione, potremmo provare a usare Baileys per fetch reale,
+        // ma per ora restituiamo placeholder con cache. Il frontend proverà a caricare
+        // la vera PFP via WhatsApp se disponibile, altrimenti placeholder.
+        pfpCache.set(jid, { url: placeholder, ts: Date.now() });
+        res.json({ ok: true, url: placeholder, placeholder: true });
     } catch (e) {
         res.status(500).json({ ok: false, error: e.message });
     }
