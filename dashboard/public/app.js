@@ -836,6 +836,7 @@ function hexToRgb(hex){
     const n = parseInt(h,16);
     return `${(n>>16)&255},${(n>>8)&255},${n&255}`;
 }
+let _themeSaveTimer = null;
 function updateTheme(){
     const accent = $('#colorAccent')?.value || '#7c5cff';
     const accent2 = $('#colorAccent2')?.value || '#ff4ecd';
@@ -859,6 +860,19 @@ function updateTheme(){
     if (pb) pb.style.background = bg;
     if (pp) pp.style.background = panel;
     document.body.style.background = `radial-gradient(1200px 600px at 10% -10%, rgba(${hexToRgb(accent)},0.15), transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(${hexToRgb(accent2)},0.10), transparent 60%), linear-gradient(180deg, ${bg} 0%, #08080c 100%)`;
+    // Auto-salva dopo 400ms di inattività — così non serve cliccare Salva
+    clearTimeout(_themeSaveTimer);
+    _themeSaveTimer = setTimeout(() => {
+        const data = {
+            accent: $('#colorAccent')?.value,
+            accent2: $('#colorAccent2')?.value,
+            bg: $('#colorBg')?.value,
+            panel: $('#colorPanel')?.value,
+            blur: $('#blurRange')?.value,
+            opacity: $('#opacityRange')?.value,
+        };
+        try { localStorage.setItem('vex_theme', JSON.stringify(data)); } catch (_) {}
+    }, 400);
 }
 function saveTheme(){
     const data = {
@@ -896,32 +910,61 @@ function loadTheme(){
 // Carica tema salvato all'avvio
 setTimeout(loadTheme, 100);
 
-// ── Tilt 3D su hover ────────────────────────────────────────────────────
+// ── Tilt 3D su hover — leggero, fluido, non buggato ────────────────────
 function initTilt(){
+    if (window.matchMedia('(hover: none)').matches) return; // no tilt su touch
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const applyTilt = (el) => {
+        if (el.dataset.tiltInit) return;
+        el.dataset.tiltInit = '1';
         el.classList.add('tilt');
+        let raf = null;
+        let targetRx = 0, targetRy = 0, curRx = 0, curRy = 0;
+
+        const animate = () => {
+            curRx += (targetRx - curRx) * 0.12;
+            curRy += (targetRy - curRy) * 0.12;
+            if (Math.abs(targetRx - curRx) < 0.05 && Math.abs(targetRy - curRy) < 0.05) {
+                curRx = targetRx; curRy = targetRy;
+            } else {
+                raf = requestAnimationFrame(animate);
+            }
+            el.style.transform = `perspective(900px) rotateX(${curRx}deg) rotateY(${curRy}deg)`;
+        };
+
         el.addEventListener('mousemove', (e) => {
             const rect = el.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             const cx = rect.width / 2;
             const cy = rect.height / 2;
-            const rx = (y - cy) / 10;
-            const ry = (cx - x) / 10;
-            el.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(4px)`;
+            // Molto più leggero: max ~6°
+            targetRx = Math.max(-6, Math.min(6, (y - cy) / 18));
+            targetRy = Math.max(-6, Math.min(6, (cx - x) / 18));
+            if (!raf) raf = requestAnimationFrame(animate);
         });
         el.addEventListener('mouseleave', () => {
-            el.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateZ(0)';
+            targetRx = 0; targetRy = 0;
+            if (!raf) raf = requestAnimationFrame(animate);
+            // Reset completo dopo animazione
+            setTimeout(() => {
+                curRx = 0; curRy = 0;
+                el.style.transform = '';
+                if (raf) { cancelAnimationFrame(raf); raf = null; }
+            }, 300);
         });
+        el.style.willChange = 'transform';
     };
-    // Applica a card, row-item, btn, panel
+
+    // Solo card e row-item (non panel/btn che sono grandi o hanno già hover)
+    document.querySelectorAll('.card, .row-item').forEach(applyTilt);
     const obs = new MutationObserver(() => {
-        document.querySelectorAll('.card:not(.tilt), .row-item:not(.tilt), .panel:not(.tilt), .btn:not(.tilt)').forEach(applyTilt);
+        document.querySelectorAll('.card:not([data-tilt-init]), .row-item:not([data-tilt-init])').forEach(applyTilt);
     });
     obs.observe(document.body, { childList: true, subtree: true });
-    document.querySelectorAll('.card, .row-item, .panel, .btn').forEach(applyTilt);
 }
-setTimeout(initTilt, 500);
+setTimeout(initTilt, 600);
 
 // ── Init ────────────────────────────────────────────────────────────────
 fetchOverview();
