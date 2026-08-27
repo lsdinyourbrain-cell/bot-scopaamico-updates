@@ -22,3 +22,5 @@ start.bat
 .AGENT_CHANGES.txt
 
 backup/
+dashboard/.pid
+dashboard/.restart
