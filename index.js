@@ -1767,6 +1767,40 @@ startBot();
                             await new Promise(r=>setTimeout(r, 700));
                         } catch (_) {}
                     }
+                    // ── BACKFILL vecchi lid → telefono ──
+                    try {
+                        const lidToPhone = new Map();
+                        for (const gid of groupIds) {
+                            try {
+                                const meta = await getCachedGroupMeta(sock, gid).catch(()=>null);
+                                if (!meta || !Array.isArray(meta.participants)) continue;
+                                for (const p of meta.participants) {
+                                    const lid = p?.id || p?.jid || '';
+                                    const phone = p?.phoneNumber || '';
+                                    if (lid && phone && lid.endsWith('@lid') && phone.endsWith('@s.whatsapp.net')) {
+                                        lidToPhone.set(lid, phone);
+                                    }
+                                }
+                            } catch (_) {}
+                        }
+                        let backfilled = 0;
+                        for (const gid of Object.keys(db)) {
+                            if (!gid.endsWith('@g.us')) continue;
+                            const chat = db[gid];
+                            if (!chat || typeof chat !== 'object') continue;
+                            for (const [jid, data] of Object.entries(chat)) {
+                                if (!jid.endsWith('@lid') || !data || typeof data !== 'object') continue;
+                                if (data.phoneNumber) continue;
+                                const phone = lidToPhone.get(jid);
+                                if (phone) {
+                                    data.phoneNumber = phone;
+                                    data.lid = jid;
+                                    backfilled++;
+                                }
+                            }
+                        }
+                        if (backfilled) console.log(`[GROUPCACHE] Backfill ${backfilled} utenti lid → telefono`);
+                    } catch (e) { console.error('[GROUPCACHE] Backfill errore:', e.message); }
                     try { fs.writeFileSync(DB_FILE + '.tmp', JSON.stringify(db, null, 2)); fs.renameSync(DB_FILE + '.tmp', DB_FILE); } catch (_) {}
                     console.log('[GROUPCACHE] Dashboard pronta con nomi/foto.');
                 } catch (e) { console.error('[GROUPCACHE]', e.message); }
