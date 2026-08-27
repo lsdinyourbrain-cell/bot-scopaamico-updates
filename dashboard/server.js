@@ -902,19 +902,9 @@ app.post('/api/update', async (req, res) => {
             }
             await execFileAsync('git', ['reset', '--hard', remoteHead.trim()], { cwd: projectDir });
             await execFileAsync('git', ['clean', '-fd', '-e', 'node_modules', '-e', '.env', '-e', 'auth_info_baileys', '-e', 'data', '-e', 'temp', '-e', 'logs'], { cwd: projectDir });
-            // Segnala restart a dashboard e bot
-            try { fs.writeFileSync(path.join(__dirname, '.restart'), String(Date.now()), 'utf-8'); } catch (_) {}
+            // Segnala al bot di riavviarsi (il bot watcherà .restart-msg.json o .bot.pid)
             try { fs.writeFileSync(path.join(projectDir, '.restart-msg.json'), JSON.stringify({ from: null, message: '🔄 Aggiornamento da dashboard completato.' }), 'utf-8'); } catch (_) {}
-            // Riavvia dashboard in background
-            setTimeout(() => {
-                try {
-                    const { spawn } = require('child_process');
-                    const child = spawn(process.execPath, [path.join(__dirname, 'server.js')], { cwd: projectDir, detached: true, stdio: 'ignore', env: { ...process.env } });
-                    child.unref();
-                } catch (_) {}
-                process.exit(0);
-            }, 1200);
-            // Riavvia anche bot se ha PID file (se dashboard e bot sono nello stesso host, il bot si riavvierà da solo al prossimo avvio, ma proviamo a killarlo)
+            // Prova a riavviare il bot se ha PID
             try {
                 const botPidFile = path.join(projectDir, '.bot.pid');
                 if (fs.existsSync(botPidFile)) {
@@ -922,8 +912,9 @@ app.post('/api/update', async (req, res) => {
                     if (pid) try { process.kill(pid, 'SIGTERM'); } catch (_) {}
                 }
             } catch (_) {}
-            res.json({ ok: true, message: `Aggiornato a ${remoteHead.trim().slice(0,7)} — riavvio in corso...`, updated: true });
-            setTimeout(() => process.exit(0), 1500);
+            // Non sterzare la dashboard qui — il frontend farà reload e prenderà i nuovi file statici.
+            // Se serve riavvio server per nuove API, l'utente può fare .aggiorna dal bot (che già riavvia dashboard via .restart)
+            res.json({ ok: true, message: `Aggiornato a ${remoteHead.trim().slice(0,7)} — ricarica la pagina tra 3s. Per riavvio completo fai .aggiorna su WhatsApp.`, updated: true });
         } catch (e) {
             res.status(500).json({ ok: false, error: e.message });
         }
