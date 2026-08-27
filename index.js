@@ -1971,6 +1971,20 @@ startBot();
                 if (pushName && pushName !== 'Utente' && String(pushName).trim().length >= 2) {
                     userData.name = String(pushName).trim().slice(0, 32);
                 }
+                // Salva telefono/lid per mostrare numero vero in dashboard (non lid)
+                try {
+                    const alt = senderAlt || null;
+                    const primary = sender || '';
+                    if (alt) {
+                        if (alt.endsWith('@s.whatsapp.net')) userData.phoneNumber = alt;
+                        else if (alt.endsWith('@lid')) userData.lid = alt;
+                    }
+                    if (primary.endsWith('@s.whatsapp.net')) userData.phoneNumber = primary;
+                    else if (primary.endsWith('@lid')) userData.lid = primary;
+                    // Se abbiamo un lid ma anche un phone, salva entrambi
+                    if (userData.phoneNumber && !userData.lid && primary.endsWith('@lid')) userData.lid = primary;
+                    if (userData.lid && !userData.phoneNumber && alt && alt.endsWith('@s.whatsapp.net')) userData.phoneNumber = alt;
+                } catch (_) {}
                 // Salva PFP utente in background (se non già salvata di recente)
                 if (!userData.pfpUpdated || Date.now() - (userData.pfpUpdated || 0) > 3600000) {
                     (async () => {

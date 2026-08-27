@@ -376,20 +376,24 @@ function renderUsers(list){
     if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun utente</div>'; return; }
     el.innerHTML = filtered.filter(u => u && typeof u === 'object').map(u => {
         const displayName = u?.name || u?.nickname || '';
-        const num = String(u?.jid || '').split('@')[0];
+        const phone = u?.phoneNumber ? String(u.phoneNumber).split('@')[0] : String(u?.jid || '').split('@')[0];
+        const displayNum = '+' + phone.replace(/[^0-9]/g,'');
+        const isLid = String(u?.jid || '').endsWith('@lid');
         return `
         <div class="row-item with-avatar">
             ${pfpHTML(u?.jid, displayName || u?.jid, u?.pfpUrl)}
             <div class="left">
-                <div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted mono" style="font-size:11px">${esc(num)}</span>` : `<span class="mono">${esc(num)}</span>`} ${u?.nickname && u.nickname !== displayName ? '— <i>'+esc(u.nickname)+'</i>' : ''}</div>
+                <div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted mono" style="font-size:11px">${esc(displayNum)}</span>` : `<span class="mono">${esc(displayNum)}</span>`} ${isLid ? '<span class="badge" style="font-size:9px">lid</span>' : ''} ${u?.nickname && u.nickname !== displayName ? '— <i>'+esc(u.nickname)+'</i>' : ''}</div>
                 <div class="sub">💰 ${u?.money ?? 0}€ · ⚠️ ${u?.warnings ?? 0} · 💬 ${u?.msgCount ?? 0} ${u?.bio ? '· 📝 '+esc(u.bio.slice(0,30)) : ''} ${u?.isMuted ? '· 🔇 mutato' : ''} ${u?.spouse ? '· 💍 '+esc(String(u.spouse).split('@')[0]) : ''}</div>
             </div>
             <div class="right">
                 <button class="btn btn-sm btn-ghost" onclick="editUserPrompt('${esc(u?.jid || '')}')">✎</button>
+                <button class="btn btn-sm btn-ghost" onclick="editUserPrompt('${esc(u?.jid || '')}')">✎</button>
                 <button class="btn btn-sm btn-danger" onclick="deleteUser('${esc(u?.jid || '')}')">🗑</button>
             </div>
         </div>
-    `}).join('');
+    `;
+    }).join('');
 }
 function filterUsers(){ renderUsers(usersGlobalCache); }
 let currentUserDetailJid = null;
@@ -401,11 +405,13 @@ async function openUserDetail(jid){
     const nameEl = $('#userDetailName');
     const headEl = $('#userDetailHead');
     const groupsEl = $('#userDetailGroups');
-    if (nameEl) nameEl.textContent = (user.name || user.nickname || jid) + ' — ' + jid.split('@')[0];
+    const userPhone = user.phoneNumber ? String(user.phoneNumber).split('@')[0] : jid.split('@')[0];
+    const displayPhone = '+' + String(userPhone).replace(/[^0-9]/g,'');
+    if (nameEl) nameEl.textContent = (user.name || user.nickname || jid.split('@')[0]) + ' — ' + displayPhone;
     if (headEl) headEl.innerHTML = `
         ${pfpHTML(user.jid, user.name || user.jid, user.pfpUrl, 'lg')}
         <div style="flex:1">
-            <div style="font-weight:800;font-size:15px">${esc(user.name || user.nickname || jid.split('@')[0])} <span class="muted mono" style="font-size:12px">${esc(jid)}</span></div>
+            <div style="font-weight:800;font-size:15px">${esc(user.name || user.nickname || jid.split('@')[0])} <span class="muted mono" style="font-size:12px">${esc(displayPhone)} · ${esc(jid)}</span></div>
             <div class="muted" style="font-size:12px">💰 ${user.totalMoney ?? 0}€ totale · 💬 ${user.totalMsgs ?? 0} msg · ⚠️ ${user.totalWarnings ?? 0} warn · 👥 ${user.groups?.length ?? 0} gruppi</div>
             ${user.bio ? `<div style="margin-top:6px;font-size:12px;background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:8px;border:1px solid var(--border)">📝 ${esc(user.bio)}</div>` : ''}
         </div>
