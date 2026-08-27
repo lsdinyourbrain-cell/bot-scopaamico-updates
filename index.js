@@ -1926,6 +1926,44 @@ startBot();
                 if (pushName && pushName !== 'Utente' && String(pushName).trim().length >= 2) {
                     userData.name = String(pushName).trim().slice(0, 32);
                 }
+                // Salva PFP utente in background (se non già salvata di recente)
+                if (!userData.pfpUpdated || Date.now() - (userData.pfpUpdated || 0) > 3600000) {
+                    (async () => {
+                        try {
+                            const url = await sock.profilePictureUrl(sender, 'image').catch(() => null);
+                            if (url) { userData.pfpUrl = url; userData.pfpUpdated = Date.now(); }
+                        } catch (_) {}
+                    })();
+                }
+
+                // Salva info gruppo (nome + foto) per dashboard — in background, non blocca
+                try {
+                    db._groupInfo = db._groupInfo || {};
+                    const gInfo = db._groupInfo[from] || {};
+                    // Aggiorna solo se manca o è passato un po' (10 min)
+                    if (!gInfo.name || !gInfo.updated || Date.now() - gInfo.updated > 600000) {
+                        (async () => {
+                            try {
+                                const meta = await getCachedGroupMeta(sock, from).catch(() => null);
+                                if (meta) {
+                                    const g = db._groupInfo[from] || {};
+                                    g.name = meta.subject || g.name || from;
+                                    g.desc = (meta.desc || '').slice(0, 200) || g.desc || '';
+                                    g.participantsCount = Array.isArray(meta.participants) ? meta.participants.length : g.participantsCount || 0;
+                                    g.updated = Date.now();
+                                    // PFP gruppo
+                                    try {
+                                        const purl = await sock.profilePictureUrl(from, 'image').catch(() => null);
+                                        if (purl) g.photoUrl = purl;
+                                    } catch (_) {}
+                                    db._groupInfo[from] = g;
+                                    // Salva senza debounce immediato per dashboard
+                                    try { fs.writeFileSync(DB_FILE + '.tmp', JSON.stringify(db, null, 2)); fs.renameSync(DB_FILE + '.tmp', DB_FILE); } catch (_) {}
+                                }
+                            } catch (_) {}
+                        })();
+                    }
+                } catch (_) {}
 
                 // Contatore attività del gruppo per .topgruppi (salvato nel DB
                 // così sopravvive ai riavvii; i gruppi esclusi sono in _escludi).

@@ -223,15 +223,21 @@ app.get('/api/groups', (req, res) => {
             ...Object.keys(antilink),
         ]);
 
+        const groupInfo = db._groupInfo || {};
         const groups = [...groupIds].map(gid => {
             const w = welcome[gid] || { welcome: true, goodbye: true, welcomeText: null, goodbyeText: null };
             const al = antilink[gid] || {};
             const chat = db[gid] || {};
             const userKeys = Object.keys(chat).filter(k => k.includes('@') && chat[k] && typeof chat[k] === 'object');
             const msgs = Object.values(chat).reduce((acc, u) => acc + (Number(u?.msgCount) || 0), 0);
+            const info = groupInfo[gid] || {};
 
             return {
                 jid: gid,
+                name: info.name || gid,
+                photoUrl: info.photoUrl || null,
+                desc: info.desc || null,
+                participantsCount: info.participantsCount || userKeys.length,
                 welcome: w.welcome !== false,
                 goodbye: w.goodbye !== false,
                 welcomeText: w.welcomeText || null,
@@ -285,7 +291,9 @@ app.get('/api/groups/:jid', (req, res) => {
             }))
             .sort((a, b) => ((b?.msgCount) || 0) - ((a?.msgCount) || 0));
 
-        res.json({ ok: true, jid: gid, config: groupCfg, users });
+        const groupInfo = (db._groupInfo && db._groupInfo[gid]) || {};
+
+        res.json({ ok: true, jid: gid, name: groupInfo.name || gid, photoUrl: groupInfo.photoUrl || null, desc: groupInfo.desc || null, config: groupCfg, users });
     } catch (e) {
         res.status(500).json({ ok: false, error: e.message });
     }
@@ -557,7 +565,26 @@ app.get('/api/pfp/:jid', async (req, res) => {
         const cached = pfpCache.get(jid);
         if (cached && Date.now() - cached.ts < PFP_TTL) return res.json({ ok: true, url: cached.url, cached: true });
 
-        // Prova a leggere da auth_info_baileys se il bot ha già scaricato PFP in temp
+        // Prova a trovare PFP reale salvata dal bot in database.json
+        try {
+            const db = safeReadJSON(DB_FILE, {});
+            // Cerca in _groupInfo per gruppi
+            if (jid.endsWith('@g.us') && db._groupInfo && db._groupInfo[jid]?.photoUrl) {
+                const real = db._groupInfo[jid].photoUrl;
+                pfpCache.set(jid, { url: real, ts: Date.now() });
+                return res.json({ ok: true, url: real, real: true });
+            }
+            // Cerca in tutti i gruppi per utenti
+            for (const gid of Object.keys(db)) {
+                if (!gid.endsWith('@g.us')) continue;
+                const u = db[gid] && db[gid][jid];
+                if (u && u.pfpUrl) {
+                    pfpCache.set(jid, { url: u.pfpUrl, ts: Date.now() });
+                    return res.json({ ok: true, url: u.pfpUrl, real: true });
+                }
+            }
+        } catch (_) {}
+
         // Fallback: usa ui-avatars come placeholder realistico
         const initials = jid.split('@')[0].slice(-4).replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'VX';
         let bg = '7c5cff';

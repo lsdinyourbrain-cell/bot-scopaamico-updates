@@ -144,7 +144,10 @@ async function fetchGroups(){
         const sel = $('#userGroupSelect');
         if (sel) {
             const cur = sel.value;
-            sel.innerHTML = '<option value="">— Seleziona gruppo —</option>' + groupsCache.map(g => `<option value="${esc(g.jid)}">${esc(g.jid)} — ${g.users} utenti</option>`).join('');
+            sel.innerHTML = '<option value="">— Seleziona gruppo —</option>' + groupsCache.map(g => {
+                const dName = g.name && g.name !== g.jid ? g.name : g.jid;
+                return `<option value="${esc(g.jid)}">${esc(dName)} — ${g.users} utenti</option>`;
+            }).join('');
             if (cur) sel.value = cur;
         }
     }catch(e){
@@ -152,26 +155,36 @@ async function fetchGroups(){
         toast('Gruppi: '+e.message,'err');
     }
 }
+function pfpHTML(jid, name, photoUrl, size=''){
+    if (photoUrl) {
+        const cls = size ? `avatar ${size}` : 'avatar';
+        const init = initialsFrom(jid, name);
+        return `<div class="${cls}" style="overflow:hidden"><img src="${esc(photoUrl)}" alt="${esc(name||jid)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'"><span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:800;background:${avatarColor(jid||name||'x')}">${esc(init)}</span></div>`;
+    }
+    return avatarHTML(jid, name, size);
+}
 function renderGroups(list){
     const q = ($('#groupSearch')?.value || '').toLowerCase();
-    const filtered = q ? list.filter(g => g.jid.toLowerCase().includes(q)) : list;
+    const filtered = q ? list.filter(g => (g.jid && g.jid.toLowerCase().includes(q)) || (g.name && g.name.toLowerCase().includes(q)) || (g.jid && g.jid.toLowerCase().includes(q))) : list;
     const el = $('#groupsList');
     if (!el) return;
     if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun gruppo trovato</div>'; return; }
-    el.innerHTML = filtered.filter(g => g && typeof g === 'object').map(g => `
+    el.innerHTML = filtered.filter(g => g && typeof g === 'object').map(g => {
+        const displayName = g.name && g.name !== g.jid ? g.name : g.jid;
+        const isName = g.name && g.name !== g.jid;
+        return `
         <div class="row-item with-avatar" onclick="openGroup('${esc(g.jid)}')">
-            ${avatarHTML(g.jid, g.jid, 'sm')}
+            ${pfpHTML(g.jid, g.name || g.jid, g.photoUrl, 'sm')}
             <div class="left">
-                <div class="title mono">${esc(g?.jid || '')}</div>
-                <div class="sub">${g?.users ?? 0} utenti · ${g?.msgs ?? 0} messaggi · ${g?.hasAntilink ? '◆ antilink attivo' : '▫ antilink off'}</div>
+                <div class="title">${esc(displayName)} ${isName ? `<span class="muted mono" style="font-size:11px">· ${esc(g.jid)}</span>` : ''}</div>
+                <div class="sub">${g?.users ?? 0} utenti · ${g?.msgs ?? 0} messaggi · ${g?.participantsCount ? g.participantsCount + ' membri' : ''} ${g?.hasAntilink ? '· ◆ antilink' : ''}</div>
             </div>
             <div class="right">
-                <span class="badge ${g?.welcome ? 'on' : 'off'}">${g?.welcome ? 'welcome on' : 'welcome off'}</span>
-                <span class="badge ${g?.goodbye ? 'on' : 'off'}">${g?.goodbye ? 'goodbye on' : 'goodbye off'}</span>
-                <span class="badge">${g?.users ?? 0} ◇</span>
+                <span class="badge ${g?.welcome ? 'on' : 'off'}">${g?.welcome ? 'on' : 'off'}</span>
+                <span class="badge ${g?.goodbye ? 'on' : 'off'}">${g?.goodbye ? 'on' : 'off'}</span>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 function filterGroups(){ renderGroups(groupsCache); }
 
@@ -184,7 +197,13 @@ async function openGroup(jid){
     switchGroupTab('welcome');
     if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
     try{
-        const { config, users } = await fetchJSON(`/api/groups/${encodeURIComponent(jid)}`);
+        const { config, users, name, photoUrl, desc } = await fetchJSON(`/api/groups/${encodeURIComponent(jid)}`);
+        // Aggiorna header con nome e foto
+        if (jidEl) {
+            const displayName = name && name !== jid ? name : jid;
+            jidEl.innerHTML = `${photoUrl ? `<img src="${esc(photoUrl)}" alt="" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:6px;object-fit:cover" onerror="this.style.display='none'">` : ''}${esc(displayName)} <span class="muted mono" style="font-size:11px">${esc(jid)}</span>`;
+            if (desc) jidEl.title = desc;
+        }
         const wOn = $('#welcomeOn'), gOn = $('#goodbyeOn'), wText = $('#welcomeText'), gText = $('#goodbyeText');
         if (wOn) wOn.checked = !!config.welcome.welcome;
         if (gOn) gOn.checked = !!config.welcome.goodbye;
@@ -207,13 +226,16 @@ async function openGroup(jid){
         if (ulist) {
             const safeUsers = (Array.isArray(users) ? users : []).filter(u => u && typeof u === 'object');
             if (!safeUsers.length) ulist.innerHTML = '<div class="muted">Nessun utente tracciato in questo gruppo</div>';
-            else ulist.innerHTML = safeUsers.slice(0, 30).map(u => `
+            else ulist.innerHTML = safeUsers.slice(0, 30).map(u => {
+                const displayName = u?.name || u?.nickname || '';
+                const num = String(u?.jid || '').split('@')[0];
+                return `
                 <div class="row-item with-avatar">
-                    ${avatarHTML(u?.jid, u?.nickname || u?.jid, 'sm')}
-                    <div class="left"><div class="title mono">${esc(u?.jid || '')} ${u?.nickname ? '— <b>'+esc(u.nickname)+'</b>' : ''}</div><div class="sub">💰 ${u?.money ?? 0}€ · ⚠️ ${u?.warnings ?? 0} · 💬 ${u?.msgCount ?? 0} ${u?.isMuted ? '· 🔇 mutato' : ''}</div></div>
+                    ${pfpHTML(u?.jid, displayName || u?.jid, u?.pfpUrl, 'sm')}
+                    <div class="left"><div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted mono" style="font-size:11px">${esc(num)}</span>` : `<span class="mono">${esc(num)}</span>`} ${u?.nickname && u.nickname !== displayName ? '— <i>'+esc(u.nickname)+'</i>' : ''}</div><div class="sub">💰 ${u?.money ?? 0}€ · ⚠️ ${u?.warnings ?? 0} · 💬 ${u?.msgCount ?? 0} ${u?.isMuted ? '· 🔇 mutato' : ''}</div></div>
                     <div class="right"><span class="badge">${u?.spouse ? '💍 ' + esc(String(u.spouse).split('@')[0]) : 'single'}</span></div>
                 </div>
-            `).join('') + (safeUsers.length > 30 ? `<div class="muted small" style="padding:8px">… e altri ${safeUsers.length - 30} utenti</div>` : '');
+            `}).join('') + (safeUsers.length > 30 ? `<div class="muted small" style="padding:8px">… e altri ${safeUsers.length - 30} utenti</div>` : '');
         }
     }catch(e){ toast('Dettaglio gruppo: '+e.message,'err'); }
 }
@@ -320,15 +342,18 @@ async function loadUsers(){
 }
 function renderUsers(list){
     const q = ($('#userSearch')?.value || '').toLowerCase();
-    const filtered = q ? list.filter(u => u.jid.toLowerCase().includes(q) || String(u.nickname||'').toLowerCase().includes(q) || String(u.bio||'').toLowerCase().includes(q)) : list;
+    const filtered = q ? list.filter(u => (u?.jid && u.jid.toLowerCase().includes(q)) || String(u?.nickname||'').toLowerCase().includes(q) || String(u?.name||'').toLowerCase().includes(q) || String(u?.bio||'').toLowerCase().includes(q)) : list;
     const el = $('#usersList');
     if (!el) return;
     if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:12px">Nessun utente</div>'; return; }
-    el.innerHTML = filtered.filter(u => u && typeof u === 'object').map(u => `
+    el.innerHTML = filtered.filter(u => u && typeof u === 'object').map(u => {
+        const displayName = u?.name || u?.nickname || '';
+        const num = String(u?.jid || '').split('@')[0];
+        return `
         <div class="row-item with-avatar">
-            ${avatarHTML(u?.jid, u?.nickname || u?.jid)}
+            ${pfpHTML(u?.jid, displayName || u?.jid, u?.pfpUrl)}
             <div class="left">
-                <div class="title mono">${esc(u?.jid || '')} ${u?.nickname ? '— <b>'+esc(u.nickname)+'</b>' : ''}</div>
+                <div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted mono" style="font-size:11px">${esc(num)}</span>` : `<span class="mono">${esc(num)}</span>`} ${u?.nickname && u.nickname !== displayName ? '— <i>'+esc(u.nickname)+'</i>' : ''}</div>
                 <div class="sub">💰 ${u?.money ?? 0}€ · ⚠️ ${u?.warnings ?? 0} · 💬 ${u?.msgCount ?? 0} ${u?.bio ? '· 📝 '+esc(u.bio.slice(0,30)) : ''} ${u?.isMuted ? '· 🔇 mutato' : ''} ${u?.spouse ? '· 💍 '+esc(String(u.spouse).split('@')[0]) : ''}</div>
             </div>
             <div class="right">
@@ -336,7 +361,7 @@ function renderUsers(list){
                 <button class="btn btn-sm btn-danger" onclick="deleteUser('${esc(u?.jid || '')}')">🗑</button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 function filterUsers(){
     if (loadUsers._cache) renderUsers(loadUsers._cache);
