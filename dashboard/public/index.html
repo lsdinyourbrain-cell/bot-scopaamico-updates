@@ -155,12 +155,16 @@
         <button class="btn btn-sm btn-ghost" onclick="loadUsersGlobal()">↻</button>
       </div>
       <div id="usersList" class="list"></div>
-      <div id="userDetail" class="panel hidden" style="margin-top:16px">
-        <div class="panel-head">◇ Utente — <span id="userDetailName" class="mono"></span> <button class="btn btn-sm" style="float:right" onclick="closeUserDetail()">✕</button></div>
-        <div class="panel-body">
-          <div id="userDetailHead" style="display:flex;gap:14px;align-items:center;margin-bottom:14px"></div>
-          <div class="hint">Clicca su un gruppo per modificare i dati di quell’utente <b>in quel gruppo</b>:</div>
-          <div id="userDetailGroups" class="list" style="margin-top:10px"></div>
+      <div id="userDetail" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeUserDetail()"></div>
+        <div class="modal-panel tilt" style="width:min(600px,90vw)">
+          <div class="modal-head">◇ Utente — <span id="userDetailName" class="mono"></span> <button class="btn btn-sm btn-ghost" onclick="closeUserDetail()">✕</button></div>
+          <div class="modal-body">
+            <div id="userDetailHead" style="display:flex;gap:14px;align-items:center;margin-bottom:14px"></div>
+            <div class="hint">Seleziona un gruppo per modificare i dati di questo utente <b>in quel gruppo</b>:</div>
+            <div id="userDetailGroups" class="list" style="margin-top:10px;max-height:340px;overflow:auto"></div>
+          </div>
+          <div class="modal-foot"><button class="btn btn-ghost" onclick="closeUserDetail()">Chiudi</button></div>
         </div>
       </div>
     </section>

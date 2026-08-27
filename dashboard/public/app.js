@@ -379,18 +379,17 @@ function renderUsers(list){
         const phone = u?.phoneNumber ? String(u.phoneNumber).split('@')[0] : String(u?.jid || '').split('@')[0];
         const displayNum = '+' + phone.replace(/[^0-9]/g,'');
         const isLid = String(u?.jid || '').endsWith('@lid');
+        const totalMoney = u?.totalMoney ?? u?.money ?? 0;
+        const totalMsgs = u?.totalMsgs ?? u?.msgCount ?? 0;
+        const groupsCount = Array.isArray(u?.groups) ? u.groups.length : 0;
         return `
-        <div class="row-item with-avatar">
+        <div class="row-item with-avatar" onclick="openUserDetail('${esc(u?.jid || '')}')" style="cursor:pointer">
             ${pfpHTML(u?.jid, displayName || u?.jid, u?.pfpUrl)}
             <div class="left">
-                <div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted mono" style="font-size:11px">${esc(displayNum)}</span>` : `<span class="mono">${esc(displayNum)}</span>`} ${isLid ? '<span class="badge" style="font-size:9px">lid</span>' : ''} ${u?.nickname && u.nickname !== displayName ? '— <i>'+esc(u.nickname)+'</i>' : ''}</div>
-                <div class="sub">💰 ${u?.money ?? 0}€ · ⚠️ ${u?.warnings ?? 0} · 💬 ${u?.msgCount ?? 0} ${u?.bio ? '· 📝 '+esc(u.bio.slice(0,30)) : ''} ${u?.isMuted ? '· 🔇 mutato' : ''} ${u?.spouse ? '· 💍 '+esc(String(u.spouse).split('@')[0]) : ''}</div>
+                <div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted mono" style="font-size:11px">${esc(displayNum)}</span>` : `<span class="mono">${esc(displayNum)}</span>`} ${isLid ? '<span class="badge" style="font-size:9px">lid</span>' : ''}</div>
+                <div class="sub">💰 ${totalMoney}€ · 💬 ${totalMsgs} · 👥 ${groupsCount} gruppi ${u?.bio ? '· 📝 '+esc(u.bio.slice(0,24)) : ''}</div>
             </div>
-            <div class="right">
-                <button class="btn btn-sm btn-ghost" onclick="editUserPrompt('${esc(u?.jid || '')}')">✎</button>
-                <button class="btn btn-sm btn-ghost" onclick="editUserPrompt('${esc(u?.jid || '')}')">✎</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteUser('${esc(u?.jid || '')}')">🗑</button>
-            </div>
+            <div class="right"><span class="muted" style="font-size:14px">→</span></div>
         </div>
     `;
     }).join('');
@@ -440,11 +439,7 @@ async function openUserDetail(jid){
             `).join('');
         }
     }
-    if (detail) {
-        detail.classList.remove('hidden');
-        // Scrolla all'inizio del dettaglio, non in fondo a tutto
-        setTimeout(() => detail.scrollIntoView({behavior:'smooth', block:'start'}), 50);
-    }
+    if (detail) detail.classList.remove('hidden');
 }
 function closeUserDetail(){ const d=$('#userDetail'); if(d) d.classList.add('hidden'); currentUserDetailJid=null; }
 
@@ -834,25 +829,28 @@ async function fetchOwners(){
                 });
                 podiumEl.innerHTML = `<div style="display:flex;gap:14px;justify-content:center;align-items:end;flex-wrap:wrap;padding:10px 0">` + sorted.map(o => {
                     const jid = o.jid || o.number || '';
-                    const num = String(o.number || jid).replace(/[^0-9]/g,'');
-                    const phone = '+' + num;
-                    // Nome se disponibile: cerca in _owners o in DB users (non qui), per ora usa jid come fallback ma mostra telefono
+                    const rawNum = String(o.number || jid).replace(/[^0-9]/g,'');
+                    const isLidJid = String(jid).endsWith('@lid') || String(o.jid||'').endsWith('@lid');
+                    const phone = '+' + rawNum;
+                    const displayPhone = rawNum.length >= 7 ? phone : esc(jid);
                     const oNum = String(o.jid||o.number||'').replace(/[^0-9]/g,'');
                     const isMain = mainClean && (oNum.includes(mainClean) || mainClean.includes(oNum));
                     const size = isMain ? 88 : 64;
                     const border = isMain ? '3px solid rgba(255,215,0,0.9)' : '2px solid rgba(255,255,255,0.85)';
                     const shadow = isMain ? '0 6px 20px rgba(255,215,0,0.35), 0 0 0 1px rgba(255,215,0,0.2) inset' : '0 3px 12px rgba(0,0,0,0.3)';
                     const scale = isMain ? 'transform:scale(1.08);' : '';
+                    // Usa phone per PFP se è lid senza pfp, altrimenti jid
+                    const pfpJid = isLidJid && o.number ? String(o.number).replace(/[^0-9]/g,'') + '@s.whatsapp.net' : jid;
                     return `
                     <div onclick="setMainOwner('${esc(String(o.jid||o.number||''))}')" title="${isMain?'★ Owner principale — clicca per cambiare':'Clicca per rendere principale'}" style="text-align:center;cursor:pointer;${scale}transition:.2s">
                         <div style="position:relative;display:inline-block">
                             ${isMain ? '<div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:22px;filter:drop-shadow(0 2px 6px rgba(255,215,0,0.7));line-height:1">👑</div>' : ''}
                             <div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:${border};box-shadow:${shadow};margin:0 auto;background:${avatarColor(jid)};display:grid;place-items:center">
-                                <img src="/api/pfp/${encodeURIComponent(jid)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'">
-                                <span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:900;color:#fff;font-size:${isMain? '22px':'16px'}">${esc(initialsFrom(jid, ''))}</span>
+                                <img src="/api/pfp/${encodeURIComponent(pfpJid)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'">
+                                <span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:900;color:#fff;font-size:${isMain? '22px':'16px'}">${esc(initialsFrom(jid, phone))}</span>
                             </div>
                         </div>
-                        <div style="margin-top:8px;font-weight:800;font-size:${isMain?'13px':'12px'};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(phone)}</div>
+                        <div style="margin-top:8px;font-weight:800;font-size:${isMain?'13px':'12px'};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(displayPhone)}</div>
                         <div class="muted mono" style="font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${esc(jid.length>24? jid.slice(0,24)+'…':jid)}</div>
                         ${isMain ? '<div class="badge on" style="margin:6px auto 0">★ Principale</div>' : '<div class="muted" style="font-size:10px;margin-top:4px">rendi principale</div>'}
                     </div>`;
@@ -867,16 +865,21 @@ async function fetchOwners(){
         else {
             const mainClean = String(main||'').replace(/[^0-9]/g,'');
             el.innerHTML = owners.map((o, i) => {
-                const disp = esc(o.jid || o.number || JSON.stringify(o));
-                const num = esc(String(o.number || o.jid || '').replace(/[^0-9]/g,'').slice(-12));
-                const oNum = String(o.jid||o.number||'').replace(/[^0-9]/g,'');
+                const rawJid = String(o.jid || o.number || '');
+                const rawNum = String(o.number || o.jid || '').replace(/[^0-9]/g,'');
+                const isLid = rawJid.endsWith('@lid');
+                const phone = rawNum.length >= 7 ? '+' + rawNum : rawJid;
+                const displayJid = rawJid;
+                const pfpJid = isLid && o.number ? String(o.number).replace(/[^0-9]/g,'') + '@s.whatsapp.net' : rawJid;
+                const oNum = rawNum;
                 const isMain = mainClean && (oNum.includes(mainClean) || mainClean.includes(oNum));
+                const shortNum = rawNum.slice(-12);
                 return `<div class="row-item with-avatar" style="${isMain?'border-color:rgba(255,215,0,0.4);background:linear-gradient(135deg, rgba(255,215,0,0.10), var(--panel))':''}">
-                    ${avatarHTML(o.jid || o.number, disp)}
-                    <div class="left"><div class="title mono">${disp} ${isMain?'<span class="badge on">★ Principale</span>':''}</div><div class="sub">${num} ${isMain?'· 👑 principale':''}</div></div>
+                    <div class="avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;border:1px solid var(--border);background:${avatarColor(rawJid)};display:grid;place-items:center"><img src="/api/pfp/${encodeURIComponent(pfpJid)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span style="display:none;place-items:center;width:100%;height:100%;font-weight:800;color:#fff">${esc(initialsFrom(rawJid,phone))}</span></div>
+                    <div class="left"><div class="title">${esc(phone)} ${isMain?'<span class="badge on">★ Principale 👑</span>':''}<br><span class="muted mono" style="font-size:10px">${esc(displayJid)}</span></div><div class="sub">${esc(shortNum)} ${isMain?'· 👑 principale':''}</div></div>
                     <div class="right">
-                        ${!isMain ? `<button class="btn btn-sm btn-ghost" onclick="setMainOwner('${esc(String(o.jid||o.number||''))}')">★ Rendi principale</button>` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="removeOwner('${esc(String(o.jid||o.number||''))}')">🗑 Rimuovi</button>
+                        ${!isMain ? `<button class="btn btn-sm btn-ghost" onclick="setMainOwner('${esc(rawJid)}')">★ Rendi principale</button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="removeOwner('${esc(rawJid)}')">🗑 Rimuovi</button>
                     </div>
                 </div>`;
             }).join('');
