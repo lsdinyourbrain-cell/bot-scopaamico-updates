@@ -617,12 +617,21 @@ app.put('/api/users/:gid/:jid', (req, res) => {
         const jid = req.params.jid;
         const patch = req.body || {};
         const db = safeReadJSON(DB_FILE, {});
-        if (!db[gid] || !db[gid][jid]) return res.status(404).json({ ok: false, error: 'Utente non trovato' });
+        if (!db[gid]) db[gid] = {};
+        if (!db[gid][jid]) {
+            db[gid][jid] = { money: 100, warnings: 0, warnLog: [], isMuted: false, msgCount: 0, spouse: null, children: [], parents: [], inventory: [] };
+        }
 
-        const allowed = ['money', 'warnings', 'isMuted', 'msgCount', 'spouse', 'bio', 'nickname'];
+        const allowed = ['money', 'warnings', 'isMuted', 'msgCount', 'spouse', 'bio', 'nickname', 'name', 'pfpUrl', 'phoneNumber', 'lid'];
         for (const k of allowed) {
             if (k in patch) db[gid][jid][k] = patch[k];
         }
+        // Assicura tipi
+        if ('isMuted' in db[gid][jid]) db[gid][jid].isMuted = Boolean(db[gid][jid].isMuted);
+        if ('money' in db[gid][jid]) db[gid][jid].money = Number(db[gid][jid].money) || 0;
+        if ('warnings' in db[gid][jid]) db[gid][jid].warnings = Number(db[gid][jid].warnings) || 0;
+        if ('msgCount' in db[gid][jid]) db[gid][jid].msgCount = Number(db[gid][jid].msgCount) || 0;
+
         if (!safeWriteJSON(DB_FILE, db)) return res.status(500).json({ ok: false, error: 'Scrittura fallita' });
         res.json({ ok: true, user: db[gid][jid] });
     } catch (e) {

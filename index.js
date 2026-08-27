@@ -158,10 +158,55 @@ let _lastGistUpload = 0;
 const GIST_UPLOAD_INTERVAL = 60000; // max 1 volta al minuto
 
 let _dbDirty = false; // true se ci sono modifiche non ancora scritte su disco
+let _lastDBMtime = 0;
+try { _lastDBMtime = fs.existsSync(DB_FILE) ? fs.statSync(DB_FILE).mtimeMs : 0; } catch (_) {}
 
 const writeDBFile = () => {
+    // Prima di sovrascrivere, ricarica eventuali modifiche esterne (dashboard) e fai merge
+    try {
+        if (fs.existsSync(DB_FILE)) {
+            const stat = fs.statSync(DB_FILE);
+            if (stat.mtimeMs !== _lastDBMtime) {
+                const fresh = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+                // Merge superficiale: per ogni gid, se il bot non ha modifiche pending su quel gid, usa il fresh
+                // Per semplicità, se il file è più nuovo e non siamo dirty su quel gid, aggiorna
+                for (const k of Object.keys(fresh)) {
+                    if (!(k in db)) db[k] = fresh[k];
+                    else if (k.startsWith('120') || k.startsWith('269') || k.includes('@')) {
+                        // È un gruppo o utente — merge campi utente se presenti nel fresh
+                        if (typeof fresh[k] === 'object' && typeof db[k] === 'object') {
+                            for (const jid of Object.keys(fresh[k])) {
+                                if (!(jid in db[k]) && fresh[k][jid] && typeof fresh[k][jid] === 'object') {
+                                    db[k][jid] = fresh[k][jid];
+                                } else if (fresh[k][jid] && typeof fresh[k][jid] === 'object' && db[k][jid] && typeof db[k][jid] === 'object') {
+                                    // Aggiorna campi che il bot non ha toccato di recente
+                                    for (const field of Object.keys(fresh[k][jid])) {
+                                        if (!(field in db[k][jid]) || JSON.stringify(db[k][jid][field]) !== JSON.stringify(fresh[k][jid][field])) {
+                                            // Se il campo è diverso, prendi il fresh solo se non è un campo che il bot modifica spesso (msgCount, money)
+                                            if (!['msgCount','money','warnings','warnLog','isMuted'].includes(field) || fresh[k][jid][field] !== db[k][jid][field]) {
+                                                // Per isMuted, money, warnings, prendi sempre il fresh (dashboard ha precedenza)
+                                                if (['isMuted','money','warnings','nickname','bio','spouse','msgCount'].includes(field)) {
+                                                    db[k][jid][field] = fresh[k][jid][field];
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (!(k in db) || JSON.stringify(db[k]) !== JSON.stringify(fresh[k])) {
+                        // Chiavi top-level come _owners, _groupInfo, _mainOwner — prendi fresh se diverso
+                        if (['_owners','_mainOwner','_groupInfo','_groupguard','_antibot','_antinuke'].includes(k)) {
+                            db[k] = fresh[k];
+                        }
+                    }
+                }
+            }
+        }
+    } catch (_) {}
     fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), 'utf-8', (err) => {
         if (err) console.error('[DB] Errore salvataggio:', err.message);
+        else try { _lastDBMtime = fs.statSync(DB_FILE).mtimeMs; } catch (_) {}
     });
 };
 
@@ -178,6 +223,23 @@ const saveDB = () => {
         }
     }, 2000);
 };
+
+// Watch dashboard modifiche a database.json — ricarica se cambia fuori
+try {
+    fs.watchFile(DB_FILE, { interval: 2000 }, (curr, prev) => {
+        if (curr.mtimeMs === prev.mtimeMs || curr.mtimeMs === _lastDBMtime) return;
+        _lastDBMtime = curr.mtimeMs;
+        if (_dbDirty) {
+            console.log('[DB] File cambiato esternamente ma ho modifiche pending, rimando reload');
+            return;
+        }
+        try {
+            const fresh = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+            db = fresh;
+            console.log('[DB] Ricaricato da dashboard/file esterno');
+        } catch (e) { console.error('[DB] Reload fallito:', e.message); }
+    });
+} catch (_) {}
 
 const getUser = (jid, chatId) => {
     if (!db[chatId]) db[chatId] = {};
