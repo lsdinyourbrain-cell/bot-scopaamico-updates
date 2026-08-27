@@ -1727,6 +1727,44 @@ startBot();
             reconnectAttempts = 0;
             console.log('[BOT] Connesso e operativo.');
 
+            // ── POPOLA CACHE GRUPPI PER DASHBOARD (senza bisogno di messaggi) ──
+            (async () => {
+                try {
+                    await new Promise(r => setTimeout(r, 4000));
+                    let groupIds = [];
+                    try {
+                        const all = await sock.groupFetchAllParticipating();
+                        groupIds = Object.keys(all || {});
+                    } catch (_) {
+                        const w = (() => { try { return JSON.parse(fs.readFileSync(WELCOME_FILE,'utf-8')); } catch { return {}; } })();
+                        const a = (() => { try { return JSON.parse(fs.readFileSync(ANTILINK_FILE,'utf-8')); } catch { return {}; } })();
+                        groupIds = [...new Set([...Object.keys(db).filter(k=>k.endsWith('@g.us')), ...Object.keys(w), ...Object.keys(a)])];
+                    }
+                    if (!groupIds.length) return;
+                    console.log(`[GROUPCACHE] Aggiorno ${groupIds.length} gruppi per dashboard...`);
+                    for (const gid of groupIds) {
+                        try {
+                            const meta = await getCachedGroupMeta(sock, gid).catch(()=>null);
+                            if (!meta) continue;
+                            db._groupInfo = db._groupInfo || {};
+                            const g = db._groupInfo[gid] || {};
+                            g.name = meta.subject || g.name || gid;
+                            g.desc = String(meta.desc||'').slice(0,200) || g.desc || '';
+                            g.participantsCount = Array.isArray(meta.participants) ? meta.participants.length : g.participantsCount || 0;
+                            g.updated = Date.now();
+                            try {
+                                const purl = await sock.profilePictureUrl(gid, 'image').catch(()=>null);
+                                if (purl) g.photoUrl = purl;
+                            } catch (_) {}
+                            db._groupInfo[gid] = g;
+                            await new Promise(r=>setTimeout(r, 700));
+                        } catch (_) {}
+                    }
+                    try { fs.writeFileSync(DB_FILE + '.tmp', JSON.stringify(db, null, 2)); fs.renameSync(DB_FILE + '.tmp', DB_FILE); } catch (_) {}
+                    console.log('[GROUPCACHE] Dashboard pronta con nomi/foto.');
+                } catch (e) { console.error('[GROUPCACHE]', e.message); }
+            })();
+
             // ── ARCHIVIO SILENZIOSO: salva contatti/chat, senza inviare nulla ─
             if (ARCHIVE_ENABLED) {
                 if (!archiver) {
