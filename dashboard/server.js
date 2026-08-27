@@ -161,8 +161,37 @@ app.get('/api/owners', (req, res) => {
     try {
         const db = safeReadJSON(DB_FILE, {});
         const owners = Array.isArray(db._owners) ? db._owners : [];
-        // Anche config hardcode? Mostra entrambi
-        res.json({ ok: true, owners });
+        const mainJid = db._mainOwner || (owners[0] ? (owners[0].jid || owners[0].number) : null);
+        res.json({ ok: true, owners, main: mainJid });
+    } catch (e) {
+        res.status(500).json({ ok: false, error: e.message });
+    }
+});
+
+app.put('/api/owners/main', (req, res) => {
+    try {
+        const { jid, number } = req.body || {};
+        const target = String(jid || number || '').trim();
+        if (!target) return res.status(400).json({ ok: false, error: 'jid/number mancante' });
+        const clean = target.replace(/[^0-9]/g, '');
+        if (clean.length < 5) return res.status(400).json({ ok: false, error: 'Numero troppo corto' });
+
+        const db = safeReadJSON(DB_FILE, {});
+        db._owners = Array.isArray(db._owners) ? db._owners : [];
+        // Verifica che sia già owner, altrimenti aggiungilo
+        let found = db._owners.find(o => String(o.jid||o.number||'').replace(/[^0-9]/g,'').includes(clean));
+        let jidFull;
+        if (found) {
+            jidFull = found.jid || found.number;
+        } else {
+            jidFull = clean.includes('@') ? target : `${clean}@s.whatsapp.net`;
+            db._owners.push({ jid: jidFull, number: clean });
+        }
+        db._mainOwner = jidFull;
+        // Sposta il main in testa alla lista per priorità
+        db._owners = [found || { jid: jidFull, number: clean }, ...db._owners.filter(o => String(o.jid||o.number||'').replace(/[^0-9]/g,'') !== clean)];
+        if (!safeWriteJSON(DB_FILE, db)) return res.status(500).json({ ok: false, error: 'Scrittura fallita' });
+        res.json({ ok: true, owners: db._owners, main: jidFull });
     } catch (e) {
         res.status(500).json({ ok: false, error: e.message });
     }
@@ -801,6 +830,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// ── PID e watcher per restart da .aggiorna ─────────────────────────────
+const PID_FILE = path.join(__dirname, '.pid');
+const RESTART_FILE = path.join(__dirname, '.restart');
+try { fs.writeFileSync(PID_FILE, String(process.pid), 'utf-8'); } catch (_) {}
+const cleanPid = () => { try { fs.unlinkSync(PID_FILE); } catch (_) {} };
+process.on('exit', cleanPid);
+process.on('SIGINT', () => { cleanPid(); process.exit(0); });
+process.on('SIGTERM', () => { cleanPid(); process.exit(0); });
+try {
+    if (fs.existsSync(RESTART_FILE)) fs.unlinkSync(RESTART_FILE);
+    fs.watch(__dirname, (event, filename) => {
+        if (filename === '.restart') {
+            console.log('[DASH] Segnale .aggiorna ricevuto — riavvio...');
+            cleanPid();
+            setTimeout(() => process.exit(0), 800);
+        }
+    });
+} catch (_) {}
 
 // ── Start ───────────────────────────────────────────────────────────────
 const tryListen = (port) => {

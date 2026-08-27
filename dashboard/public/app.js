@@ -770,23 +770,79 @@ async function fetchOwners(){
     const listEl = $('#ownersList');
     if (listEl) listEl.innerHTML = '<div class="muted">Caricamento...</div>';
     try{
-        const { owners } = await fetchJSON('/api/owners');
+        const { owners, main } = await fetchJSON('/api/owners');
+        // Podio
+        const podiumEl = $('#podium');
+        if (podiumEl) {
+            if (!owners || !owners.length) {
+                podiumEl.innerHTML = '<div class="muted" style="grid-column:1/-1;text-align:center;padding:12px">Nessun owner — aggiungine uno per salire sul podio</div>';
+            } else {
+                const sorted = [...owners];
+                // Metti il main in testa se presente
+                if (main) {
+                    const idx = sorted.findIndex(o => String(o.jid||o.number||'').replace(/[^0-9]/g,'').includes(String(main).replace(/[^0-9]/g,'')) || String(main).replace(/[^0-9]/g,'').includes(String(o.jid||o.number||'').replace(/[^0-9]/g,'')));
+                    if (idx > 0) { const m = sorted.splice(idx,1)[0]; sorted.unshift(m); }
+                }
+                const top3 = sorted.slice(0,3);
+                // Ordine podio: 2nd, 1st, 3rd
+                const order = [1,0,2].map(i => top3[i]).filter(Boolean);
+                const ranks = ['🥈','🥇','🥉'];
+                const classes = ['second','first','third'];
+                const rankClasses = ['silver','gold','bronze'];
+                podiumEl.innerHTML = order.map((o, idx) => {
+                    if (!o) return '<div></div>';
+                    const realIdx = [1,0,2][idx];
+                    const disp = o.jid || o.number || '';
+                    const num = String(o.number || o.jid || '').replace(/[^0-9]/g,'').slice(-12);
+                    const isMain = realIdx === 0;
+                    return `
+                    <div class="podium-step ${classes[idx]}" onclick="setMainOwner('${esc(String(o.jid||o.number||''))}')" title="Clicca per rendere principale">
+                        <div class="podium-rank ${rankClasses[idx]}">${ranks[idx].replace(/./g,'')}</div>
+                        ${isMain ? '<div class="podium-crown">👑</div>' : ''}
+                        <div style="margin:8px auto;width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.9);box-shadow:0 3px 10px rgba(0,0,0,0.3)">${avatarHTML(o.jid||o.number, disp, 'lg').replace('avatar','avatar').replace('width:36','width:52').replace('height:36','height:52')}</div>
+                        <div class="podium-name mono" style="font-size:11px;margin-top:6px">${esc(disp.length>22?disp.slice(0,22)+'…':disp)}</div>
+                        <div class="podium-num">${esc(num)}</div>
+                        ${isMain ? '<div class="badge on" style="margin:6px auto 0;font-size:10px">★ Principale</div>' : '<div class="muted" style="font-size:10px;margin-top:4px">clicca per promuovere</div>'}
+                        <div class="podium-height ${rankClasses[idx]}"></div>
+                        <div class="muted" style="font-size:10px;margin-top:4px">${realIdx===0?'1°':realIdx===1?'2°':'3°'}</div>
+                    </div>`;
+                }).join('');
+                if (top3.length === 1) podiumEl.style.gridTemplateColumns = '1fr';
+                else if (top3.length === 2) podiumEl.style.gridTemplateColumns = '1fr 1fr';
+                else podiumEl.style.gridTemplateColumns = '1fr 1.2fr 1fr';
+            }
+        }
         const el = $('#ownersList');
         if (!el) return;
         if (!owners || !owners.length) el.innerHTML = '<div class="muted">Nessun owner — aggiungine uno</div>';
-        else el.innerHTML = owners.map((o, i) => {
-            const disp = esc(o.jid || o.number || JSON.stringify(o));
-            const num = esc(String(o.number || o.jid || '').replace(/[^0-9]/g,'').slice(-12));
-            return `<div class="row-item with-avatar">
-                ${avatarHTML(o.jid || o.number, disp)}
-                <div class="left"><div class="title mono">${disp}</div><div class="sub">${num}</div></div>
-                <div class="right"><button class="btn btn-sm btn-danger" onclick="removeOwner('${esc(String(o.jid||o.number||''))}')">🗑 Rimuovi</button></div>
-            </div>`;
-        }).join('');
+        else {
+            const mainClean = String(main||'').replace(/[^0-9]/g,'');
+            el.innerHTML = owners.map((o, i) => {
+                const disp = esc(o.jid || o.number || JSON.stringify(o));
+                const num = esc(String(o.number || o.jid || '').replace(/[^0-9]/g,'').slice(-12));
+                const oNum = String(o.jid||o.number||'').replace(/[^0-9]/g,'');
+                const isMain = mainClean && (oNum.includes(mainClean) || mainClean.includes(oNum));
+                return `<div class="row-item with-avatar" style="${isMain?'border-color:rgba(255,215,0,0.4);background:linear-gradient(135deg, rgba(255,215,0,0.10), var(--panel))':''}">
+                    ${avatarHTML(o.jid || o.number, disp)}
+                    <div class="left"><div class="title mono">${disp} ${isMain?'<span class="badge on">★ Principale</span>':''}</div><div class="sub">${num} ${isMain?'· 👑 principale':''}</div></div>
+                    <div class="right">
+                        ${!isMain ? `<button class="btn btn-sm btn-ghost" onclick="setMainOwner('${esc(String(o.jid||o.number||''))}')">★ Rendi principale</button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="removeOwner('${esc(String(o.jid||o.number||''))}')">🗑 Rimuovi</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
     }catch(e){
         const el=$('#ownersList'); if(el) el.innerHTML = `<div class="muted">Errore: ${esc(e.message)}</div>`;
         toast(e.message,'err');
     }
+}
+async function setMainOwner(jid){
+    try{
+        await fetchJSON('/api/owners/main', { method:'PUT', body: JSON.stringify({ jid }) });
+        toast('Owner principale impostato ★');
+        fetchOwners();
+    }catch(e){ toast(e.message,'err'); }
 }
 async function addOwner(){
     const input = $('#newOwnerInput');
@@ -910,27 +966,35 @@ function loadTheme(){
 // Carica tema salvato all'avvio
 setTimeout(loadTheme, 100);
 
-// ── Tilt 3D su hover — leggero, fluido, non buggato ────────────────────
+// ── Tilt 3D + glare — fluido, spring, non buggato ─────────────────────
 function initTilt(){
-    if (window.matchMedia('(hover: none)').matches) return; // no tilt su touch
+    if (window.matchMedia('(hover: none)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const applyTilt = (el) => {
         if (el.dataset.tiltInit) return;
         el.dataset.tiltInit = '1';
         el.classList.add('tilt');
+        el.style.position = 'relative';
+        el.style.overflow = 'hidden';
+        // Crea glare se non c'è
+        let glare = el.querySelector('.tilt-glare');
+        if (!glare) {
+            glare = document.createElement('div');
+            glare.className = 'tilt-glare';
+            glare.style.cssText = 'position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .2s;background:radial-gradient(400px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.10), transparent 40%);';
+            el.appendChild(glare);
+        }
         let raf = null;
         let targetRx = 0, targetRy = 0, curRx = 0, curRy = 0;
 
         const animate = () => {
-            curRx += (targetRx - curRx) * 0.12;
-            curRy += (targetRy - curRy) * 0.12;
-            if (Math.abs(targetRx - curRx) < 0.05 && Math.abs(targetRy - curRy) < 0.05) {
-                curRx = targetRx; curRy = targetRy;
-            } else {
-                raf = requestAnimationFrame(animate);
-            }
-            el.style.transform = `perspective(900px) rotateX(${curRx}deg) rotateY(${curRy}deg)`;
+            curRx += (targetRx - curRx) * 0.08;
+            curRy += (targetRy - curRy) * 0.08;
+            const still = Math.abs(targetRx - curRx) < 0.02 && Math.abs(targetRy - curRy) < 0.02;
+            if (!still) raf = requestAnimationFrame(animate);
+            else { curRx = targetRx; curRy = targetRy; raf = null; }
+            el.style.transform = `perspective(1000px) rotateX(${curRx}deg) rotateY(${curRy}deg) scale3d(1.01,1.01,1.01)`;
         };
 
         el.addEventListener('mousemove', (e) => {
@@ -939,13 +1003,17 @@ function initTilt(){
             const y = e.clientY - rect.top;
             const cx = rect.width / 2;
             const cy = rect.height / 2;
-            // Molto più leggero: max ~6°
-            targetRx = Math.max(-6, Math.min(6, (y - cy) / 18));
-            targetRy = Math.max(-6, Math.min(6, (cx - x) / 18));
+            // Max 7°, più morbido
+            targetRx = Math.max(-7, Math.min(7, (y - cy) / 22));
+            targetRy = Math.max(-7, Math.min(7, (cx - x) / 22));
+            glare.style.setProperty('--mx', (x / rect.width * 100) + '%');
+            glare.style.setProperty('--my', (y / rect.height * 100) + '%');
+            glare.style.opacity = '1';
             if (!raf) raf = requestAnimationFrame(animate);
         });
         el.addEventListener('mouseleave', () => {
             targetRx = 0; targetRy = 0;
+            glare.style.opacity = '0';
             if (!raf) raf = requestAnimationFrame(animate);
             // Reset completo dopo animazione
             setTimeout(() => {

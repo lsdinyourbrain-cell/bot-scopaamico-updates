@@ -179,7 +179,40 @@ module.exports = {
             );
         } catch (_) {}
 
-        await reply('✅ *Aggiornamento applicato.*\n▸ Riavvio in corso... torno operativo tra qualche secondo. 🔄');
+        // 10b) Riavvia anche la dashboard se è in esecuzione
+        try {
+            const dashDir = path.join(projectDir, 'dashboard');
+            const dashRestart = path.join(dashDir, '.restart');
+            const dashPidFile = path.join(dashDir, '.pid');
+            // Segnala restart via file (la dashboard lo watcherà e uscirà)
+            try { fs.writeFileSync(dashRestart, String(Date.now()), 'utf-8'); } catch (_) {}
+            // Prova a terminare il vecchio processo dashboard
+            try {
+                if (fs.existsSync(dashPidFile)) {
+                    const pid = Number(String(fs.readFileSync(dashPidFile, 'utf-8')).trim());
+                    if (pid && pid !== process.pid) {
+                        try { process.kill(pid, 'SIGTERM'); } catch (_) {}
+                        console.log(`[aggiorna] Dashboard PID ${pid} terminato`);
+                    }
+                }
+            } catch (_) {}
+            // Riavvia dashboard in background (detached) dopo un attimo
+            setTimeout(() => {
+                try {
+                    const { spawn } = require('child_process');
+                    const child = spawn(process.execPath, [path.join(dashDir, 'server.js')], {
+                        cwd: projectDir,
+                        detached: true,
+                        stdio: 'ignore',
+                        env: { ...process.env },
+                    });
+                    child.unref();
+                    console.log('[aggiorna] Dashboard riavviata in background');
+                } catch (e) { console.error('[aggiorna] Dashboard restart fallito:', e.message); }
+            }, 1200);
+        } catch (e) { console.error('[aggiorna] Dashboard restart errore:', e.message); }
+
+        await reply('✅ *Aggiornamento applicato.*\n▸ Riavvio bot + dashboard in corso... torno operativo tra qualche secondo. 🔄');
         setTimeout(() => process.exit(0), 1500);
     },
 };

@@ -226,15 +226,16 @@
 
     <!-- OWNERS -->
     <section id="page-owners" class="page">
-      <div class="panel">
-        <div class="panel-head">★ Owner del Bot</div>
+      <div class="panel" style="overflow:visible">
+        <div class="panel-head">★ Podio Owner — <span class="muted" style="font-weight:400">clicca su un owner per impostarlo come principale</span></div>
         <div class="panel-body">
-          <div id="ownersList" class="list"></div>
-          <div class="row gap" style="margin-top:12px">
+          <div id="podium" class="podium"></div>
+          <div id="ownersList" class="list" style="margin-top:16px"></div>
+          <div class="row gap" style="margin-top:14px">
             <input id="newOwnerInput" class="input" placeholder="Numero con prefisso es. 393331122333" style="flex:1">
             <button class="btn" onclick="addOwner()">＋ Aggiungi owner</button>
           </div>
-          <div class="hint">Numeri salvati in <code>database.json → _owners</code>. Serve riavvio bot per alcuni permessi.</div>
+          <div class="hint">Principale salvato in <code>database.json → _mainOwner</code> e spostato in testa a <code>_owners</code>. Clicca un owner per farlo salire sul podio.</div>
         </div>
       </div>
     </section>
