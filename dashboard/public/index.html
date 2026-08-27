@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vex Bot — Dashboard Locale</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">✦</div>
+      <div>
+        <div class="brand-title">VEX BOT</div>
+        <div class="brand-sub">Dashboard Locale</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active" data-page="overview">✦ Overview</button>
+      <button class="nav-btn" data-page="groups">◆ Gruppi</button>
+      <button class="nav-btn" data-page="users">◇ Utenti</button>
+      <button class="nav-btn" data-page="phrases">✧ Frasi</button>
+      <button class="nav-btn" data-page="owners">★ Owner</button>
+      <button class="nav-btn" data-page="config">⬥ Config</button>
+      <button class="nav-btn" data-page="logs">▸ Logs</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="foot-line">✦ ◆ ✦</div>
+      <div class="foot-text">Solo localhost<br><span>127.0.0.1:3001</span></div>
+      <div class="foot-ver">Vex Bot v1.0</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 id="pageTitle">Overview</h1>
+        <p id="pageSub">Stato del bot e sistema</p>
+      </div>
+      <div class="topbar-right">
+        <span id="liveDot" class="live-dot" title="API online"></span>
+        <span id="topTime"></span>
+        <button id="refreshBtn" class="btn btn-ghost">↻ Aggiorna</button>
+      </div>
+    </header>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- OVERVIEW -->
+    <section id="page-overview" class="page active">
+      <div class="cards">
+        <div class="card"><div class="card-icon">◆</div><div><div class="card-val" id="statGroups">—</div><div class="card-label">Gruppi</div></div></div>
+        <div class="card"><div class="card-icon">◇</div><div><div class="card-val" id="statUsers">—</div><div class="card-label">Utenti tracciati</div></div></div>
+        <div class="card"><div class="card-icon">✧</div><div><div class="card-val" id="statPhrases">—</div><div class="card-label">File frasi</div></div></div>
+        <div class="card"><div class="card-icon">★</div><div><div class="card-val" id="statOwners">—</div><div class="card-label">Owner</div></div></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-head">✦ Bot</div>
+          <div id="botInfo" class="panel-body mono small"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">◆ Sistema</div>
+          <div id="sysInfo" class="panel-body mono small"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">⬥ Azioni rapide</div>
+        <div class="panel-body row gap">
+          <button class="btn" onclick="navigate('groups')">◆ Gestisci Gruppi</button>
+          <button class="btn" onclick="navigate('phrases')">✧ Modifica Frasi</button>
+          <button class="btn btn-ghost" onclick="fetchOverview()">↻ Ricarica</button>
+          <a class="btn btn-ghost" href="/api/db" target="_blank">⬥ Vedi DB raw</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- GROUPS -->
+    <section id="page-groups" class="page">
+      <div class="toolbar">
+        <input id="groupSearch" class="input" placeholder="✦ Cerca JID o nome..." oninput="filterGroups()">
+        <span id="groupCount" class="muted"></span>
+      </div>
+      <div id="groupsList" class="list"></div>
+
+      <div id="groupDetail" class="panel hidden" style="margin-top:16px">
+        <div class="panel-head">◆ Dettaglio Gruppo — <span id="detailJid" class="mono"></span> <button class="btn btn-sm btn-danger" style="float:right" onclick="deleteGroup()">🗑 Elimina gruppo</button></div>
+        <div class="panel-body">
+          <div class="tabs">
+            <button class="tab active" data-tab="welcome" onclick="switchGroupTab('welcome')">Welcome/Goodbye</button>
+            <button class="tab" data-tab="antilink" onclick="switchGroupTab('antilink')">Antilink</button>
+            <button class="tab" data-tab="settings" onclick="switchGroupTab('settings')">Impostazioni</button>
+            <button class="tab" data-tab="users" onclick="switchGroupTab('users')">Utenti</button>
+          </div>
+
+          <div id="tab-welcome" class="tab-pane active">
+            <div class="form-grid">
+              <label class="check"><input type="checkbox" id="welcomeOn"> Welcome attivo</label>
+              <label class="check"><input type="checkbox" id="goodbyeOn"> Goodbye attivo</label>
+            </div>
+            <label class="label">Welcome custom — usa @user @group @desc (vuoto = default)</label>
+            <textarea id="welcomeText" class="input textarea" rows="3" placeholder="Ciao @user benvenuto in @group!"></textarea>
+            <label class="label">Goodbye custom</label>
+            <textarea id="goodbyeText" class="input textarea" rows="3" placeholder="Ciao @user ci mancherai in @group!"></textarea>
+            <div class="row gap" style="margin-top:10px">
+              <button class="btn" onclick="saveWelcome()">✦ Salva Welcome/Goodbye</button>
+              <button class="btn btn-ghost" onclick="resetWelcome()">↻ Reset a default</button>
+            </div>
+            <div class="hint">Placeholder: <code>@user</code> nuovo membro, <code>@group</code> nome, <code>@desc</code> descrizione, <code>@users</code> lista</div>
+          </div>
+
+          <div id="tab-antilink" class="tab-pane">
+            <div class="form-grid antilink-grid" id="antilinkGrid"></div>
+            <label class="label" style="margin-top:12px">Whitelist (numeri, uno per riga)</label>
+            <textarea id="antilinkWl" class="input textarea" rows="3" placeholder="393331122333&#10;393445566777"></textarea>
+            <div class="row gap" style="margin-top:10px">
+              <button class="btn" onclick="saveAntilink()">◆ Salva Antilink</button>
+              <button class="btn btn-ghost" onclick="toggleAllAntilink(true)">Attiva tutti</button>
+              <button class="btn btn-ghost" onclick="toggleAllAntilink(false)">Disattiva tutti</button>
+            </div>
+          </div>
+
+          <div id="tab-settings" class="tab-pane">
+            <div class="form-grid">
+              <label class="check"><input type="checkbox" id="linkOpen"> .link aperto a tutti</label>
+              <label class="check"><input type="checkbox" id="modoadmin"> Solo admin può scrivere (modoadmin)</label>
+              <label class="check"><input type="checkbox" id="antiflood"> Antiflood attivo</label>
+            </div>
+            <button class="btn" onclick="saveGroupSettings()" style="margin-top:10px">⬥ Salva impostazioni</button>
+          </div>
+
+          <div id="tab-users" class="tab-pane">
+            <div id="groupUsersList" class="list small"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USERS -->
+    <section id="page-users" class="page">
+      <div class="toolbar">
+        <select id="userGroupSelect" class="input" onchange="loadUsers()"><option value="">— Seleziona gruppo —</option></select>
+        <input id="userSearch" class="input" placeholder="◇ Cerca JID..." oninput="filterUsers()">
+        <span id="userCount" class="muted"></span>
+      </div>
+      <div id="usersList" class="list"></div>
+    </section>
+
+    <!-- PHRASES -->
+    <section id="page-phrases" class="page">
+      <div class="toolbar">
+        <input id="phraseSearch" class="input" placeholder="✧ Cerca file..." oninput="filterPhrases()">
+        <span id="phraseCount" class="muted"></span>
+        <button class="btn btn-sm" onclick="createPhraseFile()">＋ Nuovo file</button>
+      </div>
+      <div id="phrasesList" class="list"></div>
+
+      <div id="phraseEditor" class="panel hidden" style="margin-top:16px">
+        <div class="panel-head">✧ Editor — <span id="phraseKey" class="mono"></span> <span id="phraseCount2" class="muted"></span> <button class="btn btn-sm" style="float:right" onclick="closePhraseEditor()">✕</button></div>
+        <div class="panel-body">
+          <div id="phraseLines" class="phrase-lines"></div>
+          <div class="row gap" style="margin-top:10px">
+            <input id="newPhraseInput" class="input" placeholder="Nuova frase..." style="flex:1" onkeydown="if(event.key==='Enter') addPhraseLine()">
+            <button class="btn" onclick="addPhraseLine()">＋ Aggiungi</button>
+          </div>
+          <div class="row gap" style="margin-top:10px">
+            <button class="btn" onclick="savePhrases()">✦ Salva file</button>
+            <button class="btn btn-ghost" onclick="reloadPhrases()">↻ Ricarica</button>
+          </div>
+          <div class="hint">Una frase per riga. Righe vuote e che iniziano con <code>#</code> sono ignorate. Max 400 caratteri per frase.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OWNERS -->
+    <section id="page-owners" class="page">
+      <div class="panel">
+        <div class="panel-head">★ Owner del Bot</div>
+        <div class="panel-body">
+          <div id="ownersList" class="list"></div>
+          <div class="row gap" style="margin-top:12px">
+            <input id="newOwnerInput" class="input" placeholder="Numero con prefisso es. 393331122333" style="flex:1">
+            <button class="btn" onclick="addOwner()">＋ Aggiungi owner</button>
+          </div>
+          <div class="hint">Numeri salvati in <code>database.json → _owners</code>. Serve riavvio bot per alcuni permessi.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIG -->
+    <section id="page-config" class="page">
+      <div class="panel">
+        <div class="panel-head">⬥ Config — <span class="mono">config.js</span></div>
+        <div class="panel-body">
+          <div id="configView" class="mono small" style="white-space:pre-wrap;max-height:400px;overflow:auto;background:#0f0f12;padding:12px;border-radius:8px;border:1px solid #222"></div>
+          <div class="row gap" style="margin-top:10px">
+            <button class="btn btn-ghost" onclick="loadConfig()">↻ Ricarica</button>
+            <span class="muted small">Modifica manuale: apri <code>config.js</code> nell’editor</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">⬥ Database raw — anteprima</div>
+        <div class="panel-body">
+          <div class="row gap">
+            <a class="btn btn-ghost" href="/api/db" target="_blank">Apri /api/db</a>
+            <a class="btn btn-ghost" href="/api/groups" target="_blank">/api/groups</a>
+            <a class="btn btn-ghost" href="/api/phrases" target="_blank">/api/phrases</a>
+            <a class="btn btn-ghost" href="/api/logs?lines=500" target="_blank">/api/logs</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGS -->
+    <section id="page-logs" class="page">
+      <div class="toolbar">
+        <button class="btn btn-sm" onclick="loadLogs()">↻ Ricarica</button>
+        <select id="logLines" class="input" style="width:120px" onchange="loadLogs()">
+          <option value="100">100 righe</option><option value="200" selected>200 righe</option><option value="500">500 righe</option><option value="1000">1000 righe</option>
+        </select>
+        <span id="logInfo" class="muted"></span>
+      </div>
+      <pre id="logsView" class="logs"></pre>
+    </section>
+
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
