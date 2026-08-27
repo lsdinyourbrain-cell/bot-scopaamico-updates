@@ -1585,6 +1585,10 @@ const MAX_RECONNECT_ATTEMPTS = 10;
 
 async function startBot() {
     console.log('[BOT] Avvio in corso...');
+    try { fs.writeFileSync(path.join(__dirname, '.bot.pid'), String(process.pid), 'utf-8'); } catch (_) {}
+    process.on('exit', () => { try { fs.unlinkSync(path.join(__dirname, '.bot.pid')); } catch (_) {} });
+    process.on('SIGINT', () => { try { fs.unlinkSync(path.join(__dirname, '.bot.pid')); } catch (_) {}; process.exit(0); });
+    process.on('SIGTERM', () => { try { fs.unlinkSync(path.join(__dirname, '.bot.pid')); } catch (_) {}; process.exit(0); });
 
     const AUTH_DIR_PATH = path.join(__dirname, 'auth_info_baileys');
     const AUTH_INVALIDATED_FLAG = path.join(__dirname, '.auth_invalidated');

@@ -11,6 +11,7 @@
   --accent:#7c5cff;
   --accent2:#ff4ecd;
   --accent-rgb:124,92,255;
+  --accent2-rgb:255,78,205;
   --green:#22c55e;
   --yellow:#eab308;
   --red:#ef4444;
@@ -82,7 +83,7 @@ a{color:var(--accent);text-decoration:none}
 }
 .nav-btn:hover{background:rgba(255,255,255,0.06);color:var(--text);border-color:var(--border);transform:translateX(2px)}
 .nav-btn.active{
-  background:linear-gradient(135deg,rgba(var(--accent-rgb),0.18),rgba(255,78,205,0.14));
+  background:linear-gradient(135deg,rgba(var(--accent-rgb),0.18),rgba(var(--accent2-rgb),0.14));
   color:#fff;border-color:rgba(var(--accent-rgb),0.3);
   box-shadow:0 2px 12px rgba(var(--accent-rgb),0.2), 0 0 0 1px rgba(255,255,255,0.05) inset;
 }
@@ -391,6 +392,48 @@ a{color:var(--accent);text-decoration:none}
   position:sticky;bottom:0;background:rgba(26,26,36,0.7);backdrop-filter:blur(12px);
   border-radius:0 0 16px 16px;
 }
+
+/* Liquid Glass — Apple pure (attivabile da Tema) */
+body.liquid-glass{
+  background: radial-gradient(ellipse at 15% 15%, #6d28d9 0%, transparent 40%),
+              radial-gradient(ellipse at 85% 10%, #ff4ecd 0%, transparent 40%),
+              radial-gradient(ellipse at 50% 90%, #ff8a00 0%, transparent 45%),
+              radial-gradient(ellipse at 80% 80%, #7c5cff 0%, transparent 35%),
+              linear-gradient(135deg, #4c1d95 0%, #7c3aed 25%, #ec4899 50%, #f59e0b 75%, #7c5cff 100%);
+  background-size: 200% 200%;
+  animation: liquidGradient 18s ease infinite;
+}
+@keyframes liquidGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+body.liquid-glass .panel,
+body.liquid-glass .card,
+body.liquid-glass .row-item{
+  background: rgba(255,255,255,0.4) !important;
+  backdrop-filter: blur(25px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+  border: 1px solid rgba(255,255,255,0.5) !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+}
+body.liquid-glass .panel-head,
+body.liquid-glass .card-icon{
+  background: rgba(255,255,255,0.25) !important;
+  border-color: rgba(255,255,255,0.4) !important;
+}
+body.liquid-glass .topbar,
+body.liquid-glass .sidebar{
+  background: rgba(255,255,255,0.32) !important;
+  backdrop-filter: blur(25px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+  border-color: rgba(255,255,255,0.4) !important;
+}
+body.liquid-glass .input{
+  background: rgba(255,255,255,0.35) !important;
+  border-color: rgba(255,255,255,0.45) !important;
+}
+body.liquid-glass .text,
+body.liquid-glass .title,
+body.liquid-glass .card-val{color:#1a1a1a !important; text-shadow:0 1px 2px rgba(255,255,255,0.5)}
+body.liquid-glass .muted{color:rgba(0,0,0,0.6) !important}
+body.liquid-glass .badge{border-color:rgba(255,255,255,0.4) !important}
 
 /* Toast — vetro */
 .toast{

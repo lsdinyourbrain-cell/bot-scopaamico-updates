@@ -943,18 +943,24 @@ function hexToRgb(hex){
     const n = parseInt(h,16);
     return `${(n>>16)&255},${(n>>8)&255},${n&255}`;
 }
+function toggleLiquidGlass(on){
+    document.body.classList.toggle('liquid-glass', !!on);
+    try { localStorage.setItem('vex_liquid', on ? '1' : '0'); } catch (_) {}
+    toast(on ? '✨ Liquid Glass attivato' : 'Liquid Glass disattivato');
+}
 let _themeSaveTimer = null;
 function updateTheme(){
     const accent = $('#colorAccent')?.value || '#7c5cff';
     const accent2 = $('#colorAccent2')?.value || '#ff4ecd';
     const bg = $('#colorBg')?.value || '#08080c';
     const panel = $('#colorPanel')?.value || '#15151d';
-    const blur = $('#blurRange')?.value || 20;
+    const blur = $('#blurRange')?.value || 22;
     const opacity = $('#opacityRange')?.value || 55;
     const root = document.documentElement;
     root.style.setProperty('--accent', accent);
     root.style.setProperty('--accent2', accent2);
     root.style.setProperty('--accent-rgb', hexToRgb(accent));
+    root.style.setProperty('--accent2-rgb', hexToRgb(accent2));
     root.style.setProperty('--bg', bg);
     root.style.setProperty('--panel', `rgba(${hexToRgb(panel)},${opacity/100})`);
     root.style.setProperty('--blur', blur + 'px');
@@ -966,7 +972,9 @@ function updateTheme(){
     if (pa2) pa2.style.background = accent2;
     if (pb) pb.style.background = bg;
     if (pp) pp.style.background = panel;
-    document.body.style.background = `radial-gradient(1200px 600px at 10% -10%, rgba(${hexToRgb(accent)},0.15), transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(${hexToRgb(accent2)},0.10), transparent 60%), linear-gradient(180deg, ${bg} 0%, #08080c 100%)`;
+    if (!document.body.classList.contains('liquid-glass')) {
+        document.body.style.background = `radial-gradient(1200px 600px at 10% -10%, rgba(${hexToRgb(accent)},0.15), transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(${hexToRgb(accent2)},0.10), transparent 60%), linear-gradient(180deg, ${bg} 0%, #08080c 100%)`;
+    }
     // Auto-salva dopo 400ms di inattività — così non serve cliccare Salva
     clearTimeout(_themeSaveTimer);
     _themeSaveTimer = setTimeout(() => {
@@ -989,28 +997,53 @@ function saveTheme(){
         panel: $('#colorPanel')?.value,
         blur: $('#blurRange')?.value,
         opacity: $('#opacityRange')?.value,
+        liquid: document.body.classList.contains('liquid-glass'),
     };
     localStorage.setItem('vex_theme', JSON.stringify(data));
     toast('Tema salvato ✦');
 }
 function resetTheme(){
     localStorage.removeItem('vex_theme');
+    localStorage.removeItem('vex_liquid');
+    document.body.classList.remove('liquid-glass');
+    const t = $('#liquidToggle'); if (t) t.checked = false;
     $('#colorAccent').value='#7c5cff'; $('#colorAccent2').value='#ff4ecd'; $('#colorBg').value='#08080c'; $('#colorPanel').value='#15151d';
-    $('#blurRange').value=20; $('#opacityRange').value=55;
+    $('#blurRange').value=22; $('#opacityRange').value=55;
     updateTheme();
     toast('Tema resettato');
+}
+async function doUpdate(){
+    if (!confirm('Aggiornare bot e dashboard dal repo e riavviare?')) return;
+    const btn = $('#updateBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Aggiorno...'; }
+    try{
+        const r = await fetchJSON('/api/update', { method: 'POST' });
+        toast('Aggiornamento: ' + (r.message || 'ok') + ' — riavvio in corso...', 'ok');
+        if (btn) btn.textContent = '✅ Fatto — riavvio...';
+        setTimeout(() => location.reload(), 8000);
+    }catch(e){
+        toast('Aggiorna: ' + e.message, 'err');
+        if (btn) { btn.disabled = false; btn.textContent = '↻ Aggiorna'; }
+    }
 }
 function loadTheme(){
     try{
         const raw = localStorage.getItem('vex_theme');
-        if (!raw) return;
-        const d = JSON.parse(raw);
-        if (d.accent) $('#colorAccent').value = d.accent;
-        if (d.accent2) $('#colorAccent2').value = d.accent2;
-        if (d.bg) $('#colorBg').value = d.bg;
-        if (d.panel) $('#colorPanel').value = d.panel;
-        if (d.blur) $('#blurRange').value = d.blur;
-        if (d.opacity) $('#opacityRange').value = d.opacity;
+        if (raw) {
+            const d = JSON.parse(raw);
+            if (d.accent) $('#colorAccent').value = d.accent;
+            if (d.accent2) $('#colorAccent2').value = d.accent2;
+            if (d.bg) $('#colorBg').value = d.bg;
+            if (d.panel) $('#colorPanel').value = d.panel;
+            if (d.blur) $('#blurRange').value = d.blur;
+            if (d.opacity) $('#opacityRange').value = d.opacity;
+            if (d.liquid) {
+                document.body.classList.add('liquid-glass');
+                const t = $('#liquidToggle'); if (t) t.checked = true;
+            }
+        }
+        // Fallback per liquid salvato separatamente
+        try { if (localStorage.getItem('vex_liquid') === '1') { document.body.classList.add('liquid-glass'); const t=$('#liquidToggle'); if(t) t.checked=true; } } catch(_){}
         updateTheme();
     }catch(_){}
 }

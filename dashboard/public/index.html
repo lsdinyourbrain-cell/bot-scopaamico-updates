@@ -43,7 +43,8 @@
       <div class="topbar-right">
         <span id="liveDot" class="live-dot" title="API online"></span>
         <span id="topTime"></span>
-        <button id="refreshBtn" class="btn btn-ghost">↻ Aggiorna</button>
+        <button id="updateBtn" class="btn" onclick="doUpdate()" style="background:linear-gradient(135deg,#22c55e,#16a34a)">↻ Aggiorna bot+sito</button>
+        <button id="refreshBtn" class="btn btn-ghost">↻</button>
       </div>
     </header>
 
@@ -311,12 +312,16 @@
           <div class="row gap" style="margin-top:14px">
             <button class="btn" onclick="saveTheme()">✦ Salva tema</button>
             <button class="btn btn-ghost" onclick="resetTheme()">↻ Reset default</button>
-            <span class="muted small">Salvato in locale (localStorage) — vetro con blur 20px + saturate</span>
+            <span class="muted small">Salvato in locale — vetro blur 22px + saturate</span>
           </div>
           <div class="form-grid" style="margin-top:14px">
-            <label class="check"><input type="range" id="blurRange" min="0" max="40" value="20" oninput="updateTheme()"> Blur: <span id="blurVal">20px</span></label>
+            <label class="check"><input type="range" id="blurRange" min="0" max="40" value="22" oninput="updateTheme()"> Blur: <span id="blurVal">22px</span></label>
             <label class="check"><input type="range" id="opacityRange" min="30" max="90" value="55" oninput="updateTheme()"> Opacità: <span id="opacityVal">55%</span></label>
           </div>
+          <label class="check" style="margin-top:12px;background:rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
+            <input type="checkbox" id="liquidToggle" onchange="toggleLiquidGlass(this.checked)"> <b>✨ Liquid Glass Apple</b> — sfondo iper-saturo + vetro <code>rgba(255,255,255,0.4)</code> + <code>blur(25px) saturate(200%)</code>
+          </label>
+          <div class="hint">Effetto puro Apple: pill vuota <code>400×100 radius 50px</code> — qui applicato a pannelli/cards. Solo vetro, niente bottoni interni.</div>
         </div>
       </div>
       <div class="panel">
