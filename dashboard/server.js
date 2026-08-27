@@ -15,7 +15,7 @@ const LOG_FILE = path.join(ROOT, 'logs', 'bot.log');
 const PACKAGE_FILE = path.join(ROOT, 'package.json');
 
 const PORT = process.env.DASHBOARD_PORT ? Number(process.env.DASHBOARD_PORT) : 3001;
-const HOST = '127.0.0.1';
+const HOST = process.env.DASHBOARD_HOST || '0.0.0.0';
 
 const app = express();
 app.use(express.json({ limit: '5mb' }));
@@ -578,11 +578,23 @@ app.use((req, res) => {
 // ── Start ───────────────────────────────────────────────────────────────
 const tryListen = (port) => {
     const server = app.listen(port, HOST, () => {
+        // Mostra IP LAN per accesso da PC quando host è sul tel
+        let lanIp = '';
+        try {
+            const ifs = os.networkInterfaces();
+            for (const addrs of Object.values(ifs)) {
+                for (const a of addrs || []) {
+                    if (a.family === 'IPv4' && !a.internal) { lanIp = a.address; break; }
+                }
+                if (lanIp) break;
+            }
+        } catch (_) {}
         console.log(`\n✦ ◆ ✦  VEX DASHBOARD  ✦ ◆ ✦`);
         console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-        console.log(`✦ Locale:  http://${HOST}:${port}`);
+        console.log(`✦ Locale:  http://127.0.0.1:${port}  (su questo dispositivo)`);
+        if (lanIp) console.log(`✦ Rete:    http://${lanIp}:${port}  (da PC sulla stessa WiFi)`);
         console.log(`✦ Cartella: ${ROOT}`);
-        console.log(`✦ Solo localhost — non esposto online`);
+        console.log(`✦ Non esposto su internet — solo WiFi locale`);
         console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
     });
     server.on('error', (err) => {
