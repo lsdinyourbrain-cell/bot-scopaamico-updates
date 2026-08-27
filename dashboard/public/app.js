@@ -771,45 +771,48 @@ async function fetchOwners(){
     if (listEl) listEl.innerHTML = '<div class="muted">Caricamento...</div>';
     try{
         const { owners, main } = await fetchJSON('/api/owners');
-        // Podio
+        // Podio in scala — foto grande + nome/telefono, corona solo sul vero owner
         const podiumEl = $('#podium');
         if (podiumEl) {
             if (!owners || !owners.length) {
-                podiumEl.innerHTML = '<div class="muted" style="grid-column:1/-1;text-align:center;padding:12px">Nessun owner — aggiungine uno per salire sul podio</div>';
+                podiumEl.innerHTML = '<div class="muted" style="grid-column:1/-1;text-align:center;padding:16px">Nessun owner — aggiungine uno</div>';
             } else {
-                const sorted = [...owners];
-                // Metti il main in testa se presente
-                if (main) {
-                    const idx = sorted.findIndex(o => String(o.jid||o.number||'').replace(/[^0-9]/g,'').includes(String(main).replace(/[^0-9]/g,'')) || String(main).replace(/[^0-9]/g,'').includes(String(o.jid||o.number||'').replace(/[^0-9]/g,'')));
-                    if (idx > 0) { const m = sorted.splice(idx,1)[0]; sorted.unshift(m); }
-                }
-                const top3 = sorted.slice(0,3);
-                // Ordine podio: 2nd, 1st, 3rd
-                const order = [1,0,2].map(i => top3[i]).filter(Boolean);
-                const ranks = ['🥈','🥇','🥉'];
-                const classes = ['second','first','third'];
-                const rankClasses = ['silver','gold','bronze'];
-                podiumEl.innerHTML = order.map((o, idx) => {
-                    if (!o) return '<div></div>';
-                    const realIdx = [1,0,2][idx];
-                    const disp = o.jid || o.number || '';
-                    const num = String(o.number || o.jid || '').replace(/[^0-9]/g,'').slice(-12);
-                    const isMain = realIdx === 0;
+                const mainClean = String(main||'').replace(/[^0-9]/g,'');
+                // Ordina: main primo, poi gli altri in ordine originale
+                const sorted = [...owners].sort((a,b) => {
+                    const aIsMain = mainClean && String(a.jid||a.number||'').replace(/[^0-9]/g,'').includes(mainClean);
+                    const bIsMain = mainClean && String(b.jid||b.number||'').replace(/[^0-9]/g,'').includes(mainClean);
+                    if (aIsMain && !bIsMain) return -1;
+                    if (!aIsMain && bIsMain) return 1;
+                    return 0;
+                });
+                podiumEl.innerHTML = `<div style="display:flex;gap:14px;justify-content:center;align-items:end;flex-wrap:wrap;padding:10px 0">` + sorted.map(o => {
+                    const jid = o.jid || o.number || '';
+                    const num = String(o.number || jid).replace(/[^0-9]/g,'');
+                    const phone = '+' + num;
+                    // Nome se disponibile: cerca in _owners o in DB users (non qui), per ora usa jid come fallback ma mostra telefono
+                    const oNum = String(o.jid||o.number||'').replace(/[^0-9]/g,'');
+                    const isMain = mainClean && (oNum.includes(mainClean) || mainClean.includes(oNum));
+                    const size = isMain ? 88 : 64;
+                    const border = isMain ? '3px solid rgba(255,215,0,0.9)' : '2px solid rgba(255,255,255,0.85)';
+                    const shadow = isMain ? '0 6px 20px rgba(255,215,0,0.35), 0 0 0 1px rgba(255,215,0,0.2) inset' : '0 3px 12px rgba(0,0,0,0.3)';
+                    const scale = isMain ? 'transform:scale(1.08);' : '';
                     return `
-                    <div class="podium-step ${classes[idx]}" onclick="setMainOwner('${esc(String(o.jid||o.number||''))}')" title="Clicca per rendere principale">
-                        <div class="podium-rank ${rankClasses[idx]}">${ranks[idx].replace(/./g,'')}</div>
-                        ${isMain ? '<div class="podium-crown">👑</div>' : ''}
-                        <div style="margin:8px auto;width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.9);box-shadow:0 3px 10px rgba(0,0,0,0.3)">${avatarHTML(o.jid||o.number, disp, 'lg').replace('avatar','avatar').replace('width:36','width:52').replace('height:36','height:52')}</div>
-                        <div class="podium-name mono" style="font-size:11px;margin-top:6px">${esc(disp.length>22?disp.slice(0,22)+'…':disp)}</div>
-                        <div class="podium-num">${esc(num)}</div>
-                        ${isMain ? '<div class="badge on" style="margin:6px auto 0;font-size:10px">★ Principale</div>' : '<div class="muted" style="font-size:10px;margin-top:4px">clicca per promuovere</div>'}
-                        <div class="podium-height ${rankClasses[idx]}"></div>
-                        <div class="muted" style="font-size:10px;margin-top:4px">${realIdx===0?'1°':realIdx===1?'2°':'3°'}</div>
+                    <div onclick="setMainOwner('${esc(String(o.jid||o.number||''))}')" title="${isMain?'★ Owner principale — clicca per cambiare':'Clicca per rendere principale'}" style="text-align:center;cursor:pointer;${scale}transition:.2s">
+                        <div style="position:relative;display:inline-block">
+                            ${isMain ? '<div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:22px;filter:drop-shadow(0 2px 6px rgba(255,215,0,0.7));line-height:1">👑</div>' : ''}
+                            <div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:${border};box-shadow:${shadow};margin:0 auto;background:${avatarColor(jid)};display:grid;place-items:center">
+                                <img src="/api/pfp/${encodeURIComponent(jid)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'">
+                                <span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:900;color:#fff;font-size:${isMain? '22px':'16px'}">${esc(initialsFrom(jid, ''))}</span>
+                            </div>
+                        </div>
+                        <div style="margin-top:8px;font-weight:800;font-size:${isMain?'13px':'12px'};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(phone)}</div>
+                        <div class="muted mono" style="font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${esc(jid.length>24? jid.slice(0,24)+'…':jid)}</div>
+                        ${isMain ? '<div class="badge on" style="margin:6px auto 0">★ Principale</div>' : '<div class="muted" style="font-size:10px;margin-top:4px">rendi principale</div>'}
                     </div>`;
-                }).join('');
-                if (top3.length === 1) podiumEl.style.gridTemplateColumns = '1fr';
-                else if (top3.length === 2) podiumEl.style.gridTemplateColumns = '1fr 1fr';
-                else podiumEl.style.gridTemplateColumns = '1fr 1.2fr 1fr';
+                }).join('') + `</div>`;
+                podiumEl.style.display = 'block';
+                podiumEl.style.gridTemplateColumns = '';
             }
         }
         const el = $('#ownersList');
