@@ -828,31 +828,33 @@ async function fetchOwners(){
                     return 0;
                 });
                 podiumEl.innerHTML = `<div style="display:flex;gap:14px;justify-content:center;align-items:end;flex-wrap:wrap;padding:10px 0">` + sorted.map(o => {
-                    const jid = o.jid || o.number || '';
-                    const rawNum = String(o.number || jid).replace(/[^0-9]/g,'');
-                    const isLidJid = String(jid).endsWith('@lid') || String(o.jid||'').endsWith('@lid');
-                    const phone = '+' + rawNum;
-                    const displayPhone = rawNum.length >= 7 ? phone : esc(jid);
-                    const oNum = String(o.jid||o.number||'').replace(/[^0-9]/g,'');
-                    const isMain = mainClean && (oNum.includes(mainClean) || mainClean.includes(oNum));
+                    const jid = o.jid || o.number || o.lid || '';
+                    const displayName = o.displayName || '';
+                    const displayPhone = o.displayPhone || ('+' + String(o.number||jid).replace(/[^0-9]/g,'').slice(-12));
+                    const pfpJid = o.phoneForPfp || jid;
+                    const isMain = (() => {
+                        const oNum = String(o.jid||o.number||o.lid||'').replace(/[^0-9]/g,'');
+                        const mainNum = String(main||'').replace(/[^0-9]/g,'');
+                        return mainNum && (oNum.includes(mainNum) || mainNum.includes(oNum));
+                    })();
                     const size = isMain ? 88 : 64;
                     const border = isMain ? '3px solid rgba(255,215,0,0.9)' : '2px solid rgba(255,255,255,0.85)';
                     const shadow = isMain ? '0 6px 20px rgba(255,215,0,0.35), 0 0 0 1px rgba(255,215,0,0.2) inset' : '0 3px 12px rgba(0,0,0,0.3)';
                     const scale = isMain ? 'transform:scale(1.08);' : '';
-                    // Usa phone per PFP se è lid senza pfp, altrimenti jid
-                    const pfpJid = isLidJid && o.number ? String(o.number).replace(/[^0-9]/g,'') + '@s.whatsapp.net' : jid;
+                    const pfpUrl = o.bestPfp || `/api/pfp/${encodeURIComponent(pfpJid)}`;
+                    const showName = displayName && displayName !== jid && displayName.length < 20;
                     return `
-                    <div onclick="setMainOwner('${esc(String(o.jid||o.number||''))}')" title="${isMain?'★ Owner principale — clicca per cambiare':'Clicca per rendere principale'}" style="text-align:center;cursor:pointer;${scale}transition:.2s">
+                    <div onclick="setMainOwner('${esc(String(o.jid||o.number||o.lid||''))}')" title="${isMain?'★ Owner principale — clicca per cambiare':'Clicca per rendere principale'}" style="text-align:center;cursor:pointer;${scale}transition:.2s">
                         <div style="position:relative;display:inline-block">
                             ${isMain ? '<div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:22px;filter:drop-shadow(0 2px 6px rgba(255,215,0,0.7));line-height:1">👑</div>' : ''}
                             <div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:${border};box-shadow:${shadow};margin:0 auto;background:${avatarColor(jid)};display:grid;place-items:center">
-                                <img src="/api/pfp/${encodeURIComponent(pfpJid)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'">
-                                <span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:900;color:#fff;font-size:${isMain? '22px':'16px'}">${esc(initialsFrom(jid, phone))}</span>
+                                <img src="${esc(pfpUrl)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'">
+                                <span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:900;color:#fff;font-size:${isMain? '22px':'16px'}">${esc(initialsFrom(jid, displayName || displayPhone))}</span>
                             </div>
                         </div>
-                        <div style="margin-top:8px;font-weight:800;font-size:${isMain?'13px':'12px'};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(displayPhone)}</div>
-                        <div class="muted mono" style="font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${esc(jid.length>24? jid.slice(0,24)+'…':jid)}</div>
-                        ${isMain ? '<div class="badge on" style="margin:6px auto 0">★ Principale</div>' : '<div class="muted" style="font-size:10px;margin-top:4px">rendi principale</div>'}
+                        <div style="margin-top:8px;font-weight:800;font-size:${isMain?'13px':'12px'};max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(showName ? displayName : displayPhone)}${showName ? `<br><span class="muted" style="font-size:10px">${esc(displayPhone)}</span>` : ''}</div>
+                        <div class="muted mono" style="font-size:9px;max-width:140px;overflow:hidden;text-overflow:ellipsis;opacity:0.7">${esc(jid.length>26? jid.slice(0,26)+'…':jid)}</div>
+                        ${isMain ? '<div class="badge on" style="margin:6px auto 0">★ Principale 👑</div>' : '<div class="muted" style="font-size:10px;margin-top:4px">rendi principale</div>'}
                     </div>`;
                 }).join('') + `</div>`;
                 podiumEl.style.display = 'block';
@@ -865,18 +867,15 @@ async function fetchOwners(){
         else {
             const mainClean = String(main||'').replace(/[^0-9]/g,'');
             el.innerHTML = owners.map((o, i) => {
-                const rawJid = String(o.jid || o.number || '');
-                const rawNum = String(o.number || o.jid || '').replace(/[^0-9]/g,'');
-                const isLid = rawJid.endsWith('@lid');
-                const phone = rawNum.length >= 7 ? '+' + rawNum : rawJid;
-                const displayJid = rawJid;
-                const pfpJid = isLid && o.number ? String(o.number).replace(/[^0-9]/g,'') + '@s.whatsapp.net' : rawJid;
-                const oNum = rawNum;
+                const rawJid = String(o.jid || o.number || o.lid || '');
+                const displayName = o.displayName || '';
+                const displayPhone = o.displayPhone || ('+' + String(o.number||rawJid).replace(/[^0-9]/g,'').slice(-12));
+                const pfpUrl = o.bestPfp || `/api/pfp/${encodeURIComponent(o.phoneForPfp || rawJid)}`;
+                const oNum = String(o.jid||o.number||o.lid||'').replace(/[^0-9]/g,'');
                 const isMain = mainClean && (oNum.includes(mainClean) || mainClean.includes(oNum));
-                const shortNum = rawNum.slice(-12);
                 return `<div class="row-item with-avatar" style="${isMain?'border-color:rgba(255,215,0,0.4);background:linear-gradient(135deg, rgba(255,215,0,0.10), var(--panel))':''}">
-                    <div class="avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;border:1px solid var(--border);background:${avatarColor(rawJid)};display:grid;place-items:center"><img src="/api/pfp/${encodeURIComponent(pfpJid)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span style="display:none;place-items:center;width:100%;height:100%;font-weight:800;color:#fff">${esc(initialsFrom(rawJid,phone))}</span></div>
-                    <div class="left"><div class="title">${esc(phone)} ${isMain?'<span class="badge on">★ Principale 👑</span>':''}<br><span class="muted mono" style="font-size:10px">${esc(displayJid)}</span></div><div class="sub">${esc(shortNum)} ${isMain?'· 👑 principale':''}</div></div>
+                    <div class="avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;border:1px solid var(--border);background:${avatarColor(rawJid)};display:grid;place-items:center"><img src="${esc(pfpUrl)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span style="display:none;place-items:center;width:100%;height:100%;font-weight:800;color:#fff">${esc(initialsFrom(rawJid, displayName||displayPhone))}</span></div>
+                    <div class="left"><div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted" style="font-size:11px">${esc(displayPhone)}</span>` : esc(displayPhone)} ${isMain?'<span class="badge on">★ Principale 👑</span>':''}<br><span class="muted mono" style="font-size:10px">${esc(rawJid)}</span></div><div class="sub">${esc(displayPhone)} ${isMain?'· 👑 principale':''}</div></div>
                     <div class="right">
                         ${!isMain ? `<button class="btn btn-sm btn-ghost" onclick="setMainOwner('${esc(rawJid)}')">★ Rendi principale</button>` : ''}
                         <button class="btn btn-sm btn-danger" onclick="removeOwner('${esc(rawJid)}')">🗑 Rimuovi</button>
