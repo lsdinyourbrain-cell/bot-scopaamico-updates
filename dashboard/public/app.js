@@ -946,6 +946,8 @@ function hexToRgb(hex){
 function toggleLiquidGlass(on){
     document.body.classList.toggle('liquid-glass', !!on);
     try { localStorage.setItem('vex_liquid', on ? '1' : '0'); } catch (_) {}
+    // Aggiorna anche i colori e lo sfondo
+    updateTheme();
     toast(on ? '✨ Liquid Glass attivato' : 'Liquid Glass disattivato');
 }
 let _themeSaveTimer = null;
@@ -972,7 +974,9 @@ function updateTheme(){
     if (pa2) pa2.style.background = accent2;
     if (pb) pb.style.background = bg;
     if (pp) pp.style.background = panel;
-    if (!document.body.classList.contains('liquid-glass')) {
+    if (document.body.classList.contains('liquid-glass')) {
+        document.body.style.background = '';
+    } else {
         document.body.style.background = `radial-gradient(1200px 600px at 10% -10%, rgba(${hexToRgb(accent)},0.15), transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(${hexToRgb(accent2)},0.10), transparent 60%), linear-gradient(180deg, ${bg} 0%, #08080c 100%)`;
     }
     // Auto-salva dopo 400ms di inattività — così non serve cliccare Salva
