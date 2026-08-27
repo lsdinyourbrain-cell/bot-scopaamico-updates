@@ -796,7 +796,7 @@ const isAdminParticipant = (participant, jid) => {
 
 // Cache per groupMetadata (evita rate-limit di WhatsApp)
 const groupMetaCache = new Map();
-const GROUP_META_CACHE_TTL = 120000; // 120s — DM speed in gruppo
+const GROUP_META_CACHE_TTL = 300000; // 300s — 5 min, gruppo = DM
 const rainMsgCount = new Map();
 
 // Mappa @lid → PN reale: riempita da getCachedGroupMeta e dal resolver delle
@@ -2239,7 +2239,11 @@ startBot();
         //  Owner, admin e whitelist sono sempre esenti.
         //
         if (isGroup && anEnabled && !anWl) {
-            try {
+            // Fast-path: .ping/.frasi/etc. non sono link/poll/tagall → salta admin fetch
+            const _maybeNuke = (anCfg.controls.antilink && linkBody && _hasLinkHint) || (anCfg.controls.antipoll && msg.message?.pollCreationMessage) || (anCfg.controls.antitagall && body && /@all|@everyone|@tutti/i.test(body));
+            if (!_maybeNuke) {
+                // niente da controllare per questo messaggio pulito
+            } else try {
                 const { isSenderAdmin } = await getAdminCached();
                 let senderIsAdmin = isSenderAdmin;
                 const anIsOwner = isOwnerJid(sender, sock, db, senderAlt);
