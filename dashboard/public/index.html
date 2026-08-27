@@ -329,6 +329,39 @@
   </main>
 </div>
 
+<!-- Modale edit utente (vetro) -->
+<div id="userEditModal" class="modal hidden">
+  <div class="modal-backdrop" onclick="closeUserEditModal()"></div>
+  <div class="modal-panel tilt">
+    <div class="modal-head">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div id="editModalAvatar"></div>
+        <div>
+          <div id="editModalTitle" style="font-weight:800">Modifica utente</div>
+          <div id="editModalSub" class="muted mono" style="font-size:11px"></div>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-ghost" onclick="closeUserEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <label class="label">💰 Soldi (€)<input id="editMoney" type="number" class="input" placeholder="100"></label>
+        <label class="label">⚠️ Warn<input id="editWarnings" type="number" min="0" max="10" class="input" placeholder="0"></label>
+        <label class="label">💬 Messaggi<input id="editMsgCount" type="number" min="0" class="input" placeholder="0"></label>
+        <label class="label">🔇 Mutato<select id="editMuted" class="input"><option value="false">No</option><option value="true">Sì</option></select></label>
+      </div>
+      <label class="label">🏷 Nickname<input id="editNickname" class="input" placeholder="Es. Marco"></label>
+      <label class="label">📝 Bio<input id="editBio" class="input" placeholder="Es. Vivo per il bot"></label>
+      <label class="label">💍 Coniuge (JID)<input id="editSpouse" class="input mono" placeholder="123...@s.whatsapp.net o @lid"></label>
+      <div class="hint">Tutti i campi vengono salvati insieme su <code>/api/users/:gid/:jid</code> — applicato subito</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeUserEditModal()">Annulla</button>
+      <button class="btn" onclick="saveUserEditModal()">✦ Salva tutto</button>
+    </div>
+  </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>

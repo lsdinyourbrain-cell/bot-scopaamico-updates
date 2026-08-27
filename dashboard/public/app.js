@@ -434,21 +434,61 @@ async function openUserDetail(jid){
             `).join('');
         }
     }
-    if (detail) { detail.classList.remove('hidden'); detail.scrollIntoView({behavior:'smooth'}); }
+    if (detail) {
+        detail.classList.remove('hidden');
+        // Scrolla all'inizio del dettaglio, non in fondo a tutto
+        setTimeout(() => detail.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+    }
 }
 function closeUserDetail(){ const d=$('#userDetail'); if(d) d.classList.add('hidden'); currentUserDetailJid=null; }
+
+// ── Modale edit utente — tutti i campi insieme, vetro ──────────────────
+let _editCtx = null; // { jid, gid, data }
 async function editUserInGroup(jid, gid){
-    const field = prompt(`Modifica ${jid.split('@')[0]} in ${gid}\nCampo? (money, warnings, isMuted, msgCount, bio, nickname)`);
-    if (!field) return;
-    if (!['money','warnings','isMuted','msgCount','bio','nickname'].includes(field)) return toast('Campo non valido','err');
-    const valRaw = prompt(`Nuovo valore per ${field}:`);
-    if (valRaw === null) return;
-    let val = valRaw;
-    if (field === 'money' || field === 'warnings' || field === 'msgCount') val = Number(valRaw);
-    if (field === 'isMuted') val = valRaw.toLowerCase() === 'true' || valRaw === '1';
     try{
-        await fetchJSON(`/api/users/${encodeURIComponent(gid)}/${encodeURIComponent(jid)}`, { method:'PUT', body: JSON.stringify({ [field]: val }) });
-        toast('Utente aggiornato in '+gid.split('@')[0]);
+        const { users } = await fetchJSON(`/api/users/${encodeURIComponent(gid)}`);
+        const u = users.find(x => x.jid === jid) || { jid, money: 0, warnings: 0, msgCount: 0, isMuted: false, nickname: '', bio: '', spouse: '' };
+        _editCtx = { jid, gid, data: u };
+        const av = $('#editModalAvatar');
+        if (av) av.innerHTML = pfpHTML(jid, u.name || u.nickname || jid, u.pfpUrl, '');
+        const t = $('#editModalTitle'), s = $('#editModalSub');
+        if (t) t.textContent = (u.name || u.nickname || jid.split('@')[0]) + ' — ' + gid;
+        if (s) s.textContent = jid;
+        const m = $('#editMoney'), w = $('#editWarnings'), c = $('#editMsgCount'), mu = $('#editMuted'), n = $('#editNickname'), b = $('#editBio'), sp = $('#editSpouse');
+        if (m) m.value = u.money ?? 0;
+        if (w) w.value = u.warnings ?? 0;
+        if (c) c.value = u.msgCount ?? 0;
+        if (mu) mu.value = String(!!u.isMuted);
+        if (n) n.value = u.nickname || '';
+        if (b) b.value = u.bio || '';
+        if (sp) sp.value = u.spouse || '';
+        const modal = $('#userEditModal');
+        if (modal) { modal.classList.remove('hidden'); modal.scrollTop = 0; }
+    }catch(e){ toast(e.message,'err'); }
+}
+function closeUserEditModal(){ const m=$('#userEditModal'); if(m) m.classList.add('hidden'); _editCtx=null; }
+async function saveUserEditModal(){
+    if (!_editCtx) return;
+    const { jid, gid } = _editCtx;
+    const body = {
+        money: Number($('#editMoney')?.value || 0),
+        warnings: Number($('#editWarnings')?.value || 0),
+        msgCount: Number($('#editMsgCount')?.value || 0),
+        isMuted: $('#editMuted')?.value === 'true',
+        nickname: String($('#editNickname')?.value || '').trim().slice(0,32) || null,
+        bio: String($('#editBio')?.value || '').trim().slice(0,90) || null,
+        spouse: String($('#editSpouse')?.value || '').trim() || null,
+    };
+    // Pulisci null/empty per non sovrascrivere inutilmente
+    Object.keys(body).forEach(k => { if (body[k] === null || body[k] === '') delete body[k]; });
+    // Se nickname/bio/spouse sono vuoti, invia null per cancellare
+    if (!$('#editNickname')?.value.trim()) body.nickname = null;
+    if (!$('#editBio')?.value.trim()) body.bio = null;
+    if (!$('#editSpouse')?.value.trim()) body.spouse = null;
+    try{
+        await fetchJSON(`/api/users/${encodeURIComponent(gid)}/${encodeURIComponent(jid)}`, { method:'PUT', body: JSON.stringify(body) });
+        toast('Utente salvato ✦');
+        closeUserEditModal();
         await loadUsersGlobal();
         openUserDetail(jid);
         if (currentGroupJid === gid) openGroup(gid);
