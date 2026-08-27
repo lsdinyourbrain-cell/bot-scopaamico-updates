@@ -12,7 +12,7 @@
     <div class="brand">
       <div class="brand-icon">✦</div>
       <div>
-        <div class="brand-title">VEX BOT</div>
+        <div class="brand-title neon">VEX BOT</div>
         <div class="brand-sub">Dashboard Locale</div>
       </div>
     </div>
@@ -37,7 +37,7 @@
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <h1 id="pageTitle">Overview</h1>
+        <h1 id="pageTitle" class="neon">Overview</h1>
         <p id="pageSub">Stato del bot e sistema</p>
       </div>
       <div class="topbar-right">
@@ -150,11 +150,19 @@
     <!-- USERS -->
     <section id="page-users" class="page">
       <div class="toolbar">
-        <select id="userGroupSelect" class="input" onchange="loadUsers()"><option value="">— Seleziona gruppo —</option></select>
-        <input id="userSearch" class="input" placeholder="◇ Cerca JID..." oninput="filterUsers()">
+        <input id="userSearch" class="input" placeholder="◇ Cerca nome, JID o bio..." oninput="filterUsers()" style="flex:1.4">
         <span id="userCount" class="muted"></span>
+        <button class="btn btn-sm btn-ghost" onclick="loadUsersGlobal()">↻</button>
       </div>
       <div id="usersList" class="list"></div>
+      <div id="userDetail" class="panel hidden" style="margin-top:16px">
+        <div class="panel-head">◇ Utente — <span id="userDetailName" class="mono"></span> <button class="btn btn-sm" style="float:right" onclick="closeUserDetail()">✕</button></div>
+        <div class="panel-body">
+          <div id="userDetailHead" style="display:flex;gap:14px;align-items:center;margin-bottom:14px"></div>
+          <div class="hint">Clicca su un gruppo per modificare i dati di quell’utente <b>in quel gruppo</b>:</div>
+          <div id="userDetailGroups" class="list" style="margin-top:10px"></div>
+        </div>
+      </div>
     </section>
 
     <!-- PHRASES -->

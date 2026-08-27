@@ -217,13 +217,20 @@ app.get('/api/groups', (req, res) => {
         const welcome = safeReadJSON(WELCOME_FILE, {});
         const antilink = safeReadJSON(ANTILINK_FILE, {});
 
-        const groupIds = new Set([
-            ...Object.keys(db).filter(k => k.endsWith('@g.us')),
-            ...Object.keys(welcome),
-            ...Object.keys(antilink),
-        ]);
-
+        // Solo gruppi dove il bot è realmente dentro (da _groupInfo, popolato all'avvio)
         const groupInfo = db._groupInfo || {};
+        let groupIds;
+        if (Object.keys(groupInfo).length) {
+            groupIds = new Set(Object.keys(groupInfo));
+        } else {
+            // Fallback prima che il bot abbia popolato _groupInfo
+            groupIds = new Set([
+                ...Object.keys(db).filter(k => k.endsWith('@g.us')),
+                ...Object.keys(welcome),
+                ...Object.keys(antilink),
+            ]);
+        }
+
         const groups = [...groupIds].map(gid => {
             const w = welcome[gid] || { welcome: true, goodbye: true, welcomeText: null, goodbyeText: null };
             const al = antilink[gid] || {};
@@ -502,6 +509,58 @@ app.delete('/api/phrases/:key/:index', (req, res) => {
         const out = filtered.join('\n') + (filtered.length ? '\n' : '');
         if (!safeWriteText(file, out)) return res.status(500).json({ ok: false, error: 'Scrittura fallita' });
         res.json({ ok: true, key, count: filtered.length });
+    } catch (e) {
+        res.status(500).json({ ok: false, error: e.message });
+    }
+});
+
+// ── API: Users (globale) ───────────────────────────────────────────────
+app.get('/api/users', (req, res) => {
+    try {
+        const db = safeReadJSON(DB_FILE, {});
+        const groupInfo = db._groupInfo || {};
+        const allGroups = Object.keys(db).filter(k => k.endsWith('@g.us'));
+        // Se _groupInfo ha dati, usa solo quelli per "dove sta il bot"
+        const targetGroups = Object.keys(groupInfo).length ? Object.keys(groupInfo) : allGroups;
+
+        const userMap = new Map(); // jid -> { jid, name, pfpUrl, groups: [], totalMoney, totalMsgs, ... }
+        for (const gid of targetGroups) {
+            const chat = db[gid] || {};
+            for (const [jid, data] of Object.entries(chat)) {
+                if (!jid.includes('@') || !data || typeof data !== 'object') continue;
+                if (!userMap.has(jid)) {
+                    userMap.set(jid, {
+                        jid,
+                        name: data.name || data.nickname || null,
+                        nickname: data.nickname || null,
+                        pfpUrl: data.pfpUrl || null,
+                        bio: data.bio || null,
+                        groups: [],
+                        totalMoney: 0,
+                        totalMsgs: 0,
+                        totalWarnings: 0,
+                        moneyByGroup: {},
+                        msgsByGroup: {},
+                    });
+                }
+                const u = userMap.get(jid);
+                // Aggiorna nome/pfp se mancanti e ora disponibili
+                if (!u.name && (data.name || data.nickname)) u.name = data.name || data.nickname;
+                if (!u.pfpUrl && data.pfpUrl) u.pfpUrl = data.pfpUrl;
+                if (!u.bio && data.bio) u.bio = data.bio;
+                const gName = (groupInfo[gid]?.name) || gid;
+                if (!u.groups.some(g => g.jid === gid)) {
+                    u.groups.push({ jid: gid, name: gName, photoUrl: groupInfo[gid]?.photoUrl || null });
+                }
+                u.totalMoney += Number(data.money) || 0;
+                u.totalMsgs += Number(data.msgCount) || 0;
+                u.totalWarnings += Number(data.warnings) || 0;
+                u.moneyByGroup[gid] = Number(data.money) || 0;
+                u.msgsByGroup[gid] = Number(data.msgCount) || 0;
+            }
+        }
+        const users = [...userMap.values()].sort((a,b) => b.totalMsgs - a.totalMsgs);
+        res.json({ ok: true, users, count: users.length });
     } catch (e) {
         res.status(500).json({ ok: false, error: e.message });
     }

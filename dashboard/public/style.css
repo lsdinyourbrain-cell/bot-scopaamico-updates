@@ -301,6 +301,25 @@ a{color:var(--accent);text-decoration:none}
 .color-item input[type="color"]{width:100%;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer}
 .color-preview{width:100%;height:24px;border-radius:6px;margin-top:8px;border:1px solid var(--border)}
 
+/* Neon */
+.neon{
+  color:#fff;
+  text-shadow:0 0 7px rgba(var(--accent-rgb),0.8), 0 0 20px rgba(var(--accent-rgb),0.5), 0 0 40px rgba(var(--accent-rgb),0.3);
+}
+.neon2{
+  color:var(--accent2);
+  text-shadow:0 0 7px rgba(255,78,205,0.8), 0 0 20px rgba(255,78,205,0.4);
+}
+
+/* Tilt */
+.tilt{
+  transition:transform .15s ease, box-shadow .15s ease;
+  transform-style:preserve-3d;
+}
+.tilt:hover{
+  box-shadow:0 8px 24px rgba(0,0,0,0.3), 0 0 20px rgba(var(--accent-rgb),0.15);
+}
+
 /* Toast — vetro */
 .toast{
   position:fixed;bottom:18px;right:18px;

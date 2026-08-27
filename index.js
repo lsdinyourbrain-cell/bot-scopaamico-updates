@@ -1742,11 +1742,18 @@ startBot();
                     }
                     if (!groupIds.length) return;
                     console.log(`[GROUPCACHE] Aggiorno ${groupIds.length} gruppi per dashboard...`);
+                    // Pulisci gruppi dove il bot non è più dentro (rimuove vecchi)
+                    db._groupInfo = db._groupInfo || {};
+                    for (const oldGid of Object.keys(db._groupInfo)) {
+                        if (!groupIds.includes(oldGid)) {
+                            delete db._groupInfo[oldGid];
+                            console.log(`[GROUPCACHE] Rimosso gruppo non più presente: ${oldGid}`);
+                        }
+                    }
                     for (const gid of groupIds) {
                         try {
                             const meta = await getCachedGroupMeta(sock, gid).catch(()=>null);
                             if (!meta) continue;
-                            db._groupInfo = db._groupInfo || {};
                             const g = db._groupInfo[gid] || {};
                             g.name = meta.subject || g.name || gid;
                             g.desc = String(meta.desc||'').slice(0,200) || g.desc || '';

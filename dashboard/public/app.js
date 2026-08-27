@@ -350,34 +350,24 @@ async function deleteGroup(){
     }catch(e){ toast(e.message,'err'); }
 }
 
-// ── Users ───────────────────────────────────────────────────────────────
-async function initUsersPage(){
-    if (!groupsCache.length) {
-        await fetchGroups().catch(()=>{});
-    }
-    // Se ancora vuoto, mostra hint
-    const sel = $('#userGroupSelect');
-    if (sel && sel.options.length <= 1 && groupsCache.length) {
-        sel.innerHTML = '<option value="">— Seleziona gruppo —</option>' + groupsCache.map(g => `<option value="${esc(g.jid)}">${esc(g.jid)} — ${g.users} utenti</option>`).join('');
-    }
-}
-async function loadUsers(){
-    const gid = $('#userGroupSelect')?.value;
+// ── Users (globale) ───────────────────────────────────────────────────
+let usersGlobalCache = [];
+async function initUsersPage(){ await loadUsersGlobal(); }
+async function loadUsersGlobal(){
     const listEl = $('#usersList');
     const countEl = $('#userCount');
-    if (!gid) { if(listEl) listEl.innerHTML = '<div class="muted">Seleziona un gruppo</div>'; if(countEl) countEl.textContent=''; return; }
     if (listEl) listEl.innerHTML = '<div class="muted" style="padding:12px">◇ Caricamento utenti...</div>';
     try{
-        const { users } = await fetchJSON(`/api/users/${encodeURIComponent(gid)}`);
-        if (countEl) countEl.textContent = `${users.length} utenti`;
-        loadUsers._cache = users;
-        loadUsers._gid = gid;
-        renderUsers(users);
+        const { users } = await fetchJSON('/api/users');
+        usersGlobalCache = Array.isArray(users) ? users : [];
+        if (countEl) countEl.textContent = `${usersGlobalCache.length} utenti unici`;
+        renderUsers(usersGlobalCache);
     }catch(e){
         if (listEl) listEl.innerHTML = `<div class="muted">Errore: ${esc(e.message)}</div>`;
         toast(e.message,'err');
     }
 }
+async function loadUsers(){ return loadUsersGlobal(); }
 function renderUsers(list){
     const q = ($('#userSearch')?.value || '').toLowerCase();
     const filtered = q ? list.filter(u => (u?.jid && u.jid.toLowerCase().includes(q)) || String(u?.nickname||'').toLowerCase().includes(q) || String(u?.name||'').toLowerCase().includes(q) || String(u?.bio||'').toLowerCase().includes(q)) : list;
@@ -401,13 +391,54 @@ function renderUsers(list){
         </div>
     `}).join('');
 }
-function filterUsers(){
-    if (loadUsers._cache) renderUsers(loadUsers._cache);
+function filterUsers(){ renderUsers(usersGlobalCache); }
+let currentUserDetailJid = null;
+async function openUserDetail(jid){
+    const user = usersGlobalCache.find(u => u.jid === jid);
+    if (!user) return;
+    currentUserDetailJid = jid;
+    const detail = $('#userDetail');
+    const nameEl = $('#userDetailName');
+    const headEl = $('#userDetailHead');
+    const groupsEl = $('#userDetailGroups');
+    if (nameEl) nameEl.textContent = (user.name || user.nickname || jid) + ' — ' + jid.split('@')[0];
+    if (headEl) headEl.innerHTML = `
+        ${pfpHTML(user.jid, user.name || user.jid, user.pfpUrl, 'lg')}
+        <div style="flex:1">
+            <div style="font-weight:800;font-size:15px">${esc(user.name || user.nickname || jid.split('@')[0])} <span class="muted mono" style="font-size:12px">${esc(jid)}</span></div>
+            <div class="muted" style="font-size:12px">💰 ${user.totalMoney ?? 0}€ totale · 💬 ${user.totalMsgs ?? 0} msg · ⚠️ ${user.totalWarnings ?? 0} warn · 👥 ${user.groups?.length ?? 0} gruppi</div>
+            ${user.bio ? `<div style="margin-top:6px;font-size:12px;background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:8px;border:1px solid var(--border)">📝 ${esc(user.bio)}</div>` : ''}
+        </div>
+    `;
+    if (groupsEl) {
+        if (!user.groups || !user.groups.length) groupsEl.innerHTML = '<div class="muted">Nessun gruppo</div>';
+        else {
+            const rows = await Promise.all(user.groups.map(async g => {
+                try {
+                    const { users } = await fetchJSON(`/api/users/${encodeURIComponent(g.jid)}`);
+                    const u = users.find(x => x.jid === jid) || {};
+                    return { g, u };
+                } catch { return { g, u: {} }; }
+            }));
+            groupsEl.innerHTML = rows.map(({g,u}) => `
+                <div class="row-item with-avatar">
+                    ${pfpHTML(g.jid, g.name || g.jid, g.photoUrl, 'sm')}
+                    <div class="left">
+                        <div class="title" style="font-size:13px">${esc(g.name || g.jid)} <span class="muted mono" style="font-size:10px">${esc(g.jid)}</span></div>
+                        <div class="sub">💰 ${u.money ?? 0}€ · 💬 ${u.msgCount ?? 0} · ⚠️ ${u.warnings ?? 0} ${u.isMuted ? '· 🔇 mutato' : ''} ${u.nickname ? '· 🏷 '+esc(u.nickname) : ''}</div>
+                    </div>
+                    <div class="right">
+                        <button class="btn btn-sm btn-ghost" onclick="editUserInGroup('${esc(jid)}','${esc(g.jid)}')">✎ Modifica</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    if (detail) { detail.classList.remove('hidden'); detail.scrollIntoView({behavior:'smooth'}); }
 }
-async function editUserPrompt(jid){
-    const gid = loadUsers._gid;
-    if (!gid) return;
-    const field = prompt('Campo da modificare? (money, warnings, isMuted, msgCount, bio, nickname)\nEsempio: money');
+function closeUserDetail(){ const d=$('#userDetail'); if(d) d.classList.add('hidden'); currentUserDetailJid=null; }
+async function editUserInGroup(jid, gid){
+    const field = prompt(`Modifica ${jid.split('@')[0]} in ${gid}\nCampo? (money, warnings, isMuted, msgCount, bio, nickname)`);
     if (!field) return;
     if (!['money','warnings','isMuted','msgCount','bio','nickname'].includes(field)) return toast('Campo non valido','err');
     const valRaw = prompt(`Nuovo valore per ${field}:`);
@@ -416,25 +447,33 @@ async function editUserPrompt(jid){
     if (field === 'money' || field === 'warnings' || field === 'msgCount') val = Number(valRaw);
     if (field === 'isMuted') val = valRaw.toLowerCase() === 'true' || valRaw === '1';
     try{
-        await fetchJSON(`/api/users/${encodeURIComponent(gid)}/${encodeURIComponent(jid)}`, {
-            method: 'PUT',
-            body: JSON.stringify({ [field]: val })
-        });
-        toast('Utente aggiornato');
-        loadUsers();
+        await fetchJSON(`/api/users/${encodeURIComponent(gid)}/${encodeURIComponent(jid)}`, { method:'PUT', body: JSON.stringify({ [field]: val }) });
+        toast('Utente aggiornato in '+gid.split('@')[0]);
+        await loadUsersGlobal();
+        openUserDetail(jid);
         if (currentGroupJid === gid) openGroup(gid);
     }catch(e){ toast(e.message,'err'); }
 }
+async function editUserPrompt(jid){ openUserDetail(jid); }
 async function deleteUser(jid){
-    const gid = loadUsers._gid;
-    if (!gid) return;
-    if (!confirm(`Eliminare ${jid} da ${gid}?`)) return;
-    try{
-        await fetchJSON(`/api/users/${encodeURIComponent(gid)}/${encodeURIComponent(jid)}`, { method: 'DELETE' });
-        toast('Utente eliminato');
-        loadUsers();
-        if (currentGroupJid === gid) openGroup(gid);
-    }catch(e){ toast(e.message,'err'); }
+    const user = usersGlobalCache.find(u => u.jid === jid);
+    if (!user || !user.groups || !user.groups.length) return;
+    const groupsList = user.groups.map(g=>g.jid).join('\n');
+    const target = prompt(`Eliminare ${jid} da quale gruppo?\nGruppi:\n${groupsList}\n\nScrivi il JID del gruppo o "tutti" per rimuoverlo ovunque:`);
+    if (!target) return;
+    if (target.toLowerCase() === 'tutti') {
+        if (!confirm(`Rimuovere ${jid} da TUTTI i ${user.groups.length} gruppi?`)) return;
+        for (const g of user.groups) {
+            try{ await fetchJSON(`/api/users/${encodeURIComponent(g.jid)}/${encodeURIComponent(jid)}`, { method:'DELETE' }); }catch{}
+        }
+        toast('Utente rimosso da tutti i gruppi');
+    } else {
+        const gid = target.trim();
+        if (!confirm(`Eliminare ${jid} da ${gid}?`)) return;
+        try{ await fetchJSON(`/api/users/${encodeURIComponent(gid)}/${encodeURIComponent(jid)}`, { method:'DELETE' }); toast('Utente eliminato da '+gid); }catch(e){ toast(e.message,'err'); return; }
+    }
+    await loadUsersGlobal();
+    closeUserDetail();
 }
 
 // ── Phrases ─────────────────────────────────────────────────────────────
@@ -856,6 +895,33 @@ function loadTheme(){
 }
 // Carica tema salvato all'avvio
 setTimeout(loadTheme, 100);
+
+// ── Tilt 3D su hover ────────────────────────────────────────────────────
+function initTilt(){
+    const applyTilt = (el) => {
+        el.classList.add('tilt');
+        el.addEventListener('mousemove', (e) => {
+            const rect = el.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            const rx = (y - cy) / 10;
+            const ry = (cx - x) / 10;
+            el.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(4px)`;
+        });
+        el.addEventListener('mouseleave', () => {
+            el.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateZ(0)';
+        });
+    };
+    // Applica a card, row-item, btn, panel
+    const obs = new MutationObserver(() => {
+        document.querySelectorAll('.card:not(.tilt), .row-item:not(.tilt), .panel:not(.tilt), .btn:not(.tilt)').forEach(applyTilt);
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    document.querySelectorAll('.card, .row-item, .panel, .btn').forEach(applyTilt);
+}
+setTimeout(initTilt, 500);
 
 // ── Init ────────────────────────────────────────────────────────────────
 fetchOverview();
