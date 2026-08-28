@@ -453,19 +453,20 @@ body.liquid-glass .top-pill .brand-sub,
 body.liquid-glass .top-pill #topTime{color:rgba(0,0,0,0.6) !important}
 body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
 
-/* Bottom pill — rifatta da 0, stabile, mai tagliata, glitch-free */
+/* Bottom pill — rifatta da 0, perfettamente centrata, mai tagliata */
 .bottom-pill{
   position:fixed;
   bottom:16px;
-  left:50%;
-  transform:translateX(-50%);
+  left:0;
+  right:0;
+  margin:0 auto;
   display:flex;
   align-items:center;
   justify-content:center;
   gap:2px;
   padding:6px 8px;
   width: fit-content;
-  max-width: min(560px, calc(100% - 24px));
+  max-width: calc(100% - 24px);
   height: 56px;
   background: rgba(255,255,255,0.45);
   backdrop-filter: blur(22px) saturate(180%);
