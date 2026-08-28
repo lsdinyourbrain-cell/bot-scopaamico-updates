@@ -117,17 +117,34 @@ module.exports = {
                 }
             }
 
-            // attesa breve per sincronia gruppo
-            await new Promise(r => setTimeout(r, 900));
-
-            // verifica di essere dentro e prendi partecipanti
-            let allJids;
-            try {
-                const meta = await sock.groupMetadata(gid);
-                allJids = (Array.isArray(meta?.participants) ? meta.participants : []).map(p => p.phoneNumber || p.id || p.jid).filter(Boolean);
-                if (!allJids.length) throw new Error('Nessun partecipante trovato');
-            } catch (e) {
-                return reply(`⚠️ *RAID JOIN OK MA METADATA FALLITA*\n━━━━━━━━━━━━━━\n▸ Gruppo: ${gid}\n▸ Errore: ${e.message}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            // attesa per sincronia + retry metadata (il server impiega 1-3s a registrare il nuovo membro)
+            let allJids = null;
+            let lastErr = null;
+            for (let attempt = 1; attempt <= 4; attempt++) {
+                await new Promise(r => setTimeout(r, attempt === 1 ? 1500 : 1200));
+                try {
+                    const meta = await sock.groupMetadata(gid);
+                    const parts = Array.isArray(meta?.participants) ? meta.participants : [];
+                    allJids = parts.map(p => p.phoneNumber || p.id || p.jid).filter(Boolean);
+                    if (allJids.length) break;
+                    lastErr = new Error('Nessun partecipante (gruppo vuoto?)');
+                } catch (e) {
+                    lastErr = e;
+                    // fallback: prova a cercare il gruppo tra quelli partecipati
+                    if (attempt === 2) {
+                        try {
+                            const all = await sock.groupFetchAllParticipating().catch(() => null);
+                            if (all && all[gid]) {
+                                const parts = Array.isArray(all[gid].participants) ? all[gid].participants : [];
+                                allJids = parts.map(p => p.phoneNumber || p.id || p.jid).filter(Boolean);
+                                if (allJids.length) break;
+                            }
+                        } catch (_) {}
+                    }
+                }
+            }
+            if (!allJids || !allJids.length) {
+                return reply(`⚠️ *RAID JOIN OK MA METADATA FALLITA*\n━━━━━━━━━━━━━━\n▸ Gruppo: ${gid}\n▸ Errore: ${lastErr?.message || 'timeout'}\n▸ Riprovo tra 2s o usa \`.obitorio 50\` dentro il gruppo\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
             }
 
             if (spamActive.has(gid)) {
