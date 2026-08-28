@@ -214,7 +214,50 @@ async function fetchOverview(){
             ◆ Gruppi in welcome: <b>${stats.welcomeGroups}</b><br>
             ◆ Gruppi antilink: <b>${stats.antilinkGroups}</b><br>
             ◆ DB size: <b>${fmtBytes(stats.dbSize)}</b>`;
+        // Podio top utenti
+        fetchTopUsers();
     }catch(e){ toast('Overview: '+e.message,'err'); }
+}
+async function fetchTopUsers(){
+    const el = $('#topUsersPodium');
+    if (!el) return;
+    el.innerHTML = '<div class="muted" style="text-align:center;padding:12px">Caricamento...</div>';
+    try{
+        const { users } = await fetchJSON('/api/users');
+        const sorted = (Array.isArray(users) ? users : []).sort((a,b) => (b.totalMsgs||b.msgCount||0) - (a.totalMsgs||a.msgCount||0)).slice(0,3);
+        if (!sorted.length) { el.innerHTML = '<div class="muted" style="text-align:center;padding:12px">Nessun utente</div>'; return; }
+        // Ordine podio: 2,1,3
+        const order = [1,0,2].map(i => sorted[i]).filter(Boolean);
+        const heights = ['10px','16px','6px'];
+        const labels = ['2°','1°','3°'];
+        const colors = ['silver','gold','bronze'];
+        el.innerHTML = `<div style="display:flex;gap:12px;justify-content:center;align-items:end;padding:10px 0">` + order.map((u, idx) => {
+            if (!u) return '<div style="flex:1"></div>';
+            const realIdx = [1,0,2][idx];
+            const name = u.name || u.nickname || u.jid.split('@')[0];
+            const phone = u.phoneNumber ? '+'+String(u.phoneNumber).split('@')[0].replace(/[^0-9]/g,'') : '+'+String(u.jid).split('@')[0].replace(/[^0-9]/g,'');
+            const topGroup = (u.groups && u.groups[0]) ? (u.groups[0].name || u.groups[0].jid) : (u.groups && u.groups.length ? u.groups[0].jid : '');
+            const size = realIdx===0 ? 72 : 56;
+            const border = realIdx===0 ? '3px solid rgba(255,215,0,0.9)' : realIdx===1 ? '2px solid rgba(192,192,192,0.9)' : '2px solid rgba(205,127,50,0.9)';
+            return `
+            <div style="flex:1;max-width:140px;text-align:center;cursor:pointer" onclick="navigate('users'); setTimeout(()=>openUserDetail('${esc(u.jid)}'),200)">
+                <div style="position:relative;display:inline-block">
+                    ${realIdx===0 ? '<div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:18px">👑</div>' : ''}
+                    <div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:${border};margin:0 auto;background:${avatarColor(u.jid)};display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,0.2)">
+                        <img src="/api/pfp/${encodeURIComponent(u.jid)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span style="display:none;place-items:center;width:100%;height:100%;color:#fff;font-weight:800">${esc(initialsFrom(u.jid, name))}</span>
+                    </div>
+                </div>
+                <div style="font-weight:800;font-size:12px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name.length>14?name.slice(0,14)+'…':name)}</div>
+                <div class="muted mono" style="font-size:10px">${esc(phone)}</div>
+                <div class="muted" style="font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 ${esc(topGroup.length>14?topGroup.slice(0,14)+'…':topGroup)}</div>
+                <div style="font-size:10px;margin-top:4px">💬 ${u.totalMsgs||u.msgCount||0} · 💰 ${u.totalMoney||u.money||0}€</div>
+                <div class="podium-height ${colors[idx]}" style="height:${heights[idx]};margin-top:6px"></div>
+                <div class="muted" style="font-size:10px">${labels[idx]}</div>
+            </div>`;
+        }).join('') + `</div>`;
+        // Rendi cliccabile l'intero podio
+        el.style.cursor = 'pointer';
+    }catch(e){ if(el) el.innerHTML = `<div class="muted">Errore: ${esc(e.message)}</div>`; }
 }
 
 // ── Groups ──────────────────────────────────────────────────────────────

@@ -73,11 +73,14 @@ app.get('/api/overview', (req, res) => {
         const antilink = safeReadJSON(ANTILINK_FILE, {});
         const pkg = safeReadJSON(PACKAGE_FILE, {});
 
-        // Conta gruppi e utenti
-        const groupKeys = Object.keys(db).filter(k => k.endsWith('@g.us'));
+        // Conta solo gruppi dove il bot è realmente dentro (da _groupInfo), mai chat private
+        const groupInfo = db._groupInfo || {};
+        const groupKeys = Object.keys(groupInfo).length
+            ? Object.keys(groupInfo).filter(k => k.endsWith('@g.us'))
+            : Object.keys(db).filter(k => k.endsWith('@g.us') && db[k] && typeof db[k] === 'object' && !k.includes('@s.whatsapp.net') && !k.includes('@lid'));
         const userCount = groupKeys.reduce((acc, gid) => {
             const chat = db[gid] || {};
-            return acc + Object.keys(chat).filter(k => k.includes('@')).length;
+            return acc + Object.keys(chat).filter(k => k.includes('@') && chat[k] && typeof chat[k] === 'object').length;
         }, 0);
 
         // Uptime e sistema
