@@ -91,13 +91,12 @@ window.addEventListener('resize', () => {
 });
 
 function navigate(page){
-    console.log('[nav] ->', page);
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
     $$('.pill-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+    updatePillIndicator(page);
     $$('.page').forEach(p => {
         const isActive = p.id === `page-${page}`;
         p.classList.toggle('active', isActive);
-        if (isActive) console.log('[nav] show', p.id);
     });
     const titles = {
         overview: ['Overview','Stato del bot e sistema'],
