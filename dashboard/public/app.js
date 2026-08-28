@@ -66,6 +66,7 @@ function formatDate(iso){
 // ── Navigation ──────────────────────────────────────────────────────────
 function navigate(page){
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+    $$('.pill-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
     $$('.page').forEach(p => p.classList.toggle('active', p.id === `page-${page}`));
     const titles = {
         overview: ['Overview','Stato del bot e sistema'],
@@ -1009,13 +1010,97 @@ function saveTheme(){
 function resetTheme(){
     localStorage.removeItem('vex_theme');
     localStorage.removeItem('vex_liquid');
+    localStorage.removeItem('vex_bg');
     document.body.classList.remove('liquid-glass');
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundSize = '';
+    document.body.style.backgroundAttachment = '';
     const t = $('#liquidToggle'); if (t) t.checked = false;
     $('#colorAccent').value='#7c5cff'; $('#colorAccent2').value='#ff4ecd'; $('#colorBg').value='#08080c'; $('#colorPanel').value='#15151d';
     $('#blurRange').value=22; $('#opacityRange').value=55;
+    $$('.bg-preset').forEach(p => p.classList.remove('active'));
     updateTheme();
     toast('Tema resettato');
 }
+// ── Sfondi preset + custom ────────────────────────────────────────────
+const BG_PRESETS = {
+    default: '',
+    vibrant: 'radial-gradient(ellipse at 20% 20%, #7c5cff 0%, transparent 50%), radial-gradient(ellipse at 80% 30%, #ff4ecd 0%, transparent 50%), linear-gradient(135deg,#1a0b2e 0%,#2d1b4e 100%)',
+    sunset: 'linear-gradient(135deg,#ff6b6b 0%,#feca57 50%,#ff9ff3 100%)',
+    ocean: 'linear-gradient(135deg,#667eea 0%,#764ba2 50%,#00d2ff 100%)',
+    forest: 'linear-gradient(135deg,#0f9b0f 0%,#3a7d44 50%,#2d6a4f 100%)',
+    midnight: 'linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%)',
+    aurora: 'radial-gradient(ellipse at 20% 50%, #00f260 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, #0575e6 0%, transparent 50%), linear-gradient(135deg,#0f2027 0%,#203a43 50%,#2c5364 100%)',
+    neon: 'linear-gradient(135deg,#fc00ff 0%,#00dbde 50%,#ff8a00 100%)',
+};
+function setPresetBg(key){
+    $$('.bg-preset').forEach(p => p.classList.toggle('active', p.dataset.bg === key));
+    if (key === 'default') { clearCustomBg(); return; }
+    const bg = BG_PRESETS[key];
+    if (!bg) return;
+    document.body.style.backgroundImage = bg;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundAttachment = 'fixed';
+    try { localStorage.setItem('vex_bg', JSON.stringify({ type:'preset', key })); } catch(_){}
+    toast('Sfondo ' + key + ' applicato');
+}
+function handleBgUpload(input){
+    const file = input.files && input.files[0];
+    if (!file) return;
+    if (file.size > 5*1024*1024) return toast('Max 5MB','err');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        document.body.style.backgroundImage = `url("${dataUrl}")`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+        try { localStorage.setItem('vex_bg', JSON.stringify({ type:'custom', dataUrl })); } catch(_){ toast('Immagine troppo grande per localStorage','err'); }
+        toast('Sfondo caricato');
+    };
+    reader.readAsDataURL(file);
+}
+function setCustomBgUrl(url){
+    url = String(url||'').trim();
+    if (!url) return toast('URL vuoto','err');
+    document.body.style.backgroundImage = `url("${url}")`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    try { localStorage.setItem('vex_bg', JSON.stringify({ type:'url', url })); } catch(_){}
+    toast('Sfondo URL applicato');
+}
+function clearCustomBg(){
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundSize = '';
+    document.body.style.backgroundAttachment = '';
+    $$('.bg-preset').forEach(p => p.classList.remove('active'));
+    const def = document.querySelector('.bg-preset[data-bg="default"]');
+    if (def) def.classList.add('active');
+    try { localStorage.removeItem('vex_bg'); } catch(_){}
+    updateTheme();
+    toast('Sfondo rimosso');
+}
+function loadBg(){
+    try{
+        const raw = localStorage.getItem('vex_bg');
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        if (d.type === 'preset' && BG_PRESETS[d.key]) setPresetBg(d.key);
+        else if (d.type === 'custom' && d.dataUrl) {
+            document.body.style.backgroundImage = `url("${d.dataUrl}")`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundAttachment = 'fixed';
+        } else if (d.type === 'url' && d.url) {
+            document.body.style.backgroundImage = `url("${d.url}")`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundAttachment = 'fixed';
+        }
+    }catch(_){}
+}
+setTimeout(loadBg, 150);
 async function doUpdate(){
     if (!confirm('Aggiornare bot e dashboard dal repo e riavviare?')) return;
     const btn = $('#updateBtn');
