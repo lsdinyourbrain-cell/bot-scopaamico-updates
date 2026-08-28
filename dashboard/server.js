@@ -743,22 +743,38 @@ app.get('/api/pfp/:jid', async (req, res) => {
             }
         } catch (_) {}
 
-        // Fallback: usa ui-avatars come placeholder realistico
+        // Se è una richiesta immagine (img src), fai redirect diretto — accetta anche */* ma non application/json
+        const accept = String(req.headers.accept || '');
+        const isImageReq = (!accept.includes('application/json') && (accept.includes('image') || accept.includes('*/*') || req.headers['sec-fetch-dest'] === 'image')) || req.query.redirect === '1';
+        // Cerca placeholder
         const initials = jid.split('@')[0].slice(-4).replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'VX';
         let bg = '7c5cff';
         try {
             let h = 0;
             for (let i = 0; i < jid.length; i++) h = (h * 31 + jid.charCodeAt(i)) >>> 0;
-            const hue = h % 360;
-            // Converti HSL a hex approssimato per ui-avatars
-            bg = `hsl(${hue},65%,45%)`.replace(/[^0-9,]/g, '').split(',')[0] || '7c5cff';
-            // ui-avatars vuole esadecimale, usiamo hash per colore
             const colors = ['7c5cff','ff4ecd','22c55e','f59e0b','3b82f6','ef4444','06b6d4','8b5cf6'];
             bg = colors[h % colors.length];
         } catch (_) {}
-
-        // Placeholder realistico via ui-avatars (sembra una vera PFP)
         const placeholder = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${bg}&color=fff&size=128&bold=true&format=svg`;
+        if (isImageReq) {
+            // Prova a trovare URL reale, altrimenti placeholder
+            let realUrl = null;
+            try {
+                const db2 = safeReadJSON(DB_FILE, {});
+                if (jid.endsWith('@g.us') && db2._groupInfo?.[jid]?.photoUrl) realUrl = db2._groupInfo[jid].photoUrl;
+                else {
+                    for (const gid of Object.keys(db2)) {
+                        if (!gid.endsWith('@g.us')) continue;
+                        const u = db2[gid]?.[jid];
+                        if (u?.pfpUrl) { realUrl = u.pfpUrl; break; }
+                    }
+                }
+            } catch (_) {}
+            const target = realUrl || placeholder;
+            // Se è un URL http, fai redirect, altrimenti prova a fetchare e proxyare
+            if (target.startsWith('http')) return res.redirect(target);
+            return res.json({ ok: true, url: target });
+        }
 
         // Se il bot è in esecuzione, potremmo provare a usare Baileys per fetch reale,
         // ma per ora restituiamo placeholder con cache. Il frontend proverà a caricare

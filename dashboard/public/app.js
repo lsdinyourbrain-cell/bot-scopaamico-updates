@@ -29,7 +29,7 @@ const fetchJSON = async (url, opts = {}) => {
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     return data;
 };
-const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 const fmtBytes = (n) => {
     if (n < 1024) return n + ' B';
     if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
@@ -333,7 +333,7 @@ function renderGroups(list){
     });
     const el = $('#groupsList');
     if (!el) return;
-    if (!filtered.length) { el.innerHTML = '<div class="muted" style="padding:14px;text-align:center">✦ Nessun gruppo trovato per “${esc(q)}”</div>'; return; }
+    if (!filtered.length) { el.innerHTML = `<div class="muted" style="padding:14px;text-align:center">✦ Nessun gruppo trovato per “${esc(q)}”</div>`; return; }
     el.innerHTML = filtered.map(g => {
         const hasRealName = g.name && g.name !== g.jid;
         const displayName = hasRealName ? g.name : g.jid;
