@@ -147,10 +147,14 @@ window.addEventListener('resize', () => {
 });
 
 function navigate(page){
+    console.log('[nav] ->', page);
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
     $$('.pill-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
-    updatePillIndicator(page);
-    $$('.page').forEach(p => p.classList.toggle('active', p.id === `page-${page}`));
+    $$('.page').forEach(p => {
+        const isActive = p.id === `page-${page}`;
+        p.classList.toggle('active', isActive);
+        if (isActive) console.log('[nav] show', p.id);
+    });
     const titles = {
         overview: ['Overview','Stato del bot e sistema'],
         groups: ['Gruppi','Gestisci impostazioni per gruppo'],
@@ -160,6 +164,7 @@ function navigate(page){
         owners: ['Owner','Gestisci gli owner del bot'],
         config: ['Config','Impostazioni e file grezzi'],
         logs: ['Logs','Ultime righe di logs/bot.log'],
+        settings: ['Tema','Personalizza vetro e sfondo'],
     };
     const [t, s] = titles[page] || [page, ''];
     const pt = $('#pageTitle'), ps = $('#pageSub');
@@ -236,7 +241,15 @@ async function fetchTopUsers(){
             const realIdx = [1,0,2][idx];
             const name = u.name || u.nickname || u.jid.split('@')[0];
             const phone = u.phoneNumber ? '+'+String(u.phoneNumber).split('@')[0].replace(/[^0-9]/g,'') : '+'+String(u.jid).split('@')[0].replace(/[^0-9]/g,'');
-            const topGroup = (u.groups && u.groups[0]) ? (u.groups[0].name || u.groups[0].jid) : (u.groups && u.groups.length ? u.groups[0].jid : '');
+            // Gruppo dove ha più messaggi bot (non il primo a caso)
+            let topGroup = '';
+            let topMsgs = -1;
+            if (u.msgsByGroup) {
+                for (const [gid, cnt] of Object.entries(u.msgsByGroup)) {
+                    if (cnt > topMsgs) { topMsgs = cnt; const g = (u.groups||[]).find(x=>x.jid===gid); topGroup = g ? (g.name || g.jid) : gid; }
+                }
+            }
+            if (!topGroup) topGroup = (u.groups && u.groups[0]) ? (u.groups[0].name || u.groups[0].jid) : '';
             const size = realIdx===0 ? 72 : 56;
             const border = realIdx===0 ? '3px solid rgba(255,215,0,0.9)' : realIdx===1 ? '2px solid rgba(192,192,192,0.9)' : '2px solid rgba(205,127,50,0.9)';
             return `
