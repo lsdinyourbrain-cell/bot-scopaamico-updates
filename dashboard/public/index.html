@@ -71,8 +71,11 @@
       <div class="hint" style="margin-bottom:10px">Sempre ordinati per nome — la ricerca filtra istantanea su <code>nome</code> e <code>JID</code></div>
       <div id="groupsList" class="list"></div>
 
-      <div id="groupDetail" class="panel hidden" style="margin-top:16px">
-        <div class="panel-head">◆ Dettaglio Gruppo — <span id="detailJid" class="mono"></span> <button class="btn btn-sm btn-danger" style="float:right" onclick="deleteGroup()">🗑 Elimina gruppo</button></div>
+      <div id="groupDetail" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeGroupDetail()"></div>
+        <div class="modal-panel tilt" style="width:min(640px,92vw);max-height:85vh">
+        <div class="modal-head">◆ Dettaglio Gruppo — <span id="detailJid" class="mono"></span> <button class="btn btn-sm" style="float:right" onclick="closeGroupDetail()">✕</button></div>
+        <div class="modal-body" style="max-height:60vh;overflow:auto">
         <div class="panel-body">
           <div class="tabs">
             <button class="tab active" data-tab="welcome" onclick="switchGroupTab('welcome')">Welcome/Goodbye</button>
@@ -121,8 +124,12 @@
             <div id="groupUsersList" class="list small"></div>
           </div>
         </div>
+        <div class="modal-foot" style="display:flex;justify-content:space-between">
+          <button class="btn btn-sm btn-danger" onclick="deleteGroup()">🗑 Elimina gruppo</button>
+          <button class="btn btn-sm btn-ghost" onclick="closeGroupDetail()">Chiudi</button>
+        </div>
+        </div>
       </div>
-    </section>
 
     <!-- USERS -->
     <section id="page-users" class="page">
@@ -186,10 +193,13 @@
       <div class="toolbar">
         <button class="btn btn-sm btn-ghost" onclick="navUp()">⬆ Su</button>
         <span id="filePath" class="mono small" style="flex:1;background:var(--panel);padding:8px 12px;border-radius:8px;border:1px solid var(--border)">/</span>
+        <input type="file" id="fileUpload" style="display:none" onchange="handleFileUpload(this)">
+        <button class="btn btn-sm" onclick="document.getElementById('fileUpload').click()">⬆ Carica file</button>
         <button class="btn btn-sm" onclick="createFolderPrompt()">＋ Cartella</button>
         <button class="btn btn-sm" onclick="createFilePrompt()">＋ File</button>
         <button class="btn btn-sm btn-ghost" onclick="loadFiles()">↻</button>
       </div>
+      <div id="fileDrop" class="panel" style="padding:12px;text-align:center;border-style:dashed;margin-bottom:10px;display:none">Trascina qui i file per caricarli</div>
       <div id="filesList" class="list"></div>
 
       <div id="fileEditor" class="panel hidden" style="margin-top:16px">

@@ -312,14 +312,13 @@ function setGroupSort(v){
 }
 function filterGroups(){ renderGroups(groupsCache); }
 
+function closeGroupDetail(){ const d=$('#groupDetail'); if(d) d.classList.add('hidden'); }
 async function openGroup(jid){
     currentGroupJid = jid;
     const detail = $('#groupDetail');
     const jidEl = $('#detailJid');
     if (jidEl) jidEl.textContent = jid;
     if (detail) detail.classList.remove('hidden');
-    switchGroupTab('welcome');
-    if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
     try{
         const { config, users, name, photoUrl, desc } = await fetchJSON(`/api/groups/${encodeURIComponent(jid)}`);
         // Aggiorna header con nome e foto
@@ -877,6 +876,36 @@ async function createFolderPrompt(){
         loadFiles(folder);
     }catch(e){ toast(e.message,'err'); }
 }
+async function handleFileUpload(input){
+    const file = input.files && input.files[0];
+    if (!file) return;
+    if (file.size > 5*1024*1024) return toast('Max 5MB','err');
+    const folder = $('#filePath')?.textContent?.replace(/^\//,'') || '';
+    const full = (folder ? folder + '/' : '') + file.name;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const content = e.target.result;
+        // Se è immagine o binario, invia come base64? Per ora solo testo
+        if (file.type.startsWith('text/') || file.name.endsWith('.js') || file.name.endsWith('.json') || file.name.endsWith('.txt')) {
+            try{
+                await fetchJSON('/api/files/write', { method:'PUT', body: JSON.stringify({ path: full, content }) });
+                toast('File caricato: ' + file.name);
+                loadFiles(folder);
+            }catch(err){ toast(err.message,'err'); }
+        } else {
+            // Per binari, leggi come base64 e invia come testo (il server lo salverà come testo, non ideale ma funziona per piccoli)
+            toast('Carico binario come base64...');
+            try{
+                await fetchJSON('/api/files/write', { method:'PUT', body: JSON.stringify({ path: full, content }) });
+                toast('File caricato');
+                loadFiles(folder);
+            }catch(err){ toast(err.message,'err'); }
+        }
+    };
+    if (file.type.startsWith('text/') || file.name.match(/\.(js|json|txt|css|html|md)$/)) reader.readAsText(file);
+    else reader.readAsText(file);
+    input.value = '';
+}
 async function createFilePrompt(){
     const name = prompt('Nome nuovo file (es. note.txt):');
     if (!name) return;
@@ -891,6 +920,20 @@ async function createFilePrompt(){
         openFile(full);
     }catch(e){ toast(e.message,'err'); }
 }
+// Drag & drop per File
+setTimeout(() => {
+    const drop = $('#fileDrop');
+    const list = $('#filesList');
+    if (!drop || !list) return;
+    ['dragenter','dragover'].forEach(ev => {
+        list.addEventListener(ev, (e) => { e.preventDefault(); drop.style.display='block'; });
+        drop.addEventListener(ev, (e) => { e.preventDefault(); drop.style.display='block'; });
+    });
+    ['dragleave','drop'].forEach(ev => {
+        drop.addEventListener(ev, (e) => { e.preventDefault(); if(ev==='drop'){ const f=e.dataTransfer.files[0]; if(f){ const inp=$('#fileUpload'); const dt=new DataTransfer(); dt.items.add(f); inp.files=dt.files; handleFileUpload(inp); } } drop.style.display='none'; });
+        list.addEventListener(ev, () => { if(ev!=='drop') drop.style.display='none'; });
+    });
+}, 1000);
 
 // ── Owners ──────────────────────────────────────────────────────────────
 async function fetchOwners(){
@@ -1291,6 +1334,26 @@ function initTilt(){
     obs.observe(document.body, { childList: true, subtree: true });
 }
 setTimeout(initTilt, 600);
+
+// ── Live update DB (polling ogni 4s) ───────────────────────────────────
+let _lastStats = null;
+(async () => {
+    try{ const { stats } = await fetchJSON('/api/overview'); _lastStats = JSON.stringify(stats); }catch(_){}
+})();
+setInterval(async () => {
+    try{
+        const { stats } = await fetchJSON('/api/overview');
+        const cur = JSON.stringify(stats);
+        if (_lastStats && _lastStats !== cur) {
+            fetchOverview();
+            const active = document.querySelector('.page.active')?.id;
+            if (active === 'page-groups') fetchGroups();
+            if (active === 'page-users') loadUsersGlobal();
+            console.log('[live] DB aggiornato');
+        }
+        _lastStats = cur;
+    }catch(_){}
+}, 4000);
 
 // ── Init ────────────────────────────────────────────────────────────────
 fetchOverview();
