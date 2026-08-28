@@ -8,45 +8,21 @@
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-icon">✦</div>
+  <header class="top-pill">
+    <div class="top-pill-left">
+      <div class="brand-icon" style="width:32px;height:32px;font-size:16px">✦</div>
       <div>
-        <div class="brand-title neon">VEX BOT</div>
-        <div class="brand-sub">Dashboard Locale</div>
+        <div class="brand-title neon" style="font-size:14px">VEX BOT</div>
+        <div class="brand-sub" style="font-size:10px">Dashboard Locale · <span id="topTime"></span> <span id="liveDot" class="live-dot" title="API online" style="margin-left:6px"></span></div>
       </div>
     </div>
-    <nav class="nav">
-      <button class="nav-btn active" data-page="overview">✦ Overview</button>
-      <button class="nav-btn" data-page="groups">◆ Gruppi</button>
-      <button class="nav-btn" data-page="users">◇ Utenti</button>
-      <button class="nav-btn" data-page="phrases">✧ Frasi</button>
-      <button class="nav-btn" data-page="files">⬥ File</button>
-      <button class="nav-btn" data-page="owners">★ Owner</button>
-      <button class="nav-btn" data-page="config">⬥ Config</button>
-      <button class="nav-btn" data-page="logs">▸ Logs</button>
-      <button class="nav-btn" data-page="settings">⚙ Tema</button>
-    </nav>
-    <div class="sidebar-foot">
-      <div class="foot-line">✦ ◆ ✦</div>
-      <div class="foot-text">Solo localhost<br><span>127.0.0.1:3001</span></div>
-      <div class="foot-ver">Vex Bot v1.0</div>
+    <div class="top-pill-right">
+      <button id="updateBtn" class="btn btn-sm" onclick="doUpdate()" style="background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:50px">↻ Aggiorna</button>
+      <button id="refreshBtn" class="btn btn-sm btn-ghost" style="border-radius:50px">↻</button>
     </div>
-  </aside>
+  </header>
 
-  <main class="main">
-    <header class="topbar">
-      <div class="topbar-left">
-        <h1 id="pageTitle" class="neon">Overview</h1>
-        <p id="pageSub">Stato del bot e sistema</p>
-      </div>
-      <div class="topbar-right">
-        <span id="liveDot" class="live-dot" title="API online"></span>
-        <span id="topTime"></span>
-        <button id="updateBtn" class="btn" onclick="doUpdate()" style="background:linear-gradient(135deg,#22c55e,#16a34a)">↻ Aggiorna bot+sito</button>
-        <button id="refreshBtn" class="btn btn-ghost">↻</button>
-      </div>
-    </header>
+  <main class="main" style="margin-left:0">
 
     <div id="toast" class="toast hidden"></div>
 
@@ -359,29 +335,33 @@
 
   </main>
 
-  <!-- Bottom pill navigation — come foto Apple Music -->
+  <!-- Bottom pill — tutti i tab, vetro Apple puro come foto -->
   <nav class="bottom-pill" id="bottomPill">
-    <button class="pill-btn active" data-page="overview" onclick="navigate('overview')" aria-label="Home">
-      <span class="pill-icon">⌂</span>
-      <span class="pill-label">Home</span>
+    <button class="pill-btn active" data-page="overview" onclick="navigate('overview')">
+      <span class="pill-icon">⌂</span><span class="pill-label">Home</span>
     </button>
-    <button class="pill-btn" data-page="groups" onclick="navigate('groups')" aria-label="Gruppi">
-      <span class="pill-icon">▦</span>
-      <span class="pill-label">Gruppi</span>
+    <button class="pill-btn" data-page="groups" onclick="navigate('groups')">
+      <span class="pill-icon">▦</span><span class="pill-label">Gruppi</span>
     </button>
-    <button class="pill-btn" data-page="users" onclick="navigate('users')" aria-label="Utenti">
-      <span class="pill-icon">◇</span>
-      <span class="pill-label">Utenti</span>
+    <button class="pill-btn" data-page="users" onclick="navigate('users')">
+      <span class="pill-icon">◇</span><span class="pill-label">Utenti</span>
     </button>
-    <button class="pill-btn" data-page="phrases" onclick="navigate('phrases')" aria-label="Frasi">
-      <span class="pill-icon">✧</span>
-      <span class="pill-label">Frasi</span>
+    <button class="pill-btn" data-page="phrases" onclick="navigate('phrases')">
+      <span class="pill-icon">✧</span><span class="pill-label">Frasi</span>
     </button>
-    <button class="pill-btn" data-page="files" onclick="navigate('files')" aria-label="File">
-      <span class="pill-icon">⬥</span>
-      <span class="pill-label">File</span>
+    <button class="pill-btn" data-page="files" onclick="navigate('files')">
+      <span class="pill-icon">⬥</span><span class="pill-label">File</span>
     </button>
-    <button class="pill-btn pill-btn--circle" data-page="settings" onclick="navigate('settings')" aria-label="Tema">
+    <button class="pill-btn" data-page="owners" onclick="navigate('owners')">
+      <span class="pill-icon">★</span><span class="pill-label">Owner</span>
+    </button>
+    <button class="pill-btn" data-page="config" onclick="navigate('config')">
+      <span class="pill-icon">⬡</span><span class="pill-label">Config</span>
+    </button>
+    <button class="pill-btn" data-page="logs" onclick="navigate('logs')">
+      <span class="pill-icon">≡</span><span class="pill-label">Logs</span>
+    </button>
+    <button class="pill-btn pill-btn--circle" data-page="settings" onclick="navigate('settings')" title="Tema">
       <span class="pill-icon">⚙</span>
     </button>
   </nav>
