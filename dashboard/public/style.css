@@ -453,7 +453,7 @@ body.liquid-glass .top-pill .brand-sub,
 body.liquid-glass .top-pill #topTime{color:rgba(0,0,0,0.6) !important}
 body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
 
-/* Bottom pill — Apple Music pill 400x100 puro, da 0 */
+/* Bottom pill — Apple Music pill 400x100 puro, centrata, mai tagliata */
 .bottom-pill{
   position:fixed;
   bottom:16px;
@@ -464,13 +464,13 @@ body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
   gap:2px;
   padding:6px 8px;
   width: auto;
-  max-width: calc(100% - 16px);
+  max-width: calc(100% - 20px);
   height: 62px;
-  background: rgba(255,255,255,0.42);
+  background: rgba(255,255,255,0.46);
   backdrop-filter: blur(25px) saturate(200%);
   -webkit-backdrop-filter: blur(25px) saturate(200%);
-  border: 1px solid rgba(255,255,255,0.50);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid rgba(255,255,255,0.55);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.10);
   border-radius: 50px;
   z-index:40;
   user-select:none;
@@ -479,16 +479,10 @@ body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
   overflow-y:hidden;
   scrollbar-width:none;
   -ms-overflow-style:none;
+  box-sizing:border-box;
 }
 .bottom-pill::-webkit-scrollbar{display:none}
-.bottom-pill::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:50px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 55%);
-  pointer-events:none;
-}
+.bottom-pill::before{display:none}
 .pill-indicator{
   position:absolute;
   top:6px;
