@@ -63,8 +63,7 @@ function formatDate(iso){
     try { return new Date(iso).toLocaleString('it-IT'); } catch { return String(iso||''); }
 }
 
-// ── Navigation + pill indicator slide ───────────────────────────────────
-let _pillRaf = null, _pillTargetX = 0, _pillTargetW = 0, _pillCurX = 0, _pillCurW = 0;
+// ── Pill indicator — semplice, stabile, senza drag glitchato ─────────────
 function updatePillIndicator(page, instant=false){
     const pill = $('#bottomPill'), ind = $('#pillIndicator');
     if (!pill || !ind) return;
@@ -72,75 +71,20 @@ function updatePillIndicator(page, instant=false){
     if (!btn) return;
     const pillRect = pill.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
-    _pillTargetX = btnRect.left - pillRect.left;
-    _pillTargetW = btnRect.width;
-    if (instant) { _pillCurX = _pillTargetX; _pillCurW = _pillTargetW; ind.style.transform = `translateX(${_pillCurX}px)`; ind.style.width = _pillCurW + 'px'; return; }
-    const animate = () => {
-        _pillCurX += (_pillTargetX - _pillCurX) * 0.18;
-        _pillCurW += (_pillTargetW - _pillCurW) * 0.18;
-        ind.style.transform = `translateX(${_pillCurX}px)`;
-        ind.style.width = _pillCurW + 'px';
-        if (Math.abs(_pillTargetX - _pillCurX) > 0.5 || Math.abs(_pillTargetW - _pillCurW) > 0.5) {
-            _pillRaf = requestAnimationFrame(animate);
-        } else {
-            _pillCurX = _pillTargetX; _pillCurW = _pillTargetW;
-            ind.style.transform = `translateX(${_pillCurX}px)`;
-            ind.style.width = _pillCurW + 'px';
-            _pillRaf = null;
-        }
-    };
-    if (!_pillRaf) _pillRaf = requestAnimationFrame(animate);
+    const x = btnRect.left - pillRect.left;
+    const w = btnRect.width;
+    if (instant) {
+        ind.style.transition = 'none';
+        ind.style.transform = `translateX(${x}px)`;
+        ind.style.width = w + 'px';
+        // Force reflow
+        void ind.offsetWidth;
+        ind.style.transition = '';
+    } else {
+        ind.style.transform = `translateX(${x}px)`;
+        ind.style.width = w + 'px';
+    }
 }
-function initPillDrag(){
-    const pill = $('#bottomPill');
-    if (!pill || pill.dataset.dragInit) return;
-    pill.dataset.dragInit = '1';
-    let dragging = false, startX = 0, startScroll = 0;
-    pill.addEventListener('pointerdown', (e) => {
-        if (e.target.closest('button')) return;
-        dragging = true;
-        startX = e.clientX;
-        startScroll = pill.scrollLeft;
-        pill.setPointerCapture(e.pointerId);
-        pill.style.cursor = 'grabbing';
-    });
-    pill.addEventListener('pointermove', (e) => {
-        if (!dragging) return;
-        const dx = e.clientX - startX;
-        // Muovi l'indicatore fluidamente con il dito
-        const ind = $('#pillIndicator');
-        if (ind) {
-            ind.style.transform = `translateX(${_pillCurX + dx * 0.15}px)`;
-        }
-        // Scorri la pill se è overflow
-        if (Math.abs(dx) > 10) pill.scrollLeft = startScroll - dx;
-    });
-    pill.addEventListener('pointerup', (e) => {
-        if (!dragging) return;
-        dragging = false;
-        pill.style.cursor = '';
-        pill.releasePointerCapture(e.pointerId);
-        // Snap al bottone più vicino
-        const x = e.clientX;
-        let closest = null, bestDist = Infinity;
-        pill.querySelectorAll('.pill-btn').forEach(btn => {
-            const r = btn.getBoundingClientRect();
-            const cx = r.left + r.width/2;
-            const d = Math.abs(cx - x);
-            if (d < bestDist) { bestDist = d; closest = btn; }
-        });
-        if (closest && bestDist < 80) {
-            const page = closest.dataset.page;
-            if (page) navigate(page);
-        } else {
-            // Torna alla posizione corretta
-            const active = pill.querySelector('.pill-btn.active');
-            if (active) updatePillIndicator(active.dataset.page);
-        }
-    });
-    pill.addEventListener('pointercancel', () => { dragging = false; pill.style.cursor = ''; });
-}
-setTimeout(initPillDrag, 800);
 window.addEventListener('resize', () => {
     const active = document.querySelector('.pill-btn.active');
     if (active) updatePillIndicator(active.dataset.page, true);

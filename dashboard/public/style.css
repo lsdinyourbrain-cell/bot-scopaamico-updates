@@ -453,7 +453,7 @@ body.liquid-glass .top-pill .brand-sub,
 body.liquid-glass .top-pill #topTime{color:rgba(0,0,0,0.6) !important}
 body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
 
-/* Bottom pill — Apple Music pill 400x100 puro, centrata, mai tagliata */
+/* Bottom pill — rifatta da 0, stabile, mai tagliata, glitch-free */
 .bottom-pill{
   position:fixed;
   bottom:16px;
@@ -461,37 +461,33 @@ body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
   transform:translateX(-50%);
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:2px;
   padding:6px 8px;
-  width: auto;
-  max-width: calc(100% - 20px);
-  height: 62px;
-  background: rgba(255,255,255,0.46);
-  backdrop-filter: blur(25px) saturate(200%);
-  -webkit-backdrop-filter: blur(25px) saturate(200%);
+  width: fit-content;
+  max-width: min(560px, calc(100% - 24px));
+  height: 56px;
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
   border: 1px solid rgba(255,255,255,0.55);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.10);
-  border-radius: 50px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 999px;
   z-index:40;
   user-select:none;
-  touch-action:pan-x;
-  overflow-x:auto;
-  overflow-y:hidden;
-  scrollbar-width:none;
-  -ms-overflow-style:none;
   box-sizing:border-box;
+  overflow:hidden;
 }
-.bottom-pill::-webkit-scrollbar{display:none}
-.bottom-pill::before{display:none}
 .pill-indicator{
   position:absolute;
   top:6px;
   bottom:6px;
-  background: rgba(255,78,205,0.18);
-  border-radius: 50px;
-  box-shadow: 0 2px 10px rgba(255,78,205,0.18) inset;
+  background: rgba(255,78,205,0.16);
+  border-radius: 999px;
   pointer-events:none;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform, width;
+  box-shadow: 0 1px 6px rgba(255,78,205,0.12) inset;
 }
 .pill-btn{
   position:relative;
@@ -501,24 +497,29 @@ body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
   align-items:center;
   justify-content:center;
   gap:1px;
-  flex:1;
-  height:44px;
-  padding:6px 4px;
+  flex:0 0 auto;
+  min-width:56px;
+  height:42px;
+  padding:6px 8px;
   border:none;
   background:transparent;
-  color:rgba(0,0,0,0.58);
+  color:rgba(0,0,0,0.60);
   border-radius:50px;
   cursor:pointer;
-  font-size:11px;
+  font-size:10px;
   font-weight:600;
-  transition: color .2s ease, transform .2s cubic-bezier(0.22,1,0.36,1);
+  transition: color .2s ease;
+  white-space:nowrap;
 }
 .pill-btn:hover{ color: rgba(0,0,0,0.85); }
 .pill-btn.active{ color: #ff4ecd; }
-.pill-btn.active .pill-icon{transform:scale(1.08)} 
+.pill-btn.active .pill-icon{transform:scale(1.08)}
 .pill-btn--circle{
-  flex:0 0 44px;
-  min-width:44px;
+  flex:0 0 42px;
+  min-width:42px;
+  width:42px;
+  height:42px;
+  padding:0;
 }
 .pill-icon{
   font-size:18px;
