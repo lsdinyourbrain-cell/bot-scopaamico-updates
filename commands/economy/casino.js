@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'casino',
     aliases: [],
@@ -11,7 +13,7 @@ module.exports = {
 
 
             await sendButtons(sock, from,
-                "🎰 *_CASINÒ_*\n━━━━━━━━━━━━━━\n▸ 🎲 Premi un pulsante per giocare.\n▸ 🍀 Buona fortuna, ma senza vendere il divano 😭\n━━━━━━━━━━━━━━\n◈ _Vex Bot_",
+                "🎰 *_CASINÒ_*\n━━━━━━━━━━━━━━\n▸ 🎲 Premi un pulsante per giocare.\n▸ 🍀 Buona fortuna, ma senza vendere il divano 😭\n━━━━━━━━━━━━━━\n",
                 [
                     { label: '.dadi', id: 'dadi 100' },
                     { label: '.slot', id: 'slot 100' },

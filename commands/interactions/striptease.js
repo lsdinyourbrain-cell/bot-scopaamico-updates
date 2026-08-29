@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  STRIPTEASE — Vex Bot
 //  Show a 3 atti sul bersaglio taggato: musica, luce, finale con voto.
@@ -59,14 +61,14 @@ module.exports = {
 
         // Atto 1
         await sock.sendMessage(from, {
-            text: `${T('Lo show comincia')} 🎬\n${SEP}\n▸ ${targetShow} sale sul palco\n▸ _${randomChoice(ATTI[0].testo)}_\n\n◈ _Vex Bot_`,
+            text: `${T('Lo show comincia')} 🎬\n${SEP}\n▸ ${targetShow} sale sul palco\n▸ _${randomChoice(ATTI[0].testo)}_\n\n`,
             mentions,
         });
         await sleep(2200);
 
         // Atto 2
         await sock.sendMessage(from, {
-            text: `${T('Atto secondo')} ${ATTI[1].icon}\n${SEP}\n▸ _${randomChoice(ATTI[1].testo)}_\n\n💸 _La platea impazzisce…_\n\n◈ _Vex Bot_`,
+            text: `${T('Atto secondo')} ${ATTI[1].icon}\n${SEP}\n▸ _${randomChoice(ATTI[1].testo)}_\n\n💸 _La platea impazzisce…_\n\n`,
             mentions,
         });
         await sleep(2200);
@@ -75,7 +77,7 @@ module.exports = {
         const voto = randomInt(70, 100);
         const bar = '█'.repeat(Math.round(voto / 10)) + '░'.repeat(10 - Math.round(voto / 10));
         await sock.sendMessage(from, {
-            text: `${T('Finale')} 🔥\n${SEP}\n▸ _${randomChoice(ATTI[2].testo)}_\n\n${SEP}\n🏆 *${votoLabel(voto)}*\n${bar} *${voto}%*\n\n◈ _Vex Bot_`,
+            text: `${T('Finale')} 🔥\n${SEP}\n▸ _${randomChoice(ATTI[2].testo)}_\n\n${SEP}\n🏆 *${votoLabel(voto)}*\n${bar} *${voto}%*\n\n`,
             mentions,
         });
 

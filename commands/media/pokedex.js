@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const axios = require('axios');
 const sharp = require('sharp');
 
@@ -194,14 +196,12 @@ module.exports = {
             await sock.sendMessage(from, {
                 image: cardBuffer,
                 caption: `📋 *_POKÉDEX_*
-━━━━━━━━━━━━━━
 ▸ *Nome:* _${displayName}_
 ▸ *#${String(id).padStart(3, '0')}_ · _Liv.${level}_ · _${type1}/${type2}_
-━━━━━━━━━━━━━━
 ▸ _Per uso ludico - non ufficiale_ 😄
-◈ _Vex Bot_`
+`
             }, { quoted: msg });
-            await prog.done('📋 *_POKÉDEX_*\n━━━━━━━━━━━━━━\n▸ _Scheda Pokédex generata!_\n◈ _Vex Bot_');
+            await prog.done('📋 *_POKÉDEX_*\n━━━━━━━━━━━━━━\n▸ _Scheda Pokédex generata!_\n');
 
         } catch (e) {
             console.error('[pokedex]', e);

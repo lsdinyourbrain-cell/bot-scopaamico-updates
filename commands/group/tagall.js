@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { flagForJid } = require('../../lib/flag');
 
 const SEP = '━━━━━━━━━━━━━━';
@@ -21,13 +23,11 @@ ${SEP}`
             );
         }
         if (!isSenderAdmin) {
-            return reply(
-`⛔ *ACCESSO NEGATO*
-${SEP}
-Solo gli *admin del gruppo*
-possono usare *.tagall* 👑
-${SEP}`
-            );
+            return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
         }
 
         try {
@@ -45,7 +45,7 @@ ${header}
 ${SEP}
 ${lines.join('\n')}
 ${SEP}
-◈ _Vex Bot_`,
+`,
                 mentions: allJids,
             }, { quoted: msg });
 

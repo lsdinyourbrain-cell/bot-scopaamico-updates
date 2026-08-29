@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // Convertitore di unità. Uso: .converti <valore> <da> in <a>
 // Es: .converti 10 km in m, .converti 32 f in c, .converti 5 gb in mb
 
@@ -53,7 +55,10 @@ module.exports = {
         }
 
         const value = parseFloat(m[1].replace(',', '.'));
-        if (!Number.isFinite(value)) return reply("⚠️ Valore non valido.");
+        if (!Number.isFinite(value)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Valore non valido.')}
+${boxEnd()}`);
 
         const from = findUnit(m[2]);
         const to = findUnit(m[3]);
@@ -71,6 +76,6 @@ module.exports = {
             return reply(`⚠️ Impossibile convertire *${from.key}* in *${to.key}*: unità non compatibili.`);
         }
 
-        return reply(`🔄 *_Conversione_*\n━━━━━━━━━━━━━━━━━━\n▸ _${String(m[1]).replace('.', ',')} ${from.key}_ → _${formatNum(result)}_ ${to.key}\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        return reply(`🔄 *_Conversione_*\n━━━━━━━━━━━━━━━━━━\n▸ _${String(m[1]).replace('.', ',')} ${from.key}_ → _${formatNum(result)}_ ${to.key}\n━━━━━━━━━━━━━━━━━━\n`);
     },
 };

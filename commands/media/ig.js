@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const fs = require('fs/promises');
 const { downloadVideo } = require('../../lib/mediaDownloader');
 const { showProgress } = require('../../lib/loading');
@@ -24,10 +26,10 @@ module.exports = {
 
             await sock.sendMessage(
                 jid,
-                { video, caption: '✅ *_DOWNLOAD_*\n━━━━━━━━━━━━━━\n▸ _Download completato!_\n◈ _Vex Bot_' },
+                { video, caption: '✅ *_DOWNLOAD_*\n━━━━━━━━━━━━━━\n▸ _Download completato!_\n' },
                 { quoted: msg }
             );
-            await prog.done('📥 *_INSTAGRAM_*\n━━━━━━━━━━━━━━\n▸ _Video Instagram scaricato!_\n◈ _Vex Bot_');
+            await prog.done('📥 *_INSTAGRAM_*\n━━━━━━━━━━━━━━\n▸ _Video Instagram scaricato!_\n');
         } catch (error) {
             console.error('[ig]', error.message);
             await sock.sendMessage(jid, { text: "❌ Link non valido o download non disponibile." });

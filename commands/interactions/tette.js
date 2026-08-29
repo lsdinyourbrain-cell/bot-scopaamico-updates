@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 const bar = (pct) => {
     const filled = Math.round(pct/10);

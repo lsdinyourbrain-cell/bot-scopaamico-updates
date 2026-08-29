@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  INDOVINA_EMOJI — Vex Bot
 //  Indovina film/serie/canzoni dai "rebus" a emoji. Livelli facile/media/

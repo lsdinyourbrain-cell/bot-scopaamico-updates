@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 const { dispOf, resolveJid } = require('../../lib/jid');
 
@@ -12,11 +14,26 @@ module.exports = {
         const { from, sender, isGroup, isSenderAdmin, isBotAdmin, targetJid, reply, services } = context;
         const { db, logGroupEvent, sameJid, isOwnerJid, getCachedGroupMeta, sendButtons } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ questo comando funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ questo comando è per gli admin del gruppo.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ prima rendimi amministratore, così posso farlo.");
-        if (!targetJid) return reply("⚠️ _[uso]:_ tagga la persona da rimuovere.");
-        if (sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ non puoi rimuovere te stesso/a con il bot.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('questo comando funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('questo comando è per gli admin del gruppo.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('prima rendimi amministratore, così posso farlo.')}
+${boxEnd()}`);
+        if (!targetJid) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('tagga la persona da rimuovere.')}
+${boxEnd()}`);
+        if (sameJid(targetJid, sender)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('non puoi rimuovere te stesso/a con il bot.')}
+${boxEnd()}`);
         if (isOwnerJid(targetJid, sock, db, null)) return reply("⛔ Non posso rimuovere l'owner del bot.");
 
         try {
@@ -30,10 +47,10 @@ module.exports = {
             logGroupEvent(from, 'ban', sender, null, targetJid, 'rimosso dal gruppo');
 
             await sendButtons(sock, from,
-                `👋 ${toDecorated('BAN', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                `👋 ${sec('BAN')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
-                    text: `👋 ${toDecorated('BAN', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `👋 ${sec('BAN')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n`,
                     mentions: [useJid],
                 }, { quoted: msg }));
         } catch (_) {

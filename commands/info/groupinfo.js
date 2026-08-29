@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'groupinfo',
     aliases: [],
@@ -13,11 +15,9 @@ module.exports = {
             if (!isGroup) {
                 return reply(
 `ℹ️ *_GROUPINFO_*
-━━━━━━━━━━━━━━━━━━
 ▸ Questo comando funziona solo
   all'interno di un _gruppo_. 👥
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`
+`
                 );
             }
 
@@ -58,22 +58,17 @@ module.exports = {
 
                 const txt =
 `🏷️ *_INFORMAZIONI GRUPPO_*
-━━━━━━━━━━━━━━━━━━
 ▸ 📛 Nome: _${meta.subject || 'N/D'}_
 ▸ 🆔 ID: _${from}_
 ▸ 📅 Creato: _${creation}_
 ▸ 👥 Membri: _${totalMembers}_
-━━━━━━━━━━━━━━━━━━
 📝 *Descrizione*
 ▸ _${desc}_
-━━━━━━━━━━━━━━━━━━
 👑 *Fondatore/SuperAdmin*
 ${superAdminLines || '▸ _(nessuno)_'}
-━━━━━━━━━━━━━━━━━━
 ⚙️ *Amministratori*
 ${adminLines || '▸ _(nessuno)_'}
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`;
 
                 // PFP del gruppo come allegato (fallback: solo testo)
                 let pfpUrl;

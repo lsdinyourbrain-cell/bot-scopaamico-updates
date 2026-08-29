@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { dispOf, resolveJid } = require('../../lib/jid');
 
 module.exports = {
@@ -11,7 +13,10 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
-        if (!isGroup) return reply("Questo comando funziona solo nei gruppi.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('Questo comando funziona solo nei gruppi.')}
+${boxEnd()}`);
         if (!targetJid) return reply("Tagga la persona a cui vuoi donare. Esempio: `.dona @utente 100`");
         if (sameJid(targetJid, sender)) return reply("Non puoi donare soldi a te stesso!");
 
@@ -31,7 +36,7 @@ module.exports = {
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `🎁 *_DONAZIONE!_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha donato _${amount}€_ a @${disp(targetJid)}! 🫶\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${formatMoney(senderData.money)}_\n◈ _Vex Bot_`,
+            text: `🎁 *_DONAZIONE!_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha donato _${amount}€_ a @${disp(targetJid)}! 🫶\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${formatMoney(senderData.money)}_\n`,
             mentions: [sender, targetJid],
         });
     },

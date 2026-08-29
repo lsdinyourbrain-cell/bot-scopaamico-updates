@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'spegni',
     aliases: [],
@@ -15,21 +17,23 @@ module.exports = {
             saveDB();
             return sendButtons(sock, from,
 `⏸️ *_BOT IN PAUSA_*
-━━━━━━━━━━━━━━━━━━
 ▸ Il bot è stato disattivato
   in questo gruppo
   da un amministratore.
 ▸ Premi il pulsante per
   riattivarlo.
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`,
+`,
                 [{ label: '.accendi', id: 'accendi' }],
                 msg);
         }
 
-        if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+        if (!isOwner) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
 
         setBotActive(false);
-        await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ 🛑 Bot in modalità\n  _SOSPENSIONE_.\n▸ Non risponderò a nessuno,\n  tranne che all'Owner.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+        await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ 🛑 Bot in modalità\n  _SOSPENSIONE_.\n▸ Non risponderò a nessuno,\n  tranne che all'Owner.\n━━━━━━━━━━━━━━━━━━\n");
     },
 };

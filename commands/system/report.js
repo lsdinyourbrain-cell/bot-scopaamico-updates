@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'report',
     aliases: ['segnala', 'bug', 'errore'],
@@ -11,7 +13,10 @@ module.exports = {
 
         const issue = String(textArgs || '').trim();
         if (!issue) {
-            return reply('⚠️ _[uso]:_ scrivi il problema da segnalare.\n▸ \`.report ho trovato un bug...\`');
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('scrivi il problema da segnalare. ▸ \\`.report ho trovato un bug...\\`')}
+${boxEnd()}`);
         }
 
         const ownerJid = String(ownerNumber || '').includes('@') ? ownerNumber : `${ownerNumber}@s.whatsapp.net`;
@@ -23,12 +28,10 @@ module.exports = {
             });
             await reply(
 `✅ *_SEGNALAZIONE INVIATA_*
-━━━━━━━━━━━━━━━━━━
 ▸ Segnalazione inviata al
   creatore del bot.
 ▸ Grazie per l'aiuto! 🙏
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         } catch (_) {
             await reply('❌ Non riesco a inoltrare la segnalazione. Riprova più tardi.');
         }

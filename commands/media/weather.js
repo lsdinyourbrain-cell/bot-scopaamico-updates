@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'weather',
     aliases: [],
@@ -24,14 +26,12 @@ module.exports = {
                 const description = current.weatherDesc?.[0]?.value || 'N/D';
                 await prog.done(
 `🌦️ *_METEO_*
-━━━━━━━━━━━━━━━━━━
 ▸ 📍 *${city}*
 ▸ 🌡️ _${current.temp_C}°C_
 ▸ _${description}_
 ▸ 💧 _Umidità:_ ${current.humidity}%
 ▸ 🌬️ _Vento:_ ${current.windspeedKmph} _km/h_
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
             } catch (_) {
                 await reply("❌ Non trovo il meteo di questa città. Riprova con un nome più preciso.");
             }

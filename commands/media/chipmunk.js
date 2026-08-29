@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const path = require('path');
@@ -39,7 +41,10 @@ module.exports = {
             }
 
             if (!audioBuffer) {
-                return reply('⚠️ _[uso]: rispondi a un messaggio vocale con *.chipmunk* per velocizzarlo._\n━━━━━━━━━━━━━━\n▸ 1. _Qualcuno manda un vocale_\n▸ 2. _Rispondi al vocale scrivendo *.chipmunk*_');
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a un messaggio vocale con *.chipmunk* per velocizzarlo._ ━━━━...')}
+${boxEnd()}`);
             }
 
             const prog = await showProgress(sock, from, { label: 'CHIPMUNK', duration: 2500, quoted: msg });
@@ -69,7 +74,7 @@ module.exports = {
                 mimetype: 'audio/ogg; codecs=opus',
                 ptt: true
             }, { quoted: msg });
-            await prog.done('🐿️ *_CHIPMUNK_*\n━━━━━━━━━━━━━━\n▸ _Effetto scoiattolo pronto!_\n◈ _Vex Bot_');
+            await prog.done('🐿️ *_CHIPMUNK_*\n━━━━━━━━━━━━━━\n▸ _Effetto scoiattolo pronto!_\n');
 
             fs.unlinkSync(inputPath);
             fs.unlinkSync(outputPath);

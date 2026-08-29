@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, header, footer, bullet } = require('../../lib/ui');
+const { S, SEP, header, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
     name: 'gay',

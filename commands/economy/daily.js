@@ -1,6 +1,7 @@
 'use strict';
 
-const { toDarkFont } = require('../../lib/font');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
+
 const EV = require('../../lib/events');
 
 module.exports = {
@@ -34,10 +35,11 @@ module.exports = {
             const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
             const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
 
-            await reply(toDarkFont(
-`🎁 *Bonus giornaliero*
-▸ Lordo: _+${grossBonus}€_ ▸ Netto: _+${taxed.net}€_${taxLine}${evLine}
-▸ Saldo: _${userData.money}€_
-▸ Vex Bot`));
+            await reply(`${sec('DAILY')}
+${boxOpen()}
+${line(`🎁 Lordo: +${grossBonus}€ → Netto: +${taxed.net}€${taxLine}`)}
+${evMult > 1 ? line(`💰 Evento x${evMult}`) : ''}
+${line(`💰 Saldo: ${userData.money}€`)}
+${boxEnd()}`);
     },
 };

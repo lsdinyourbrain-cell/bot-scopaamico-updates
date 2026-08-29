@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  NASTRO — Vex Bot
 //  Riepilogo del gruppo: totale bestemmie, utente più attivo, totale
@@ -38,7 +40,7 @@ ${SEP}
 ▸ I contatori partono quando i
   membri scrivono in chat.
 ${SEP}
-◈ _Vex Bot_`,
+`,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
 
@@ -87,7 +89,7 @@ ${SEP}
 🏆 *TOP 5 XP*
 ${topXpList}
 ${SEP}
-◈ _Vex Bot_`;
+`;
 
         // Tagga chi compare nel nastro: mostra i PN reali (dispOf) e passa le
         // mentions risolte, così i tag evidenziano anche nei pulsanti nativi.

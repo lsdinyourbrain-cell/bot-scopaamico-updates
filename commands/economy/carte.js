@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  CARTE — Vex Bot
 //  Bustine collezionabili stile Pokémon:

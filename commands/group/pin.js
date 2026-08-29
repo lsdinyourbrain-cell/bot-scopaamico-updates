@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'pin',
     aliases: ['fissa', 'unpin', 'sfissa'],
@@ -9,10 +11,22 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isReply, contextInfo, isSenderAdmin, isBotAdmin, reply, services } = context;
         const { sameJid } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
-        if (!isReply || !contextInfo?.stanzaId) return reply("⚠️ _[uso]:_ rispondi al messaggio da fissare.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('rendimi admin prima.')}
+${boxEnd()}`);
+        if (!isReply || !contextInfo?.stanzaId) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('rispondi al messaggio da fissare.')}
+${boxEnd()}`);
 
         const isUnpin = command === 'unpin' || command === 'sfissa';
 
@@ -41,7 +55,10 @@ module.exports = {
                 if (time > 7776000) time = 7776000; // max 90gg
                 if (time < 3600) time = 3600; // min 1h
             } else {
-                return reply("⚠️ _[uso]:_ formato tempo: .pin 24h / .pin 7d / .pin 30d");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('formato tempo: .pin 24h / .pin 7d / .pin 30d')}
+${boxEnd()}`);
             }
         }
 
@@ -52,8 +69,8 @@ module.exports = {
                 time,
             });
             const label = isUnpin
-                ? `🔓 *_UNPIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *sfissato*.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`
-                : `📌 *_PIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *fissato* per _${time / 3600}h_.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                ? `🔓 *_UNPIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *sfissato*.\n━━━━━━━━━━━━━━\n`
+                : `📌 *_PIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *fissato* per _${time / 3600}h_.\n━━━━━━━━━━━━━━\n`;
             await reply(label);
         } catch (e) {
             console.error('[pin] error:', e);

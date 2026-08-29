@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'crypto',
     aliases: ['cripto', 'bitcoin'],
@@ -24,7 +26,7 @@ module.exports = {
             const price = c.current_price?.toLocaleString('it-IT', { maximumFractionDigits: 2 }) || '?';
             const chg = c.price_change_percentage_24h;
             const arrow = chg >= 0 ? '📈' : '📉';
-            const txt = `🪙 *_${c.name}_* (_${c.symbol?.toUpperCase() || '?'}_)\n━━━━━━━━━━━━━━\n▸ 💰 *Prezzo:* _$${price}_\n▸ ${arrow} *24h:* _${chg?.toFixed(2) || '?'}%_\n▸ 🏆 *Posizione:* _#${c.market_cap_rank ?? '?'}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+            const txt = `🪙 *_${c.name}_* (_${c.symbol?.toUpperCase() || '?'}_)\n━━━━━━━━━━━━━━\n▸ 💰 *Prezzo:* _$${price}_\n▸ ${arrow} *24h:* _${chg?.toFixed(2) || '?'}%_\n▸ 🏆 *Posizione:* _#${c.market_cap_rank ?? '?'}_\n━━━━━━━━━━━━━━\n`;
             await prog.done(txt);
         } catch (_) {
             await reply('⚠️ _Errore nel recupero dei prezzi. Riprova più tardi._');

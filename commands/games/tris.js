@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { renderTrisBoard } = require('../../lib/tris');
 
 module.exports = {

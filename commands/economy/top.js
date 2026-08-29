@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const SEP = '━━━━━━━━━━━━━━━━━━━━';
 const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 const toBold = (s) => '*' + String(s||'').trim() + '*';
@@ -43,7 +45,10 @@ ${SEP}
         if (String(args[0] || '').toLowerCase() === 'profilo') {
             const idx = parseInt(args[1], 10);
             const entry = allSorted[idx - 1];
-            if (!entry) return reply('⚠️ Indice non valido: classifica cambiata, riprova.');
+            if (!entry) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Indice non valido: classifica cambiata, riprova.')}
+${boxEnd()}`);
             const [jid, data] = entry;
             const lvl = data.level || 1;
             const xp = data.xp || 0;

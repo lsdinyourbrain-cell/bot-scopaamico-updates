@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { toStyle } = require('../../lib/font');
-const { S, SEP, footer, bullet } = require('../../lib/ui');
+const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const T = (s) => toStyle(String(s).toUpperCase(), 'scriptBold');
 

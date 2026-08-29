@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  STRUTTURA — Vex Bot (solo OWNER)
 //  Mostra tutte le cartelle del bot con i NOMI dei file che contengono.
@@ -28,12 +30,19 @@ module.exports = {
         const { projectDir } = services;
 
         if (!isOwner) {
-            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ Comando riservato\n  all'Owner del bot.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+            return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
         }
 
         const root = String(args[0] || '').trim() ? path.join(projectDir, args[0]) : projectDir;
         if (!root.startsWith(projectDir) || !fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
-            return reply("⚠️ Cartella non trovata.");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Cartella non trovata.')}
+${boxEnd()}`);
         }
 
         const sections = [];
@@ -65,9 +74,7 @@ module.exports = {
 
         const text =
 `🗂️ *STRUTTURA DEL BOT*
-━━━━━━━━━━━━━━
 ${sections.join('\n\n')}
-━━━━━━━━━━━━━━
 ▸ Solo nomi file · niente contenuti
 ▸ \`.struttura commands\` per una sola cartella`;
 

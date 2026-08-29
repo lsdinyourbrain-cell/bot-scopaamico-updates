@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const { promisify } = require('util');
@@ -31,7 +33,10 @@ module.exports = {
                     audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
                 }
             }
-            if (!audioBuffer) return reply('⚠️ _[uso]: rispondi a un vocale con *.drunk* per effetto ubriaco._');
+            if (!audioBuffer) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a un vocale con *.drunk* per effetto ubriaco.')}
+${boxEnd()}`);
 
             const prog = await showProgress(sock, from, { label: 'VOCE UBRIACA', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `drunk_in_${Date.now()}.opus`);
@@ -40,7 +45,7 @@ module.exports = {
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'vibrato=f=5:d=0.5,aecho=0.8:0.9:200:0.2,asetrate=48000*0.95,aresample=48000', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🍻 *_DRUNK_*\n━━━━━━━━━━━━━━\n▸ _Effetto ubriaco pronto!_\n◈ _Vex Bot_');
+            await prog.done('🍻 *_DRUNK_*\n━━━━━━━━━━━━━━\n▸ _Effetto ubriaco pronto!_\n');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[drunk]', e);

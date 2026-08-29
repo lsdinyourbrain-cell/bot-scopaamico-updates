@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  METEO7 — Vex Bot
 //  Estensione di .weather: previsioni su 7 giorni (API gratuita wttr.in),
@@ -116,14 +118,14 @@ ${SEP}
             }
 
             const sent = await sendCarousel(sock, from, {
-                text: `🌤️ *_PREVISIONI 7 GIORNI_*\n${SEP}\n▸ 📍 _${cityName}_\n${SEP}\n▸ _Scorri per vedere la_\n  _settimana giorno per giorno_ 👇\n${SEP}\n◈ _Vex Bot_`,
+                text: `🌤️ *_PREVISIONI 7 GIORNI_*\n${SEP}\n▸ 📍 _${cityName}_\n${SEP}\n▸ _Scorri per vedere la_\n  _settimana giorno per giorno_ 👇\n${SEP}\n`,
                 cards,
             }, msg);
             if (!sent) {
                 const lines = consolidated.map((day, i) =>
                     `${day.icon} *${day.dow}* (${day.dateStr})\n   ${day.desc} · ${day.max}°/${day.min}° · pioggia ${day.rain}%`
                 ).join('\n');
-                await reply(`🌤️ *_METEO_* _${cityName} — 7 GIORNI_\n${SEP}\n${lines}\n${SEP}\n◈ _Vex Bot_`);
+                await reply(`🌤️ *_METEO_* _${cityName} — 7 GIORNI_\n${SEP}\n${lines}\n${SEP}\n`);
             }
         } catch (_) {
             await reply('❌ Non trovo il meteo di questa città. Riprova con un nome più preciso.');

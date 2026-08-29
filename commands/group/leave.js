@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'leave',
     aliases: ['esci', 'vattene'],
@@ -8,14 +10,18 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, isGroup, isSenderAdmin, reply } = context;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ non sono in un gruppo qui.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin possono cacciarmi.");
+        if (!isGroup) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('non sono in un gruppo qui.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin possono cacciarmi.')}
+${boxEnd()}`);
 
         await reply(`😔 *_LEAVE_*
-━━━━━━━━━━━━━━
 ▸ Me ne vado... ciao!
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         await sock.groupLeave(from);
     },
 };

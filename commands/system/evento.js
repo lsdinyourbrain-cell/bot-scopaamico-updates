@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 const EV = require('../../lib/events');
 
@@ -33,24 +35,20 @@ module.exports = {
                 saveDB();
                 return reply(
 `💥 *BOSS ABBATTUTO!* 💥
-━━━━━━━━━━━━━━━━━━
 ▸ @${sender.split('@')[0]} ha dato il colpo
   finale: _${shot.dmg} danno_!
 ▸ 🏆 Bottino: _+${shot.reward}€_
 ▸ 🐉 Pregio: *Cacciatore di Boss*
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
             }
             const pct = Math.max(0, Math.min(100, Math.round((shot.hp / shot.maxHp) * 100)));
             return reply(
 `💥 *BOSS: ${shot.hp}/${shot.maxHp} HP* (${pct}%)
-━━━━━━━━━━━━━━━━━━
 ▸ ⚔️ Colpo: _${shot.dmg} danno_
 ▸ 🔥 Continua a sparare!
 ▸ Chi dà il colpo finale
   vince tutto il bottino.
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         // ── EVENTO RACCOGLI: pioggia di soldi ─────────────────────────────
@@ -60,7 +58,7 @@ module.exports = {
             const u = getUser(sender, from);
             u.money = (u.money || 0) + rain.amount;
             saveDB();
-            return reply(`🌧️ *PIOGGIA RACCOLTA!* 🌧️\n━━━━━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha preso _+${rain.amount}€_\n▸ Saldo: _${u.money}€_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`🌧️ *PIOGGIA RACCOLTA!* 🌧️\n━━━━━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha preso _+${rain.amount}€_\n▸ Saldo: _${u.money}€_\n━━━━━━━━━━━━━━━━━━\n`);
         }
 
         // ── EVENTO APRI: cassa misteriosa ─────────────────────────────────
@@ -81,12 +79,15 @@ module.exports = {
             u.money = (u.money || 0) + res.money;
             saveDB();
             const badgeLine = res.badge ? '\n▸ 🏅 Pregio: *Fortunato della Cassa*' : '';
-            return reply(`🎁 *CASSA MISTERIOSA* 🎁\n━━━━━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha trovato\n  _+${res.money}€_${badgeLine}\n▸ Saldo: _${u.money}€_\n▸ Prossima cassa: _60 min_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`🎁 *CASSA MISTERIOSA* 🎁\n━━━━━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha trovato\n  _+${res.money}€_${badgeLine}\n▸ Saldo: _${u.money}€_\n▸ Prossima cassa: _60 min_\n━━━━━━━━━━━━━━━━━━\n`);
         }
 
         // ── GESTIONE (solo owner/admin) ───────────────────────────────────
         if (sub === 'start' || sub === 'stop' || sub === 'random' || sub === 'casuale') {
-            if (!canManage) return reply("⛔ Solo gli admin possono avviare o fermare gli eventi.");
+            if (!canManage) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('⛔ Solo gli admin possono avviare o fermare gli eventi.')}
+${boxEnd()}`);
 
             // EVENTO CASUALE: sceglie un tipo e una durata a caso.
             if (sub === 'random' || sub === 'casuale') {
@@ -111,12 +112,10 @@ module.exports = {
                 const meta = res.meta;
                 return reply(
 `🎲 *EVENTO CASUALE!* 🎲
-━━━━━━━━━━━━━━━━━━
 ▸ ${meta.emoji} _${meta.label}_
 ▸ ⏱️ Durata: _${res.dur} minuti_
 ▸ 📋 ${meta.desc}${extra}
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
             }
 
             if (sub === 'stop') {
@@ -159,12 +158,10 @@ module.exports = {
             const meta = res.meta;
             return reply(
 `${meta.emoji} *EVENTO ATTIVATO!*
-━━━━━━━━━━━━━━━━━━
 ▸ ${meta.emoji} _${meta.label}_
 ▸ ⏱️ Durata: _${res.dur} minuti_
 ▸ 📋 ${meta.desc}${extra}
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         // ── STATO EVENTI ─────────────────────────────────────────────────
@@ -193,14 +190,11 @@ module.exports = {
             .join('\n');
 
         const text =
-`⚡ ${toDecorated('EVENTI', 'gothic', '◈')}
-━━━━━━━━━━━━━━━━━━
+`⚡ ${sec('EVENTI')}
 ▸ 📡 *Attivi ora:*
 ${nowLines}${bossLine}${rainLine}${radunoLine}
-━━━━━━━━━━━━━━━━━━
 📋 *Disponibili:*
 ${disponibili}
-━━━━━━━━━━━━━━━━━━
 💡 *Uso:*
 ▸ .evento start <tipo> [min]
 ▸ .evento random (casuale!)
@@ -210,8 +204,7 @@ ${disponibili}
 ▸ .evento apri (cassa)
 ▸ _gestione riservata_
   _agli admin_
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`;
 
         try {
             await sendButtons(sock, from, text, [

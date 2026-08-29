@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDarkFont } = require('../../lib/font');
 const EV = require('../../lib/events');
 

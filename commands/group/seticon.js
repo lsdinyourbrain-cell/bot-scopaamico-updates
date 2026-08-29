@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'seticon',
     aliases: ['setfoto', 'setimg', 'setpp'],
@@ -9,9 +11,18 @@ module.exports = {
         const { from, isGroup, isSenderAdmin, isBotAdmin, reply, contextInfo } = context;
         const { downloadMediaMessage } = context.services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('rendimi admin prima.')}
+${boxEnd()}`);
 
         const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         const image = quoted?.imageMessage || msg.message?.imageMessage;
@@ -28,10 +39,8 @@ module.exports = {
             });
             await sock.updateProfilePicture(from, buffer);
             await reply(`✅ *_FOTO GRUPPO_*
-━━━━━━━━━━━━━━
 ▸ Foto gruppo *aggiornata*!
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         } catch (e) {
             await reply("⚠️ _[uso]:_ errore. Riprova.");
         }

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { dispOf, resolveJid } = require('../../lib/jid');
 
 const repBar = (rep, max = 100) => {
@@ -16,7 +18,10 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, mentioned, targetJid, isReply, contextInfo, reply, services } = context;
         const { getUser, saveDB, sameJid, getCachedGroupMeta } = services;
 
-        if (!isGroup) return reply("La reputazione funziona solo nei gruppi.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('La reputazione funziona solo nei gruppi.')}
+${boxEnd()}`);
 
         // Visualizzazione del proprio grado.
         if (!targetJid) {
@@ -25,14 +30,12 @@ module.exports = {
             const badge = rep >= 100 ? '👑' : rep >= 50 ? '🌟' : rep >= 20 ? '⭐' : rep >= 5 ? '👍' : '🐣';
             return reply(
 `🏷️ *_REPUTAZIONE_*
-━━━━━━━━━━━━━━
 ▸ ${badge} @${sender.split('@')[0]}
 ▸ ⭐ Punti: _${rep}_
 ▸ ${repBar(rep)}
-━━━━━━━━━━━━━━
 ▸ 🗳️ _._rep @utente_ per votare
 ▸ ⏳ _1 voto ogni 6 ore_
-◈ _Vex Bot_`);
+`);
         }
 
         if (sameJid(targetJid, sender)) return reply("Non puoi votare te stesso!");
@@ -57,7 +60,7 @@ module.exports = {
         saveDB();
 
         return sock.sendMessage(from, {
-            text: `✅ @${disp(sender)} ha dato +1⭐\n▸ a @${disp(targetJid)}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+            text: `✅ @${disp(sender)} ha dato +1⭐\n▸ a @${disp(targetJid)}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.\n━━━━━━━━━━━━━━\n`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { pickQuestions, formatQuestion, LETTERS } = require('../../lib/duel-quiz');
 
 const TOTAL_QUESTIONS = 5;
@@ -44,7 +46,7 @@ module.exports = {
                 `━━━━━━━━━━━━━━\n` +
                 `${formatQuestion(q, 1)}\n` +
                 `⚡ Rispondi con *A/B/C/D*!\n` +
-                `◈ _Vex Bot_`,
+                ``,
         }, { quoted: msg });
 
         setTimeout(() => {

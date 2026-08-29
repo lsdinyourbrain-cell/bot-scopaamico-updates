@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -17,7 +19,11 @@ module.exports = {
         const { from, textArgs, reply } = context;
 
         if (!context.isOwner) {
-            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+            return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
         }
 
         const requested = parseInt(textArgs.trim(), 10);
@@ -42,7 +48,7 @@ module.exports = {
         }
         if (current.trim()) chunks.push(current.trimEnd());
 
-        const header = `📄 *_LOG BOT_*\n━━━━━━━━━━━━━━━━━━\n▸ ${chunks.length === 1 ? `ultime ${n} righe` : `log in ${chunks.length} parti`}\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+        const header = `📄 *_LOG BOT_*\n━━━━━━━━━━━━━━━━━━\n▸ ${chunks.length === 1 ? `ultime ${n} righe` : `log in ${chunks.length} parti`}\n━━━━━━━━━━━━━━━━━━\n`;
         await reply(header + '\n```\n' + chunks[0] + '\n```');
 
         for (let i = 1; i < chunks.length; i++) {

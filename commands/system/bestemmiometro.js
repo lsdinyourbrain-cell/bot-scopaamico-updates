@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'bestemmiometro',
     aliases: ['bestemmie'],
@@ -29,10 +31,8 @@ module.exports = {
         const status = db._bestemmiometro[from] !== false ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         return reply(
 `🤬 *_BESTEMMIOMETRO_*
-━━━━━━━━━━━━━━━━━━
 ▸ Stato: _${status}_
 ▸ Uso: \`.bestemmiometro on/off\`
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
     },
 };

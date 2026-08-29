@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'meme',
     aliases: [],
@@ -13,14 +15,20 @@ module.exports = {
             const audioDir = path.join(projectDir, 'audio');
             
             if (!fs.existsSync(audioDir)) {
-                return reply("⚠️ _Errore: La cartella \`/audio\` non esiste nel sistema._");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Errore: La cartella \\`/audio\\` non esiste nel sistema.')}
+${boxEnd()}`);
             }
             
             const files = fs.readdirSync(audioDir)
                 .filter(file => path.extname(file).toLowerCase() === '.mp3');
             
             if (files.length === 0) {
-                return reply("⚠️ _Errore: Nessun file \`.mp3\` trovato nella cartella \`/audio\`._");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Errore: Nessun file \\`.mp3\\` trovato nella cartella \\`/audio\\`.')}
+${boxEnd()}`);
             }
             
             const randomAudio = files[Math.floor(Math.random() * files.length)];

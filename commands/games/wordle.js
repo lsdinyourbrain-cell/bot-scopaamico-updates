@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { WORDLE_POOL, WORD_LEN, MAX_ATTEMPTS, GAME_TIMEOUT_MS, renderWordleGrid, pickTarget } = require('../../lib/wordle');
 
 const DIFFICULTIES = {

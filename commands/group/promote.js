@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 const { dispOf, resolveJid } = require('../../lib/jid');
 
@@ -12,11 +14,26 @@ module.exports = {
         const { command, from, sender, isGroup, isSenderAdmin, isBotAdmin, targetJid, reply, services } = context;
         const { logGroupEvent, saveDB, getCachedGroupMeta, sameJid, sendButtons } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ comando riservato agli admin del gruppo.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin del gruppo prima.");
-        if (!targetJid || targetJid.endsWith('@g.us')) return reply("⚠️ _[uso]:_ tagga un utente. Esempio: `.promote @utente`");
-        if (sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ non puoi promuoverti/retrocederti da solo.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('comando riservato agli admin del gruppo.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('rendimi admin del gruppo prima.')}
+${boxEnd()}`);
+        if (!targetJid || targetJid.endsWith('@g.us')) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('tagga un utente. Esempio: \`.promote @utente\`')}
+${boxEnd()}`);
+        if (sameJid(targetJid, sender)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('non puoi promuoverti/retrocederti da solo.')}
+${boxEnd()}`);
 
         try {
             const isPromote = command === 'promote' || command === 'promuovi';
@@ -37,8 +54,8 @@ module.exports = {
 
             const short = dispOf(useJid);
             const text = isPromote
-                ? `👑 ${toDecorated('PROMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n▸ Ora può gestire il gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`
-                : `⬇️ ${toDecorated('DEMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} non è più admin.\n▸ I suoi privilegi sono stati tolti.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                ? `👑 ${sec('PROMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n▸ Ora può gestire il gruppo.\n━━━━━━━━━━━━━━━━━━\n`
+                : `⬇️ ${sec('DEMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} non è più admin.\n▸ I suoi privilegi sono stati tolti.\n━━━━━━━━━━━━━━━━━━\n`;
 
             await sendButtons(sock, from, text, [
                 { label: '📜 Registro modifiche', id: 'registro' },

@@ -1,6 +1,6 @@
 'use strict';
 const crypto = require('crypto');
-const { S, SEP, footer, bullet } = require('../../lib/ui');
+const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 function toSansBold(str) { return '*' + String(str||'').trim() + '*'; }
 function hashPercent(jid, salt) {

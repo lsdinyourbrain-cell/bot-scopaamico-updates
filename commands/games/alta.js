@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'alta',
     aliases: ['altabassa'],
@@ -25,13 +27,22 @@ module.exports = {
             const scelta = String(args[0] || '').toLowerCase();
             const puntata = parseInt(args[1]) || 20;
             const uDB = getUser(sender, from);
-            if (puntata < 1) return reply("⚠️ Puntata non valida.");
-            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+            if (puntata < 1) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata non valida.')}
+${boxEnd()}`);
+            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata massima: *1.000.000€*.')}
+${boxEnd()}`);
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
 
             const picked = scelta === 'alta' ? 'alta' : scelta === 'bassa' ? 'bassa' : scelta === 'a' ? 'alta' : scelta === 'b' ? 'bassa' : null;
             if (!picked) {
-                return reply("⚠️ _[uso]: scegli *alta* o *bassa* — .alta alta 50 oppure .alta bassa 50_");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: scegli *alta* o *bassa* — .alta alta 50 oppure .alta bassa 50')}
+${boxEnd()}`);
             }
 
             const symbols = { 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10', 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
@@ -53,14 +64,13 @@ module.exports = {
 
             const resultText =
 `🃏 *_ALTA O BASSA_*
-━━━━━━━━━━━━━━
 ▸ *Carta mostrata:* _${symbols[cardOne]}_
 ▸ *Carta successiva:* _${symbols[cardTwo]}_
 ▸ *Avevi detto:* _${picked}_
 
 ${esito}
 ▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-◈ _Vex Bot_`;
+`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

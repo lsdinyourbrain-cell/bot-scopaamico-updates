@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, footer, bullet } = require('../../lib/ui');
+const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
     name: 'rissa',
@@ -12,7 +12,10 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
 
-            if (!targetJid) return reply("⚠️ _Tagga qualcuno con cui fare a botte. Esempio: .rissa @nome_");
+            if (!targetJid) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Tagga qualcuno con cui fare a botte. Esempio: .rissa @nome')}
+${boxEnd()}`);
             const vincitore  = Math.random() > 0.5 ? sender : targetJid;
             const perdente   = vincitore === sender ? targetJid : sender;
             const frase = randomChoice(ARRAYS.rissa)

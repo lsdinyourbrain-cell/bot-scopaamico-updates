@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 const { dispOf, resolveJid } = require('../../lib/jid');
 
@@ -12,10 +14,22 @@ module.exports = {
         const { from, sender, isGroup, isSenderAdmin, isBotAdmin, targetJid, reply, services } = context;
         const { db, sameJid, isOwnerJid, getCachedGroupMeta, sendButtons } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ comando riservato agli admin.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
-        if (!targetJid || sameJid(targetJid, sender)) return reply("⚠️ _[uso]:_ tagga un utente da promuovere.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('comando riservato agli admin.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('rendimi admin prima.')}
+${boxEnd()}`);
+        if (!targetJid || sameJid(targetJid, sender)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('tagga un utente da promuovere.')}
+${boxEnd()}`);
         if (isOwnerJid(targetJid, sock, db, null)) return reply("⛔ Non posso promuovere l'owner del bot.");
 
         try {
@@ -28,10 +42,10 @@ module.exports = {
             await sock.groupParticipantsUpdate(from, [useJid], 'promote');
 
             await sendButtons(sock, from,
-                `👑 ${toDecorated('PROMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                `👑 ${sec('PROMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━━━━━\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
-                    text: `👑 ${toDecorated('PROMOTE', 'gothic', '❖')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `👑 ${sec('PROMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━━━━━\n`,
                     mentions: [useJid],
                 }, { quoted: msg }));
         } catch (_) {

@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  MINE — Vex Bot
 //  Versione strategica di .scava: campo 3x3 con 2 bombe nascoste. Paghi un
@@ -107,7 +109,10 @@ ${SEP}
             const c = parseInt(rc[1], 10);
             if (!r || !c || r < 1 || r > ROWS || c < 1 || c > COLS) return reply('❌ Cella non valida (es. "12" = riga 1, col 2).');
             const key = `${r}${c}`;
-            if (g.dug.has(key)) return reply('⛔ Cella già scavata!');
+            if (g.dug.has(key)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('⛔ Cella già scavata!')}
+${boxEnd()}`);
 
             g.dug.add(key);
             if (g.bombs.has(key)) {

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 
 module.exports = {
@@ -34,7 +36,10 @@ module.exports = {
 
         if (sub.startsWith('whitelist ') || sub.startsWith('wl ')) {
             const num = sub.replace(/^(whitelist|wl)\s+/, '').replace(/[^0-9]/g, '');
-            if (!num || num.length < 6) return reply("⚠️ _[uso]:_ numero non valido.\n▸ .antiwzbusiness whitelist <numero>");
+            if (!num || num.length < 6) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('numero non valido. ▸ .antiwzbusiness whitelist <numero>')}
+${boxEnd()}`);
             if (cfg.whitelist.includes(num)) {
                 cfg.whitelist = cfg.whitelist.filter(w => w !== num);
                 saveDB();
@@ -48,15 +53,12 @@ module.exports = {
         const status = cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         const wlList = cfg.whitelist.length ? cfg.whitelist.map(w => `▸ _${w}_`).join('\n') : '▸ _Nessuno._';
         return reply(
-`🛡️ ${toDecorated('ANTI WZ BUSINESS', 'outline', '✠')}
-━━━━━━━━━━━━━━━━━━
+`🛡️ ${sec('ANTI WZ BUSINESS')}
 ▸ Stato: _${status}_
-━━━━━━━━━━━━━━━━━━
 📋 *Whitelist*
 ${wlList}
 ▸ Uso: \`.antiwzbusiness on/off\`
   \`.antiwzbusiness whitelist <n>\`
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
     },
 };

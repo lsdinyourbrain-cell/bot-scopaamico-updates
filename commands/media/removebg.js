@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { downloadMediaBuffer } = require('../../lib/media-utils');
 
 // Rimozione dello sfondo via remove.bg. La chiave API va impostata in .env
@@ -47,8 +49,8 @@ module.exports = {
             }
 
             const result = Buffer.from(await res.arrayBuffer());
-            await sock.sendMessage(from, { image: result, caption: '🧹 *_SFONDO RIMOSSO_*\n━━━━━━━━━━━━━━\n▸ _Sfondo rimosso!_\n◈ _Vex Bot_' }, { quoted: msg });
-            await prog.done('🧹 *_SFONDO RIMOSSO_*\n━━━━━━━━━━━━━━\n▸ _Sfondo rimosso!_\n◈ _Vex Bot_');
+            await sock.sendMessage(from, { image: result, caption: '🧹 *_SFONDO RIMOSSO_*\n━━━━━━━━━━━━━━\n▸ _Sfondo rimosso!_\n' }, { quoted: msg });
+            await prog.done('🧹 *_SFONDO RIMOSSO_*\n━━━━━━━━━━━━━━\n▸ _Sfondo rimosso!_\n');
         } catch (e) {
             console.error('[removebg]', e.message);
             return reply("❌ Errore durante la rimozione dello sfondo. Riprova.");

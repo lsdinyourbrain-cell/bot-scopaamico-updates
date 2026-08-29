@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { applyAnswer, isQuestion, isGuess } = require('../../lib/akinator');
 
 const GAME_TIMEOUT_MS = 180000;

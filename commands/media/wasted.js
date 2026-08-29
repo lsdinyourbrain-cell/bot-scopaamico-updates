@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const axios = require('axios');
 const sharp = require('sharp');
 
@@ -99,11 +101,10 @@ module.exports = {
             await sock.sendMessage(from, {
                 image: wastedBuffer,
                 caption: `💀 *_${target.split('@')[0]} WASTED_*
-━━━━━━━━━━━━━━
 ▸ _Grand Theft Auto: Vex Bot Edition_
-◈ _Vex Bot_`
+`
             }, { quoted: msg });
-            await prog.done('💀 *_WASTED_*\n━━━━━━━━━━━━━━\n▸ _WASTED generato!_\n◈ _Vex Bot_');
+            await prog.done('💀 *_WASTED_*\n━━━━━━━━━━━━━━\n▸ _WASTED generato!_\n');
 
         } catch (e) {
             console.error('[wasted]', e);

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const EV = require('../../lib/events');
 
 module.exports = {
@@ -26,8 +28,14 @@ module.exports = {
 
             const puntata = parseInt(args[0]) || 20;
             const uDB = getUser(sender, from);
-            if (puntata < 1) return reply("⚠️ Puntata non valida.");
-            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+            if (puntata < 1) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata non valida.')}
+${boxEnd()}`);
+            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata massima: *1.000.000€*.')}
+${boxEnd()}`);
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
 
             const sectors = [
@@ -68,13 +76,12 @@ module.exports = {
 
             const resultText =
 `🎡 *_RUOTA DELLA FORTUNA_*
-━━━━━━━━━━━━━━
 🎡 La ruota gira...
 ▸ *Settore:* _${win.name}_ ${win.emoji}
 
 ${esito}
 ▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-◈ _Vex Bot_`;
+`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

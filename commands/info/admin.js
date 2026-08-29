@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 const { dispOf } = require('../../lib/jid');
 
@@ -12,7 +14,10 @@ module.exports = {
         const { from, reply, services } = context;
         const { db, sendButtons, getCachedGroupMeta } = services;
 
-        if (!from || !from.endsWith('@g.us')) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!from || !from.endsWith('@g.us')) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
 
         try {
             // Passa dalla cache condivisa: popola anche la mappa @lid→PN usata
@@ -43,27 +48,21 @@ module.exports = {
             if (!botAdmins) botAdmins = '▸ _(nessuno)_';
 
             const txt =
-`🛡️ ${toDecorated('ADMIN', 'gothic', '◈')}
-━━━━━━━━━━━━━━━━━━
+`🛡️ ${sec('ADMIN')}
 ▸ 📛 _${groupName}_
 ▸ 👥 _${total}_ partecipanti
 ▸ 🛡️ _${admins.length}_ admin
-━━━━━━━━━━━━━━━━━━
 👑 *Fondatori*
 ${ownerList}
-━━━━━━━━━━━━━━━━━━
 ⚙️ *Admin del gruppo*
 ${adminList}
-━━━━━━━━━━━━━━━━━━
 🤖 *Owner del bot*
 ${botAdmins}
-━━━━━━━━━━━━━━━━━━
 💡 Comandi admin: \`.tagall\`,
 \`.promote\`, \`.demote\`, \`.ban\`,
 \`.kick\`, \`.warn\`, \`.mute\`,
 \`.evento\`, \`.registro\`...
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`;
 
             const mentionJids = admins.map(jidOf).filter(Boolean).slice(0, 15);
             await sendButtons(sock, from, txt, [

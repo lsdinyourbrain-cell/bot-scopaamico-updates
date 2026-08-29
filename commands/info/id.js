@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'id',
     aliases: ['jid', 'myid'],
@@ -14,7 +16,7 @@ module.exports = {
 
         let txt = `📱 *_ID INFO_*\n━━━━━━━━━━━━━━━━━━\n▸ 👤 *Tu:*\n▸ 📱 _${userJid}_\n`;
         if (groupJid) txt += `▸ 👥 *Gruppo:*\n▸ 📱 _${groupJid}_\n`;
-        txt += `━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+        txt += `━━━━━━━━━━━━━━━━━━\n`;
         await reply(txt);
     },
 };

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { dispOf, resolveJid } = require('../../lib/jid');
 
 module.exports = {
@@ -15,7 +17,10 @@ module.exports = {
             const sub = args[0]?.toLowerCase();
 
             if (sub === 'estrai') {
-                if (!isGroup) return reply("La lotteria funziona solo nei gruppi.");
+                if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('La lotteria funziona solo nei gruppi.')}
+${boxEnd()}`);
                 // Solo l'owner o un admin del gruppo può estrarre il vincitore
                 if (!isOwner && !isSenderAdmin) {
                     return reply("⚠️ Solo un *admin del gruppo* (o l'owner)\npuò estrarre il vincitore della lotteria.");
@@ -33,7 +38,7 @@ module.exports = {
                 delete db[from].lotteria;
                 saveDB();
                 return await sock.sendMessage(from, {
-                    text: `🎉 *_VINCITORE LOTTERIA!_*\n━━━━━━━━━━━━━━\n▸ 🏆 @${dispOf(winner, resolveJid(winner, meta))} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `🎉 *_VINCITORE LOTTERIA!_*\n━━━━━━━━━━━━━━\n▸ 🏆 @${dispOf(winner, resolveJid(winner, meta))} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n━━━━━━━━━━━━━━\n`,
                     mentions: [winner],
                 });
             }
@@ -54,7 +59,7 @@ module.exports = {
             saveDB();
 
             const poolFinale = Math.floor(lotto.pool);
-            await sendButtons(sock, from, `🎟️ *_LOTTERIA_*\n━━━━━━━━━━━━━━\n▸ ✅ Hai comprato un biglietto!\n▸ 🎟️ Totale tuoi: _${lotto.tickets[sender]}_\n▸ 💰 Montepremi: _${poolFinale}€_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`, [
+            await sendButtons(sock, from, `🎟️ *_LOTTERIA_*\n━━━━━━━━━━━━━━\n▸ ✅ Hai comprato un biglietto!\n▸ 🎟️ Totale tuoi: _${lotto.tickets[sender]}_\n▸ 💰 Montepremi: _${poolFinale}€_\n━━━━━━━━━━━━━━\n`, [
                 { label: '.lotteria', id: 'lotteria' },
                 { label: '.lotteria estrai', id: 'lotteria estrai' },
             ], msg);

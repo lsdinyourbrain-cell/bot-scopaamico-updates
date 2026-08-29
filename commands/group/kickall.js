@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'kickall',
     aliases: ['espellitutti'],
@@ -9,9 +11,18 @@ module.exports = {
         const { from, isGroup, isSenderAdmin, isBotAdmin, reply, services } = context;
         const { db, sameJid, isOwnerJid, sendButtons } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin del gruppo possono usarlo.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ prima rendimi admin, così posso espellere.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin del gruppo possono usarlo.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('prima rendimi admin, così posso espellere.')}
+${boxEnd()}`);
 
         try {
             const meta = await sock.groupMetadata(from);
@@ -47,12 +58,10 @@ module.exports = {
 
             const txt =
 `🧹 *KICK ALL*
-━━━━━━━━━━━━━━
 👥 Espulsi: *${total}* membri
 👑 Restano solo admin e owner
 ✅ Tutto fatto, fra!
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },
             ], msg);

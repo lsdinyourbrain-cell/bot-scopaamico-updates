@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const wyrQuestions = [
     "Preferiresti essere invisibile o poter volare?",
     "Preferiresti leggere le menti o viaggiare nel tempo?",
@@ -33,6 +35,6 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
         const q = wyrQuestions[Math.floor(Math.random() * wyrQuestions.length)];
-        await reply(`🤔 *_PREFERIRESTI...?_*\n━━━━━━━━━━━━━━\n▸ _${q}_\n▹ _Rispondi con 1️⃣ o 2️⃣!_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        await reply(`🤔 *_PREFERIRESTI...?_*\n━━━━━━━━━━━━━━\n▸ _${q}_\n▹ _Rispondi con 1️⃣ o 2️⃣!_\n━━━━━━━━━━━━━━\n`);
     },
 };

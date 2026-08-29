@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'spara',
     aliases: [],
@@ -11,7 +13,10 @@ module.exports = {
 
 
             const result = claimBounty(from, sender);
-            if (result === null) return reply("⚠️ Nessuna taglia attiva in questo gruppo 🤷");
+            if (result === null) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Nessuna taglia attiva in questo gruppo 🤷')}
+${boxEnd()}`);
             if (result === 0) {
                 return reply("💥 Hai sparato ma il bersaglio si è schivato!\n▸ 😂 Per stavolta niente taglia!");
             }
@@ -20,11 +25,9 @@ module.exports = {
             saveDB();
             await reply(
 `🎯 *_TAGLIA!_*
-━━━━━━━━━━━━━━
 ▸ 💥 Hai centrato il bersaglio!
 ▸ 💰 Intascato: _${result}€_
-━━━━━━━━━━━━━━
 ▸ 💳 Saldo: _${userData.money}€_
-◈ _Vex Bot_`);
+`);
     },
 };

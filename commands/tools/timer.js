@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { parseDuration, humanizeMs, formatCountdown } = require('../../lib/timeparse');
 
 module.exports = {
@@ -21,7 +23,7 @@ module.exports = {
 
         let sent;
         try {
-            sent = await sock.sendMessage(from, { text: `⏳ *_Timer avviato_* (_${label}_)\n━━━━━━━━━━━━━━━━━━\n▸ 🔻 Residuo: _${formatCountdown(total)}_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_` }, { quoted: msg });
+            sent = await sock.sendMessage(from, { text: `⏳ *_Timer avviato_* (_${label}_)\n━━━━━━━━━━━━━━━━━━\n▸ 🔻 Residuo: _${formatCountdown(total)}_\n━━━━━━━━━━━━━━━━━━\n` }, { quoted: msg });
         } catch (_) {
             return reply("❌ Non riesco a inviare il timer.");
         }
@@ -32,12 +34,12 @@ module.exports = {
             const remain = total - (Date.now() - started);
             if (remain <= 0) {
                 clearInterval(iv);
-                const final = `⏰ *_TEMPO SCADUTO!_*\n━━━━━━━━━━━━━━━━━━\n▸ Il timer da _${label}_ è terminato.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                const final = `⏰ *_TEMPO SCADUTO!_*\n━━━━━━━━━━━━━━━━━━\n▸ Il timer da _${label}_ è terminato.\n━━━━━━━━━━━━━━━━━━\n`;
                 if (key) sock.sendMessage(from, { text: final, edit: key }).catch(() => {});
                 else sock.sendMessage(from, { text: final }).catch(() => {});
             } else if (key) {
                 sock.sendMessage(from, {
-                    text: `⏳ *_Timer avviato_* (_${label}_)\n━━━━━━━━━━━━━━━━━━\n▸ 🔻 Residuo: _${formatCountdown(remain)}_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `⏳ *_Timer avviato_* (_${label}_)\n━━━━━━━━━━━━━━━━━━\n▸ 🔻 Residuo: _${formatCountdown(remain)}_\n━━━━━━━━━━━━━━━━━━\n`,
                     edit: key,
                 }).catch(() => {});
             }

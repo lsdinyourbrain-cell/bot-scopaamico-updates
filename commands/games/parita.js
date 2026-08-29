@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'parita',
     aliases: ['paridispar', 'paridos', 'pariodispari'],
@@ -25,8 +27,14 @@ module.exports = {
             const scelta = String(args[0] || '').toLowerCase();
             const puntata = parseInt(args[1]) || 20;
             const uDB = getUser(sender, from);
-            if (puntata < 1) return reply("⚠️ Puntata non valida.");
-            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+            if (puntata < 1) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata non valida.')}
+${boxEnd()}`);
+            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata massima: *1.000.000€*.')}
+${boxEnd()}`);
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
 
             const valid = {
@@ -34,7 +42,10 @@ module.exports = {
             };
             const picked = valid[scelta];
             if (!picked) {
-                return reply("⚠️ _[uso]: scegli *pari* o *dispari* — .parita pari 50 oppure .parita dispari 50_");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: scegli *pari* o *dispari* — .parita pari 50 oppure .parita dispari 50')}
+${boxEnd()}`);
             }
 
             const roll = randomInt(1, 6);
@@ -54,13 +65,12 @@ module.exports = {
 
             const resultText =
 `🎲 *_PARI O DISPARI_*
-━━━━━━━━━━━━━━
 ▸ *Hai scelto:* _${picked}_
 ▸ *Dado uscito:* _${roll} (${result})_
 
 ${esito}
 ▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-◈ _Vex Bot_`;
+`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'unwarn',
     aliases: ['togliwarn', 'rimuoviavviso', 'perdona'],
@@ -9,18 +11,22 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, getUser, saveDB } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ questo comando funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin possono togliere avvisi.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('questo comando funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin possono togliere avvisi.')}
+${boxEnd()}`);
         if (!targetJid) return reply("⚠️ _[uso]:_ tagga la persona a cui rimuovere l'avviso.");
 
         const targetData = getUser(targetJid, from);
         if ((targetData.warnings || 0) <= 0) {
             return await sock.sendMessage(from, {
                 text: `✅ *_UNWARN_*
-━━━━━━━━━━━━━━
 ▸ @${targetJid.split('@')[0]} non ha *avvisi* da rimuovere.
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`,
+`,
                 mentions: [targetJid],
             });
         }
@@ -32,11 +38,9 @@ module.exports = {
 
         await sock.sendMessage(from, {
             text: `✅ *_UNWARN_*
-━━━━━━━━━━━━━━
 ▸ @${targetJid.split('@')[0]} ha ricevuto un *perdono*!
 ▸ *Avvisi:* _${targetData.warnings}/3_
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`,
+`,
             mentions: [targetJid],
         });
     },

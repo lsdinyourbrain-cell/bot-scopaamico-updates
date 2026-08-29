@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 const { dispOf, resolveJid } = require('../../lib/jid');
 
@@ -42,9 +44,9 @@ module.exports = {
             saveDB();
             logGroupEvent(from, 'unmute', sender, null, tgt, 'riabilitato (può scrivere)');
             return await sendButtons(sock, from,
-                `🔊 ${toDecorated('UNMUTE', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} può *scrivere di nuovo*.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                `🔊 ${sec('UNMUTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} può *scrivere di nuovo*.\n━━━━━━━━━━━━━━━━━━\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
-                .catch(() => sock.sendMessage(from, { text: `🔊 ${toDecorated('UNMUTE', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} può *scrivere di nuovo*.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`, mentions: [useJid] }, { quoted: msg }));
+                .catch(() => sock.sendMessage(from, { text: `🔊 ${sec('UNMUTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} può *scrivere di nuovo*.\n━━━━━━━━━━━━━━━━━━\n`, mentions: [useJid] }, { quoted: msg }));
         }
 
         targetData.isMuted = true;
@@ -52,10 +54,10 @@ module.exports = {
         logGroupEvent(from, 'mute', sender, null, tgt, 'mutato (non può scrivere)');
 
         await sendButtons(sock, from,
-            `🔇 ${toDecorated('MUTE', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *mutato* permanentemente.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+            `🔇 ${sec('MUTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *mutato* permanentemente.\n━━━━━━━━━━━━━━━━━━\n`,
             [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
             .catch(() => sock.sendMessage(from, {
-                text: `🔇 ${toDecorated('MUTE', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *mutato* permanentemente.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                text: `🔇 ${sec('MUTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *mutato* permanentemente.\n━━━━━━━━━━━━━━━━━━\n`,
                 mentions: [useJid],
             }, { quoted: msg }));
     },

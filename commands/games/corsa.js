@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  CORSA — Vex Bot
 //  Gara di gruppo a turni: ogni partecipante risponde a mini-sfide a scelta
@@ -106,7 +108,10 @@ Quando siete pronti, premi
             if (!g || !g.active || g.phase !== 'join') {
                 return reply('Non c\'è una gara in iscrizione. Usa `.corsa partecipa`!');
             }
-            if (g.players.length < 2) return reply('⚠️ Servono almeno 2 giocatori per partire!');
+            if (g.players.length < 2) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Servono almeno 2 giocatori per partire!')}
+${boxEnd()}`);
             g.phase = 'playing';
             g.turn = 0;
             g.used = [];

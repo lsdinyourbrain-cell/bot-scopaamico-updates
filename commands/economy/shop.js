@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  SHOP — Vex Bot
 //  Negozio con carosello: ogni card è un oggetto (emoji, prezzo, effetto) con

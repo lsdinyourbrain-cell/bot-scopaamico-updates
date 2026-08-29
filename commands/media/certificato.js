@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  CERTIFICATO — Vex Bot
 //  Genera un certificato personalizzato (immagine) con nome, titolo e data.
@@ -88,10 +90,10 @@ module.exports = {
         const prog = await showProgress(sock, from, { label: 'STAMPO IL CERTIFICATO', duration: 2500, quoted: msg });
         try {
             const png = await buildCert(sharp, name, title);
-            await prog.done(`🏅 *_CERTIFICATO_*\n${SEP}\n▸ _Certificato pronto!_\n◈ _Vex Bot_`);
+            await prog.done(`🏅 *_CERTIFICATO_*\n${SEP}\n▸ _Certificato pronto!_\n`);
             await sock.sendMessage(from, {
                 image: png,
-                caption: `🏅 *_CERTIFICATO_*\n${SEP}\n▸ *Concesso a:* _${name}_\n▸ *Motivo:* _${title}_\n${SEP}\n◈ _Vex Bot_`,
+                caption: `🏅 *_CERTIFICATO_*\n${SEP}\n▸ *Concesso a:* _${name}_\n▸ *Motivo:* _${title}_\n${SEP}\n`,
             }, { quoted: msg });
         } catch (e) {
             console.error('[certificato]', e.message);

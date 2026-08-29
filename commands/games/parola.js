@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { pickWord } = require('../../lib/words');
 
 module.exports = {
@@ -50,13 +52,12 @@ module.exports = {
 
             await reply(
 `🧩 *_INDOVINA LA PAROLA_*
-━━━━━━━━━━━━━━
 ${mask(db[from].wordGame)}
 
 ✏️ Scrivi una *lettera* o la
 *parola intera*!
 ⏳ 90 secondi · 6 errori = fine.
-◈ _Vex Bot_`
+`
             );
 
             setTimeout(() => {

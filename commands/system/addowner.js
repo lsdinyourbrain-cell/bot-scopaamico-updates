@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 
 const SB = (s) => s.split('').map(c => {
@@ -58,12 +60,10 @@ module.exports = {
         const displayNum = resolved.number.split('@')[0];
         await sock.sendMessage(from, {
             text:
-`👑 ${toDecorated('ADDOWNER', 'gothic', '◈')}
-━━━━━━━━━━━━━━━━━━
+`👑 ${sec('ADDOWNER')}
 ▸ @${displayNum} è ora owner!
 ▸ Aggiunto alle: _${now}_
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`,
+`,
             mentions: [resolved.number],
         }, { quoted: msg });
     },

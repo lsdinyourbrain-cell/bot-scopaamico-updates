@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 function truncate(str, maxLen) {
     if (!str) return '';
     const s = String(str);
@@ -100,13 +102,19 @@ module.exports = {
             username = textArgs.trim().split(/\s+/)[0];
         } else if (mentioned && mentioned.length > 0) {
             username = db._lastfm?.[mentioned[0]] ?? null;
-            if (!username) return reply('⚠️ _Questo utente non ha collegato un account Last.fm._');
+            if (!username) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Questo utente non ha collegato un account Last.fm.')}
+${boxEnd()}`);
         } else {
             username = db._lastfm?.[sender] ?? null;
         }
 
         if (!username) {
-            return reply('⚠️ _Nessun account Last.fm collegato._ Collegalo con: .lastfm <nomeutente>');
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Nessun account Last.fm collegato._ Collegalo con: .lastfm <nomeutente>')}
+${boxEnd()}`);
         }
 
         let npData;
@@ -160,7 +168,7 @@ module.exports = {
             `▸ 🌍 *Ascolti mondiali:* _${fmt(trackInfo.playcount)}_\n` +
             `▸ 👥 *Ascoltatori:* _${fmt(trackInfo.listeners)}_\n` +
             `━━━━━━━━━━━━━━\n` +
-            `◈ _Vex Bot_\n` +
+            `\n` +
             `_Account Last.fm: ${username}_`;
 
         const searchTerm = (track.name + ' ' + track.artist).trim();

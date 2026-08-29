@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  AIUTO — Vex Bot
 //  .aiuto            → invia un file .txt con TUTTI i comandi spiegati

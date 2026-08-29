@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const { promisify } = require('util');
@@ -31,7 +33,10 @@ module.exports = {
                     audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
                 }
             }
-            if (!audioBuffer) return reply('⚠️ _[uso]: rispondi a un vocale con *.bass* per boostare i bassi._');
+            if (!audioBuffer) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a un vocale con *.bass* per boostare i bassi.')}
+${boxEnd()}`);
 
             const prog = await showProgress(sock, from, { label: 'BASS BOOST', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `bass_in_${Date.now()}.opus`);
@@ -40,7 +45,7 @@ module.exports = {
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'bass=g=20:f=100:w=1,equalizer=f=60:t=1:w=1:g=15', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🔊 *_BASS BOOST_*\n━━━━━━━━━━━━━━\n▸ _Bassi boostati con successo!_\n◈ _Vex Bot_');
+            await prog.done('🔊 *_BASS BOOST_*\n━━━━━━━━━━━━━━\n▸ _Bassi boostati con successo!_\n');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[bass]', e);

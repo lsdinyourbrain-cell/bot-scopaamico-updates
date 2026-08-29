@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -182,7 +184,7 @@ module.exports = {
         txt += `━━━━━━━━━━━━━━━━━━\n`;
         txt += `🚀 *Comandi*\n`;
         txt += `▸ Scrivi .menu per\n  la lista completa!\n`;
-        txt += `━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+        txt += `━━━━━━━━━━━━━━━━━━\n`;
 
         await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });
     },

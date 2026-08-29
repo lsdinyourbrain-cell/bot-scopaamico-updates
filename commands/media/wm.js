@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // .wm (watermark): clona lo sticker a cui si risponde cambiandogli il nome
 // (sticker-pack-name nel metadata EXIF). Uso: .wm <titolo>
 // Esempio: rispondi a uno sticker e scrivi .wm denunciarsi
@@ -17,10 +19,16 @@ module.exports = {
 
         const newTitle = (textArgs || '').trim();
         if (!newTitle) {
-            return reply("⚠️ _[uso]: scrivi il nuovo titolo da dare allo sticker._\n▸ Esempio: `.wm denunciarsi`");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: scrivi il nuovo titolo da dare allo sticker._ ▸ Esempio: \`.wm denuncia...')}
+${boxEnd()}`);
         }
         if (newTitle.length > 100) {
-            return reply("⚠️ Titolo troppo lungo (_max 100 caratteri_).");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Titolo troppo lungo (_max 100 caratteri_).')}
+${boxEnd()}`);
         }
 
         // Estrai lo sticker dal messaggio citato
@@ -30,7 +38,10 @@ module.exports = {
             || msg.message?.stickerMessage;
 
         if (!stickerMsg) {
-            return reply("⚠️ _[uso]: rispondi a uno sticker per clonarlo col nuovo nome._");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a uno sticker per clonarlo col nuovo nome.')}
+${boxEnd()}`);
         }
 
         const prog = await showProgress(sock, from, {

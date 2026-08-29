@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'duello',
     aliases: ['sfida'],
@@ -11,7 +13,10 @@ module.exports = {
 
 
             if (!isGroup) return reply("I duelli sono solo nei gruppi.");
-            if (!targetJid || sameJid(targetJid, sender)) return reply("⚠️ _[uso]: tagga il tuo avversario — .duello @utente 100_");
+            if (!targetJid || sameJid(targetJid, sender)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: tagga il tuo avversario — .duello @utente 100')}
+${boxEnd()}`);
 
             const cooldownKey = 'duello';
             const userData = getUser(sender, from);
@@ -25,7 +30,10 @@ module.exports = {
             }
 
             const puntata = parseInt(args.find(a => /^\d+$/.test(a))) || 0;
-            if (puntata < 10) return reply("⚠️ _[uso]: puntata minima 10€ — .duello @utente 100_");
+            if (puntata < 10) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: puntata minima 10€ — .duello @utente 100')}
+${boxEnd()}`);
 
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) return reply(`Hai solo ${uDB.money}€, non basta.`);
@@ -52,7 +60,7 @@ module.exports = {
 
             await sleep(1000);
             await sock.sendMessage(from, {
-                text: `⚔️ *_DUELLO_*\n━━━━━━━━━━━━━━\n@${sShort} sfida\n@${tShort} a duello!\n\n▸ *Puntata:* _${puntata}€_\n◈ _Vex Bot_`,
+                text: `⚔️ *_DUELLO_*\n━━━━━━━━━━━━━━\n@${sShort} sfida\n@${tShort} a duello!\n\n▸ *Puntata:* _${puntata}€_\n`,
                 mentions: [senderPn, tgtPn],
             });
             await sleep(2000);
@@ -73,7 +81,7 @@ module.exports = {
             saveDB();
 
             await sock.sendMessage(from, {
-                text: `⚔️ *_RISULTATO DUELIO_*\n━━━━━━━━━━━━━━\n🎲 @${sShort} tira _${tiro1}_\n🎲 @${tShort} tira _${tiro2}_\n\n${msgText}\n◈ _Vex Bot_`,
+                text: `⚔️ *_RISULTATO DUELIO_*\n━━━━━━━━━━━━━━\n🎲 @${sShort} tira _${tiro1}_\n🎲 @${tShort} tira _${tiro2}_\n\n${msgText}\n`,
                 mentions: [senderPn, tgtPn],
             });
     },

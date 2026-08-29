@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, footer, bullet } = require('../../lib/ui');
+const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 const phrasesLib = require('../../lib/phrases');
 
 module.exports = {

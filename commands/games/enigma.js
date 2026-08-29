@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'enigma',
     aliases: ['indovinello', 'riddle'],
@@ -52,14 +54,13 @@ module.exports = {
 
         const text =
 `🧩 *_ENIGMA_*
-━━━━━━━━━━━━━━
 *${pick.q}*
 
 🤔 Scrivi la risposta qui in
 chat entro 45 secondi!
 
 💰 Premio: *50€*
-◈ _Vex Bot_`;
+`;
 
         await sendButtons(sock, from, text, [
             { label: '💡 Suggerimento', id: 'enigma suggerimento' },

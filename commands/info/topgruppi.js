@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const SEP = '━━━━━━━━━━━━━━━━━━━━';
 const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 const toBold = (s) => '*' + String(s||'').trim() + '*';
@@ -27,7 +29,10 @@ module.exports = {
         if (String(args[0] || '').toLowerCase() === 'info') {
             const idx = parseInt(args[1], 10);
             const entry = list[idx - 1];
-            if (!entry) return reply('⚠️ Indice non valido.');
+            if (!entry) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Indice non valido.')}
+${boxEnd()}`);
             const [gid, data] = entry;
             let meta=null; try{ meta=await getCachedGroupMeta(sock,gid); }catch(_){}
             const name = meta?.subject || gid.split('@')[0];

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'owner',
     aliases: ['creator', 'creatore', 'sviluppatore', 'dev'],
@@ -12,7 +14,7 @@ module.exports = {
         const MAIN_OWNER_JID = `${MAIN_OWNER_NUM}@s.whatsapp.net`;
         const MAIN_OWNER_FORMATTED = '+1 (548) 314-7193';
 
-        const txt = `🤖 *_VEX BOT_*\n━━━━━━━━━━━━━━━━━━\n▸ ✍️ Creato da:\n▸ 👑 _@${MAIN_OWNER_NUM}_\n▸ 📞 _${MAIN_OWNER_FORMATTED}_\n━━━━━━━━━━━━━━━━━━\n▸ 💬 Per assistenza scrivi\n  pure al creatore.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+        const txt = `🤖 *_VEX BOT_*\n━━━━━━━━━━━━━━━━━━\n▸ ✍️ Creato da:\n▸ 👑 _@${MAIN_OWNER_NUM}_\n▸ 📞 _${MAIN_OWNER_FORMATTED}_\n━━━━━━━━━━━━━━━━━━\n▸ 💬 Per assistenza scrivi\n  pure al creatore.\n━━━━━━━━━━━━━━━━━━\n`;
 
         await sock.sendMessage(from, { text: txt, mentions: [MAIN_OWNER_JID] }).catch(() => {});
     },

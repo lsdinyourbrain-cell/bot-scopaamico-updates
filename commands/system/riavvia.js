@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'riavvia',
     aliases: [],
@@ -10,9 +12,13 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
 
-            if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+            if (!isOwner) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
             
-            await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ 🔄 Riavvio del processo...\n  Torno operativo a breve! 🚀\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+            await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ 🔄 Riavvio del processo...\n  Torno operativo a breve! 🚀\n━━━━━━━━━━━━━━━━━━\n");
             // Codice 42 = "riavviami": start.bat lo rileva e rilancia node.
             setTimeout(() => process.exit(42), 1500);
     },

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'warn',
     aliases: ['avverti', 'avvisa'],
@@ -9,10 +11,22 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { applyWarn } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ questo comando funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ questo comando è per gli admin del gruppo.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ prima rendimi amministratore, così posso gestire gli avvisi.");
-        if (!targetJid) return reply("⚠️ _[uso]:_ tagga la persona da avvisare.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('questo comando funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('questo comando è per gli admin del gruppo.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('prima rendimi amministratore, così posso gestire gli avvisi.')}
+${boxEnd()}`);
+        if (!targetJid) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('tagga la persona da avvisare.')}
+${boxEnd()}`);
 
         const reason = (textArgs || '').trim() || 'Avviso amministrativo';
         await applyWarn(sock, from, targetJid, reason);

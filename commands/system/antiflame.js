@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 
 module.exports = {
@@ -21,15 +23,15 @@ module.exports = {
         if (sub === 'on' || sub === 'true' || sub === '1') {
             db._antiflame[from].enabled = true;
             saveDB();
-            return reply(`🔥 ${toDecorated('ANTIFLAME ATTIVATO', 'outline', '✠')} — parole pesanti bloccate.`);
+            return reply(`🔥 ${sec('ANTIFLAME ATTIVATO')} — parole pesanti bloccate.`);
         }
         if (sub === 'off' || sub === 'false' || sub === '0') {
             db._antiflame[from].enabled = false;
             saveDB();
-            return reply(`🔥 ${toDecorated('ANTIFLAME DISATTIVATO', 'outline', '✠')}.`);
+            return reply(`🔥 ${sec('ANTIFLAME DISATTIVATO')}.`);
         }
 
         const status = db._antiflame[from].enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
-        return reply(`🔥 ${toDecorated('ANTIFLAME', 'outline', '✠')}\n━━━━━━━━━━━━━━━━━━\n▸ Stato: _${status}_\n▸ Blocca frasi come:\n  "ucciditi", "ammazzati",\n  "fucilati" e simili.\n▸ Uso: \`.antiflame on/off\`\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        return reply(`🔥 ${sec('ANTIFLAME')}\n━━━━━━━━━━━━━━━━━━\n▸ Stato: _${status}_\n▸ Blocca frasi come:\n  "ucciditi", "ammazzati",\n  "fucilati" e simili.\n▸ Uso: \`.antiflame on/off\`\n━━━━━━━━━━━━━━━━━━\n`);
     },
 };

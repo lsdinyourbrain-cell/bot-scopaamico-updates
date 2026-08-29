@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  RICETTE — Vex Bot
 //  10 ricette random dall'API gratuita TheMealDB, una per card del carosello
@@ -23,7 +25,10 @@ module.exports = {
         // ── PREPARAZIONE (ingredienti + passi) ───────────────────────────
         if (w1 === 'prep' || w1 === 'preparazione') {
             const idMeal = (w2 || '').trim();
-            if (!idMeal) return reply('⚠️ _[uso]: *.ricette prep <id>*_');
+            if (!idMeal) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: *.ricette prep <id>')}
+${boxEnd()}`);
             try {
                 const { data } = await axios.get(
                     `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${encodeURIComponent(idMeal)}`,
@@ -54,12 +59,12 @@ module.exports = {
                     const pages = Math.ceil(steps.length / chunkSize);
                     for (let p = 0; p < pages; p++) {
                         const chunk = steps.slice(p * chunkSize, (p + 1) * chunkSize);
-                        const body = `${p === 0 ? head + '\n\n' : ''}👨‍🍳 *_PASSI_* (_${chunkSize * p + 1}_-_${chunkSize * p + chunk.length}_):\n${chunk.map((s, i) => `${chunkSize * p + i + 1}. ${s}`).join('\n')}\n${SEP}\n◈ _Vex Bot_`;
+                        const body = `${p === 0 ? head + '\n\n' : ''}👨‍🍳 *_PASSI_* (_${chunkSize * p + 1}_-_${chunkSize * p + chunk.length}_):\n${chunk.map((s, i) => `${chunkSize * p + i + 1}. ${s}`).join('\n')}\n${SEP}\n`;
                         if (p === 0) await reply(body);
                         else await sock.sendMessage(from, { text: body }, { quoted: msg }).catch(() => {});
                     }
                 } else {
-                    await reply(`${head}\n${SEP}\n▸ _Istruzioni non disponibili_\n◈ _Vex Bot_`);
+                    await reply(`${head}\n${SEP}\n▸ _Istruzioni non disponibili_\n`);
                 }
             } catch (_) {
                 await reply('❌ Non trovo questa ricetta. Riprova.');
@@ -105,7 +110,7 @@ ${SEP}
   *👨🍳 Preparazione* per
   _ingredienti e passi!_
 ${SEP}
-◈ _Vex Bot_`,
+`,
                 cards,
             }, msg);
             if (!sent) {
@@ -114,7 +119,7 @@ ${SEP}
 ${SEP}
 ${results.map((m, i) => `${i + 1}. ${m.strMeal}${m.strArea ? ' (_' + m.strArea + '_)' : ''} — \`.ricette prep ${m.idMeal}\``).join('\n')}
 ${SEP}
-◈ _Vex Bot_`,
+`,
                     [{ label: '🔁 Altre ricette', id: 'ricette' }], msg);
             }
         } catch (e) {

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const EV = require('../../lib/events');
 
 module.exports = {
@@ -17,8 +19,14 @@ module.exports = {
             if (!userData.cooldowns) userData.cooldowns = {};
 
             const puntata = parseInt(args[0]);
-            if (isNaN(puntata) || puntata <= 0) return reply("⚠️ _[uso]: .dadi <importo>_ — es. _.dadi 50_");
-            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+            if (isNaN(puntata) || puntata <= 0) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: .dadi <importo>_ — es. _.dadi 50')}
+${boxEnd()}`);
+            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata massima: *1.000.000€*.')}
+${boxEnd()}`);
 
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
@@ -62,13 +70,11 @@ module.exports = {
 
             const resultText =
 `🎲 *_LANCIO DADI_*
-━━━━━━━━━━━━━━
 ▸ 🧑 Tu: _${userRoll}_
 ▸ 🤖 Bot: _${botRoll}_
-━━━━━━━━━━━━━━
 ▸ ${esito}${extraRiccoDadi}
 ▸ 💰 Saldo attuale: _${uDB.money}€_
-◈ _Vex Bot_`;
+`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

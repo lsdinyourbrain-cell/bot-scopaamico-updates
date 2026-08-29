@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toStyle } = require('../../lib/font');
 const antibotLib = require('../../lib/antibot');
 
@@ -99,7 +101,10 @@ module.exports = {
         // --- whitelist ---
         if (sub.startsWith('whitelist ') || sub.startsWith('wl ')) {
             const num = sub.replace(/^(whitelist|wl)\s+/, '').replace(/[^0-9]/g, '');
-            if (!num || num.length < 6) return reply("⚠️ _[uso]:_ numero non valido.\n▸ .antibot whitelist <numero>");
+            if (!num || num.length < 6) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('numero non valido. ▸ .antibot whitelist <numero>')}
+${boxEnd()}`);
             if (!Array.isArray(cfg.whitelist)) cfg.whitelist = [];
             if (cfg.whitelist.includes(num)) {
                 cfg.whitelist = cfg.whitelist.filter(w => w !== num);

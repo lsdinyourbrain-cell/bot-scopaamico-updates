@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { searchLyrics } = require('../../lib/lyrics');
 
 module.exports = {
@@ -27,12 +29,10 @@ module.exports = {
 
             const lyrics = found.lyrics.slice(0, 6000) + (found.lyrics.length > 6000 ? '\n\n…testo tagliato qui.' : '');
             const head = `🎤 *_LYRICS_*
-━━━━━━━━━━━━━━
 ▸ *${found.title || query}*${found.artist ? ' — _' + found.artist + '_' : ''}
-━━━━━━━━━━━━━━
 
 `;
-            await sock.sendMessage(from, { text: head + lyrics + '\n\n◈ _Vex Bot_' }, { quoted: msg });
+            await sock.sendMessage(from, { text: head + lyrics + '\n\n' }, { quoted: msg });
         } catch (e) {
             console.error('[lyrics]', e.message);
             await reply("Non riesco a recuperare il testo in questo momento. Riprova più tardi.");

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'uuid',
     aliases: ['guid', 'uuidv4'],
@@ -13,6 +15,6 @@ module.exports = {
         const lines = [];
         for (let i = 0; i < n; i++) lines.push('`' + crypto.randomUUID() + '`');
 
-        await reply(`🔑 *_UUID_*\n━━━━━━━━━━━━━━\n▸ *Generati:* _${n}_\n▸ ${lines.join('\n')}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        await reply(`🔑 *_UUID_*\n━━━━━━━━━━━━━━\n▸ *Generati:* _${n}_\n▸ ${lines.join('\n')}\n━━━━━━━━━━━━━━\n`);
     },
 };

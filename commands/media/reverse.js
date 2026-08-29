@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const { promisify } = require('util');
@@ -31,7 +33,10 @@ module.exports = {
                     audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
                 }
             }
-            if (!audioBuffer) return reply('⚠️ _[uso]: rispondi a un vocale con *.reverse* per invertirlo._');
+            if (!audioBuffer) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a un vocale con *.reverse* per invertirlo.')}
+${boxEnd()}`);
 
             const prog = await showProgress(sock, from, { label: 'AUDIO INVERSO', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `rev_in_${Date.now()}.opus`);
@@ -40,7 +45,7 @@ module.exports = {
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'areverse', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('⏪ *_REVERSE_*\n━━━━━━━━━━━━━━\n▸ _Audio invertito!_\n◈ _Vex Bot_');
+            await prog.done('⏪ *_REVERSE_*\n━━━━━━━━━━━━━━\n▸ _Audio invertito!_\n');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[reverse]', e);

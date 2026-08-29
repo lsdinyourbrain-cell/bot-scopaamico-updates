@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  STORIA — Vex Bot
 //  Racconta una mini-storia scritta dall'IA, con protagonisti a scelta
@@ -53,7 +55,7 @@ ${SEP}
 ▸ \`.storia @amico @amica\` → _i taggati_
 ▸ \`.storia cavalieri dello zodiaco\` → _tema a scelta_
 ${SEP}
-◈ _Vex Bot_`,
+`,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
 
@@ -96,6 +98,6 @@ ${SEP}
             await prog.done(needKey());
             return;
         }
-        await prog.done(`📖 *_STORIA_*\n${SEP}\n${content}\n◈ _Vex Bot_`);
+        await prog.done(`📖 *_STORIA_*\n${SEP}\n${content}\n`);
     },
 };

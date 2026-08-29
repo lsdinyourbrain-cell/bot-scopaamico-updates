@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { makeSticker } = require('../../lib/sticker-webp');
 
 // Estrae i primi due emoji dal testo (gestendo cluster di più codepoint).
@@ -31,12 +33,18 @@ module.exports = {
 
         const emojis = pickEmojis(textArgs);
         if (emojis.length < 2) {
-            return reply("⚠️ _[uso]: fonde due emoji in una sola._\n━━━━━━━━━━━━━━\n▸ `.emojimix <emoji1> <emoji2>`\n━━━━━━━━━━━━━━\n▸ Esempio: `.emojimix 😂❤️` oppure `.emojimix 😱 😍`");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: fonde due emoji in una sola._ ━━━━━━━━━━━━━━ ▸ \`.emojimix <emoji1> <em...')}
+${boxEnd()}`);
         }
 
         const cp1 = codepointOf(emojis[0]);
         const cp2 = codepointOf(emojis[1]);
-        if (!cp1 || !cp2) return reply("⚠️ Emoji non valide.");
+        if (!cp1 || !cp2) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Emoji non valide.')}
+${boxEnd()}`);
 
         try {
             const url = buildUrl(cp1, cp2);

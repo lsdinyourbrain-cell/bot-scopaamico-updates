@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'cassaforte',
     aliases: [],
@@ -15,13 +17,11 @@ module.exports = {
             const bank = uDB.bank || 0;
             await reply(
 `🏦 *_CASSAFORTE_*
-━━━━━━━━━━━━━━
 ▸ 👤 Titolare: _${pushName}_
 ▸ 💰 Contante: _${wallet}€_
 ▸ 🏦 Banca: _${bank}€_
 ▸ 💵 Totale: _${wallet + bank}€_
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`
+`
             );
     },
 };

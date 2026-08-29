@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 const { dispOf, resolveJid } = require('../../lib/jid');
 
@@ -12,15 +14,30 @@ module.exports = {
         const { from, sender, isGroup, isSenderAdmin, isBotAdmin, targetJid, isReply, contextInfo, reply, services } = context;
         const { db, logGroupEvent, sameJid, isOwnerJid, getCachedGroupMeta, sendButtons } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('rendimi admin prima.')}
+${boxEnd()}`);
 
         let tgt = targetJid;
         if (!tgt && isReply) tgt = contextInfo?.participant || null;
-        if (!tgt) return reply("⚠️ _[uso]:_ tagga o rispondi a chi rimuovere.");
+        if (!tgt) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('tagga o rispondi a chi rimuovere.')}
+${boxEnd()}`);
 
-        if (sameJid(tgt, sender)) return reply("⚠️ _[uso]:_ non puoi rimuoverti da solo.");
+        if (sameJid(tgt, sender)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('non puoi rimuoverti da solo.')}
+${boxEnd()}`);
         if (isOwnerJid(tgt, sock, db, null)) return reply("⛔ Non posso rimuovere l'owner del bot.");
 
         try {
@@ -34,10 +51,10 @@ module.exports = {
             logGroupEvent(from, 'kick', sender, null, tgt, 'cacciato dal gruppo');
 
             await sendButtons(sock, from,
-                `👋 ${toDecorated('KICK', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} *cacciato/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                `👋 ${sec('KICK')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} *cacciato/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
-                    text: `👋 ${toDecorated('KICK', 'mono', '⏣')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} *cacciato/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    text: `👋 ${sec('KICK')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} *cacciato/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n`,
                     mentions: [useJid],
                 }, { quoted: msg }));
         } catch (_) {

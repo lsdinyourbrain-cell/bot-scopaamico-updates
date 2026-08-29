@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'password',
     aliases: ['pass', 'genpass'],
@@ -14,7 +16,7 @@ module.exports = {
         let pass = '';
         for (let i = 0; i < len; i++) pass += chars[Math.floor(Math.random() * chars.length)];
 
-        await sendButtons(sock, from, `🔐 *_PASSWORD_*\n━━━━━━━━━━━━━━\n▸ *Lunghezza:* _${len} caratteri_\n▸ \`${pass}\`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`, [
+        await sendButtons(sock, from, `🔐 *_PASSWORD_*\n━━━━━━━━━━━━━━\n▸ *Lunghezza:* _${len} caratteri_\n▸ \`${pass}\`\n━━━━━━━━━━━━━━\n`, [
             { label: '.password', id: 'password ' + len },
         ], msg);
     },

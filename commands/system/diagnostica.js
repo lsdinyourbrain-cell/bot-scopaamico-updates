@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -16,7 +18,11 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, reply, services } = context;
         if (!context.isOwner) {
-            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+            return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
         }
 
         await reply('🩺 *Diagnostica in corso...* (un attimo)');
@@ -91,7 +97,7 @@ module.exports = {
             current += line + '\n';
         }
         if (current) chunks.push(current);
-        chunks[chunks.length - 1] = chunks[chunks.length - 1].trimEnd() + '\n━━━━━━━━━━━━━━━━━━\n📄 _Report salvato in logs/diagnostica.txt_\n◈ _Vex Bot_';
+        chunks[chunks.length - 1] = chunks[chunks.length - 1].trimEnd() + '\n━━━━━━━━━━━━━━━━━━\n📄 _Report salvato in logs/diagnostica.txt_\n';
         for (const c of chunks) {
             await sock.sendMessage(from, { text: c }, { quoted: msg });
         }

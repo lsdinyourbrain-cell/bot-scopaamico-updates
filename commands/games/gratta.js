@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const EV = require('../../lib/events');
 
 module.exports = {
@@ -65,12 +67,11 @@ module.exports = {
 
             const resultText =
 `🎟️ *_GRATTA E VINCI_*
-━━━━━━━━━━━━━━
 ${render(grid)}
 
 ${esito}
 ▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-◈ _Vex Bot_`;
+`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'toimg',
     aliases: ['toimage', 'stickerimg'],
@@ -14,7 +16,10 @@ module.exports = {
 
         const sticker = quotedSticker || directSticker;
         if (!sticker) {
-            return reply('⚠️ _[uso]: rispondi a uno *sticker* per convertirlo in immagine._\n▸ *Uso:* rispondi allo sticker e scrivi `.toimg`');
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a uno *sticker* per convertirlo in immagine._ ▸ *Uso:* rispon...')}
+${boxEnd()}`);
         }
 
         try {
@@ -30,8 +35,8 @@ module.exports = {
             const pngPath = path.join(os.tmpdir(), `${stamp}.png`);
             await sharp(buffer).png().toFile(pngPath);
 
-            await sock.sendMessage(from, { image: fs.readFileSync(pngPath), caption: '🖼️ *_TOIMG_*\n━━━━━━━━━━━━━━\n▸ _Ecco la tua immagine!_\n◈ _Vex Bot_' }, { quoted: msg });
-            await prog.done('🖼️ *_IMMAGINE PRONTA_*\n━━━━━━━━━━━━━━\n▸ _Immagine pronta!_\n◈ _Vex Bot_');
+            await sock.sendMessage(from, { image: fs.readFileSync(pngPath), caption: '🖼️ *_TOIMG_*\n━━━━━━━━━━━━━━\n▸ _Ecco la tua immagine!_\n' }, { quoted: msg });
+            await prog.done('🖼️ *_IMMAGINE PRONTA_*\n━━━━━━━━━━━━━━\n▸ _Immagine pronta!_\n');
             try { fs.unlinkSync(pngPath); } catch (e) {}
         } catch (err) {
             console.error('[toimg]', err.message);

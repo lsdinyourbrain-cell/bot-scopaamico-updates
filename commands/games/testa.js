@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'testa',
     aliases: ['testacroce', 'testaocroce'],
@@ -25,8 +27,14 @@ module.exports = {
             const scelta = String(args[0] || '').toLowerCase();
             const puntata = parseInt(args[1]) || 20;
             const uDB = getUser(sender, from);
-            if (puntata < 1) return reply("⚠️ Puntata non valida.");
-            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+            if (puntata < 1) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata non valida.')}
+${boxEnd()}`);
+            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata massima: *1.000.000€*.')}
+${boxEnd()}`);
             if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
 
             const valid = {
@@ -35,7 +43,10 @@ module.exports = {
             };
             const picked = valid[scelta];
             if (!picked) {
-                return reply("⚠️ _[uso]: scegli *testa* o *croce* — .testa testa 50 oppure .testa croce 50_");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: scegli *testa* o *croce* — .testa testa 50 oppure .testa croce 50')}
+${boxEnd()}`);
             }
 
             const flip = randomChoice(['testa', 'croce']);
@@ -52,13 +63,12 @@ module.exports = {
 
             const resultText =
 `🪙 *_TESTA O CROCE_*
-━━━━━━━━━━━━━━
 ▸ *Hai scelto:* _${picked}_
 ▸ *Risultato:* _${flip}_
 
 ${esito}
 ▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-◈ _Vex Bot_`;
+`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

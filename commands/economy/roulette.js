@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const EV = require('../../lib/events');
 
 module.exports = {
@@ -14,9 +16,15 @@ module.exports = {
 
             const puntata = Number.parseInt(args[0], 10);
             if (!Number.isInteger(puntata) || puntata <= 0) {
-                return reply("⚠️ _[uso]: .roulette <importo>_ — es. _.roulette 50_");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: .roulette <importo>_ — es. _.roulette 50')}
+${boxEnd()}`);
             }
-            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata massima: *1.000.000€*.')}
+${boxEnd()}`);
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) return reply(`❌ Ti mancano soldi: hai _${formatMoney(uDB.money)}_.`);
 
@@ -28,12 +36,10 @@ module.exports = {
             const evLine = evMult > 1 && win ? `\n▸ 🎰 _Evento: vincita x${evMult}_` : '';
             const resultText =
 `🎡 *_ROULETTE_*
-━━━━━━━━━━━━━━
 ▸ 💸 Puntata: _${formatMoney(puntata)}_
 ▸ ${win ? '✨ È uscito il tuo numero!' : '🫠 Giro storto, andata male.'}${evLine}
-━━━━━━━━━━━━━━
 ▸ 💰 Saldo: _${formatMoney(uDB.money)}_
-◈ _Vex Bot_`;
+`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

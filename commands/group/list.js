@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'list',
     aliases: ['membri', 'members'],
@@ -9,7 +11,10 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
 
         try {
             const meta = await sock.groupMetadata(from);
@@ -24,7 +29,7 @@ module.exports = {
                 txt += `👑 *Admin:*\n`;
                 txt += admins.map(a => `@${jidOf(a).split('@')[0]}`).join('\n') + '\n';
             }
-            txt += `━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+            txt += `━━━━━━━━━━━━━━\n`;
 
             const mentions = parts.map(jidOf).filter(Boolean);
             await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });

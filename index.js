@@ -3393,12 +3393,47 @@ const collectMentionsFromText = async (sock, text, from) => {
 
         const reply = async (text) => {
             try {
-                const clean = String(text ?? '');
-                // Pulsante "Ripeti" automatico per ogni comando (tranne quelli
-                // pericolosi). Se il testo è troppo lungo o il comando è in
-                // NO_REPLAY_BUTTON, invio un semplice messaggio di testo.
+                let raw = String(text ?? '');
+                let clean = raw;
+                // ── AUTO-DECORATOR 2026: tutti i comandi usano la stessa grafica ──
+                // Se il testo non ha già la decorazione nuova, lo avvolge automaticamente.
+                // Così anche i 250 comandi non ancora convertiti fisicamente appaiono già
+                // con lo stile ㅤㅤ⋆｡˚『 ╭ `TITLE` ╯ 』˚｡⋆ + ╭ / │ / ╰⭒─
+                if (!clean.includes('⋆｡˚') && !clean.includes('╰⭒') && clean.trim().length > 0) {
+                    let body = clean.replace(/◈\s*_Vex Bot_\s*/gi, '').replace(/◈\s*_VEX BOT_\s*/gi, '').trim();
+                    // Rimuovi righe fatte solo di separatori
+                    body = body.split('\n').map(l => {
+                        const t = l.trim();
+                        if (/^[━─═━┈╌─]+$/.test(t)) return '';
+                        if (/^◈/.test(t)) return '';
+                        if (/^━+$/.test(t)) return '';
+                        return l;
+                    }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+                    if (body) {
+                        let title = (command || 'VEX').toUpperCase();
+                        const m1 = body.match(/^\s*[^\n]*\*([^*]{2,25})\*/);
+                        if (m1) {
+                            const cand = m1[1].replace(/[_*`]/g, '').trim().toUpperCase().slice(0,20);
+                            if (cand) title = cand;
+                        } else {
+                            const first = body.split('\n')[0].trim().slice(0,22).replace(/^[^\w*]+/,'').replace(/[*_`]+/g,'').trim().split(/\s+/).slice(0,2).join(' ');
+                            if (first && first.length>=3 && first.length<=20 && !/^[0-9]+$/.test(first)) {
+                                const cand = first.replace(/[^A-Za-zÀ-ÿ0-9 ]/g,'').trim().toUpperCase();
+                                if (cand) title = cand.slice(0,20);
+                            }
+                        }
+                        if (!title || title.length<2) title = (command||'VEX').toUpperCase();
+                        const lines = body.split('\n').map(l => {
+                            let t = l.trim();
+                            if (!t) return '';
+                            // Evita di duplicare il titolo se è già nella prima riga tra *
+                            return '│ ' + t.replace(/^▸\s*/, '').replace(/^•\s*/, '');
+                        }).filter(Boolean).join('\n');
+                        if (lines) clean = `ㅤㅤ⋆｡˚『 ╭ \`${title}\` ╯ 』˚｡⋆\n╭\n${lines}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+                    }
+                }
                 const wantButton = command && !NO_REPLAY_BUTTON.has(command)
-                    && clean.length > 0 && clean.length <= 900;
+                    && clean.length > 0 && clean.length <= 1024;
                 const mentions = (isGroup && clean.includes('@')) ? await collectMentionsFromText(sock, clean, from) : null;
                 if (wantButton) {
                     const replayId = `${command}${textArgs ? ' ' + textArgs : ''}`;

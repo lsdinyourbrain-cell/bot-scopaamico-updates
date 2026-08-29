@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { dispOf, resolveJid } = require('../../lib/jid');
 
 module.exports = {
@@ -12,8 +14,14 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
 
 
-            if (!isGroup) return reply("⚠️ Funziona solo nei gruppi.");
-            if (!targetJid) return reply("⚠️ _[uso]: .ruba @utente_");
+            if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('Funziona solo nei gruppi.')}
+${boxEnd()}`);
+            if (!targetJid) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: .ruba @utente')}
+${boxEnd()}`);
             if (sameJid(sender, targetJid)) return reply("Non puoi rubare a te stesso, scemo 😂");
 
             let meta = null;
@@ -49,11 +57,9 @@ module.exports = {
                 const extraFail = isRiccoFail ? `\n▸ _${pickFrase()}_` : '';
                 return reply(
 `🚔 *_BECCATO!_*
-━━━━━━━━━━━━━━
 ▸ 😱 Il proprietario ti ha fatto una multa di _${penalty}€_!${extraFail}
-━━━━━━━━━━━━━━
 ▸ 💰 Saldo: _${thiefData.money}€_
-◈ _Vex Bot_`);
+`);
             }
 
             const stolen = Math.min(targetData.money, Math.floor(Math.random() * 100) + 20);
@@ -65,7 +71,7 @@ module.exports = {
             const isRicco = (thiefData.money > 5000) || (thiefData.totaleRubato > 5000);
             const extraRicco = isRicco ? `\n▸ _${pickFrase()}_` : '';
             await sock.sendMessage(from, {
-                text: `🕵️ *_FURTO!_*\n━━━━━━━━━━━━━━\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!${extraRicco}\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n◈ _Vex Bot_`,
+                text: `🕵️ *_FURTO!_*\n━━━━━━━━━━━━━━\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!${extraRicco}\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n`,
                 mentions: [sender, targetJid],
             });
     },

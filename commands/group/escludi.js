@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'escludi',
     aliases: ['escludi-top', 'topexclude', 'escluditop'],
@@ -9,8 +11,14 @@ module.exports = {
         const { textArgs, from, isGroup, isSenderAdmin, isOwner, reply, services } = context;
         const { db, saveDB } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin && !isOwner) return reply("⚠️ _[uso]:_ comando riservato agli admin del gruppo.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin && !isOwner) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('comando riservato agli admin del gruppo.')}
+${boxEnd()}`);
 
         const q = String(textArgs || '').trim().toLowerCase();
         const esclusi = db._escludi || {};
@@ -23,16 +31,13 @@ module.exports = {
             saveDB();
             return reply(
 `🚫 *GRUPPO ESCLUSO*
-━━━━━━━━━━━━━━━━━━
 ▸ Questo gruppo non comparirà
   più nelle classifiche
   (.top, .topricchi, .topgruppi).
 ▸ L'attività continua a essere
   registrata normalmente.
-━━━━━━━━━━━━━━━━━━
 💡 \`.escludi off\` per riammetterlo.
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         if (q && (q === 'off' || q === 'disattiva' || q === 'no')) {
@@ -42,21 +47,17 @@ module.exports = {
             saveDB();
             return reply(
 `✅ *GRUPPO RIAMMESSO*
-━━━━━━━━━━━━━━━━━━
 ▸ Questo gruppo torna nelle
   classifiche (.top, .topricchi,
   .topgruppi).
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         return reply(
 `🚫 *ESCLUSIONE CLASSIFICHE*
-━━━━━━━━━━━━━━━━━━
 ▸ Stato: ${current ? '🚫 *ESCLUSO*' : '✅ *IN CLASSIFICA*'}
 ▸ \`.escludi on\`  → esclude il gruppo
 ▸ \`.escludi off\` → lo riammette
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
     },
 };

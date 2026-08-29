@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'personaggio',
     aliases: [],
@@ -13,7 +15,7 @@ module.exports = {
             const role = randomChoice(['Eroe/a del gruppo', 'Mago/a delle scuse', 'Boss finale', 'Spalla comica', 'Leggenda urbana']);
             const power = randomChoice(['arriva sempre al momento giusto', 'trova cibo ovunque', 'fa ridere anche quando non vuole', 'sopravvive a ogni figuraccia', 'sparisce quando c’è da pagare']);
             await sock.sendMessage(from, {
-                text: `🎭 *_PERSONAGGIO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} è: _*${role}*_\n▸ 💥 *Superpotere:* _${power}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                text: `🎭 *_PERSONAGGIO_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} è: _*${role}*_\n▸ 💥 *Superpotere:* _${power}_\n━━━━━━━━━━━━━━\n`,
                 mentions: [sender],
             });
     },

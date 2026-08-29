@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'wiki',
     aliases: ['wikipedia', 'enciclopedia'],
@@ -10,7 +12,10 @@ module.exports = {
         const { axios, showProgress } = services;
 
         const term = String(textArgs || '').trim();
-        if (!term) return reply('⚠️ _[uso]: Scrivi la voce da cercare._\n▸ *Uso:* \`.wiki torre eiffel\`');
+        if (!term) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: Scrivi la voce da cercare._ ▸ *Uso:* \\`.wiki torre eiffel\\`')}
+${boxEnd()}`);
 
         try {
             const prog = await showProgress(sock, from, { label: 'WIKIPEDIA', duration: 3000, quoted: msg });
@@ -27,7 +32,7 @@ module.exports = {
             }
 
             const ext = data.extract;
-            const txt = `📚 *_${data.title}_*\n━━━━━━━━━━━━━━\n▸ ${ext.length > 900 ? ext.slice(0, 900) + '…' : ext}\n▸ 🔗 _${data.content_urls?.desktop?.page || ''}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+            const txt = `📚 *_${data.title}_*\n━━━━━━━━━━━━━━\n▸ ${ext.length > 900 ? ext.slice(0, 900) + '…' : ext}\n▸ 🔗 _${data.content_urls?.desktop?.page || ''}_\n━━━━━━━━━━━━━━\n`;
             const thumb = data.thumbnail?.source || null;
 
             if (thumb) {

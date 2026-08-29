@@ -1,7 +1,7 @@
 'use strict';
 
 const { toStyle, toDecorated } = require('../../lib/font');
-const { S, SEP, header, footer, bullet, section, box } = require('../../lib/ui');
+const { S, SEP, header, footer, bullet, section, box, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const NAMES = [
     'Giovanni Batterista', 'Maria Pina', 'Giuseppe', 'Concetta', 'Antonio',
@@ -181,7 +181,7 @@ ${SEP.lineL}
 
 ⚠️ *_TUTTI I DATI SONO COMPLETAMENTE INVENTATI_*
 ${S.star} ${S.starW} ${S.dia} ${S.starW} ${S.star}
-◈ _Vex Bot_`;
+`;
 
         await sock.sendMessage(from, {
             text: doxText,

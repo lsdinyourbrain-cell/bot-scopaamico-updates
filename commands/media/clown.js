@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const axios = require('axios');
 const sharp = require('sharp');
 
@@ -86,9 +88,9 @@ module.exports = {
 
             await sock.sendMessage(from, {
                 image: overlayed,
-                caption: '🤡 *_CLOWN_*\n━━━━━━━━━━━━━━\n▸ _Ecco a te, pagliaccio!_\n◈ _Vex Bot_'
+                caption: '🤡 *_CLOWN_*\n━━━━━━━━━━━━━━\n▸ _Ecco a te, pagliaccio!_\n'
             }, { quoted: msg });
-            await prog.done('🤡 *_CLOWN_*\n━━━━━━━━━━━━━━\n▸ _Clown pronto!_\n◈ _Vex Bot_');
+            await prog.done('🤡 *_CLOWN_*\n━━━━━━━━━━━━━━\n▸ _Clown pronto!_\n');
 
         } catch (e) {
             console.error('[clown]', e);

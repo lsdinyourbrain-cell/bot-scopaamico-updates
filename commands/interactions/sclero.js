@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'sclero',
     aliases: [],
@@ -11,7 +13,7 @@ module.exports = {
 
 
             await sock.sendMessage(from, {
-                text: `🤯 *_SCLERO_*\n━━━━━━━━━━━━━━\n▸ 👤 @${sender.split('@')[0]}\n▸ 💢 _${randomChoice(ARRAYS.sclero)}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                text: `🤯 *_SCLERO_*\n━━━━━━━━━━━━━━\n▸ 👤 @${sender.split('@')[0]}\n▸ 💢 _${randomChoice(ARRAYS.sclero)}_\n━━━━━━━━━━━━━━\n`,
                 mentions: [sender],
             });
     },

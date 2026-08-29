@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const fs = require('fs/promises');
 const { searchAudio, getDownloadErrorMessage } = require('../../lib/mediaDownloader');
 const { showProgress } = require('../../lib/loading');
@@ -22,7 +24,10 @@ module.exports = {
         const query = (args || []).join(' ').trim();
 
         if (!query) {
-            return reply("⚠️ _[uso]: scrivi il titolo della canzone._\n━━━━━━━━━━━━━━\n▸ Esempio: `.mp3 Blinding Lights`");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: scrivi il titolo della canzone._ ━━━━━━━━━━━━━━ ▸ Esempio: \`.mp3 Blind...')}
+${boxEnd()}`);
         }
 
         const prog = await showProgress(sock, from, {
@@ -51,7 +56,7 @@ module.exports = {
                 fileName: `${cleanName}.${ext}`,
             }, { quoted: msg });
 
-            await prog.done(`🎵 *_MP3_*\n━━━━━━━━━━━━━━\n▸ _Scaricato_ *${query}* _intero!_\n◈ _Vex Bot_`);
+            await prog.done(`🎵 *_MP3_*\n━━━━━━━━━━━━━━\n▸ _Scaricato_ *${query}* _intero!_\n`);
         } catch (e) {
             console.error('[mp3]', e.message);
             await prog.fail('❌ ' + getDownloadErrorMessage(e));

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'admincount',
     aliases: ['contadm', 'admingroup', 'admincnt'],
@@ -8,7 +10,10 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, isGroup, reply } = context;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ non sei in un gruppo.");
+        if (!isGroup) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('non sei in un gruppo.')}
+${boxEnd()}`);
         try {
             const meta = await sock.groupMetadata(from);
             const admins = meta.participants.filter(p => p.admin);
@@ -18,15 +23,13 @@ module.exports = {
 
             await reply(
 `📊 *ADMIN COUNT*
-━━━━━━━━━━━━━━
 ${meta.subject}
 👥 Membri: *${total}*
 👑 Admin: *${admins.length}*
 🟣 Super: *${superAdmins.length}*
 🔵 Normal: *${regularAdmins.length}*
 📱 Utenti: *${total - admins.length}*
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         } catch (_) {
             await reply("⚠️ _[uso]:_ errore nel recuperare info gruppo.");
         }

@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { S, SEP, footer, bullet } = require('../../lib/ui');
+const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
     name: 'schiaffo',
@@ -14,7 +14,10 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
 
 
-            if (!targetJid) return reply("⚠️ _Tagga qualcuno oppure rispondi a un suo messaggio._");
+            if (!targetJid) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Tagga qualcuno oppure rispondi a un suo messaggio.')}
+${boxEnd()}`);
 
             let title, action, extra;
             if (command === 'schiaffo') {

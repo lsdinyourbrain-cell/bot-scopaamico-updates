@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -16,19 +18,21 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
-        if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+        if (!isOwner) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
 
         const link = textArgs?.trim();
         if (!link) {
             const current = db._config?.sponsorLink || 'nessuno';
             return reply(
 `🔗 *_SETLINK_*
-━━━━━━━━━━━━━━━━━━
 ▸ Link attuale: _${current}_
 ▸ Usa: \`.setlink <url>\`
   per cambiarlo.
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         if (!db._config) db._config = {};
@@ -37,13 +41,11 @@ module.exports = {
 
         await reply(
 `🔗 *_SETLINK_*
-━━━━━━━━━━━━━━━━━━
 ▸ ✅ Link aggiornato!
 ▸ _${link}_
 ▸ Sarà visibile nel menu
   e in .sponsor su tutti
   i gruppi. 🚀
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
     },
 };

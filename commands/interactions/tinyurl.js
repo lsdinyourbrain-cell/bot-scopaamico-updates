@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'tinyurl',
     aliases: ['short', 'shorten'],
@@ -12,7 +14,10 @@ module.exports = {
         const quoted = isReply ? (contextInfo?.quotedMessage?.conversation || contextInfo?.quotedMessage?.extendedTextMessage?.text || '') : '';
         const url = String(quoted || textArgs || '').trim();
         if (!url || !/^https?:\/\//i.test(url)) {
-            return reply('⚠️ _[uso]: Scrivi un link da accorciare._\n▸ *Uso:* \`.tinyurl https://esempio.it\` _(o cita un messaggio)_');
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: Scrivi un link da accorciare._ ▸ *Uso:* \\`.tinyurl https://esempio.it\...')}
+${boxEnd()}`);
         }
 
         try {
@@ -20,7 +25,7 @@ module.exports = {
             const { data } = await axios.get('https://tinyurl.com/api-create.php', { params: { url }, timeout: 10000 });
             const short = String(data).trim();
             if (!/^https?:\/\//i.test(short)) return prog.done('⚠️ _Non riesco ad accorciare questo link._');
-            await prog.done(`🔗 *_LINK ACCORCIATO_*\n━━━━━━━━━━━━━━\n▸ _${short}_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            await prog.done(`🔗 *_LINK ACCORCIATO_*\n━━━━━━━━━━━━━━\n▸ _${short}_\n━━━━━━━━━━━━━━\n`);
         } catch (_) {
             await reply('⚠️ _Errore nell\'accorciare il link. Riprova più tardi._');
         }

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'memoria',
     aliases: ['simon', 'sequenza'],
@@ -43,7 +45,6 @@ module.exports = {
 
             await reply(
 `🧠 *_MEMORIA_*
-━━━━━━━━━━━━━━
 Memorizza questa sequenza:
 
 ${display}
@@ -51,7 +52,7 @@ ${display}
 ✏️ Ripetila scrivendo le
 *lettere* (es: \`R G B Y\`)
 ⏳ Hai 60 secondi.
-◈ _Vex Bot_`
+`
             );
 
             setTimeout(() => {

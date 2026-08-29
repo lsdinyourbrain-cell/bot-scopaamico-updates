@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'accendi',
     aliases: [],
@@ -14,16 +16,18 @@ module.exports = {
             saveDB();
             return reply(
 `▶️ *_BOT RIPRESO_*
-━━━━━━━━━━━━━━━━━━
 ▸ Il bot è di nuovo attivo
   in questo gruppo! 🚀
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
-        if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nSolo l'Owner può riaccendere\nil bot globalmente.\n━━━━━━━━━━━━━━━━━━");
+        if (!isOwner) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
 
         setBotActive(true);
-        await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ ✅ Bot _ATTIVO_ e pronto! 🚀\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+        await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ ✅ Bot _ATTIVO_ e pronto! 🚀\n━━━━━━━━━━━━━━━━━━\n");
     },
 };

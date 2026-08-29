@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // Estrae il codice di invito da un link del tipo:
 //   https://chat.whatsapp.com/CODICE
 //   https://chat.whatsapp.com/CODICE?s=cl&p=a&ilr=0
@@ -21,25 +23,35 @@ module.exports = {
         if (!isGroup) {
             if (!isOwner) return reply("⚠️ _[uso]:_ in privato *\.add* è riservato all'*Owner del bot*.");
             const code = extractInviteCode(textArgs);
-            if (!code) return reply("⚠️ _[uso]:_ invia un link valido.\n\nEsempio:\n\.add https://chat.whatsapp.com/CODICE");
+            if (!code) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('invia un link valido. Esempio: \.add https://chat.whatsapp.com/CODICE')}
+${boxEnd()}`);
             return joinViaInvite(sock, from, code, reply);
         }
 
         // ── GRUPPO: aggiungi un utente al gruppo ───────────────────────────
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
-        if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin.')}
+${boxEnd()}`);
+        if (!isBotAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('rendimi admin prima.')}
+${boxEnd()}`);
 
         let tgt = args.join(' ').replace(/[^0-9]/g, '');
-        if (!tgt) return reply("⚠️ _[uso]:_ inserisci il numero o tagga. Es: .add 391234567890");
+        if (!tgt) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('inserisci il numero o tagga. Es: .add 391234567890')}
+${boxEnd()}`);
 
         tgt = tgt + '@s.whatsapp.net';
         try {
             await sock.groupParticipantsUpdate(from, [tgt], 'add');
             await reply(`☑️ *_ADD_*
-━━━━━━━━━━━━━━
 ▸ @${tgt.split('@')[0]} *aggiunto/a* al gruppo.
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         } catch (e) {
             await reply("⚠️ _[uso]:_ impossibile aggiungere. Il numero potrebbe non essere su WhatsApp o ha privacy restrittiva.");
         }
@@ -65,7 +77,10 @@ async function joinViaInvite(sock, dmJid, code, reply) {
         }
     }
     if (!info || !info.id) {
-        return reply("⚠️ _[uso]:_ link non valido o scaduto.");
+        return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('link non valido o scaduto.')}
+${boxEnd()}`);
     }
 
     // 2) Community: accetta l'invito (WhatsApp aggiunge automaticamente a
@@ -82,9 +97,7 @@ async function joinViaInvite(sock, dmJid, code, reply) {
                 : '  (nessun sottogruppo)';
             return reply(
 `🌐 *_COMMUNITY RAGGIUNTA_*
-━━━━━━━━━━━━━━
 ${communityJid ? '▸ Sono entrato nella community e in tutti i suoi gruppi.' : '▸ Sono entrato nella community.'}
-━━━━━━━━━━━━━━
 ▸ *Gruppi:*
 ${groups}
 ━━━━━━━━━━━━━━`
@@ -101,13 +114,10 @@ ${groups}
         const groupJid = await sock.groupAcceptInvite(code);
         if (groupJid) {
             return reply(`✅ *_ENTRATO NEL GRUPPO_*
-━━━━━━━━━━━━━━
 ▸ *${info.subject || 'del link'}*
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
         return reply(`✅ *_RICHIESTA INVIATA_*
-━━━━━━━━━━━━━━
 ▸ Richiesta di ingresso inviata al gruppo _(attende approvazione di un admin)_.
 ━━━━━━━━━━━━━━`);
     } catch (e) {

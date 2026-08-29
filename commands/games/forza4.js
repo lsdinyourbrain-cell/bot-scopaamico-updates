@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { createBoard, renderConnect4Board } = require('../../lib/four-in-row');
 
 module.exports = {

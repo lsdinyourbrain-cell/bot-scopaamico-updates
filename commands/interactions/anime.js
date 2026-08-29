@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'anime',
     aliases: [],
@@ -12,7 +14,7 @@ module.exports = {
 
             const anime = randomChoice(['protagonista shōnen', 'villain col passato triste', 'sensei rilassatissimo', 'salvatore in ritardo', 'friend che ruba la scena']);
             await sock.sendMessage(from, {
-                text: `✨ *_ANIME_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} in un anime sarebbe: _*${anime}*_\n━━━━━━━━━━━━━━\n🎶 _Opening già in playlist, ovvio._\n◈ _Vex Bot_`,
+                text: `✨ *_ANIME_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} in un anime sarebbe: _*${anime}*_\n━━━━━━━━━━━━━━\n🎶 _Opening già in playlist, ovvio._\n`,
                 mentions: [sender],
             });
     },

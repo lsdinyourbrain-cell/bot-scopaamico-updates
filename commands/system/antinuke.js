@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 
 module.exports = {
@@ -11,16 +13,14 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, saveDB, getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS, sendButtons } = services;
 
-        if (!isGroup) return reply(`🛡️ ${toDecorated('ANTINUKE', 'outline', '✠')}\n━━━━━━━━━━━━━━━━━━\n▸ Funziona solo nei _gruppi_.\n━━━━━━━━━━━━━━━━━━`);
+        if (!isGroup) return reply(`🛡️ ${sec('ANTINUKE')}\n━━━━━━━━━━━━━━━━━━\n▸ Funziona solo nei _gruppi_.\n━━━━━━━━━━━━━━━━━━`);
 
         if (!isOwner) {
-            return reply(
-`⛔ *ACCESSO NEGATO*
-━━━━━━━━━━━━━━━━━━
-Il comando *.antinuke* è
-riservato all'*Owner del bot*.
-━━━━━━━━━━━━━━━━━━`
-            );
+            return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
         }
 
         const cfg = getAntinukeGroup(db, from);
@@ -44,17 +44,13 @@ riservato all'*Owner del bot*.
                 : '▸ _(nessuno)_';
 
             const txt =
-`🛡️ ${toDecorated('ANTINUKE', 'outline', '✠')}
-━━━━━━━━━━━━━━━━━━
+`🛡️ ${sec('ANTINUKE')}
 ▸ Stato: _${enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO'}_
-━━━━━━━━━━━━━━━━━━
 📋 *Controlli*
 ${controlsLines}
-━━━━━━━━━━━━━━━━━━
 📋 *Whitelist*
 ▸ Utenti fidati esenti da tutto:
 ${wlLines}
-━━━━━━━━━━━━━━━━━━
 💡 *Uso*
 ▸ .antinuke on/off
 ▸ .antinuke <controllo> on/off
@@ -62,8 +58,7 @@ ${wlLines}
 ▸ .antinuke whitelist <numero>
 ▸ .antinuke whitelist list
 ▸ Controlli: ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`;
 
             try {
                 await sendButtons(sock, from, txt, [
@@ -94,14 +89,12 @@ ${wlLines}
             }
             saveDB();
             return reply(
-`🛡️ ${toDecorated('ANTINUKE', 'outline', '✠')}
-━━━━━━━━━━━━━━━━━━
+`🛡️ ${sec('ANTINUKE')}
 ▸ Stato: _${cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO'}_
 ${cfg.enabled
     ? '▸ Il gruppo è ora protetto.\n  Solo owner e whitelist\n  hanno i pieni poteri.\n▸ Per aggiungere fidati:\n  .antinuke whitelist <numero>'
     : '▸ Protezione disattivata.\n  Chiunque può agire normalmente.'}
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`
+`
             );
         }
 
@@ -110,14 +103,14 @@ ${cfg.enabled
             const value = sub === 'all on';
             for (const key of Object.keys(ANTINUKE_CONTROLS)) cfg.controls[key] = value;
             saveDB();
-            return reply(`🛡️ ${toDecorated('ANTINUKE', 'outline', '✠')} — tutti i controlli: _${value ? 'ON' : 'OFF'}_`);
+            return reply(`🛡️ ${sec('ANTINUKE')} — tutti i controlli: _${value ? 'ON' : 'OFF'}_`);
         }
 
         // ── WHITELIST ─────────────────────────────────────────────────────
         if (sub === 'whitelist list' || sub === 'wl list') {
-            if (!cfg.whitelist.length) return reply(`📋 ${toDecorated('WHITELIST ANTINUKE', 'outline', '✠')}\n━━━━━━━━━━━━━━━━━━\n▸ _(vuota)_\n━━━━━━━━━━━━━━━━━━`);
+            if (!cfg.whitelist.length) return reply(`📋 ${sec('WHITELIST ANTINUKE')}\n━━━━━━━━━━━━━━━━━━\n▸ _(vuota)_\n━━━━━━━━━━━━━━━━━━`);
             const lines = cfg.whitelist.map(w => `▸ ${w.replace(/[^0-9]/g, '')}`).join('\n');
-            return reply(`📋 ${toDecorated('WHITELIST ANTINUKE', 'outline', '✠')}\n━━━━━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`📋 ${sec('WHITELIST ANTINUKE')}\n━━━━━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━━━━━\n`);
         }
         if (/^(whitelist|wl)\s+/.test(sub)) {
             const raw = sub.replace(/^(whitelist|wl)\s+/, '').trim();
@@ -154,7 +147,6 @@ ${cfg.enabled
 
         return reply(
 `⚠️ *_ANTINUKE — ERRORE_*
-━━━━━━━━━━━━━━━━━━
 ▸ _[uso]:_ sottocomando non riconosciuto.
 ▸ .antinuke on/off
 ▸ .antinuke <controllo> on/off

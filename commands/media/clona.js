@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'clona',
     aliases: [],
@@ -10,7 +12,10 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
 
-            if (!textArgs) return reply("⚠️ _[uso]: scrivi qualcosa da girare al contrario._\n▸ Esempio: `.clona ciao`");
-            await reply(`🪞 *_CLONA_*\n━━━━━━━━━━━━━━\n▸ _${Array.from(textArgs).reverse().join('')}_\n◈ _Vex Bot_`);
+            if (!textArgs) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: scrivi qualcosa da girare al contrario._ ▸ Esempio: \`.clona ciao\`')}
+${boxEnd()}`);
+            await reply(`🪞 *_CLONA_*\n━━━━━━━━━━━━━━\n▸ _${Array.from(textArgs).reverse().join('')}_\n`);
     },
 };

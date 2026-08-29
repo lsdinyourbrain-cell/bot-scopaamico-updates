@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const googleTTS = require('google-tts-api');
@@ -65,7 +67,7 @@ module.exports = {
                 },
                 { quoted: msg }
             );
-            await prog.done('🎙️ *_TTS_*\n━━━━━━━━━━━━━━\n▸ _Testo convertito in vocale!_\n◈ _Vex Bot_');
+            await prog.done('🎙️ *_TTS_*\n━━━━━━━━━━━━━━\n▸ _Testo convertito in vocale!_\n');
         } catch (error) {
             console.error('[tts]', error.message);
             await sock.sendMessage(jid, { text: "❌ Errore durante l'elaborazione della richiesta." });

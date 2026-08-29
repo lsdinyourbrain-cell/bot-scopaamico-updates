@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'qr',
     aliases: ['qrcode'],
@@ -11,7 +13,10 @@ module.exports = {
 
         const quoted = isReply ? (contextInfo?.quotedMessage?.conversation || contextInfo?.quotedMessage?.extendedTextMessage?.text || '') : '';
         const data = String(quoted || textArgs || '').trim();
-        if (!data) return reply('⚠️ _[uso]: Scrivi il testo da codificare._\n▸ *Uso:* \`.qr https://esempio.it\` _(o cita un messaggio)_');
+        if (!data) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: Scrivi il testo da codificare._ ▸ *Uso:* \\`.qr https://esempio.it\\` _(...')}
+${boxEnd()}`);
 
         try {
             const encoded = encodeURIComponent(data);

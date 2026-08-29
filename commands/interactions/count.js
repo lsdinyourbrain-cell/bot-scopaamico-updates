@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'count',
     aliases: ['conta', 'char'],
@@ -16,11 +18,9 @@ module.exports = {
 
         await reply(
 `🔢 *_COUNT_*
-━━━━━━━━━━━━━━
 ▸ 📝 *Caratteri:* _${chars}_
 ▸ 📖 *Parole:* _${words}_
 ▸ 📃 *Righe:* _${lines}_
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
     },
 };

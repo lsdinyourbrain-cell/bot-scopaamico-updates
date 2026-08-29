@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const EV = require('../../lib/events');
 
 module.exports = {
@@ -24,8 +26,14 @@ module.exports = {
         userData.cooldowns[cooldownKey] = now;
 
         const puntata = parseInt(args[0]);
-        if (isNaN(puntata) || puntata < 10) return reply("⚠️ _[uso]: puntata non valida (minimo 10€) — .poker 50_");
-        if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+        if (isNaN(puntata) || puntata < 10) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: puntata non valida (minimo 10€) — .poker 50')}
+${boxEnd()}`);
+        if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata massima: *1.000.000€*.')}
+${boxEnd()}`);
 
         const uDB = getUser(sender, from);
         if (uDB.money < puntata) return reply(`❌ Saldo insufficiente. Hai *${uDB.money}€*.`);
@@ -77,7 +85,6 @@ module.exports = {
         const carta = (c) => `[${c.carta}${c.seme}]`;
         const resultText =
 `🃏 *_POKER_*
-━━━━━━━━━━━━━━
 ▸ *Le tue carte:* _${manoUtente.map(carta).join(' ')}_
 ▸ *La tua mano:* _${vu.nome}_
 ▸ *Carte bot:* _${manoBot.map(carta).join(' ')}_
@@ -85,7 +92,7 @@ module.exports = {
 
 ${esito}
 ▸ *Saldo:* _${uDB.money}€_
-◈ _Vex Bot_`;
+`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

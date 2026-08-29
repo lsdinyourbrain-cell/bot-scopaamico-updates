@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // Collega l'account Last.fm dell'utente al bot. Dopo questo comando, .cur
 // mostrerà la canzone in riproduzione dell'utente. Il nome è validato
 // chiamando l'API: se non esiste, non viene salvato.
@@ -19,7 +21,10 @@ module.exports = {
 
         const username = String(textArgs || '').trim();
         if (!username) {
-            return reply('⚠️ _[uso]: \`.lastfm <nomeutente>\`_\n▸ _Scrivi il nome utente Last.fm da collegare._\n▸ _Esempio: \`.lastfm mia_musica\`_\n▸ _Per scollegare: \`.lastfm off\`_');
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: \\`.lastfm <nomeutente>\\`_ ▸ _Scrivi il nome utente Last.fm da collegar...')}
+${boxEnd()}`);
         }
 
         // Scollegamento
@@ -42,12 +47,10 @@ module.exports = {
             const playcount = info.playcount.toLocaleString('it-IT');
             return reply(
 `✅ *_ACCOUNT COLLEGATO_*
-━━━━━━━━━━━━━━
 ▸ 👤 *Nome:* _${info.realName}_
 ▸ 🎧 *Ascolti totali:* _${playcount}_
-━━━━━━━━━━━━━━
 ▸ _Ora usa \`.cur\` per vedere la canzone in riproduzione._
-◈ _Vex Bot_`
+`
             );
         } catch (e) {
             const msgMap = {

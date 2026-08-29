@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { dispOf, resolveJid } = require('../../lib/jid');
 
 const GIFT_LINES = [
@@ -19,7 +21,10 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, mentioned, targetJid, isReply, contextInfo, reply, services } = context;
         const { getUser, saveDB, sameJid, formatMoney, randomChoice, getCachedGroupMeta } = services;
 
-        if (!isGroup) return reply("Il regalo funziona solo nei gruppi.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('Il regalo funziona solo nei gruppi.')}
+${boxEnd()}`);
         if (!targetJid) return reply("🎁 Tagga la persona a cui vuoi regalare. Esempio: `.regalo @utente 100`");
         if (sameJid(targetJid, sender)) return reply("Non puoi regalare a te stesso!");
 
@@ -55,13 +60,11 @@ module.exports = {
         return sock.sendMessage(from, {
             text:
 `🎁 *_REGALO!_*
-━━━━━━━━━━━━━━
 ▸ 🎀 @${disp(sender)} ha regalato _${formatMoney(amount)}_ a @${disp(targetJid)}!
 ▸ _${randomChoice(GIFT_LINES)}_
-━━━━━━━━━━━━━━
 ▸ 💳 Il tuo saldo: _${formatMoney(me.money)}_
 ▸ 📦 Regali dati oggi: _${me.regali.n}/3_
-◈ _Vex Bot_`,
+`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

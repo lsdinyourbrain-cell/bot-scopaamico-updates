@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // Impiccato (hangman) — versione SINGLE-PLAYER: ogni persona ha la propria
 // partita (stato per-sender), con parole pescate dall'archivio gigante di
 // lib/words.js e senza ripetere parole già usate dal singolo giocatore.
@@ -173,7 +175,6 @@ module.exports = {
         if (!diff) {
             return sendButtons(sock, from,
 `🔴 *IMPICCATO*
-━━━━━━━━━━━━━━━━━━
 Scegli la *difficoltà* della
 parola da indovinare:
 

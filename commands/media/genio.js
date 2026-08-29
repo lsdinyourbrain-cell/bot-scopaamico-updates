@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  GENIO — Vex Bot
 //  Chiedi qualcosa al Genio della lampada: risponde con saggezza, ironia o
@@ -41,7 +43,7 @@ ${SEP}
 ${SEP}
 ▸ _Stili:_ saggezza · ironia · poesia · profezia
 ${SEP}
-◈ _Vex Bot_`,
+`,
                 [
                     { label: '🐉 Saperi (sagg.)', id: 'genio saggezza Chi sono io?' },
                     { label: '😏 Ironia', id: 'genio ironia Dimmi la verità' },
@@ -83,6 +85,6 @@ ${SEP}
             return;
         }
         const emoji = style === 'ironia' ? '😏' : style === 'poesia' ? '📜' : style === 'profezia' ? '🔮' : '🧞';
-        await prog.done(`${emoji} *_GENIO_* · _stile ${style}_\n${SEP}\n${content}\n◈ _Vex Bot_`);
+        await prog.done(`${emoji} *_GENIO_* · _stile ${style}_\n${SEP}\n${content}\n`);
     },
 };

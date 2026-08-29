@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -27,7 +29,11 @@ module.exports = {
         const projectDir = context.services.projectDir;
 
         if (!context.isOwner) {
-            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+            return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
         }
 
         // 1) Verifica che la cartella sia un repo git
@@ -35,7 +41,10 @@ module.exports = {
             const { stdout } = await runGit(execFileAsync, projectDir, ['rev-parse', '--is-inside-work-tree']);
             if (String(stdout).trim() !== 'true') throw new Error('non-repo');
         } catch (_) {
-            return reply("⚠️ La cartella del bot non è un repo Git.\n\nSu Termux esegui:\n`git init`\n`git remote add origin <URL repo>`\n`git fetch origin master`\n`git reset --hard origin/master`");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('La cartella del bot non è un repo Git. Su Termux esegui: \`git init\` \`git remo...')}
+${boxEnd()}`);
         }
 
         // 1b) Imposta sempre il remote ufficiale, così il bot scarica SEMPRE
@@ -75,7 +84,6 @@ module.exports = {
             } catch (_) {}
             return reply(
 `✨ *_TUTTO AGGIORNATO_*
-━━━━━━━━━━━━━━━━━━
 ▸ ✅ Il bot è già alla
   versione più recente!
 ▸ 🔖 Build attuale:
@@ -83,8 +91,7 @@ module.exports = {
 ▸ 🚀 Non c'è nulla di nuovo,
   ma la qualità è sempre
   al massimo. 💎
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         // 4) Changelog dei nuovi commit
@@ -138,7 +145,7 @@ module.exports = {
             `▸ 🔄 Applico la versione \`${shortRemote}\`...`,
         ];
         if (depsChanged) infoParts.push('▸ 📥 Installerò anche le nuove dipendenze.');
-        infoParts.push('━━━━━━━━━━━━━━━━━━', '◈ _Vex Bot_');
+        infoParts.push('━━━━━━━━━━━━━━━━━━', '');
         await reply(infoParts.join('\n'));
 
         // 8) Applica la versione remota
@@ -163,7 +170,10 @@ module.exports = {
                 });
             } catch (e) {
                 console.error('[aggiorna] npm install fallito:', e.message);
-                return reply("⚠️ Aggiornamento applicato ma *npm install* è fallito. Esegui a mano:\n`npm install --legacy-peer-deps`");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Aggiornamento applicato ma *npm install* è fallito. Esegui a mano: \`npm insta...')}
+${boxEnd()}`);
             }
         }
 
@@ -173,7 +183,7 @@ module.exports = {
                 path.join(projectDir, '.restart-msg.json'),
                 JSON.stringify({
                     from,
-                    message: `🔄 *_Aggiornamento completato e bot riavviato._*\n━━━━━━━━━━━━━━━━━━\n▸ Nuova versione: \`${shortRemote}\`\n▸ ✅ Bot operativo.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`,
+                    message: `🔄 *_Aggiornamento completato e bot riavviato._*\n━━━━━━━━━━━━━━━━━━\n▸ Nuova versione: \`${shortRemote}\`\n▸ ✅ Bot operativo.\n━━━━━━━━━━━━━━━━━━\n`,
                 }),
                 'utf-8'
             );

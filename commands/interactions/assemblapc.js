@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'assemblapc',
     aliases: [],
@@ -16,13 +18,11 @@ module.exports = {
             const storage = randomChoice(['1 TB NVMe', '2 TB NVMe', '1 TB NVMe + 2 TB SSD']);
             await reply(
 `🖥️ *_PC DEL GIORNO_*
-━━━━━━━━━━━━━━
 ▸ *CPU:* _${cpu}_
 ▸ *GPU:* _${gpu}_
 ▸ *RAM:* _${ram}_
 ▸ *Spazio:* _${storage}_
-━━━━━━━━━━━━━━
 _Perfetto per giocare e fare tutto senza stress._
-◈ _Vex Bot_`);
+`);
     },
 };

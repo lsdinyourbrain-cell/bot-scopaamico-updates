@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 
 module.exports = {
@@ -24,12 +26,12 @@ module.exports = {
         if (sub === 'on' || sub === 'true' || sub === '1') {
             cfg.enabled = true;
             saveDB();
-            return reply(`🛡️ ${toDecorated('ANTIVOIP ATTIVATO', 'outline', '✠')} — i numeri non +39 verranno rimossi.`);
+            return reply(`🛡️ ${sec('ANTIVOIP ATTIVATO')} — i numeri non +39 verranno rimossi.`);
         }
         if (sub === 'off' || sub === 'false' || sub === '0') {
             cfg.enabled = false;
             saveDB();
-            return reply(`🛡️ ${toDecorated('ANTIVOIP DISATTIVATO', 'outline', '✠')}.`);
+            return reply(`🛡️ ${sec('ANTIVOIP DISATTIVATO')}.`);
         }
 
         if (sub.startsWith('whitelist ') || sub.startsWith('wl ')) {
@@ -48,18 +50,14 @@ module.exports = {
         const status = cfg.enabled ? '🟢 ATTIVO' : '🔴 DISATTIVO';
         const wlList = cfg.whitelist.length ? cfg.whitelist.map(w => `▸ _${w}_`).join('\n') : '▸ _Nessun numero in whitelist._';
         return reply(
-`🛡️ ${toDecorated('ANTIVOIP', 'outline', '✠')}
-━━━━━━━━━━━━━━━━━━
+`🛡️ ${sec('ANTIVOIP')}
 ▸ Stato: _${status}_
-━━━━━━━━━━━━━━━━━━
 📋 *Whitelist*
 ${wlList}
-━━━━━━━━━━━━━━━━━━
 🇮🇹 ▸ Blocca numeri non
   italiani (+39).
 ▸ Uso: \`.antivoip on/off\`
   \`.antivoip whitelist <n>\`
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
     },
 };

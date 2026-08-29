@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'warnlist',
     aliases: ['warns', 'warnings'],
@@ -9,11 +11,20 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, getUser } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin.')}
+${boxEnd()}`);
 
         const chatData = db[from];
-        if (!chatData) return reply("⚠️ _[uso]:_ nessun dato trovato per questo gruppo.");
+        if (!chatData) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('nessun dato trovato per questo gruppo.')}
+${boxEnd()}`);
 
         // In LID mode i warn sono registrati sotto @lid: risolviamo il PN
         // reale dai partecipanti per mostrarli leggibili.

@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('../../lib/ffmpeg-path').getFfmpegPath();
 const { promisify } = require('util');
@@ -31,7 +33,10 @@ module.exports = {
                     audioBuffer = await downloadMediaMessage(quotedMsg, 'buffer', {}, { reuploadRequest: sock.updateMediaMessage });
                 }
             }
-            if (!audioBuffer) return reply('⚠️ _[uso]: rispondi a un vocale con *.deep* per renderlo profondo._');
+            if (!audioBuffer) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a un vocale con *.deep* per renderlo profondo.')}
+${boxEnd()}`);
 
             const prog = await showProgress(sock, from, { label: 'VOCE PROFONDA', duration: 2500, quoted: msg });
             const inputPath = path.join(TMP_DIR, `deep_in_${Date.now()}.opus`);
@@ -40,7 +45,7 @@ module.exports = {
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'atempo=0.7,asetrate=48000*0.7,aresample=48000', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🔊 *_DEEP_*\n━━━━━━━━━━━━━━\n▸ _Voce profonda pronta!_\n◈ _Vex Bot_');
+            await prog.done('🔊 *_DEEP_*\n━━━━━━━━━━━━━━\n▸ _Voce profonda pronta!_\n');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[deep]', e);

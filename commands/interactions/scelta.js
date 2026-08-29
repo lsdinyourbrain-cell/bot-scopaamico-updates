@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'scelta',
     aliases: [],
@@ -9,7 +11,10 @@ module.exports = {
         const { reply, services } = context;
         const { randomChoice } = services;
         const options = args.join(' ').split(/\s*(?:\||,| oppure | o )\s*/i).filter(Boolean);
-        if (options.length < 2) return reply('⚠️ _[uso]: Dammi almeno due opzioni._\n▸ _Esempio: \`.scelta pizza o pasta\`_');
-        await reply(`🎯 *_LA MIA SCELTA_*\n━━━━━━━━━━━━━━\n▸ Io direi: _*${randomChoice(options)}*_\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        if (options.length < 2) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: Dammi almeno due opzioni._ ▸ _Esempio: \\`.scelta pizza o pasta\\`')}
+${boxEnd()}`);
+        await reply(`🎯 *_LA MIA SCELTA_*\n━━━━━━━━━━━━━━\n▸ Io direi: _*${randomChoice(options)}*_\n━━━━━━━━━━━━━━\n`);
     },
 };

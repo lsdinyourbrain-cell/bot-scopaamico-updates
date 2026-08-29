@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  FAKENEWS — Vex Bot
 //  Genera una notizia (palesemente) falsa e satirica sul gruppo, scritta
@@ -46,7 +48,7 @@ ${SEP}
 ▸ \`.fakenews\` → _a caso_
 ▸ \`.fakenews @amico vende finti NFT\` → _con dettagli_
 ${SEP}
-◈ _Vex Bot_`,
+`,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
 
@@ -101,6 +103,6 @@ ${SEP}
             await prog.done(needKey());
             return;
         }
-        await prog.done(`📰 *_FAKENEWS_* · _${groupName}_\n${SEP}\n${content}\n${SEP}\n☝️ _Notizia evidentemente falsa_ 😄\n◈ _Vex Bot_`);
+        await prog.done(`📰 *_FAKENEWS_* · _${groupName}_\n${SEP}\n${content}\n${SEP}\n☝️ _Notizia evidentemente falsa_ 😄\n`);
     },
 };

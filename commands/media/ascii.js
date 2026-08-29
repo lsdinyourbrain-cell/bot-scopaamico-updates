@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { downloadMediaBuffer } = require('../../lib/media-utils');
 const { imageToAscii } = require('../../lib/ascii-art');
 
@@ -33,7 +35,7 @@ module.exports = {
             }
 
             await sock.sendMessage(from, { text: `\`\`\`\n${ascii}\n\`\`\`` }, { quoted: msg });
-            await prog.done('🖼️ *_ASCII ART_*\n━━━━━━━━━━━━━━\n▸ _ASCII Art pronta!_\n◈ _Vex Bot_');
+            await prog.done('🖼️ *_ASCII ART_*\n━━━━━━━━━━━━━━\n▸ _ASCII Art pronta!_\n');
         } catch (e) {
             console.error('[ascii]', e.message);
             return reply("❌ Errore durante la conversione. Riprova con un'immagine più semplice.");

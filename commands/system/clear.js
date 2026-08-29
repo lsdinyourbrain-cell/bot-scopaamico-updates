@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'clear',
     aliases: ['pulizia', 'cache', 'svuota', 'ds'],
@@ -10,7 +12,11 @@ module.exports = {
         const { clearBotCache } = services;
 
         if (!context.isOwner) {
-            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+            return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
         }
 
         const before = Date.now();
@@ -23,17 +29,14 @@ module.exports = {
 
         await reply(
 `🧹 *CACHE PULITA* — *DS* ✅
-━━━━━━━━━━━━━━━━━━━━
 ✨ Pulito in *${elapsed}ms* — il bot vola ora!
 
 🗑️ File rimossi: *${result.deletedFiles}*
 💾 Spazio liberato: *${freedMB} KB*
 📦 Cache gruppi: *${result.groupEntries}* azzerate
-━━━━━━━━━━━━━━━━━━━━
 📊 *Stato attuale*
 💾 DB: *${dbKB} KB*  •  📄 Log: *${logKB} KB*
 🗂️ Temp prima: *${tempBeforeMB} KB*
-━━━━━━━━━━━━━━━━━━━━
 ⚡ *VEX BOT* — più veloce! 🚀`);
     },
 };

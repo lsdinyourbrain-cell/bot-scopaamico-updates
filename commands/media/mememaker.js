@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { escapeXml, wrapLines } = require('../../lib/svg-utils');
 const { downloadMediaBuffer } = require('../../lib/media-utils');
 
@@ -76,9 +78,9 @@ module.exports = {
                 image: composite,
                 caption: `🎨 *_MEMEMAKER_*
 ━━━━━━━━━━━━━━${topRaw ? '\n▸ ⬆️ _' + topRaw.slice(0, 60) + '_' : ''}${bottomRaw ? '\n▸ ⬇️ _' + bottomRaw.slice(0, 60) + '_' : ''}
-◈ _Vex Bot_`,
+`,
             }, { quoted: msg });
-            await prog.done('🎨 *_MEME_*\n━━━━━━━━━━━━━━\n▸ _Meme pronto!_\n◈ _Vex Bot_');
+            await prog.done('🎨 *_MEME_*\n━━━━━━━━━━━━━━\n▸ _Meme pronto!_\n');
         } catch (e) {
             console.error('[mememaker]', e.message);
             return reply("❌ Errore durante la creazione del meme. Riprova con un'altra immagine.");

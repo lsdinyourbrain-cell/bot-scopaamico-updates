@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  FILM — Vex Bot
 //  10 film casuali/trending da TMDB: locandina, anno, voto + pulsante
@@ -34,7 +36,7 @@ module.exports = {
             if (!db._tmdb) db._tmdb = {};
             db._tmdb.apiKey = rawKey;
             saveDB();
-            return reply('✅ *_CHIAVE TMDB SALVATA_*\n━━━━━━━━━━━━━━━━━━\n▸ Ora usa `.film` per _i film casuali_.\n◈ _Vex Bot_');
+            return reply('✅ *_CHIAVE TMDB SALVATA_*\n━━━━━━━━━━━━━━━━━━\n▸ Ora usa `.film` per _i film casuali_.\n');
         }
 
         const apiKey = (db?._tmdb?.apiKey) || process.env.TMDB_API_KEY || '';
@@ -48,19 +50,22 @@ ${SEP}
 ${SEP}
 ▸ \`.film set "la-tua-chiave"\`
 ${SEP}
-◈ _Vex Bot_`,
+`,
                 [{ label: 'ℹ️ Guida TMDB', id: 'film guida' }], msg);
         }
 
         // ── GUIDA CHIAVE ─────────────────────────────────────────────────
         if (w1 === 'guida') {
-            return reply(`🎬 *_CHIAVE TMDB (GRATUITA)_*\n${SEP}\n▸ 1. _Vai su themoviedb.org_\n▸ 2. _Registrati (gratis)_\n▸ 3. _Impostazioni → API_\n▸ 4. _Crea una chiave_\n▸ 5. _Salvala qui:_\n${SEP}\n▸ \`.film set "la-tua-chiave"\`\n${SEP}\n▸ Poi \`.film\` per _i film!_\n◈ _Vex Bot_`);
+            return reply(`🎬 *_CHIAVE TMDB (GRATUITA)_*\n${SEP}\n▸ 1. _Vai su themoviedb.org_\n▸ 2. _Registrati (gratis)_\n▸ 3. _Impostazioni → API_\n▸ 4. _Crea una chiave_\n▸ 5. _Salvala qui:_\n${SEP}\n▸ \`.film set "la-tua-chiave"\`\n${SEP}\n▸ Poi \`.film\` per _i film!_\n`);
         }
 
         // ── TRAILER SU YOUTUBE ──────────────────────────────────────────
         if (w1 === 'trailer') {
             const title = (w2 || '').replace(/\+/g, ' ').trim();
-            if (!title) return reply('⚠️ _[uso]: *.film trailer <titolo>*_');
+            if (!title) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: *.film trailer <titolo>')}
+${boxEnd()}`);
             try {
                 const { searchVideos } = require('../../lib/mediaDownloader');
                 const results = await searchVideos(`${title} trailer`, 3);
@@ -73,7 +78,7 @@ ${SEP}
 ▸ 📺 _${first.channel || ''}_
 ${SEP}
 ▸ 👉 ${first.url}
-◈ _Vex Bot_`,
+`,
                     [{ label: '🔁 Altri film', id: 'film' }, { label: '🎬 Cerca altro', id: `film trailer ${title}` }], msg);
             } catch (e) {
                 console.error('[film trailer]', e.message);
@@ -109,7 +114,7 @@ ${SEP}
 ▸ Premi *🎬 Trailer* per la
   _ricerca su YouTube._
 ${SEP}
-◈ _Vex Bot_`,
+`,
                 cards,
             }, msg);
             if (!sent) {
@@ -122,7 +127,7 @@ ${SEP}
 ${lines}
 ${SEP}
 ▸ Trailer: \`.film trailer <titolo>\`
-◈ _Vex Bot_`,
+`,
                     [{ label: '🔁 Altri film', id: 'film' }], msg);
             }
         } catch (e) {

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { dispOf, resolveJid } = require('../../lib/jid');
 const { toStyle } = require('../../lib/font');
 
@@ -45,7 +47,7 @@ module.exports = {
 
                 if (!isAccept) {
                     await sock.sendMessage(from, {
-                        text: `💔 ${T('Rifiuto')}\n${SEP}\n▸ @${disp(sender)} ha detto *no*\n▸ alla proposta di @${disp(prop.proposer)}\n\n◈ _Vex Bot_`,
+                        text: `💔 ${T('Rifiuto')}\n${SEP}\n▸ @${disp(sender)} ha detto *no*\n▸ alla proposta di @${disp(prop.proposer)}\n\n`,
                         mentions: [sender, prop.proposer],
                     });
                     return;
@@ -62,7 +64,7 @@ module.exports = {
                     targetDB.spouse = prop.proposer;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `💒 ${T('Matrimonio')}\n${SEP}\n▸ @${disp(prop.proposer)}\n▸ 　💞 💞 💞\n▸ @${disp(prop.target)}\n\n🎊 _Ora siete marito e moglie!_\n💍 _Che il bot benedica questa unione._\n\n◈ _Vex Bot_`,
+                        text: `💒 ${T('Matrimonio')}\n${SEP}\n▸ @${disp(prop.proposer)}\n▸ 　💞 💞 💞\n▸ @${disp(prop.target)}\n\n🎊 _Ora siete marito e moglie!_\n💍 _Che il bot benedica questa unione._\n\n`,
                         mentions: [prop.proposer, prop.target],
                     });
                 } else if (prop.type === 'adotta') {
@@ -73,7 +75,7 @@ module.exports = {
                     if (!targetDB.parents.includes(prop.proposer)) targetDB.parents.push(prop.proposer);
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🍼 ${T('Adozione')}\n${SEP}\n▸ @${disp(prop.proposer)} ha adottato\n▸ @${disp(prop.target)}\n\n🎈 _Benvenuto nella famiglia!_\n\n◈ _Vex Bot_`,
+                        text: `🍼 ${T('Adozione')}\n${SEP}\n▸ @${disp(prop.proposer)} ha adottato\n▸ @${disp(prop.target)}\n\n🎈 _Benvenuto nella famiglia!_\n\n`,
                         mentions: [prop.proposer, prop.target],
                     });
                 }
@@ -119,7 +121,7 @@ ${parentsLine}
 ${T('figli')} 🍼
 ${childrenLine}
 
-◈ _Vex Bot_`;
+`;
 
                 await sock.sendMessage(from, { text: albero, mentions: familyMentions });
             }
@@ -156,7 +158,7 @@ ${SEP}`,
                 exDB.spouse = null;
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🧾 ${T('Divorzio')}\n${SEP}\n▸ @${disp(sender)} ha divorziato\n▸ da @${disp(ex)}\n\n💸 _L'avvocato ringrazia,_\n_la metà dei soldi resta dove sta._\n\n◈ _Vex Bot_`,
+                    text: `🧾 ${T('Divorzio')}\n${SEP}\n▸ @${disp(sender)} ha divorziato\n▸ da @${disp(ex)}\n\n💸 _L'avvocato ringrazia,_\n_la metà dei soldi resta dove sta._\n\n`,
                     mentions: [sender, ex],
                 });
             }
@@ -192,7 +194,7 @@ ${SEP}`,
                 tDB.parents = tDB.parents.filter(parent => parent !== sender);
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚪 ${T('Cacciato/a')}\n${SEP}\n▸ @${disp(target)} non è più\n▸ nella famiglia di @${disp(sender)}\n\n🧳 _Fatti le valigie._\n\n◈ _Vex Bot_`,
+                    text: `🚪 ${T('Cacciato/a')}\n${SEP}\n▸ @${disp(target)} non è più\n▸ nella famiglia di @${disp(sender)}\n\n🧳 _Fatti le valigie._\n\n`,
                     mentions: [sender, target],
                 });
             }
@@ -206,7 +208,7 @@ ${SEP}`,
                 uDB.parents = [];
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚶 ${T('Abbandono')}\n${SEP}\n▸ @${disp(sender)} ha lasciato\n▸ la famiglia per la sua strada\n\n🌙 _In bocca al lupo._\n\n◈ _Vex Bot_`,
+                    text: `🚶 ${T('Abbandono')}\n${SEP}\n▸ @${disp(sender)} ha lasciato\n▸ la famiglia per la sua strada\n\n🌙 _In bocca al lupo._\n\n`,
                     mentions: [sender],
                 });
             }
@@ -224,7 +226,7 @@ ${SEP}
 ▸ _.famiglia caccia @utente_ — caccia figlio 🚪
 ▸ _.famiglia abbandona_ — lascia i genitori 🚶
 ${SEP}
-◈ _Vex Bot_`);
+`);
             }
     },
 };

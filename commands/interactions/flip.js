@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'flip',
     aliases: ['moneta', 'coin'],
@@ -9,6 +11,6 @@ module.exports = {
         const { services } = context;
         const { randomChoice } = services;
         const result = randomChoice(['🌕 *TESTA*', '🌑 *CROCE*']);
-        await context.reply(`🪙 *_LANCIA MONETA_*\n━━━━━━━━━━━━━━\n▸ ${result}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        await context.reply(`🪙 *_LANCIA MONETA_*\n━━━━━━━━━━━━━━\n▸ ${result}\n━━━━━━━━━━━━━━\n`);
     },
 };

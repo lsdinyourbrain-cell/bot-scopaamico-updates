@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'preleva',
     aliases: ['prel'],
@@ -11,7 +13,10 @@ module.exports = {
 
 
             const amount = parseInt(textArgs);
-            if (!amount || amount <= 0) return reply("⚠️ _[uso]: .preleva <importo>_");
+            if (!amount || amount <= 0) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: .preleva <importo>')}
+${boxEnd()}`);
 
             const userData = getUser(sender, from);
             if (!userData.bank) userData.bank = 0;
@@ -23,11 +28,9 @@ module.exports = {
 
             await reply(
 `🏦 *_PRELEVO_*
-━━━━━━━━━━━━━━
 ▸ 📤 Prelievo: _${amount}€_
-━━━━━━━━━━━━━━
 ▸ 💰 Contante: _${userData.money}€_
 ▸ 🏦 Banca: _${userData.bank}€_
-◈ _Vex Bot_`);
+`);
     },
 };

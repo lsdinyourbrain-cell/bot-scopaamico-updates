@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'translate',
     aliases: ['traduci', 'tr'],
@@ -12,7 +14,10 @@ module.exports = {
         const quoted = isReply ? (contextInfo?.quotedMessage?.conversation || contextInfo?.quotedMessage?.extendedTextMessage?.text || '') : '';
         const input = String(quoted || textArgs || '').trim();
         if (!input) {
-            return reply('⚠️ _[uso]: Scrivi il testo da tradurre._\n▸ *Uso:* \`.translate it hello world\` _(o cita un messaggio)_');
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: Scrivi il testo da tradurre._ ▸ *Uso:* \\`.translate it hello world\\` _...')}
+${boxEnd()}`);
         }
 
         // Se il primo token è un codice lingua (es. it, en, es), lo usa come target.
@@ -35,7 +40,7 @@ module.exports = {
             const translated = (data?.[0] || []).map(seg => seg?.[0] || '').join('').trim();
             if (!translated) return prog.done('⚠️ _Non riesco a tradurre questo testo._');
             const detected = data?.[2] || '?';
-            await prog.done(`🌐 *_TRADUZIONE_*\n━━━━━━━━━━━━━━\n▸ _Da ${detected} a ${target.toUpperCase()}_\n▸ ${translated}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            await prog.done(`🌐 *_TRADUZIONE_*\n━━━━━━━━━━━━━━\n▸ _Da ${detected} a ${target.toUpperCase()}_\n▸ ${translated}\n━━━━━━━━━━━━━━\n`);
         } catch (_) {
             await reply('⚠️ _Errore nella traduzione. Riprova più tardi._');
         }

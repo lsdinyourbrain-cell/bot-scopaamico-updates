@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'sondaggio',
     aliases: ['poll', 'sondaggio2'],
@@ -14,7 +16,10 @@ module.exports = {
 
         const parts = String(textArgs).split('|').map((s) => s.trim()).filter(Boolean);
         const question = parts.shift();
-        if (!question) return reply("⚠️ Scrivi prima la domanda del sondaggio.");
+        if (!question) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Scrivi prima la domanda del sondaggio.')}
+${boxEnd()}`);
 
         let multi = false;
         if (/^multi(ple|pla)?$/i.test(parts[parts.length - 1] || '')) {
@@ -23,10 +28,16 @@ module.exports = {
         }
 
         if (parts.length < 2) {
-            return reply("⚠️ Servono almeno 2 opzioni separandole con ` | `.");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Servono almeno 2 opzioni separandole con \` | \`.')}
+${boxEnd()}`);
         }
         if (parts.length > 10) {
-            return reply("⚠️ Massimo 10 opzioni per sondaggio.");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Massimo 10 opzioni per sondaggio.')}
+${boxEnd()}`);
         }
 
         try {

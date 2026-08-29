@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const pino = require('pino');
 
 module.exports = {
@@ -16,7 +18,10 @@ module.exports = {
             const quoted = rawCtx.quotedMessage;
 
             if (!quoted) {
-                return reply("⚠️ _[uso]: rispondi a una foto o a un video *Visualizza una volta*._");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a una foto o a un video *Visualizza una volta*.')}
+${boxEnd()}`);
             }
 
             // Dopo che WA consuma il wrapper viewOnce, Baileys espone
@@ -31,7 +36,10 @@ module.exports = {
             const innerMedia    = targetMessage.imageMessage || targetMessage.videoMessage;
 
             if (!innerMedia) {
-                return reply("⚠️ _[uso]: rispondi a una foto o a un video *Visualizza una volta*._");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a una foto o a un video *Visualizza una volta*.')}
+${boxEnd()}`);
             }
 
             try {
@@ -60,16 +68,16 @@ module.exports = {
 
                 if (targetMessage.imageMessage) {
                     await sock.sendMessage(from,
-                        { image: buffer, caption: "👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n◈ _Vex Bot_" },
+                        { image: buffer, caption: "👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n" },
                         { quoted: msg }
                     );
-                    await prog.done("👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n◈ _Vex Bot_");
+                    await prog.done("👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n");
                 } else {
                     await sock.sendMessage(from,
-                        { video: buffer, caption: "👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n◈ _Vex Bot_" },
+                        { video: buffer, caption: "👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n" },
                         { quoted: msg }
                     );
-                    await prog.done("👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n◈ _Vex Bot_");
+                    await prog.done("👁️ *_VIEW ONCE SBLOCCATO_*\n━━━━━━━━━━━━━━\n▸ _Media sbloccato!_\n");
                 }
 
             } catch (err) {

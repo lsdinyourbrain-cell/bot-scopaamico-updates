@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'deposita',
     aliases: ['dep'],
@@ -11,7 +13,10 @@ module.exports = {
 
 
             const amount = parseInt(textArgs);
-            if (!amount || amount <= 0) return reply("⚠️ _[uso]: .deposita <importo>_");
+            if (!amount || amount <= 0) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: .deposita <importo>')}
+${boxEnd()}`);
 
             const userData = getUser(sender, from);
             if (userData.money < amount) return reply(`❌ Non hai abbastanza soldi. Hai solo *${userData.money}€*.`);
@@ -23,11 +28,9 @@ module.exports = {
 
             await reply(
 `🏦 *_DEPOSITO_*
-━━━━━━━━━━━━━━
 ▸ 📥 Depositato: _${amount}€_
-━━━━━━━━━━━━━━
 ▸ 💰 Contante: _${userData.money}€_
 ▸ 🏦 Banca: _${userData.bank}€_
-◈ _Vex Bot_`);
+`);
     },
 };

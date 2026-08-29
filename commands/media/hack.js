@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'hack',
     aliases: [],
@@ -9,7 +11,10 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { sameJid, getCachedGroupMeta } = services;
 
-            if (!targetJid) return reply("⚠️ _[uso]: tagga una persona: è solo una scenetta, promesso._");
+            if (!targetJid) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: tagga una persona: è solo una scenetta, promesso.')}
+${boxEnd()}`);
 
             // Risolve eventuali @lid nel numero di telefono reale
             let tgtPn = targetJid;

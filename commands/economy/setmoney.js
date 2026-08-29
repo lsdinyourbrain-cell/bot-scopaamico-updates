@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDarkFont } = require('../../lib/font');
 
 module.exports = {
@@ -12,7 +14,11 @@ module.exports = {
         const { formatMoney, getUser, saveDB, sameJid, getCachedGroupMeta } = services;
         const { dispOf, resolveJid } = require('../../lib/jid');
 
-        if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+        if (!isOwner) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
 
         let meta = null;
         try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}
@@ -20,7 +26,10 @@ module.exports = {
 
         const target = targetJid || (mentioned && mentioned[0]);
         if (!target) return reply(`📌 *${command.toUpperCase()}*\n▸ Tagga un utente o rispondi al suo messaggio.\n▸ Esempio: \`.${command} 2000 @utente\``);
-        if (sameJid(target, sender)) return reply("⚠️ Non puoi modificare i tuoi soldi con questo comando.");
+        if (sameJid(target, sender)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Non puoi modificare i tuoi soldi con questo comando.')}
+${boxEnd()}`);
 
         const amount = parseInt((args.find(a => /^\d+$/.test(a)) || '').replace(/[^\d]/g, ''));
         if (!amount || isNaN(amount)) return reply(`💰 Specifica l'importo in euro.\n▸ Esempio: \`.${command} 2000 @utente\``);
@@ -34,6 +43,6 @@ module.exports = {
         const verb = diff >= 0 ? 'aggiunti' : 'rimossi';
         const emoji = diff >= 0 ? '➕' : '➖';
 
-        return reply(`💵 *_SOLDI_IMPOSTATI!_*\n━━━━━━━━━━━━━━\n▸ @${disp(target)}: _${prevMoney}€_ → _${amount}€_\n▸ ${emoji} ${verb} _${Math.abs(diff)}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo attuale: _${formatMoney(targetData.money)}_\n◈ _Vex Bot_`);
+        return reply(`💵 *_SOLDI_IMPOSTATI!_*\n━━━━━━━━━━━━━━\n▸ @${disp(target)}: _${prevMoney}€_ → _${amount}€_\n▸ ${emoji} ${verb} _${Math.abs(diff)}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo attuale: _${formatMoney(targetData.money)}_\n`);
     },
 };

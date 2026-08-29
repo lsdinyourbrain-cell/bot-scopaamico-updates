@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -49,12 +51,10 @@ module.exports = {
 
         return reply(
 `🗑️ *_CO-OWNER RIMOSSI_*
-━━━━━━━━━━━━━━━━━━
 ▸ 🗑️ _${removed}_ co-owner rimossi!
 ▸ 🔐 Restano solo
   gli owner principali.
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`
+`
         );
     },
 };

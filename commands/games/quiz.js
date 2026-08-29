@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const fs = require('fs');
 const path = require('path');
 
@@ -36,7 +38,7 @@ module.exports = {
             const optionsText = pick.a.map((opt, i) => `${optLetters[i]}) ${opt}`).join('\n');
 
             await sock.sendMessage(from, {
-                text: `❓ *_QUIZ TIME!_*\n━━━━━━━━━━━━━━\n❓ ${pick.q}\n\n${optionsText}\n\n⚡ Rispondi A/B/C/D\n⏳ Hai 30 secondi!\n◈ _Vex Bot_`,
+                text: `❓ *_QUIZ TIME!_*\n━━━━━━━━━━━━━━\n❓ ${pick.q}\n\n${optionsText}\n\n⚡ Rispondi A/B/C/D\n⏳ Hai 30 secondi!\n`,
             }, { quoted: msg });
 
             setTimeout(() => {

@@ -1,4 +1,6 @@
 'use strict';
+
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 const crypto = require('crypto');
 
 function toSansBold(str) { return '*' + String(str||'').trim() + '*'; }
@@ -53,7 +55,7 @@ module.exports = {
         const bar = buildBar(percent);
         const verdict = getVerdict(percent);
         const tag = '@' + targetJid.split('@')[0];
-        const title = toSansBold('SBORROMETRO');
+        const title = sec('SBORROMETRO');
         const emoji = '💦';
         const line = '\u2501'.repeat(18);
         const text = `${emoji}  ${title}  ${emoji}\n${line}\n\u25b8 Utente: ${tag}\n\u25b8 Valore: *${percent}%*\n\u25b8 ${bar} ${percent}%\n${line}\n${verdict}\n${line}\n\u25c8 _Vex Bot_ \u2014 sborrometro`;

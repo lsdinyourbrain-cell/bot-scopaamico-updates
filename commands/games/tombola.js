@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'tombola',
     aliases: ['bingo', 'cartella'],
@@ -61,7 +63,6 @@ module.exports = {
 
         const resultText =
 `🎱 *_TOMBIOLA_*
-━━━━━━━━━━━━━━
 ${righe[0]}
 ${righe[1]}
 ${righe[2]}
@@ -70,7 +71,7 @@ ${righe[2]}
 ▸ *In cartella:* _${inCartella.length}_
 ${vincita > 0 ? `🎉 *Vincita: +${vincita}€!*` : '😿 Nessuna vincita.'}
 ▸ *Saldo:* _${uDB.money}€_
-◈ _Vex Bot_`;
+`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

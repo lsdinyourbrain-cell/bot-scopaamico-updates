@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'tag',
     aliases: ['tagga', 'menziona'],
@@ -9,8 +11,14 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, services } = context;
         const { sameJid } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
+        if (!isSenderAdmin) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('solo gli admin.')}
+${boxEnd()}`);
 
         try {
             const meta = await sock.groupMetadata(from);
@@ -95,16 +103,17 @@ module.exports = {
                     });
                 }
 
-                return reply("⚠️ _[uso]:_ tipo di messaggio non supportato per il reinvio.");
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('tipo di messaggio non supportato per il reinvio.')}
+${boxEnd()}`);
             }
 
             // Nessun messaggio quotato — tag normale
             const customText = textArgs.trim();
             const tagBody = customText || `📢 *_TAG_*
-━━━━━━━━━━━━━━
 *Attenzione a tutti!*${meta.subject ? `\n_Messaggio nel gruppo: ${meta.subject}_` : ''}
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`;
 
             await sock.sendMessage(from, { text: tagBody, mentions }, { quoted: msg });
         } catch (e) {

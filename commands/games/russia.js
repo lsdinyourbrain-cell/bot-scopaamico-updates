@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const EV = require('../../lib/events');
 
 module.exports = {
@@ -24,8 +26,14 @@ const cdMs = 10000;
             userData.cooldowns[cooldownKey] = now;
 
             const puntata = parseInt(args[0]);
-            if (isNaN(puntata) || puntata < 10) return reply("⚠️ _[uso]: puntata non valida (minimo 10€) — .russia 100_");
-            if (puntata > 1_000_000) return reply("⚠️ Puntata massima: *1.000.000€*.");
+            if (isNaN(puntata) || puntata < 10) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: puntata non valida (minimo 10€) — .russia 100')}
+${boxEnd()}`);
+            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Puntata massima: *1.000.000€*.')}
+${boxEnd()}`);
 
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) return reply(`❌ Saldo insufficiente. Hai *${uDB.money}€*.`);
@@ -40,7 +48,6 @@ const cdMs = 10000;
 
         const resultText =
 `🔫 *_ROULETTE RUSSA_*
-━━━━━━━━━━━━━━
 Carichi il revolver e
 premi il grilletto...
 
@@ -48,7 +55,7 @@ ${fatale ? '💥 *BANG!* Colpito!' : '😅 *CLACK!* Sei vivo!'}
 
 ${fatale ? `❌ Perduti: -${formatMoney(puntata)}€` : `✅ Vincita: +${formatMoney(puntata * 2 * evMult)}€${evMult > 1 ? ' (x3 slotoro 🎰)' : ''}`}
 ▸ *Saldo:* _${formatMoney(uDB.money)}€_
-◈ _Vex Bot_`;
+`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

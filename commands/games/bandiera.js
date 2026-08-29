@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'bandiera',
     aliases: ['flag'],
@@ -53,7 +55,7 @@ module.exports = {
 
             try {
                 const flagUrl = `https://flagcdn.com/w320/${pick.code.toLowerCase()}.png`;
-                const caption = `🏁 *_INDOVINA LA BANDIERA_*\n━━━━━━━━━━━━━━\n${optionsText}\n\n⚡ Rispondi con A/B/C/D!\n⏳ Hai 30 secondi!\n◈ _Vex Bot_`;
+                const caption = `🏁 *_INDOVINA LA BANDIERA_*\n━━━━━━━━━━━━━━\n${optionsText}\n\n⚡ Rispondi con A/B/C/D!\n⏳ Hai 30 secondi!\n`;
                 await sock.sendMessage(from, {
                     image: { url: flagUrl },
                     caption,

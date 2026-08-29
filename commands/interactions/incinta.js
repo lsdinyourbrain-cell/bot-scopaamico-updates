@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 module.exports = {
     name: 'incinta',

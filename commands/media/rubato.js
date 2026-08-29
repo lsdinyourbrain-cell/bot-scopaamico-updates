@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const sharp = require('sharp');
 
 module.exports = {
@@ -13,7 +15,10 @@ module.exports = {
 
         try {
             if (!isReply || !contextInfo.quotedMessage) {
-                return reply('⚠️ _[uso]: rispondi a uno *sticker* con *.rubato* per convertirlo in immagine salvabile._');
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: rispondi a uno *sticker* con *.rubato* per convertirlo in immagine sal...')}
+${boxEnd()}`);
             }
 
             const quoted = contextInfo.quotedMessage;
@@ -42,7 +47,7 @@ module.exports = {
 
             await sock.sendMessage(from, {
                 image: imageBuffer,
-                caption: '✅ *_STICKER → IMMAGINE_*\n━━━━━━━━━━━━━━\n▸ _Sticker convertito in immagine!_\n▸ Ora puoi _salvarla nel rullino_.\n◈ _Vex Bot_'
+                caption: '✅ *_STICKER → IMMAGINE_*\n━━━━━━━━━━━━━━\n▸ _Sticker convertito in immagine!_\n▸ Ora puoi _salvarla nel rullino_.\n'
             }, { quoted: msg });
 
         } catch (e) {

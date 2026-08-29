@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const fs = require('fs/promises');
 const { searchVideos, downloadAudio, downloadVideo, getDownloadErrorMessage } = require('../../lib/mediaDownloader');
 const { sendCarousel } = require('../../lib/buttons');
@@ -168,7 +170,7 @@ module.exports = {
         const query = textArgs;
         if (!query) {
             return sendButtons(sock, from,
-                "🔎 *_RICERCA SU YOUTUBE_*\n━━━━━━━━━━━━━━\n▸ Scrivi cosa cerchi. Esempio:\n▸ `.cerca Blinding Lights The Weeknd`\n━━━━━━━━━━━━━━\n▸ Scorri le card, premi *MP3* (_audio_) o *MP4* (_video_).\n◈ _Vex Bot_",
+                "🔎 *_RICERCA SU YOUTUBE_*\n━━━━━━━━━━━━━━\n▸ Scrivi cosa cerchi. Esempio:\n▸ `.cerca Blinding Lights The Weeknd`\n━━━━━━━━━━━━━━\n▸ Scorri le card, premi *MP3* (_audio_) o *MP4* (_video_).\n",
                 [{ label: '.cerca Blinding Lights', id: 'cerca Blinding Lights The Weeknd' }],
                 msg);
         }
@@ -217,18 +219,16 @@ const resultsText = (st) => {
     const pages = totalPages(st.results);
     return (
 `🔎 *_Risultati_* per _"${st.query}"_
-━━━━━━━━━━━━━━━━━━
 ${items.map((v, i) => {
     const n = start + i + 1;
     const dur = v.duration ? ` · ⏱ _${fmtDur(v.duration)}_` : '';
     const ch = v.channel ? `\n▸ 📺 _${v.channel}_` : '';
     return `${n}. ${v.title}${dur}${ch}`;
 }).join('\n')}
-━━━━━━━━━━━━━━━━━━
 ▸ _Pagina_ ${st.page}/${pages} · _${tot} video_
 ▸ 👇 Premi *1* o *2* per _scegliere_,
   oppure naviga con _i pulsanti_.
-◈ _Vex Bot_`);
+`);
 };
 
 async function renderResultsFallback(sock, from, st, msg, sendButtons) {
@@ -287,7 +287,7 @@ async function renderQualityMenu(sock, from, st, video, msg, sendButtons) {
     return sendButtons(
         sock,
         from,
-        `🎥 *_${video.title}_*\n━━━━━━━━━━━━━━━━━━\n▸ 📥 _Scegli la qualità del video:_\n◈ _Vex Bot_`,
+        `🎥 *_${video.title}_*\n━━━━━━━━━━━━━━━━━━\n▸ 📥 _Scegli la qualità del video:_\n`,
         QUALITY_OPTIONS.map((o) => ({ label: o.label, id: o.id(idx) })),
         msg
     );
@@ -295,12 +295,10 @@ async function renderQualityMenu(sock, from, st, video, msg, sendButtons) {
 
 const pickText = (video) => (
 `🎬 *_${video.title}_*
-━━━━━━━━━━━━━━━━━━
 ${video.duration ? `▸ ⏱ _${fmtDur(video.duration)}_` : ''}${video.channel ? ` ▸ 📺 _${video.channel}_` : ''}
 ${video.views ? `▸ 👁 _${fmtViews(video.views)} visualizzazioni_` : ''}
-━━━━━━━━━━━━━━━━━━
 ▸ _Cosa vuoi scaricare?_
-◈ _Vex Bot_`
+`
 );
 
 // ── DOWNLOAD ED INVIO ─────────────────────────────────────────────────────
@@ -331,12 +329,12 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
                 quoted: msg,
                 mediaUploadTimeoutMs: 120000,
             }));
-            await reply(`🎵 *_AUDIO PRONTO_*\n━━━━━━━━━━━━━━━━━━\n▸ _${video.title}_\n◈ _Vex Bot_`);
+            await reply(`🎵 *_AUDIO PRONTO_*\n━━━━━━━━━━━━━━━━━━\n▸ _${video.title}_\n`);
         } else {
             // Il video è garantito in .mp4 (mediaDownloader converte
             // .webm/.mkv e i codec non h264): mimetype corretto.
             const quality = height ? ` (_${height}p_)` : '';
-            const caption = `🎥 *_${video.title}_*${quality}\n◈ _Vex Bot_`;
+            const caption = `🎥 *_${video.title}_*${quality}\n`;
             // WhatsApp rifiuta l'upload ("Media upload failed") se il video
             // è troppo grande per un messaggio video: sopra i 50MB viene
             // inviato come FILE .mp4 (limite file = 2GB).

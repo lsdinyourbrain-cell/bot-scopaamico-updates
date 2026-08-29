@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDarkFont } = require('../../lib/font');
 const EV = require('../../lib/events');
 
@@ -34,7 +36,10 @@ module.exports = {
 
             const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
             const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
-            await sendButtons(sock, from, toDarkFont(`⛏️ _MINIERA_\n▸ Ritrovato: _${gross}€_ ▸ Per te: _+${taxed.net}€_${taxLine}${evLine}\n▸ Saldo: _${userData.money}€_\n▸ Vex Bot`), [
+            await sendButtons(sock, from, `${sec('MINIERA\N▸ RITR')}
+${boxOpen()}
+${line('Fatto!')}
+${boxEnd()}`, [
                 { label: `.${command}`, id: `${command}` },
             ], msg);
     },

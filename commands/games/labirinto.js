@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  LABIRINTO — Vex Bot
 //  Flusso in 3 passi con UI nativa WhatsApp (carosello: come in .cerca, ogni
@@ -238,7 +240,10 @@ module.exports = {
             const n = parseInt(w2, 10);
             if (!pending || !Array.isArray(pending.mazes) || !Number.isFinite(n) ||
                 n < 0 || n >= pending.mazes.length) {
-                return reply('⚠️ Scelta non valida o scaduta.\nRifai `.labirinto`.');
+                return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Scelta non valida o scaduta. Rifai \`.labirinto\`.')}
+${boxEnd()}`);
             }
             return startGame(sock, msg, context, {
                 maze: pending.mazes[n],

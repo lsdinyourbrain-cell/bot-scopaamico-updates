@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -20,15 +22,13 @@ module.exports = {
         await sock.sendMessage(from, {
             text:
 `✨ *SPONSOR*
-━━━━━━━━━━━━━━
 Ciao, sono il
 *Vex Bot* 🤖
 Unisciti al gruppo
 ufficiale! 🫶
 👇 *CLICCA QUI* 👇
 ${link}
-━━━━━━━━━━━━━━
-◈ _Vex Bot_`,
+`,
         }, { quoted: msg });
     },
 };

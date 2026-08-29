@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { toDecorated } = require('../../lib/font');
 
 module.exports = {
@@ -11,7 +13,11 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, reply, services } = context;
         const { db, getUser, saveDB, sameJid } = services;
 
-        if (!isOwner) return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━━━━━\nComando riservato\nall'Owner del bot.\n━━━━━━━━━━━━━━━━━━");
+        if (!isOwner) return reply(`${sec('ACCESSO NEGATO')}
+${boxOpen()}
+${line('Comando riservato')}
+${line("all'Owner del bot.")}
+${boxEnd()}`);
 
         // ── Risoluzione target ─────────────────────────────────────────────
         let target = mentioned[0] || targetJid || null;
@@ -23,19 +29,16 @@ module.exports = {
         }
         if (!target) {
             return reply(
-`📌 ${toDecorated('CHECK', 'gothic', '◈')}
-━━━━━━━━━━━━━━━━━━
+`📌 ${sec('CHECK')}
 ▸ Tagga o rispondi a un utente
 ▸ (anche solo il numero: _.check 39..._)
-━━━━━━━━━━━━━━━━━━
 ▸ _azioni:_
 ▸ • _set <campo> <valore>_
 ▸ • _add <campo> <numero>_
 ▸ • _del <campo>_
 ▸ • _reset_
 ▸ _es. .check @utente set money 5000_
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         // ── Azione da eseguire ─────────────────────────────────────────────
@@ -55,7 +58,7 @@ module.exports = {
                 delete userData[k];
             }
             saveDB();
-            return reply(`🧹 *_RESET ESEGUITO_*\n━━━━━━━━━━━━━━━━━━\n▸ @${target.split('@')[0]} ripristinato ai valori di default.\n▸ Campi rimossi: _${keys.length}_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`🧹 *_RESET ESEGUITO_*\n━━━━━━━━━━━━━━━━━━\n▸ @${target.split('@')[0]} ripristinato ai valori di default.\n▸ Campi rimossi: _${keys.length}_\n━━━━━━━━━━━━━━━━━━\n`);
         }
 
         // ── SET / ADD / DEL ────────────────────────────────────────────────
@@ -64,12 +67,18 @@ module.exports = {
         }
 
         if (action === 'del') {
-            if (!field) return reply("⚠️ Specifica il campo da eliminare.\n▸ _es. .check @utente del spouse_");
-            if (field === 'cooldowns') return reply("⚠️ Non puoi eliminare i cooldown interi.");
+            if (!field) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Specifica il campo da eliminare. ▸ _es. .check @utente del spouse')}
+${boxEnd()}`);
+            if (field === 'cooldowns') return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Non puoi eliminare i cooldown interi.')}
+${boxEnd()}`);
             const existed = field in userData;
             delete userData[field];
             if (existed) saveDB();
-            return reply(`🗑️ *_CAMPO ELIMINATO_*\n━━━━━━━━━━━━━━━━━━\n▸ Utente: _@${target.split('@')[0]}_\n▸ Campo: _${field}_\n▸ Stato: _${existed ? 'eliminato ✓' : 'non esisteva'}_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`🗑️ *_CAMPO ELIMINATO_*\n━━━━━━━━━━━━━━━━━━\n▸ Utente: _@${target.split('@')[0]}_\n▸ Campo: _${field}_\n▸ Stato: _${existed ? 'eliminato ✓' : 'non esisteva'}_\n━━━━━━━━━━━━━━━━━━\n`);
         }
 
         if (action === 'set' || action === 'add') {
@@ -77,18 +86,19 @@ module.exports = {
 
             if (action === 'add') {
                 const delta = Number(rawValue.replace(/[^\d\-.]/g, ''));
-                if (isNaN(delta)) return reply("⚠️ Il valore deve essere un numero.");
+                if (isNaN(delta)) return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Il valore deve essere un numero.')}
+${boxEnd()}`);
                 const cur = Number(userData[field]) || 0;
                 userData[field] = cur + delta;
                 saveDB();
                 return reply(
 `➕ *_CAMPO AGGIORNATO_*
-━━━━━━━━━━━━━━━━━━
 ▸ Utente: _@${target.split('@')[0]}_
 ▸ Campo: _${field}_
 ▸ ${cur} → _${userData[field]}_ (${delta >= 0 ? '+' : ''}${delta})
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
             }
 
             // SET con parsing automatico del valore
@@ -114,13 +124,11 @@ module.exports = {
             const newStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
             return reply(
 `✏️ *_CAMPO IMPOSTATO_*
-━━━━━━━━━━━━━━━━━━
 ▸ Utente: _@${target.split('@')[0]}_
 ▸ Campo: _${field}_
 ▸ Da: _${prevStr}_
 ▸ A: _${newStr}_
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         // ── SHOW: dump completo del record ─────────────────────────────────
@@ -150,17 +158,14 @@ module.exports = {
         const extra = totLines > 30 ? `\n▸ _… e altri ${totLines - 30} campi_` : '';
 
         const text =
-`🔍 ${toDecorated('CHECK DB', 'gothic', '◈')}
-━━━━━━━━━━━━━━━━━━
+`🔍 ${sec('CHECK DB')}
 ▸ Chat: _${from}_
 ▸ Utente: _${short}_ (${target.includes('@lid') ? 'LID' : 'PN'})
 ▸ Campi totali: _${totLines}_
 ▸ Presenza in altre ${altre} chat
-━━━━━━━━━━━━━━━━━━
 ${chunk}${extra}
-━━━━━━━━━━━━━━━━━━
 ▸ _modifica: .check @utente set <campo> <valore>_
-◈ _Vex Bot_`;
+`;
 
         // Risposta lunga → invio diretto, senza pulsante Ripeti
         await sock.sendMessage(from, { text }, { quoted: msg });

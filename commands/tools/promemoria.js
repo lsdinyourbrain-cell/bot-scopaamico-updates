@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { parseDuration, humanizeMs } = require('../../lib/timeparse');
 
 module.exports = {
@@ -22,10 +24,10 @@ module.exports = {
             .trim();
         const reminderText = clean || '…ti avevo chiesto di ricordarti qualcosa!';
 
-        await reply(`⏰ *_Promemoria impostato!_*\n━━━━━━━━━━━━━━━━━━\n▸ 📝 _${reminderText.slice(0, 300)}_\n▸ ⏳ Tra _${humanizeMs(parsed.ms)}_\n▸ Ti avviserò quando sarà\n  il momento.\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        await reply(`⏰ *_Promemoria impostato!_*\n━━━━━━━━━━━━━━━━━━\n▸ 📝 _${reminderText.slice(0, 300)}_\n▸ ⏳ Tra _${humanizeMs(parsed.ms)}_\n▸ Ti avviserò quando sarà\n  il momento.\n━━━━━━━━━━━━━━━━━━\n`);
 
         setTimeout(() => {
-            const text = `⏰ *_PROMEMORIA_* @${sender.split('@')[0]}\n━━━━━━━━━━━━━━━━━━\n▸ 📝 _${reminderText}_\n━━━━━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+            const text = `⏰ *_PROMEMORIA_* @${sender.split('@')[0]}\n━━━━━━━━━━━━━━━━━━\n▸ 📝 _${reminderText}_\n━━━━━━━━━━━━━━━━━━\n`;
             sock.sendMessage(from, { text, mentions: [sender] }).catch(() => {});
         }, parsed.ms);
     },

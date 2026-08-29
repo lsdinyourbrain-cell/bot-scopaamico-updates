@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  REGISTRO — Vex Bot
 //  .registro → mostra le ultime modifiche del gruppo (entrate, uscite,
@@ -28,20 +30,21 @@ module.exports = {
         const { textArgs, from, isGroup, reply, services } = context;
         const { db, dispOf } = services;
 
-        if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}
+${boxOpen()}
+${line('funziona solo nei gruppi.')}
+${boxEnd()}`);
 
         const log = db._grouplog?.[from];
         if (!Array.isArray(log) || !log.length) {
             return reply(
 `📜 *REGISTRO MODIFICHE*
-━━━━━━━━━━━━━━━━━━
 ▸ Nessuna modifica registrata
   per questo gruppo... ancora.
 ▸ Entrate, uscite, admin, avvisi,
   nome e impostazioni verranno
   annotati qui.
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`);
+`);
         }
 
         const want = parseInt(String(textArgs || '').trim(), 10);
@@ -64,13 +67,10 @@ module.exports = {
 
         const txt =
 `📜 *REGISTRO MODIFICHE*
-━━━━━━━━━━━━━━━━━━
 ${lines}
-━━━━━━━━━━━━━━━━━━
 ▸ Ultime ${Math.min(limit, log.length)} di ${log.length}
 ▸ Di più: \`.registro 50\`
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`;
 
         return sock.sendMessage(from, { text: txt, mentions: mentionJids }, { quoted: msg })
             .catch(() => reply(txt));

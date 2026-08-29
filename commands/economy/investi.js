@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 module.exports = {
     name: 'investi',
     aliases: ['borsa', 'azioni'],
@@ -54,12 +56,10 @@ module.exports = {
 
             const text =
 `📈 *_BORSA_*
-━━━━━━━━━━━━━━
 ▸ ${linee.length ? linee.join('\n') : '📭 Portafoglio vuoto.\n▸ Compra azioni con: _*.investi compra GOOG*_'}
-━━━━━━━━━━━━━━
 ▸ 💶 Valore azioni: _${tot}€_
 ▸ 💳 Contante: _${uDB.money}€_
-◈ _Vex Bot_`;
+`;
             return await sendButtons(sock, from, text, [
                 { label: '📝 Listino', id: 'investi listino' },
             ], msg);
@@ -68,11 +68,9 @@ module.exports = {
         if (azione === 'LISTINO') {
             const listino =
 `📝 *_LISTINO AZIONI_*
-━━━━━━━━━━━━━━
 ▸ ${AZIENDE.map(a => `${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`).join('\n')}
-━━━━━━━━━━━━━━
 ▸ _*.investi compra <CODICE> [n]*_
-◈ _Vex Bot_`;
+`;
             return await sendButtons(sock, from, listino, [
                 { label: '📊 Il tuo portafoglio', id: 'investi' },
             ], msg);
@@ -92,7 +90,7 @@ module.exports = {
                 uDB.money -= costo;
                 uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + n;
                 saveDB();
-                return reply(`✅ *_COMPRATE!_*\n━━━━━━━━━━━━━━\n▸ 📈 Azioni: _${n}_\n▸ 🏢 _${azienda.name}_\n▸ 💰 Costo: _${costo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n◈ _Vex Bot_`);
+                return reply(`✅ *_COMPRATE!_*\n━━━━━━━━━━━━━━\n▸ 📈 Azioni: _${n}_\n▸ 🏢 _${azienda.name}_\n▸ 💰 Costo: _${costo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n`);
             }
 
             const q = Math.floor(parseInt(parts[2], 10));
@@ -105,7 +103,7 @@ module.exports = {
             if (uDB.azioni[target.toUpperCase()] <= 0) delete uDB.azioni[target.toUpperCase()];
             uDB.money += ricavo;
             saveDB();
-            return reply(`💰 *_VENDUTE!_*\n━━━━━━━━━━━━━━\n▸ 📉 Azioni: _${qty2}_\n▸ 🏢 _${azienda.name}_\n▸ 💵 Ricavo: _${ricavo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n◈ _Vex Bot_`);
+            return reply(`💰 *_VENDUTE!_*\n━━━━━━━━━━━━━━\n▸ 📉 Azioni: _${qty2}_\n▸ 🏢 _${azienda.name}_\n▸ 💵 Ricavo: _${ricavo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n`);
         }
 
         reply("⚠️ _[uso]:_\n▸ _*.investi*_ — portafoglio\n▸ _*.investi listino*_ — prezzi\n▸ _*.investi compra <codice> [n]*_\n▸ _*.investi vendi <codice> [n]*_");

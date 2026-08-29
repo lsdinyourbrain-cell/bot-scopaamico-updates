@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const SB = (s) => s.split('').map(c => {
     const cc = c.charCodeAt(0);
     if (cc >= 65 && cc <= 90) return String.fromCodePoint(0x1D5D4 + cc - 65);
@@ -53,13 +55,11 @@ module.exports = {
         await sock.sendMessage(from, {
             text:
 `🚫 *_UNOWNER_*
-━━━━━━━━━━━━━━━━━━
 ▸ @${displayNum} non è più
   owner. 😔
 ▸ I privilegi sono
   stati revocati.
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`,
+`,
             mentions: [removed.number || removed.lid].filter(Boolean),
         }, { quoted: msg });
     },

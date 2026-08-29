@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+
 const { escapeXml, wrapLines } = require('../../lib/svg-utils');
 const { makeSticker } = require('../../lib/sticker-webp');
 
@@ -46,7 +48,10 @@ module.exports = {
 
         const text = String(textArgs || '').trim();
         if (!text || text.length > 80) {
-            return reply("⚠️ _[uso]: scrivi il testo da trasformare in sticker neon._\n━━━━━━━━━━━━━━\n▸ `.attp <testo>` — _max 80 caratteri_\n━━━━━━━━━━━━━━\n▸ Esempio: `.attp CIAO BELLO`");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('[uso]: scrivi il testo da trasformare in sticker neon._ ━━━━━━━━━━━━━━ ▸ \`.at...')}
+${boxEnd()}`);
         }
 
         try {
