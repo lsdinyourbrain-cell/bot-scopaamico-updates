@@ -105,10 +105,10 @@ module.exports = {
 ${boxOpen()}
 ${line(nameShown)}
 ${uDB.title ? line(`🏷️ ${String(uDB.title).slice(0, 25)}`) : ''}
-${uDB.bio ? `\n💬 _"${String(uDB.bio).slice(0, 90)}"_\n` : ''}
+${uDB.bio ? line(`💬 "${String(uDB.bio).slice(0, 90)}"`) : ''}
 ${line('⭐ Livello ' + level + ' · ' + xpLib.rankOf(level))}
 ${line('✨ XP ' + xp + ' / ' + xpNeed)}
-▸ ${xpLib.xpBar(xp, xpNeed)}
+${line(xpLib.xpBar(xp, xpNeed))}
 ${line('🎓 Punti pregio ' + pregi.length + (lastPregi ? ' · ' + lastPregi : ''))}
 ${line('💰 Contante ' + wallet + '€')}
 ${line('🏦 Banca ' + bank + '€')}
@@ -120,10 +120,15 @@ ${line('🤬 Bestemmie ' + bestemmie)}
 ${boxEnd()}
 ${isSelf ? '▸ .profilo nick/bio/stile per personalizzare' : ''}`;
 
-        if (pfpUrl) {
-            await sock.sendMessage(from, { image: { url: pfpUrl }, caption: profileText, mentions: spouse ? [spouse] : [] });
-        } else {
-            await sock.sendMessage(from, { text: profileText, mentions: spouse ? [spouse] : [] });
+        try {
+            if (pfpUrl) {
+                await sock.sendMessage(from, { image: { url: pfpUrl }, caption: profileText, mentions: spouse ? [spouse] : [] });
+            } else {
+                await sock.sendMessage(from, { text: profileText, mentions: spouse ? [spouse] : [] });
+            }
+        } catch (e) {
+            console.error('[profilo] send error:', e.message);
+            try { await sock.sendMessage(from, { text: profileText, mentions: spouse ? [spouse] : [] }, { quoted: msg }); } catch (_) {}
         }
     },
 };

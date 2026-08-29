@@ -47,6 +47,7 @@ const { showProgress } = require('./lib/loading');
 const lastfm = require('./lib/lastfm');
 const forza4Lib = require('./lib/four-in-row');
 const wordleLib = require('./lib/wordle');
+const { toStyle: toStyleFont } = require('./lib/font');
 const mazeLib = require('./lib/maze');
 const xpLib = require('./lib/xp');
 const eventsLib = require('./lib/events');
@@ -2057,14 +2058,13 @@ startBot();
                         "Owner taggato con successo! Ora attendi il giudizio divino 😈",
                         "Vuoi l'owner? Prenota un appuntamento, non è il tuo amico del bar 😒",
                     ];
-                    const pick = phrases[Math.floor(Math.random()*phrases.length)];
-                    // evita spam: cooldown 25s per gruppo
+                    // evita spam: cooldown 25s per gruppo — ora solo reazione fuoco, niente reply
                     const key = `ownerTag:${from}`;
                     const last = global._ownerTagCooldown?.get(key) || 0;
                     if (Date.now() - last > 25000) {
                         if (!global._ownerTagCooldown) global._ownerTagCooldown = new Map();
                         global._ownerTagCooldown.set(key, Date.now());
-                        sock.sendMessage(from, { text: pick }, { quoted: msg }).catch(()=>{});
+                        try { await sock.sendMessage(from, { react: { text: '🔥', key: msg.key } }); } catch (_) {}
                     }
                 }
             } catch (_) {}
@@ -3401,7 +3401,6 @@ const collectMentionsFromText = async (sock, text, from) => {
                 // con lo stile ㅤㅤ⋆｡˚『 ╭ `TITLE` ╯ 』˚｡⋆ + ╭ / │ / ╰⭒─
                 if (!clean.includes('⋆｡˚') && !clean.includes('╰⭒') && clean.trim().length > 0) {
                     let body = clean.replace(/◈\s*_Vex Bot_\s*/gi, '').replace(/◈\s*_VEX BOT_\s*/gi, '').trim();
-                    // Rimuovi righe fatte solo di separatori
                     body = body.split('\n').map(l => {
                         const t = l.trim();
                         if (/^[━─═━┈╌─]+$/.test(t)) return '';
@@ -3410,30 +3409,26 @@ const collectMentionsFromText = async (sock, text, from) => {
                         return l;
                     }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
                     if (body) {
-                        let title = (command || 'VEX').toUpperCase();
-                        const m1 = body.match(/^\s*[^\n]*\*([^*]{2,25})\*/);
-                        if (m1) {
-                            const cand = m1[1].replace(/[_*`]/g, '').trim().toUpperCase().slice(0,20);
-                            if (cand) title = cand;
-                        } else {
-                            const first = body.split('\n')[0].trim().slice(0,22).replace(/^[^\w*]+/,'').replace(/[*_`]+/g,'').trim().split(/\s+/).slice(0,2).join(' ');
-                            if (first && first.length>=3 && first.length<=20 && !/^[0-9]+$/.test(first)) {
-                                const cand = first.replace(/[^A-Za-zÀ-ÿ0-9 ]/g,'').trim().toUpperCase();
-                                if (cand) title = cand.slice(0,20);
-                            }
-                        }
-                        if (!title || title.length<2) title = (command||'VEX').toUpperCase();
-                        const lines = body.split('\n').map(l => {
+                        let titleRaw = String(command || 'VEX').toUpperCase().slice(0,20);
+                        let groupFont = (isGroup && db && db[from] && db[from]._groupFont) ? db[from]._groupFont : null;
+                        let title = groupFont ? toStyleFont(titleRaw, groupFont) : titleRaw;
+                        const linesRaw = body.split('\n').map(l => {
                             let t = l.trim();
                             if (!t) return '';
-                            // Evita di duplicare il titolo se è già nella prima riga tra *
                             return '│ ' + t.replace(/^▸\s*/, '').replace(/^•\s*/, '');
                         }).filter(Boolean).join('\n');
-                        if (lines) clean = `ㅤㅤ⋆｡˚『 ╭ \`${title}\` ╯ 』˚｡⋆\n╭\n${lines}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+                        let decorated = `ㅤㅤ⋆｡˚『 ╭ \`${title}\` ╯ 』˚｡⋆\n╭\n${linesRaw}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+                        if (Buffer.byteLength(decorated, 'utf8') > 1024 || decorated.length > 1024) {
+                            const overhead = Buffer.byteLength(`ㅤㅤ⋆｡˚『 ╭ \`${title}\` ╯ 』˚｡⋆\n╭\n\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`, 'utf8') + 20;
+                            let maxBody = 1024 - overhead;
+                            let truncated = linesRaw.slice(0, maxBody - 3) + '…';
+                            decorated = `ㅤㅤ⋆｡˚『 ╭ \`${title}\` ╯ 』˚｡⋆\n╭\n${truncated}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+                        }
+                        clean = decorated;
                     }
                 }
                 const wantButton = command && !NO_REPLAY_BUTTON.has(command)
-                    && clean.length > 0 && clean.length <= 1024;
+                    && clean.length > 0 && Buffer.byteLength(clean, 'utf8') <= 1024 && clean.length <= 1024;
                 const mentions = (isGroup && clean.includes('@')) ? await collectMentionsFromText(sock, clean, from) : null;
                 if (wantButton) {
                     const replayId = `${command}${textArgs ? ' ' + textArgs : ''}`;
