@@ -1,95 +1,100 @@
 'use strict';
 
-const pkg = require('../../package.json');
 const config = require('../../config');
-
-const toBold = (s) => `*${String(s||'').trim()}*`;
 const { toStyle } = require('../../lib/font');
-const styledEntra = toStyle('ENTRA NEL NOSTRO GRUPPO', 'scriptBold'); // font carino per pill bianca
+
+const styledEntra = toStyle('ENTRA NEL NOSTRO GRUPPO', 'scriptBold');
+
+const SECTIONS = [
+    { key: 'tool', label: 'Tool', emoji: '🛠️', desc: 'Utility, meteo, AI, sicurezza', cmds: ['meteo7','nastro','profilo','ping','ai','storia','genio','antilink','antinuke'] },
+    { key: 'fun', label: 'Fun', emoji: '🎲', desc: 'Giochi, social, interazioni', cmds: ['dado','tris','wordle','ship','gay','meme','scopa','sega'] },
+    { key: 'economia', label: 'Economia', emoji: '💰', desc: 'Shop, mine, casino', cmds: ['shop','mine','scava','daily','work','top'] },
+    { key: 'media', label: 'Media', emoji: '📥', desc: 'Sticker, audio, film', cmds: ['sticker','toimg','mp3','film','certificato'] },
+    { key: 'gruppo', label: 'Gruppo', emoji: '👥', desc: 'Tag, link, warn, admin', cmds: ['tag','link','warn','promote','kick','chiudi'] },
+    { key: 'sicurezza', label: 'Sicurezza', emoji: '🛡️', desc: 'Antilink, antinuke, antiflood', cmds: ['antilink','antinuke','antiflood','sicurezza'] },
+];
 
 module.exports = {
     name: 'menu',
     aliases: [],
-    description: "Menu VEX con testo impostabile (owner) e 1 pill scura + 1 bianca (link owner).",
+    description: "Menu rifatto da 0: 1 pill per sezioni (single_select) + 1 bianca.",
 
     async run(sock, msg, args, context) {
-        const { textArgs, from, isGroup, isOwner, isButton, contextInfo, reply, services } = context;
-        const { sendButtons, db, saveDB } = services;
+        const { textArgs, isOwner, reply, services } = context;
+        const { sendButtons, db, saveDB, commands } = services;
 
         const raw = String(textArgs||'').trim();
         const q = raw.toLowerCase();
         const sponsorLink = (db?._config?.sponsorLink) || config.SPONSOR_LINK || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
 
-        // ── IMPOSTA TESTO MENU (owner) ─────────────────────────────────
-        // Uso: .menu set <testo>  — il testo sta sopra, lo imposti tu e resta salvato
+        // ── SET TESTO ───────────────────────────────────────────────────
         if (q.startsWith('set ')) {
-            if (!isOwner) return reply("⛔ Solo l'owner può impostare il testo del menu.");
-            const newText = raw.slice(4).trim();
-            if (!newText) return reply("⚠️ Uso: `.menu set <testo>`\nEs. `.menu set Benvenuti nel VEX — scegli qui sotto`");
-            if (newText.length > 500) return reply("❌ Testo troppo lungo (max 500).");
+            if (!isOwner) return reply("⛔ Solo owner.");
+            const t = raw.slice(4).trim();
+            if (!t) return reply("Uso: .menu set <testo>");
+            if (t.length > 500) return reply("Max 500.");
             if (!db._config) db._config = {};
-            db._config.menuText = newText;
+            db._config.menuText = t;
             saveDB();
-            return reply(`✅ *TESTO MENU IMPOSTATO*\n━━━━━━━━━━━━━━\n▸ ${newText.slice(0,80)}${newText.length>80?'…':''}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`✅ Testo impostato:\n${t.slice(0,80)}`);
         }
         if (q === 'set') {
-            const cur = db?._config?.menuText || '(default: VEX BOT)';
-            return reply(`📝 *TESTO MENU*\n━━━━━━━━━━━━━━\n▸ Attuale: _${cur}_\n▸ Imposta: \`.menu set <testo>\`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            const cur = db?._config?.menuText || '(default)';
+            return reply(`Testo attuale: ${cur}\nUsa .menu set <testo>`);
         }
 
-        // ── HOME — testo sopra impostabile, 1 pill scura + 1 bianca ─────
-        const customTop = (db?._config?.menuText) || null;
-        // Testo sopra: se l'owner ha impostato un testo, usa quello, altrimenti default
-        const topText = customTop ? customTop : `VEX  -  BOT  -  2K26`;
+        // ── SE HAI SCELTO UNA SEZIONE (arriva come "tool", "fun", ecc.) ──
+        const found = SECTIONS.find(s => s.key === q);
+        if (found) {
+            // Costruisci lista comandi della sezione
+            const allCmds = commands ? [...commands.values()] : [];
+            const available = new Set(allCmds.filter(c=>!c.hidden).map(c=>c.name));
+            const list = found.cmds.filter(c => available.has(c)).map(c => `│ ➤『${found.emoji}』 .${c}`).join('\n');
+            const txt =
+`ㅤㅤ⋆｡˚『 ╭ \`${found.label.toUpperCase()}\` ╯ 』˚｡⋆
+╭
+${list || '│ (nessun comando)'}
+╰⭒─ׄ─ׅ─ׄ─⭒
+*VEX BOT* · ${found.desc}`;
+            return sendButtons(sock, msg.from, txt, [
+                { label: '⬅️ MENU', id: 'menu' },
+                { label: `°${styledEntra}°`, url: sponsorLink },
+            ], msg, null, { headerTitle: `VEX — ${found.label.toUpperCase()}`, footerText: 'Tocca per aprire' });
+        }
+
+        // ── HOME ────────────────────────────────────────────────────────
+        const topText = (db?._config?.menuText) || 'VEX  -  BOT  -  2K26';
         const caption =
 `${topText}
 
 ㅤㅤ⋆｡˚『 ╭ \`VEX\` ╯ 』˚｡⋆
 ╭
-│ ➤ Premi qui sotto
+│ ➤ Premi il pulsante qui sotto
+│   per vedere le sezioni
 ╰⭒─ׄ─ׅ─ׄ─⭒`;
 
-        // 1 pill scura + 1 bianca con font carino
+        // Unico pulsante che apre il riquadro sezioni
+        const sheet = {
+            type: 'single_select',
+            label: '📂 SCEGLI SEZIONE',
+            title: 'Sezioni VEX',
+            sectionTitle: 'Tocca una sezione',
+            rows: SECTIONS.map(s => ({
+                header: s.emoji,
+                title: s.label,
+                description: s.desc,
+                id: `menu ${s.key}`,
+            })),
+        };
+
         const whiteLabel = `°${styledEntra}°`;
-        const buttons = [
-            { label: 'MENU', id: 'allmenu' },
+
+        return sendButtons(sock, msg.from, caption, [
+            sheet,
             { label: whiteLabel, url: sponsorLink },
-        ];
-
-        // Prova a inviare con immagine se disponibile, altrimenti solo pulsanti
-        try {
-            // Cerca un'immagine locale per il menu (se c'è), altrimenti solo testo + pulsanti
-            const fs = require('fs');
-            const path = require('path');
-            const possibleImages = [
-                path.join(__dirname, '../../assets/universe.jpg'),
-                path.join(__dirname, '../../assets/menu.jpg'),
-                path.join(__dirname, '../../assets/vex.jpg'),
-            ];
-            let imgPath = null;
-            for (const p of possibleImages) if (fs.existsSync(p)) { imgPath = p; break; }
-
-            if (imgPath) {
-                const img = fs.readFileSync(imgPath);
-                await sock.sendMessage(from, {
-                    image: img,
-                    caption: caption,
-                    footer: 'VEX BOT 2K26',
-                    buttons: [
-                        { buttonId: 'allmenu', buttonText: { displayText: 'MENU' }, type: 1 },
-                        { buttonId: 'join_us', buttonText: { displayText: whiteLabel }, type: 1 },
-                    ],
-                    headerType: 4,
-                }, { quoted: msg });
-                // Fallback anche con sendButtons per compatibilità
-                return;
-            }
-        } catch (_) {}
-
-        // Fallback senza immagine: usa sendButtons classico con 3 pill
-        return sendButtons(sock, from, caption, buttons, msg, null, {
+        ], msg, null, {
             headerTitle: 'VEX  -  BOT  -  2K26',
-            footerText: 'VEX BOT',
+            footerText: 'Scegli una sezione',
         });
     },
 };
