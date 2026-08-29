@@ -4,72 +4,56 @@ const pkg = require('../../package.json');
 const config = require('../../config');
 
 const toBold = (s) => `*${String(s||'').trim()}*`;
+const { toStyle } = require('../../lib/font');
+const styledEntra = toStyle('ENTRA NEL NOSTRO GRUPPO', 'scriptBold'); // font carino per pill bianca
 
 module.exports = {
     name: 'menu',
     aliases: [],
-    description: "Menu VEX UNIVERSE con pill scure + bianca (link owner).",
+    description: "Menu VEX con testo impostabile (owner) e 1 pill scura + 1 bianca (link owner).",
 
     async run(sock, msg, args, context) {
-        const { textArgs, from, isGroup, isOwner, isButton, contextInfo, services } = context;
-        const { sendButtons, db } = services;
+        const { textArgs, from, isGroup, isOwner, isButton, contextInfo, reply, services } = context;
+        const { sendButtons, db, saveDB } = services;
 
-        const q = String(textArgs||'').trim().toLowerCase();
+        const raw = String(textArgs||'').trim();
+        const q = raw.toLowerCase();
         const sponsorLink = (db?._config?.sponsorLink) || config.SPONSOR_LINK || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
 
-        // ── Sottomenu TOOL ───────────────────────────────────────────────
-        if (q === 'tool' || q === 'menu-tool' || q === 'menutool') {
-            const txt = 
-`ㅤㅤ⋆｡˚『 ╭ \`MENU-TOOL\` ╯ 』˚｡⋆
-╭
-│ ➤『🛠️』 Utility
-│ ➤『🎧』 Musica
-│ ➤『🔊』 Audio
-│ ➤『📥』 Media
-│ ➤『🤖』 AI
-│ ➤『🛡️』 Sicurezza
-╰⭒─ׄ─ׅ─ׄ─⭒
-*VEX BOT* · ${pkg.version} · digita .aiuto <comando>`;
-            return sendButtons(sock, from, txt, [
-                { label: '⬅️ INDIETRO', id: 'menu' },
-                { label: 'JOIN US — ENTRA QUI', url: sponsorLink },
-            ], msg, null, { headerTitle: 'VEX — TOOL', footerText: 'VEX BOT 2K26' });
+        // ── IMPOSTA TESTO MENU (owner) ─────────────────────────────────
+        // Uso: .menu set <testo>  — il testo sta sopra, lo imposti tu e resta salvato
+        if (q.startsWith('set ')) {
+            if (!isOwner) return reply("⛔ Solo l'owner può impostare il testo del menu.");
+            const newText = raw.slice(4).trim();
+            if (!newText) return reply("⚠️ Uso: `.menu set <testo>`\nEs. `.menu set Benvenuti nel VEX — scegli qui sotto`");
+            if (newText.length > 500) return reply("❌ Testo troppo lungo (max 500).");
+            if (!db._config) db._config = {};
+            db._config.menuText = newText;
+            saveDB();
+            return reply(`✅ *TESTO MENU IMPOSTATO*\n━━━━━━━━━━━━━━\n▸ ${newText.slice(0,80)}${newText.length>80?'…':''}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+        }
+        if (q === 'set') {
+            const cur = db?._config?.menuText || '(default: VEX BOT)';
+            return reply(`📝 *TESTO MENU*\n━━━━━━━━━━━━━━\n▸ Attuale: _${cur}_\n▸ Imposta: \`.menu set <testo>\`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
         }
 
-        // ── Sottomenu FUN ────────────────────────────────────────────────
-        if (q === 'fun' || q === 'menu-fun' || q === 'menufun') {
-            const txt = 
-`ㅤㅤ⋆｡˚『 ╭ \`MENU-FUN\` ╯ 』˚｡⋆
-╭
-│ ➤『🎲』 Giochi
-│ ➤『💞』 Social
-│ ➤『🔥』 Interazioni
-│ ➤『💰』 Economia
-│ ➤『🆕』 Novità
-╰⭒─ׄ─ׅ─ׄ─⭒
-*VEX BOT* · ${pkg.version} · .shop .mine .corsa`;
-            return sendButtons(sock, from, txt, [
-                { label: '⬅️ INDIETRO', id: 'menu' },
-                { label: 'JOIN US — ENTRA QUI', url: sponsorLink },
-            ], msg, null, { headerTitle: 'VEX — FUN', footerText: 'VEX BOT 2K26' });
-        }
+        // ── HOME — testo sopra impostabile, 1 pill scura + 1 bianca ─────
+        const customTop = (db?._config?.menuText) || null;
+        // Testo sopra: se l'owner ha impostato un testo, usa quello, altrimenti default
+        const topText = customTop ? customTop : `VEX  -  BOT  -  2K26`;
+        const caption =
+`${topText}
 
-        // ── HOME PRINCIPALE — stile foto UNIVERSE ──────────────────────
-        // Header come foto: UNIVERSE - BOT - 2K26, immagine, 2 pill scure + 1 bianca
-        const caption = 
-`UNIVERSE  -  BOT  -  2K26
-
-ㅤㅤ⋆｡˚『 ╭ \`VEX BOT\` ╯ 』˚｡⋆
+ㅤㅤ⋆｡˚『 ╭ \`VEX\` ╯ 』˚｡⋆
 ╭
-│ ➤ Scegli un menu qui sotto
+│ ➤ Premi qui sotto
 ╰⭒─ׄ─ׅ─ׄ─⭒`;
 
-        // Usa sendButtons con 2 scure + 1 bianca (cta_url)
-        // Le due scure sono quick_reply, la bianca è cta_url con link owner
+        // 1 pill scura + 1 bianca con font carino
+        const whiteLabel = `°${styledEntra}°`;
         const buttons = [
-            { label: 'MENU-TOOL', id: 'menu tool' },
-            { label: 'MENU-FUN', id: 'menu fun' },
-            { label: 'JOIN US  —  ENTRA QUI...', url: sponsorLink },
+            { label: 'MENU', id: 'allmenu' },
+            { label: whiteLabel, url: sponsorLink },
         ];
 
         // Prova a inviare con immagine se disponibile, altrimenti solo pulsanti
@@ -92,9 +76,8 @@ module.exports = {
                     caption: caption,
                     footer: 'VEX BOT 2K26',
                     buttons: [
-                        { buttonId: 'menu tool', buttonText: { displayText: 'MENU-TOOL' }, type: 1 },
-                        { buttonId: 'menu fun', buttonText: { displayText: 'MENU-FUN' }, type: 1 },
-                        { buttonId: 'join_us', buttonText: { displayText: 'JOIN US — ENTRA QUI...' }, type: 1 },
+                        { buttonId: 'allmenu', buttonText: { displayText: 'MENU' }, type: 1 },
+                        { buttonId: 'join_us', buttonText: { displayText: whiteLabel }, type: 1 },
                     ],
                     headerType: 4,
                 }, { quoted: msg });
