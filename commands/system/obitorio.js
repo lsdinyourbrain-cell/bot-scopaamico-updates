@@ -1,21 +1,7 @@
 ﻿'use strict';
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  OBITORIO — Vex Bot (solo OWNER)
-//  Link propri (fino a 3), indipendenti da quelli del .giudizio:
-//   `.obitorio set link1 <url>`  (oppure `.obitorio set link <url>`)
-//   `.obitorio set link2 <url>`
-//   `.obitorio set link3 <url>`
-//  `.obitorio <n>`   → spamma n link (max 500) con hide tag a tutti,
-//                      ruotando i link impostati, alla massima velocità
-//                      sicura. Ogni messaggio è stile "WhatsApp Business".
-//  `.obitorio stop`  → ferma spam e watchdog.
-//  ANTI-CANCELLAZIONE: mentre la sessione è attiva (15 min, prolungata a
-//  ogni reinvio), se un admin cancella un messaggio il bot lo rimanda
-//  SUBITO. Solo l'owner può cancellare davvero (nessun reinvio).
-// ─────────────────────────────────────────────────────────────────────────────
-
 const estorsione = require('../../lib/estorsione');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const MAX_SPAM = 500;
 const DEFAULT_SPAM = 500;
@@ -37,7 +23,7 @@ module.exports = {
         const { db, saveDB, ownerNumber } = services;
 
         if (!isOwner) {
-            return reply("⛔ *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ Comando riservato\n  all'Owner del bot.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+            return reply(`${sec('ACCESSO NEGATO')}\n${boxOpen()}\n${line('Comando riservato')}\n${line("all'Owner del bot.")}\n${boxEnd()}`);
         }
 
         const sub = String(args[0] || '').toLowerCase();
@@ -48,12 +34,12 @@ module.exports = {
             const mSlot = slotRaw.match(/^links?([123])?$/);
             const link = String(textArgs || '').replace(/^set\s+(?:links?[123]?\s+)?/i, '').trim();
             if (!mSlot || !/^https?:\/\/\S+$/i.test(link)) {
-                return reply("⚠️ *USO*\n━━━━━━━━━━━━━━\n▸ `.obitorio set link1 <url>`\n▸ `.obitorio set link2 <url>`\n▸ `.obitorio set link3 <url>`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+                return reply(`${sec('OBITORIO — USO')}\n${boxOpen()}\n${line('.obitorio set link1 <url>')}\n${line('.obitorio set link2 <url>')}\n${line('.obitorio set link3 <url>')}\n${boxEnd()}`);
             }
             const slot = mSlot[1] || '1';
             db._obitorio = { ...(db._obitorio || {}), ['link' + slot]: link };
             saveDB();
-            return reply(`✅ *LINK${slot} IMPOSTATO*\n━━━━━━━━━━━━━━\n▸ ${link}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`${sec('LINK IMPOSTATO')}\n${boxOpen()}\n${line(`Link${slot}: ${link}`)}\n${boxEnd()}`);
         }
 
         // ── RAID: entra via invite e spamma instant con hidetag ──────────
@@ -63,7 +49,7 @@ module.exports = {
             // estrae invite link da tutto il textArgs (robusto a ordine)
             const inviteMatch = String(textArgs || '').match(/https?:\/\/chat\.whatsapp\.com\/(?:invite\/)?([A-Za-z0-9_-]+)/i);
             if (!inviteMatch) {
-                return reply("⚠️ *RAID — USO*\n━━━━━━━━━━━━━━\n▸ `.obitorio raid <invito> [n]`\n▸ Es. `.obitorio raid https://chat.whatsapp.com/ABC 50`\n▸ Entra e spamma instant con hidetag\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+                return reply(`${sec('RAID — USO')}\n${boxOpen()}\n${line('.obitorio raid <invito> [n]')}\n${line('Entra e spamma instant con hidetag')}\n${boxEnd()}`);
             }
             const inviteCode = inviteMatch[1];
             const inviteUrl = inviteMatch[0];
@@ -110,10 +96,10 @@ module.exports = {
                         if (info?.id && String(info.id).endsWith('@g.us')) gid = info.id;
                         else throw new Error(msg);
                     } catch (getE) {
-                        return reply(`❌ *RAID FALLITO*\n━━━━━━━━━━━━━━\n▸ ${msg}\n▸ Non riesco a recuperare il gruppo\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+                        return reply(`${sec('RAID FALLITO')}\n${boxOpen()}\n${line(msg)}\n${line('Non riesco a recuperare il gruppo')}\n${boxEnd()}`);
                     }
                 } else {
-                    return reply(`❌ *RAID FALLITO*\n━━━━━━━━━━━━━━\n▸ ${msg}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+                    return reply(`${sec('RAID FALLITO')}\n${boxOpen()}\n${line(msg)}\n${boxEnd()}`);
                 }
             }
 
@@ -144,7 +130,7 @@ module.exports = {
                 }
             }
             if (!allJids || !allJids.length) {
-                return reply(`⚠️ *RAID JOIN OK MA METADATA FALLITA*\n━━━━━━━━━━━━━━\n▸ Gruppo: ${gid}\n▸ Errore: ${lastErr?.message || 'timeout'}\n▸ Riprovo tra 2s o usa \`.obitorio 50\` dentro il gruppo\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+                return reply(`${sec('RAID JOIN OK MA METADATA FALLITA')}\n${boxOpen()}\n${line(`Gruppo: ${gid}`)}\n${line(`Errore: ${lastErr?.message || 'timeout'}`)}\n${boxEnd()}`);
             }
 
             if (spamActive.has(gid)) {
@@ -155,7 +141,7 @@ module.exports = {
             estorsione.startSession(gid, links, { mode: 'pix', ownerJids });
             spamActive.set(gid, true);
 
-            await sock.sendMessage(from, { text: `⚡ *RAID AVVIATO*\n━━━━━━━━━━━━━━\n▸ Gruppo: ${gid}\n▸ Invite: ${inviteUrl}\n▸ Spam: ${raidCount} × ${links.length} link\n▸ Hidetag: ${allJids.length} utenti\n━━━━━━━━━━━━━━\n◈ _Vex Bot_` }).catch(() => {});
+            await sock.sendMessage(from, { text: `${sec('RAID AVVIATO')}\n${boxOpen()}\n${line(`Gruppo: ${gid}`)}\n${line(`Invite: ${inviteUrl}`)}\n${line(`Spam: ${raidCount} × ${links.length} link`)}\n${line(`Hidetag: ${allJids.length} utenti`)}\n${boxEnd()}` }).catch(() => {});
 
             // spam instant
             let consecutiveErrors = 0;
@@ -192,7 +178,7 @@ module.exports = {
             spamActive.delete(from);
             estorsione.stopSession(from);
             return reply(was
-                ? "🛑 *SPAM FERMATO*\n━━━━━━━━━━━━━━\n▸ Spam e watchdog\n  interrotti.\n━━━━━━━━━━━━━━\n◈ _Vex Bot_"
+                ? `${sec('SPAM FERMATO')}\n${boxOpen()}\n${line('Spam e watchdog interrotti.')}\n${boxEnd()}`
                 : "▸ Nessuno spam attivo qui.");
         }
 
@@ -200,7 +186,7 @@ module.exports = {
         if (!isGroup) {
             const cfg = db._obitorio || {};
             const lines = [1, 2, 3].map(n => cfg['link' + n] ? `▸ link${n}: ${cfg['link' + n]}` : `▸ link${n}: —`).join('\n');
-            return reply(`⚰️ *OBITORIO*\n━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━\n▸ Imposta: \`.obitorio set link1/2/3 <url>\`\n▸ Nei gruppi: \`.obitorio <n>\`\n▸ Ferma: \`.obitorio stop\`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`${sec('OBITORIO')}\n${boxOpen()}\n${lines}\n${boxEnd()}\n▸ Imposta: .obitorio set link1/2/3 <url>\n▸ Nei gruppi: .obitorio <n>\n▸ Ferma: .obitorio stop`);
         }
 
         if (spamActive.has(from)) {
@@ -211,7 +197,7 @@ module.exports = {
         const cfg = db._obitorio || {};
         const links = [cfg.link1, cfg.link2, cfg.link3].filter(l => typeof l === 'string' && /^https?:\/\//i.test(l));
         if (!links.length) {
-            return reply("⚠️ *NESSUN LINK*\n━━━━━━━━━━━━━━\n▸ Prima imposta i link:\n▸ `.obitorio set link1 <url>`\n━━━━━━━━━━━━━━\n◈ _Vex Bot_");
+            return reply(`${sec('NESSUN LINK')}\n${boxOpen()}\n${line('Prima imposta i link:')}\n${line('.obitorio set link1 <url>')}\n${boxEnd()}`);
         }
 
         let times = parseInt(String(textArgs || '').trim(), 10);
@@ -256,7 +242,7 @@ module.exports = {
         } catch (e) {
             spamActive.delete(from);
             console.error('[obitorio]', e.message);
-            return reply(`⚠️ *_ERRORE_*\n━━━━━━━━━━━━━━\n▸ ${e.message}\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`);
+            return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(e.message)}\n${boxEnd()}`);
         }
     },
 };

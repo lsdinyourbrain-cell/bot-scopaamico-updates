@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, cmd, line } = require('../../lib/ui');
+
 module.exports = {
     name: 'ping',
     aliases: [],
@@ -9,38 +11,32 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getProcessCpu, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
 
-
-            // Latenza “vera” senza round-trip extra: evita 1 send/delete che in gruppo costa 3-4s per cifratura fan-out
             const msgTs = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now();
             const latency = Math.max(0, Date.now() - msgTs);
-
-            // CPU del sistema e del processo bot misurate in parallelo.
             const sysPromise  = getCpuUsage();
             const procPromise = getProcessCpu();
             const info = await getSysInfo(sysPromise, procPromise);
 
             const txt =
-`⚡ *_BOT STATUS_*
-━━━━━━━━━━━━━━━━━━
-▸ ⏱️ Latenza: _${latency} ms_
-▸ 🖥️ Processore: _${info.cpuModel}_
-▸ 🧠 Core: _${info.cpuCores}_
-▸ 💻 Uso sistema: _${info.cpu}_
-▸ 🔧 CPU processo bot: _${info.cpuProcess}_
-▸ 💾 RAM sistema:
-  _${info.ramUsed} GB / ${info.ramTotal} GB (${info.ramPercent}%)_
-▸ 🤖 Processo bot: _${info.processRam} MB RAM_
-▸ 📚 Heap: _${info.heapUsed} MB_
-▸ ⏳ Uptime bot: _${info.uptime}_
-▸ 🧩 Sistema: _${info.platform}_
-▸ 🟢 Node.js: _${info.node}_
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`${sec('PING')}
+${boxOpen()}
+${line(`⚡ Latenza: _${latency} ms_`)}
+${line(`🖥️ Processore: _${info.cpuModel}_`)}
+${line(`🧠 Core: _${info.cpuCores}_`)}
+${line(`💻 Uso sistema: _${info.cpu}_`)}
+${line(`🔧 CPU processo: _${info.cpuProcess}_`)}
+${line(`💾 RAM: _${info.ramUsed}GB / ${info.ramTotal}GB (${info.ramPercent}%)_`)}
+${line(`🤖 Processo bot: _${info.processRam}MB_`)}
+${line(`📚 Heap: _${info.heapUsed}MB_`)}
+${line(`⏳ Uptime: _${info.uptime}_`)}
+${line(`🧩 Sistema: _${info.platform}_`)}
+${line(`🟢 Node: _${info.node}_`)}
+${boxEnd()}`;
 
             await sendButtons(sock, from, txt, [
-                { label: '.ping', id: 'ping' },
-                { label: '.status', id: 'status' },
-                { label: '.clear',  id: 'clear' },
+                { label: '🔄 Ping', id: 'ping' },
+                { label: '📊 Status', id: 'status' },
+                { label: '🧹 Clear', id: 'clear' },
             ], msg);
     },
 };

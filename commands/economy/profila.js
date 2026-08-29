@@ -3,6 +3,7 @@
 const xpLib = require('../../lib/xp');
 const { dispOf, resolveJid } = require('../../lib/jid');
 const { toStyle, STYLES } = require('../../lib/font');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const SEP = '✦ ✦ ✦';
 // Stili disponibili per la personalizzazione del profilo
@@ -35,38 +36,38 @@ module.exports = {
         // ══ PERSONALIZZAZIONE ═════════════════════════════════════════════
         if (sub === 'nick' || sub === 'nickname') {
             const nick = String(textArgs || '').replace(/^nick(name)?\s+/i, '').trim();
-            if (!nick) return reply(`🏷️ *${T2('Nick', uDBSelf.profileStyle)}*\n${SEP}\n▸ Uso: _.profilo nick <nome>_`);
-            if (nick.length > 24) return reply(`❌ Troppo lungo: max *24* caratteri.`);
+            if (!nick) return reply(`${sec('NICK')}\n${boxOpen()}\n${line('Uso: .profilo nick <nome>')}\n${boxEnd()}`);
+            if (nick.length > 24) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Troppo lungo: max 24 caratteri.')}\n${boxEnd()}`);
             uDBSelf.nickname = nick;
             saveDB();
-            return reply(`✅ *${T2('Fatto', uDBSelf.profileStyle)}*\n${SEP}\n▸ Nick impostato:\n▸ *${nick.slice(0, 24)}*`);
+            return reply(`${sec('NICK IMPOSTATO')}\n${boxOpen()}\n${line(nick.slice(0, 24))}\n${boxEnd()}`);
         }
         if (sub === 'bio') {
             const bio = String(textArgs || '').replace(/^bio\s+/i, '').trim();
-            if (!bio) return reply(`📝 *${T2('Bio', uDBSelf.profileStyle)}*\n${SEP}\n▸ Uso: _.profilo bio <testo>_`);
-            if (bio.length > 90) return reply(`❌ Troppo lunga: max *90* caratteri.`);
+            if (!bio) return reply(`${sec('BIO')}\n${boxOpen()}\n${line('Uso: .profilo bio <testo>')}\n${boxEnd()}`);
+            if (bio.length > 90) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Troppo lunga: max 90 caratteri.')}\n${boxEnd()}`);
             uDBSelf.bio = bio;
             saveDB();
-            return reply(`✅ *${T2('Fatto', uDBSelf.profileStyle)}*\n${SEP}\n▸ Bio aggiornata.`);
+            return reply(`${sec('BIO AGGIORNATA')}\n${boxOpen()}\n${line(bio.slice(0, 90))}\n${boxEnd()}`);
         }
         if (sub === 'stile' || sub === 'style') {
             const raw = String(textArgs || '').replace(/^stile\s+/i, '').replace(/^style\s+/i, '').trim().toLowerCase();
             if (!raw || raw === 'lista') {
                 const lista = [...new Set(Object.values(STILE_ALIASES))];
-                return reply(`🎨 *${T2('Stili disponibili', uDBSelf.profileStyle)}*\n${SEP}\n▸ ${lista.join(', ')}\n\n▸ Uso: _.profilo stile <nome>_`);
+                return reply(`${sec('STILI DISPONIBILI')}\n${boxOpen()}\n${line(lista.join(', '))}\n${boxEnd()}\n▸ .profilo stile <nome>`);
             }
             const styleKey = STILE_ALIASES[raw];
-            if (!styleKey) return reply(`❌ Stile sconosciuto: *${raw}*\n▸ Vedi i nomi con _.profilo stile lista_`);
+            if (!styleKey) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(`Stile sconosciuto: ${raw}`)}\n${line('Vedi: .profilo stile lista')}\n${boxEnd()}`);
             uDBSelf.profileStyle = styleKey;
             saveDB();
-            return reply(`✅ ${toStyle('PROFILO AGGIORNATO', styleKey)}\n${SEP}\n▸ Nuovo stile: *${raw}*`);
+            return reply(`${sec('PROFILO AGGIORNATO')}\n${boxOpen()}\n${line(`Nuovo stile: ${raw}`)}\n${boxEnd()}`);
         }
         if (sub === 'reset') {
             delete uDBSelf.nickname;
             delete uDBSelf.bio;
             delete uDBSelf.profileStyle;
             saveDB();
-            return reply(`🧹 *${T2('Reset', uDBSelf.profileStyle)}*\n${SEP}\n▸ Nick, bio e stile azzerati.`);
+            return reply(`${sec('RESET')}\n${boxOpen()}\n${line('Nick, bio e stile azzerati.')}\n${boxEnd()}`);
         }
 
         // ══ VISUALIZZAZIONE PROFILO ═══════════════════════════════════════
@@ -100,32 +101,24 @@ module.exports = {
         try { pfpUrl = await sock.profilePictureUrl(target, 'image'); } catch (_) { pfpUrl = null; }
 
         const profileText =
-`${headTitle} 🪪
-${SEP}
-▸ ${nameShown}
-${uDB.title ? `▸ 🏷️ _${String(uDB.title).slice(0, 25)}_` : ''}
+`${sec('PROFILO')}
+${boxOpen()}
+${line(nameShown)}
+${uDB.title ? line(`🏷️ ${String(uDB.title).slice(0, 25)}`) : ''}
 ${uDB.bio ? `\n💬 _"${String(uDB.bio).slice(0, 90)}"_\n` : ''}
-${T2('Livelli', uDB.profileStyle)}
-▸ ⭐ Livello *${level}* · 🌟 _${xpLib.rankOf(level)}_
-▸ ✨ XP *${xp}* / *${xpNeed}*
+${line('⭐ Livello ' + level + ' · ' + xpLib.rankOf(level))}
+${line('✨ XP ' + xp + ' / ' + xpNeed)}
 ▸ ${xpLib.xpBar(xp, xpNeed)}
-▸ 🎓 Punti pregio *${pregi.length}* ${lastPregi ? `· _${lastPregi}_` : ''}
-
-${T2('Soldi', uDB.profileStyle)}
-▸ 💰 Contante *_${wallet}€_*
-▸ 🏦 Banca *_${bank}€_*
-▸ 💵 Totale *_${wallet + bank}€_*
-
-${T2('Famiglia', uDB.profileStyle)}
-▸ 💍 Sposato/a → ${spouse ? `@${disp(spouse)}` : '_no_'}
-▸ 👴 Genitori *_${parents}_* · 🍼 Figli *_${children}_*
-
-${T2('Attività', uDB.profileStyle)}
-▸ 💬 Messaggi *_${msgCount}_*
-▸ 🤬 Bestemmie *_${bestemmie}_*
-${SEP}
-${isSelf ? '▸ ✏️ Personalizza: _.profilo nick/bio/stile_' : ''}
-◈ _Vex Bot_`;
+${line('🎓 Punti pregio ' + pregi.length + (lastPregi ? ' · ' + lastPregi : ''))}
+${line('💰 Contante ' + wallet + '€')}
+${line('🏦 Banca ' + bank + '€')}
+${line('💵 Totale ' + (wallet + bank) + '€')}
+${line('💍 Sposato/a → ' + (spouse ? `@${disp(spouse)}` : 'no'))}
+${line('👴 Genitori ' + parents + ' · 🍼 Figli ' + children)}
+${line('💬 Messaggi ' + msgCount)}
+${line('🤬 Bestemmie ' + bestemmie)}
+${boxEnd()}
+${isSelf ? '▸ .profilo nick/bio/stile per personalizzare' : ''}`;
 
         if (pfpUrl) {
             await sock.sendMessage(from, { image: { url: pfpUrl }, caption: profileText, mentions: spouse ? [spouse] : [] });

@@ -1,5 +1,7 @@
 'use strict';
 
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
+
 module.exports = {
     name: 'status',
     aliases: ['stats', 'botstatus', 'uptime'],
@@ -25,22 +27,21 @@ module.exports = {
         const nodeVer = process.version;
 
         const txt =
-`⚡ *_BOT STATUS_*
-━━━━━━━━━━━━━━━━━━
-▸ ⏱️ Uptime: _${uptimeStr}_
-▸ 📦 Gruppi: _${groupCount}_
-▸ 👥 Utenti: _${totalMem}_
-▸ 🖥️ CPU sistema: _${cpu === null ? 'N/D' : cpu.toFixed(1) + '%'}_
-▸ 🔧 CPU processo: _${procCpu === null ? 'N/D' : procCpu + '%'}_
-▸ 💾 RAM: _${memUsage}MB_
-▸ 🟢 Node: _${nodeVer}_
-▸ 🔋 PID: _${process.pid}_
-━━━━━━━━━━━━━━━━━━
-◈ _Vex Bot_`;
+`${sec('STATUS')}
+${boxOpen()}
+${line(`⏱️ Uptime: _${uptimeStr}_`)}
+${line(`📦 Gruppi: _${groupCount}_`)}
+${line(`👥 Utenti: _${totalMem}_`)}
+${line(`🖥️ CPU sistema: _${cpu === null ? 'N/D' : cpu.toFixed(1) + '%'}_`)}
+${line(`🔧 CPU processo: _${procCpu === null ? 'N/D' : procCpu + '%'}_`)}
+${line(`💾 RAM: _${memUsage}MB_`)}
+${line(`🟢 Node: _${nodeVer}_`)}
+${line(`🔋 PID: _${process.pid}_`)}
+${boxEnd()}`;
 
         await sendButtons(sock, from, txt, [
-            { label: '.status', id: 'status' },
-            { label: '.ping', id: 'ping' },
+            { label: '🔄 Status', id: 'status' },
+            { label: '⚡ Ping', id: 'ping' },
         ], msg);
     },
 };

@@ -1,8 +1,8 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
-function toSansBold(str) { return '*' + String(str||'').trim() + '*'; }
 const cleanDesc = (m) => String(m.description || '').replace(/\s+/g, ' ').trim();
 
 const walk = (dir) => {
@@ -70,14 +70,13 @@ module.exports = {
 
         const total = mods.length;
         if (!total) {
-            const txt = `${toSansBold('ALLMENU')}  📚\n${'━'.repeat(22)}\n▸ Nessun comando trovato.\n${'━'.repeat(22)}\n◈ _Vex Bot_`;
+            const txt = `${sec('ALLMENU')}\n${boxOpen()}\n${line('Nessun comando trovato.')}\n${boxEnd()}`;
             if (typeof sendButtons === 'function') return sendButtons(sock, from, txt, [{ label: '🏠 Menu', id: 'menu' }], msg);
             return sock.sendMessage(from, { text: txt }, { quoted: msg });
         }
 
-        // ── BUILD LISTA UNICA ────────────────────────────────────────
-        const lista = mods.map(m => `• .${m.name} — ${cleanDesc(m)}`).join('\n');
-        const buildText = '◈ *ALLMENU* — ' + total + ' comandi\n━━━━━━━━━━━━\n' + lista;
+        const lista = mods.map(m => `│ • .${m.name} — ${cleanDesc(m)}`).join('\n');
+        const buildText = `${sec('ALLMENU')}\n${boxOpen()}\n${lista}\n${boxEnd()}`;
 
         // ── INVIO: documento se lungo, altrimenti singolo messaggio ──
         if (buildText.length > 900) {
