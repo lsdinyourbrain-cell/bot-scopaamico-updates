@@ -1,11 +1,27 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 function truncate(str, maxLen) {
     if (!str) return '';
     const s = String(str);
     return s.length > maxLen ? s.slice(0, maxLen - 1) + '\u2026' : s;
+}
+
+// Placeholder 500x500 quando non c'è cover — sempre foto garantita
+async function makePlaceholder(sharp, artist, title) {
+    const bg = '#0f0f0f';
+    const a = truncate(artist || '—', 22).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const t = truncate(title || '—', 24).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const svg = `<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">
+      <rect width="500" height="500" fill="${bg}"/>
+      <circle cx="250" cy="180" r="70" fill="none" stroke="#444" stroke-width="2"/>
+      <polygon points="230,155 230,205 275,180" fill="#888"/>
+      <text x="250" y="300" font-family="sans-serif" font-size="22" fill="#fff" text-anchor="middle" font-weight="700">${t}</text>
+      <text x="250" y="330" font-family="sans-serif" font-size="15" fill="#aaa" text-anchor="middle">${a}</text>
+      <text x="250" y="470" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle">VEX BOT • Last.fm</text>
+    </svg>`;
+    try { return await sharp(Buffer.from(svg)).png().toBuffer(); } catch (_) { return null; }
 }
 
 function fmt(n) {
@@ -87,34 +103,77 @@ async function fetchSongCover(axios, sharp, track) {
 module.exports = {
     name: 'cur',
     aliases: ['np', 'nowplaying', 'current'],
-    description: 'Mostra la canzone attuale o l\'ultimo ascolto su Last.fm con la foto della copertina. Uso: .cur (tuo account) oppure .cur <nomeutente>. Collega prima con .lastfm <nome>',
+    description: 'Mostra la riproduzione Last.fm con foto sempre, anti-glitch e fuochi.',
 
     async run(sock, msg, args, context) {
-        const { reply, from, sender, textArgs, mentioned } = context;
-        const { db, lastfm, axios, sharp, sendButtons } = context.services;
+        const { reply, from, sender, textArgs, mentioned, isGroup } = context;
+        const { db, lastfm, axios, sharp, sendButtons, saveDB } = context.services;
 
         if (!lastfm.isConfigured()) {
-            return reply('⚠️ _Last.fm non configurato._\n▸ L\'owner deve impostare una API key in config.js.');
+            return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Last.fm non configurato.')}\n${boxEnd()}`);
+        }
+
+        // ── FUOCO: .cur fuoco / .cur fire / .cur 🔥 ─────────────────────
+        const sub = String(textArgs||'').trim().toLowerCase();
+        if (sub === 'fuoco' || sub === 'fire' || sub === '🔥' || sub === 'fuochi') {
+            // Usa ultimo brano visto con .cur, altrimenti quello attuale del sender
+            let key = null, artist=null, title=null;
+            if (db._lastCur && db._lastCur[sender]?.key) {
+                key = db._lastCur[sender].key;
+                artist = db._lastCur[sender].artist;
+                title = db._lastCur[sender].title;
+            } else {
+                let uname = db._lastfm?.[sender] || null;
+                if (!uname) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Collega Last.fm con .lastfm <nome>')}\n${boxEnd()}`);
+                let d;
+                try { d = await lastfm.getNowPlaying(uname); } catch(e){ return reply(mapLastfmError(e)); }
+                if (!d.track) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Nessun brano.')}\n${boxEnd()}`);
+                key = `${d.track.artist} — ${d.track.name}`.toLowerCase().slice(0,120);
+                artist = d.track.artist;
+                title = d.track.name;
+            }
+            if (!db._curFires) db._curFires = {};
+            if (!db._curFires[key]) db._curFires[key] = { count: 0, users: {} };
+            const rec = db._curFires[key];
+            const already = rec.users[sender];
+            if (already) {
+                return reply(`${sec('FUOCO')}\n${boxOpen()}\n${line(`Hai già messo fuoco a ${truncate(title,18)}`)}\n${line(`🔥 Fuochi: ${rec.count}`)}\n${boxEnd()}`);
+            }
+            rec.count += 1;
+            rec.users[sender] = 1;
+            rec.last = Date.now();
+            rec.artist = artist;
+            rec.title = title;
+            saveDB();
+            return reply(`${sec('FUOCO')}\n${boxOpen()}\n${line(`🔥 +1 a ${truncate(title,18)} — ${truncate(artist,18)}`)}\n${line(`🔥 Totale fuochi: ${rec.count}`)}\n${boxEnd()}`);
         }
 
         let username = null;
-        if (textArgs && textArgs.trim()) {
-            username = textArgs.trim().split(/\s+/)[0];
+        let targetJid = null;
+        if (textArgs && textArgs.trim() && !['fuoco','fire','🔥','fuochi'].includes(textArgs.trim().toLowerCase().split(/\s+/)[0])) {
+            // Se è un username esplicito (non comando fuoco), usalo
+            const maybe = textArgs.trim().split(/\s+/)[0];
+            // Se è menzione, prendi lastfm della menzione, altrimenti prova come username
+            if (mentioned && mentioned.length>0 && textArgs.includes('@')) {
+                username = db._lastfm?.[mentioned[0]] ?? null;
+                if (!username) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Utente non collegato a Last.fm.')}\n${boxEnd()}`);
+                targetJid = mentioned[0];
+            } else {
+                // prova prima come utente collegato, poi come username diretto
+                // Se il testo è un singolo token, trattalo come username Last.fm
+                username = maybe;
+                targetJid = null;
+            }
         } else if (mentioned && mentioned.length > 0) {
             username = db._lastfm?.[mentioned[0]] ?? null;
-            if (!username) return reply(`${sec('ERRORE')}
-${boxOpen()}
-${line('Questo utente non ha collegato un account Last.fm.')}
-${boxEnd()}`);
+            if (!username) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Questo utente non ha collegato un account Last.fm.')}\n${boxEnd()}`);
+            targetJid = mentioned[0];
         } else {
             username = db._lastfm?.[sender] ?? null;
         }
 
         if (!username) {
-            return reply(`${sec('ERRORE')}
-${boxOpen()}
-${line('Nessun account Last.fm collegato._ Collegalo con: .lastfm <nomeutente>')}
-${boxEnd()}`);
+            return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Nessun account Last.fm collegato. Collegalo con: .lastfm <nomeutente>')}\n${boxEnd()}`);
         }
 
         let npData;
@@ -126,21 +185,15 @@ ${boxEnd()}`);
 
         const { nowPlaying, track } = npData;
         if (!track) {
-            return reply('⚠️ _' + username + ' non ha ancora ascoltato nulla._');
+            return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(username + ' non ha ancora ascoltato nulla.')}\n${boxEnd()}`);
         }
 
-        let userInfo = { playcount: 0 };
+        // Se non è in riproduzione, avvisa ma mostra comunque l'ultimo ascolto come riproduzione (richiesta: solo riproduzione)
+        // Manteniamo il track ma header sempre IN RIPRODUZIONE per evitare glitch di due stili diversi
         let trackInfo = { playcount: 0, listeners: 0, userplaycount: 0, duration: 0 };
         try {
-            userInfo = await lastfm.getUserInfo(username);
-        } catch (e) {
-            console.error('[cur] userInfo:', e.message);
-        }
-        try {
             trackInfo = await lastfm.getTrackInfo(track.artist, track.name, username);
-        } catch (e) {
-            console.error('[cur] trackInfo:', e.message);
-        }
+        } catch (e) { console.error('[cur] trackInfo:', e.message); }
 
         let coverBuffer = null;
         let durationSec = trackInfo.duration || 0;
@@ -148,52 +201,66 @@ ${boxEnd()}`);
             const found = await fetchSongCover(axios, sharp, track);
             coverBuffer = found.cover;
             if (found.duration > 0) durationSec = found.duration;
-        } catch (e) {
-            console.error('[cur] cover:', e.message);
+        } catch (e) { console.error('[cur] cover:', e.message); }
+        if (!coverBuffer) {
+            try { coverBuffer = await makePlaceholder(sharp, track.artist, track.name); } catch (_) {}
+        }
+        // Fallback se sharp non disponibile
+        if (!coverBuffer) {
+            // Prova a mandare comunque con URL se c'è, altrimenti placeholder null -> useremo solo testo ma con immagine garantita da makePlaceholder
+            coverBuffer = null;
         }
 
-        const se = nowPlaying ? '🎧 *_IN RIPRODUZIONE_*' : '📼 *_ULTIMO ASCOLTO_*';
         const durText = fmtDuration(durationSec);
+        const tName = truncate(track.name, 30);
+        const tArtist = truncate(track.artist, 30);
+        const tAlbum = track.album ? truncate(track.album, 28) : '';
+        const firesKey = `${track.artist} — ${track.name}`.toLowerCase().slice(0,120);
+        const fires = (db._curFires && db._curFires[firesKey]?.count) || 0;
+        // Salva ultimo brano per fuoco
+        if (!db._lastCur) db._lastCur = {};
+        db._lastCur[sender] = { key: firesKey, artist: track.artist, title: track.name };
+        try { saveDB(); } catch(_){}
+
+        // Caption solo riproduzione, anti-glitch (truncate + box)
         const caption =
-            `${se}\n` +
-            `━━━━━━━━━━━━━━\n` +
-            `▸ 🎵 _${track.name}_\n` +
-            `▸ 👤 _${track.artist}_\n` +
-            (track.album ? `▸ 💿 _${track.album}_\n` : '') +
-            (durText !== '—' ? `▸ ⏱️ *Durata:* _${durText}_\n` : '') +
-            `▸ 🔗 _${track.url}_\n` +
-            `━━━━━━━━━━━━━━\n` +
-            `▸ 📊 *Ascolti totali:* _${fmt(userInfo.playcount)}_\n` +
-            `▸ 🔁 *Frequenza:* _${fmt(trackInfo.userplaycount)}_\n` +
-            `▸ 🌍 *Ascolti mondiali:* _${fmt(trackInfo.playcount)}_\n` +
-            `▸ 👥 *Ascoltatori:* _${fmt(trackInfo.listeners)}_\n` +
-            `━━━━━━━━━━━━━━\n` +
-            `\n` +
-            `_Account Last.fm: ${username}_`;
+`${sec('IN RIPRODUZIONE')}
+${boxOpen()}
+${line(`🎵 ${tName}`)}
+${line(`👤 ${tArtist}`)}
+${tAlbum ? line(`💿 ${tAlbum}`) : ''}
+${durText !== '—' ? line(`⏱️ ${durText}`) : ''}
+${line(`🔥 Fuochi: ${fires}`)}
+${line(`🔗 ${truncate(track.url, 42)}`)}
+${boxEnd()}
+▸ Account: ${truncate(username,18)}`;
 
-        const searchTerm = (track.name + ' ' + track.artist).trim();
+        const searchTerm = `${track.name} ${track.artist}`.trim().slice(0,80);
 
+        // Sempre foto: se coverBuffer c'è, manda immagine + caption, altrimenti manda caption come immagine placeholder già generata
         try {
             if (coverBuffer) {
                 await sock.sendMessage(from, { image: coverBuffer, caption }, { quoted: msg });
             } else {
+                // Ultimo fallback: manda caption come testo (non dovrebbe mai accadere)
                 await reply(caption);
             }
         } catch (imgErr) {
             console.error('[cur] image:', imgErr.message);
-            await reply(caption);
+            try { await reply(caption); } catch(_){}
         }
 
+        // Sotto: chiede download e lyrics + fuoco
+        const fireLabel = fires>0 ? `🔥 Fuoco (${fires})` : '🔥 Fuoco';
         try {
             await sendButtons(sock, from,
-                `Cosa vuoi per *${truncate(track.name, 30)}*?`,
+                `Cosa vuoi fare?`,
                 [
-                    { label: '📝 Testo canzone', id: `lyrics ${searchTerm}` },
-                    { label: '🎵 MP3 intero', id: `mp3 ${searchTerm}` },
+                    { label: '📝 Testo', id: `lyrics ${searchTerm}` },
+                    { label: '🎵 MP3', id: `mp3 ${searchTerm}` },
+                    { label: fireLabel, id: `cur fuoco` },
                 ],
                 msg);
-        } catch (btnErr) {
-            console.error('[cur] buttons:', btnErr.message);
-        }
+        } catch (btnErr) { console.error('[cur] buttons:', btnErr.message); }
     },
 };
