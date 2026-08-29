@@ -3334,11 +3334,16 @@ startBot();
         // nessuna risposta, nessuna reazione, niente. Admin e owner usano
         // tutto normalmente. Se i permessi non sono leggibili, non blocco
         // nessuno (meglio un comando in più che il bot muto per tutti).
-        if (isGroup && db[from]?._modoadmin && !isOwner) {
-            try {
-                const { isSenderAdmin: sa } = await getGroupAdminState(sock, from, [sender, senderAlt]);
-                if (!sa) return;
-            } catch (_) {}
+        // In più: anche admin/owner non possono usare spara e bestemmiometro.
+        const _cmdCheck = (body || '').slice(1).trim().split(/\s+/)[0]?.toLowerCase() || '';
+        if (isGroup && db[from]?._modoadmin) {
+            if (_cmdCheck === 'spara' || _cmdCheck === 'bestemmiometro') return;
+            if (!isOwner) {
+                try {
+                    const { isSenderAdmin: sa } = await getGroupAdminState(sock, from, [sender, senderAlt]);
+                    if (!sa) return;
+                } catch (_) {}
+            }
         }
 
         const args      = body.slice(1).trim().split(/\s+/);
