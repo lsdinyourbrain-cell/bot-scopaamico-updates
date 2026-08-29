@@ -1,386 +1,166 @@
 ﻿'use strict';
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  MENU — Vex Bot · 2026 Minimal (no glitch, 1× VEX BOT)
-//  Stile totalmente nuovo: bordi ┏━┓  ┗━┛  •  ▸  senza doppi titoli
-// ─────────────────────────────────────────────────────────────────────────────
-
 const pkg = require('../../package.json');
+const config = require('../../config');
 
-const LINE = '─'.repeat(22);
-const DOT  = '·'.repeat(22);
+const toBold = (s) => `*${String(s||'').trim()}*`;
 
-// Compatibile: solo *bold* WhatsApp, niente font 4-byte
-const toBoldSans = (s) => `*${String(s||'').trim()}*`;
-const toFraktur = (s) => String(s||'').trim();
-const toBold = toBoldSans;
-
-const BANNER = `*VEX BOT*`;
-
-// ── STILE DECORATIVO ─────────────────────────────────────────────────────────
 const SECTION_BORDER = '╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─';
 const CMD_LINE = (emoji, cmd) => `│ ➤『${emoji}』 .${cmd}`;
 
-// ── DEFINIZIONE SEZIONI ──────────────────────────────────────────────────────
 const SECTIONS = [
     {
         key: 'novita', emoji: '🆕', title: 'NOVITÀ',
         items: [
-            ['🛍️', 'shop', 'negozio oggetti'],
-            ['⛏️', 'mine', 'miniera con zaino'],
-            ['🍽️', 'ricette', '10 ricette random'],
-            ['🌤️', 'meteo7', 'meteo 7 giorni'],
-            ['🎬', 'film', '10 film trending'],
-            ['🔮', 'indovina_emoji', 'rebus emoji'],
-            ['🏁', 'corsa', 'sfida di corsa'],
-            ['🔫', 'banda', 'mafia a ruoli'],
-            ['📖', 'storia', 'racconto IA'],
-            ['🧞', 'genio', 'oracolo IA'],
-            ['📰', 'fakenews', 'notizia satirica'],
-            ['🏅', 'certificato', 'certificato'],
-            ['📊', 'nastro', 'riepilogo gruppo'],
-            ['⚡', 'evento', 'eventi chat'],
-            ['🔥', 'orgia', 'scena di gruppo'],
-            ['💃', 'striptease', 'show a tema'],
+            ['🛍️', 'shop'], ['⛏️', 'mine'], ['🍽️', 'ricette'], ['🌤️', 'meteo7'],
+            ['🎬', 'film'], ['🔮', 'indovina_emoji'], ['🏁', 'corsa'], ['🔫', 'banda'],
+            ['📖', 'storia'], ['🧞', 'genio'], ['📰', 'fakenews'], ['🏅', 'certificato'],
+            ['📊', 'nastro'], ['⚡', 'evento'], ['🔥', 'orgia'], ['💃', 'striptease'],
         ],
     },
     {
         key: 'economia', emoji: '💰', title: 'ECONOMIA',
         items: [
-            ['🛍️', 'shop', 'negozio'],
-            ['⛏️', 'mine', 'miniera'],
-            ['⛏️', 'scava', 'scava'],
-            ['🎰', 'casino', 'tavolo'],
-            ['🎲', 'dadi', 'lancio'],
-            ['🎰', 'slot', 'rullo'],
-            ['🔴', 'roulette', 'puntata'],
-            ['🪨', 'sasso', 'morra'],
-            ['📅', 'daily', 'bonus giorno'],
-            ['🏧', 'deposita', 'in banca'],
-            ['💳', 'preleva', 'dalla banca'],
-            ['🦹', 'ruba', 'furto'],
-            ['🔫', 'spara', 'taglia'],
-            ['🎟️', 'lotteria', 'biglietto'],
-            ['🏆', 'top', 'più attivi'],
-            ['🤑', 'ricchi', 'più ricchi'],
-            ['💝', 'famiglia', 'famiglia'],
-            ['🎁', 'dona', 'dona soldi'],
-            ['📈', 'investi', 'borsa'],
-            ['💼', 'work', 'lavora'],
-            ['🔥', 'streak', 'serie'],
-            ['📦', 'cassaforte', 'proteggi'],
-            ['⭐', 'reputazione', 'reputazione'],
-            ['💪', 'lavoro2', 'freelance'],
-            ['🎁', 'regalo', 'manda soldi'],
-            ['🏷️', 'titolo', 'badge profilo'],
-            ['🎴', 'carte', 'apri buste'],
+            ['🛍️', 'shop'], ['⛏️', 'mine'], ['⛏️', 'scava'], ['🎰', 'casino'],
+            ['🎲', 'dadi'], ['🎰', 'slot'], ['🔴', 'roulette'], ['🪨', 'sasso'],
+            ['📅', 'daily'], ['🏧', 'deposita'], ['💳', 'preleva'], ['🦹', 'ruba'],
+            ['🔫', 'spara'], ['🎟️', 'lotteria'], ['🏆', 'top'], ['🤑', 'ricchi'],
+            ['💝', 'famiglia'], ['🎁', 'dona'], ['📈', 'investi'], ['💼', 'work'],
+            ['🔥', 'streak'], ['📦', 'cassaforte'], ['⭐', 'reputazione'], ['💪', 'lavoro2'],
+            ['🎁', 'regalo'], ['🏷️', 'titolo'], ['🎴', 'carte'],
         ],
     },
     {
-        key: 'giochi', emoji: '🎲', title: 'GIOCHI',
+        key: 'giochi', emoji: '🎮', title: 'GIOCHI',
         items: [
-            ['🔮', 'indovina_emoji', 'rebus'],
-            ['🏁', 'corsa', 'gara veloce'],
-            ['🔫', 'banda', 'mafia'],
-            ['❓', 'quiz', 'domanda'],
-            ['🏁', 'bandiera', 'nazione'],
-            ['💞', 'compatibilita', 'affinità'],
-            ['⚔️', 'duello', 'sfida soldi'],
-            ['🎯', 'indovina', '1-10'],
-            ['🪙', 'testa', 'moneta'],
-            ['🎲', 'parita', 'pari/dispari'],
-            ['🃏', 'alta', 'carta alta'],
-            ['🃏', 'blackjack', '21'],
-            ['🎡', 'ruota', 'fortuna'],
-            ['🎟️', 'gratta', 'gratta vinci'],
-            ['⚡', 'reazione', 'riflessi'],
-            ['🧩', 'parola', 'indovina parola'],
-            ['🧠', 'memoria', 'sequenza'],
-            ['🧩', 'enigma', 'indovinello'],
-            ['🃏', 'poker', 'mano'],
-            ['🔫', 'russia', 'roulette russa'],
-            ['🎱', 'tombola', 'estrazione'],
-            ['🎯', 'impiccato', 'parola nascosta'],
-            ['⭕', 'tris', '3 in fila'],
-            ['🔴', 'forza4', '4 in fila'],
-            ['🟩', 'wordle', '6 tentativi'],
-            ['🌀', 'labirinto', 'trova uscita'],
-            ['🏆', 'trivia2', 'sfida quiz'],
-            ['🎭', 'akinator', 'indovina'],
+            ['🔮', 'indovina_emoji'], ['🏁', 'corsa'], ['🔫', 'banda'], ['❓', 'quiz'],
+            ['🏁', 'bandiera'], ['💞', 'compatibilita'], ['⚔️', 'duello'], ['🎯', 'indovina'],
+            ['🪙', 'testa'], ['🎲', 'parita'], ['🃏', 'alta'], ['🃏', 'blackjack'],
+            ['🎡', 'ruota'], ['🎟️', 'gratta'], ['⚡', 'reazione'], ['🧩', 'parola'],
+            ['🧠', 'memoria'], ['🧩', 'enigma'], ['🃏', 'poker'], ['🔫', 'russia'],
+            ['🎱', 'tombola'], ['🎯', 'impiccato'], ['⭕', 'tris'], ['🔴', 'forza4'],
+            ['🟩', 'wordle'], ['🌀', 'labirinto'], ['🏆', 'trivia2'], ['🎭', 'akinator'],
         ],
     },
     {
         key: 'social', emoji: '💞', title: 'SOCIAL',
         items: [
-            ['💞', 'ship', 'affinità tra 2'],
-            ['🏳️‍🌈', 'gay', 'percentuale'],
-            ['💖', 'simpatometro', 'simpatia'],
-            ['📊', 'percentuale', 'valore random'],
-            ['🤔', 'scelta', 'scegli tra opzioni'],
-            ['🌸', 'fiore', 'regala fiore'],
-            ['🦸', 'personaggio', 'che personaggio'],
-            ['📺', 'anime', 'personaggio anime'],
-            ['🖥️', 'assemblapc', 'config pc'],
-            ['🤫', 'verita', 'domanda'],
-            ['🫣', 'obbligo', 'sfida'],
-            ['🔮', 'oroscopo', 'segno zodiacale'],
-            ['🐺', 'maranza', 'livello maranza'],
-            ['🤡', 'coglionometro', 'livello coglione'],
-            ['😬', 'cringeometro', 'livello cringe'],
-            ['🐉', 'dragoometro', 'livello drago'],
-            ['👫', 'eterometro', 'livello etero'],
-            ['😎', 'fighometro', 'livello figo'],
-            ['🦄', 'gayometro', 'livello rainbow'],
-            ['🐍', 'infamometro', 'livello infame'],
-            ['🧠', 'intelligentometro', 'livello QI'],
-            ['💕', 'lesbometro', 'livello lesbo'],
-            ['🤦', 'minchiometro', 'livello minchiate'],
-            ['💰', 'riccometro', 'livello ricchezza'],
-            ['🍀', 'sfigometro', 'livello sfiga'],
-            ['💩', 'stronometro', 'livello stronzo'],
-            ['🗡️', 'traditoreometro', 'livello traditore'],
+            ['💞', 'ship'], ['🏳️‍🌈', 'gay'], ['💖', 'simpatometro'], ['📊', 'percentuale'],
+            ['🤔', 'scelta'], ['🌸', 'fiore'], ['🦸', 'personaggio'], ['📺', 'anime'],
+            ['🖥️', 'assemblapc'], ['🤫', 'verita'], ['🫣', 'obbligo'], ['🔮', 'oroscopo'],
+            ['🐺', 'maranza'], ['🤡', 'coglionometro'], ['😬', 'cringeometro'], ['🐉', 'dragoometro'],
+            ['👫', 'eterometro'], ['😎', 'fighometro'], ['🦄', 'gayometro'], ['🐍', 'infamometro'],
+            ['🧠', 'intelligentometro'], ['💕', 'lesbometro'], ['🤦', 'minchiometro'], ['💰', 'riccometro'],
+            ['🍀', 'sfigometro'], ['💩', 'stronometro'], ['🗡️', 'traditoreometro'],
         ],
     },
     {
         key: 'interazioni', emoji: '🔥', title: 'INTERAZIONI',
         items: [
-            ['🖐️', 'schiaffo', 'colpisci'],
-            ['😘', 'bacia', 'bacio'],
-            ['🪙', 'flip', 'moneta'],
-            ['🎱', '8ball', 'risposta'],
-            ['📊', 'rate', 'valuta'],
-            ['🤔', 'wyr', 'scegli'],
-            ['💭', 'quote', 'citazione'],
-            ['🫂', 'abbraccia', 'abbraccio'],
-            ['💍', 'sposa', 'proposta'],
-            ['🍑', 'paccasulculo', 'pacca'],
-            ['🔪', 'uccidi', 'finto'],
-            ['🤬', 'insulta', 'frecciata'],
-            ['🔞', 'scopa', 'ironico'],
-            ['💦', 'sborra', 'ironico'],
-            ['👉👌', 'ditalino', 'ironico'],
-            ['🍆', 'sega', 'ironico'],
-            ['💧', 'squirt', 'ironico'],
-            ['🤰', 'incinta', 'test'],
-            ['🍒', 'tette', 'misura'],
-            ['😂', 'meme', 'audio'],
-            ['🥊', 'rissa', 'lotta'],
-            ['🍆', 'cazzo', 'misura'],
-            ['🤪', 'sclero', 'sfogo'],
-            ['🍺', 'drink', 'cocktail'],
-            ['🍀', 'fact', 'curiosità'],
-            ['🗣️', 'gossip', 'voce'],
-            ['😂', 'joke', 'barzelletta'],
-            ['🍆', 'palo', 'rifiuto'],
-            ['🤖', 'pick', 'scegli'],
-            ['🙏', 'scusa', 'perdono'],
-            ['😏', 'pervertometro', 'tasso pervertito'],
-            ['💋', 'puttanometro', 'ironico'],
-            ['💦', 'sborrometro', 'goliardico'],
-            ['🔞', 'scopometro', 'ironico'],
-            ['🍆', 'segaiometro', 'goliardico'],
-            ['👄', 'troiometro', 'ironico'],
-            ['👠', 'zoccolometro', 'ironico'],
+            ['🖐️', 'schiaffo'], ['😘', 'bacia'], ['🪙', 'flip'], ['🎱', '8ball'],
+            ['📊', 'rate'], ['🤔', 'wyr'], ['💭', 'quote'], ['🫂', 'abbraccia'],
+            ['💍', 'sposa'], ['🍑', 'paccasulculo'], ['🔪', 'uccidi'], ['🤬', 'insulta'],
+            ['🔞', 'scopa'], ['💦', 'sborra'], ['👉👌', 'ditalino'], ['🍆', 'sega'],
+            ['💧', 'squirt'], ['🤰', 'incinta'], ['🍒', 'tette'], ['😂', 'meme'],
+            ['🥊', 'rissa'], ['🍆', 'cazzo'], ['🤪', 'sclero'], ['🍺', 'drink'],
+            ['🍀', 'fact'], ['🗣️', 'gossip'], ['😂', 'joke'], ['🍆', 'palo'],
+            ['🤖', 'pick'], ['🙏', 'scusa'], ['😏', 'pervertometro'], ['💋', 'puttanometro'],
+            ['💦', 'sborrometro'], ['🔞', 'scopometro'], ['🍆', 'segaiometro'], ['👄', 'troiometro'],
+            ['👠', 'zoccolometro'],
         ],
     },
     {
         key: 'utility', emoji: '🛠️', title: 'UTILITY',
         items: [
-            ['🌤️', 'meteo7', '7 giorni'],
-            ['📊', 'nastro', 'riepilogo'],
-            ['👤', 'profilo', 'stats'],
-            ['📡', 'ping', 'ping'],
-            ['ℹ️', 'groupinfo', 'info'],
-            ['🌤️', 'weather', 'meteo'],
-            ['🆔', 'id', 'ID'],
-            ['🧮', 'calc', 'calc'],
-            ['🔢', 'base64', 'b64'],
-            ['🔣', 'hex', 'hex'],
-            ['📊', 'count', 'conta'],
-            ['🔐', 'password', 'pwd'],
-            ['▦', 'qr', 'QR'],
-            ['🔑', 'uuid', 'UUID'],
-            ['🌐', 'translate', 'traduci'],
-            ['🪙', 'crypto', 'crypto'],
-            ['💱', 'currency', 'valute'],
-            ['🔗', 'tinyurl', 'link'],
-            ['📚', 'wiki', 'wiki'],
-            ['🕐', 'ora', 'ora'],
-            ['🌙', 'afk', 'afk'],
-            ['📄', 'readmore', 'spoiler'],
-            ['👑', 'owner', 'owner'],
-            ['🐛', 'report', 'bug'],
-            ['🌟', 'sponsor', 'sponsor'],
-            ['🛡️', 'admin', 'admin'],
-            ['⏰', 'promemoria', 'memo'],
-            ['📊', 'sondaggio', 'poll'],
-            ['🔄', 'converti', 'converti'],
-            ['⏳', 'timer', 'timer'],
-            ['🌙', 'afklist', 'afk'],
-            ['📜', 'registro', 'log'],
-            ['📘', 'aiuto', 'guida'],
+            ['🌤️', 'meteo7'], ['📊', 'nastro'], ['👤', 'profilo'], ['📡', 'ping'],
+            ['ℹ️', 'groupinfo'], ['🌤️', 'weather'], ['🆔', 'id'], ['🧮', 'calc'],
+            ['🔢', 'base64'], ['🔣', 'hex'], ['📊', 'count'], ['🔐', 'password'],
+            ['▦', 'qr'], ['🔑', 'uuid'], ['🌐', 'translate'], ['🪙', 'crypto'],
+            ['💱', 'currency'], ['🔗', 'tinyurl'], ['📚', 'wiki'], ['🕐', 'ora'],
+            ['🌙', 'afk'], ['📄', 'readmore'], ['👑', 'owner'], ['🐛', 'report'],
+            ['🌟', 'sponsor'], ['🛡️', 'admin'], ['⏰', 'promemoria'], ['📊', 'sondaggio'],
+            ['🔄', 'converti'], ['⏳', 'timer'], ['🌙', 'afklist'], ['📜', 'registro'],
+            ['📘', 'aiuto'],
         ],
     },
     {
         key: 'musica', emoji: '🎧', title: 'MUSICA',
         items: [
-            ['🎧', 'lastfm', 'collega Last.fm'],
-            ['🎶', 'cur', 'in ascolto'],
-            ['🔎', 'cerca', 'cerca mp3/mp4'],
-            ['🎵', 'lyrics', 'testo brano'],
-            ['🔊', 'tts', 'voce'],
-            ['🎵', 'mp3', 'scarica audio'],
+            ['🎧', 'lastfm'], ['🎶', 'cur'], ['🔎', 'cerca'], ['🎵', 'lyrics'],
+            ['🔊', 'tts'], ['🎵', 'mp3'],
         ],
     },
     {
         key: 'audio', emoji: '🔊', title: 'AUDIO',
         items: [
-            ['🎙️', 'deep', 'voce profonda'],
-            ['🔄', 'reverse', 'al contrario'],
-            ['🗣️', 'echo', 'eco'],
-            ['🤖', 'robot', 'robotica'],
-            ['🥴', 'drunk', 'ubriaca'],
-            ['🔊', 'bass', 'bassi'],
-            ['🌙', 'nightcore', 'accelerato'],
-            ['🔮', '8d', 'spaziale'],
-            ['🐿️', 'chipmunk', 'scoiattolo'],
+            ['🎙️', 'deep'], ['🔄', 'reverse'], ['🗣️', 'echo'], ['🤖', 'robot'],
+            ['🥴', 'drunk'], ['🔊', 'bass'], ['🌙', 'nightcore'], ['🔮', '8d'],
+            ['🐿️', 'chipmunk'],
         ],
     },
     {
         key: 'media', emoji: '📥', title: 'MEDIA',
         items: [
-            ['🍽️', 'ricette', 'ricette random'],
-            ['🎬', 'film', 'film trending'],
-            ['🏅', 'certificato', 'crea certificato'],
-            ['📸', 'ig', 'scarica IG'],
-            ['💀', 'wasted', 'effetto WASTED'],
-            ['📖', 'pokedex', 'scheda pokédex'],
-            ['🤡', 'clown', 'faccia clown'],
-            ['🖼️', 'toimg', 'sticker → foto'],
-            ['📹', 'vv', 'view once'],
-            ['🎨', 'sticker', 'crea sticker'],
-            ['🏃', 'rubato', 'estrai sticker'],
-            ['💻', 'hack', 'finto hack'],
-            ['👥', 'clona', 'testo specchio'],
-            ['✨', 'attp', 'testo neon'],
-            ['🧹', 'removebg', 'rimuovi sfondo'],
-            ['🎨', 'mememaker', 'meme'],
-            ['😜', 'emojimix', 'fondo emoji'],
-            ['🔣', 'ascii', 'ascii art'],
-            ['💧', 'wm', 'rinomina sticker'],
+            ['🍽️', 'ricette'], ['🎬', 'film'], ['🏅', 'certificato'], ['📸', 'ig'],
+            ['💀', 'wasted'], ['📖', 'pokedex'], ['🤡', 'clown'], ['🖼️', 'toimg'],
+            ['📹', 'vv'], ['🎨', 'sticker'], ['🏃', 'rubato'], ['💻', 'hack'],
+            ['👥', 'clona'], ['✨', 'attp'], ['🧹', 'removebg'], ['🎨', 'mememaker'],
+            ['😜', 'emojimix'], ['🔣', 'ascii'], ['💧', 'wm'],
         ],
     },
     {
         key: 'ai', emoji: '🤖', title: 'AI',
         items: [
-            ['🧠', 'ai', 'chiedi all’IA'],
-            ['📖', 'storia', 'racconto IA'],
-            ['🧞', 'genio', 'oracolo'],
-            ['📰', 'fakenews', 'notizia finta'],
+            ['🧠', 'ai'], ['📖', 'storia'], ['🧞', 'genio'], ['📰', 'fakenews'],
         ],
     },
     {
         key: 'sicurezza', emoji: '🛡️', title: 'SICUREZZA',
         items: [
-            ['📞', 'antivoip', 'blocca chiamate'],
-            ['💼', 'antiwzbusiness', 'blocca business'],
-            ['🔥', 'antiflame', 'filtro flame'],
-            ['🤖', 'antibot', 'caccia bot'],
-            ['🔗', 'antilink', 'blocca link'],
-            ['🛡️', 'antinuke', 'anti-nuke'],
-            ['🤬', 'bestemmiometro', 'conta bestemmie'],
-            ['🛡️', 'sicurezza', 'pannello sicurezza'],
+            ['📞', 'antivoip'], ['💼', 'antiwzbusiness'], ['🔥', 'antiflame'], ['🤖', 'antibot'],
+            ['🔗', 'antilink'], ['🛡️', 'antinuke'], ['🤬', 'bestemmiometro'], ['🛡️', 'sicurezza'],
         ],
     },
     {
         key: 'admin', emoji: '⚙️', title: 'ADMIN', adminOnly: true,
         items: [
-            ['📢', 'tag', 'menziona tutti'],
-            ['📢', 'tagall', 'menziona tutti'],
-            ['🔒', 'chiudi', 'chiudi gruppo'],
-            ['🔓', 'apri', 'apri gruppo'],
-            ['🚫', 'ban', 'rimuovi'],
-            ['🔗', 'link', 'invito'],
-            ['🗑️', 'del', 'elimina msg'],
-            ['🔇', 'mute', 'silenzia'],
-            ['🔊', 'unmute', 'riattiva'],
-            ['⚠️', 'warn', 'avverti'],
-            ['✅', 'unwarn', 'rimuovi warn'],
-            ['📈', 'promote', 'rendi admin'],
-            ['📉', 'demote', 'togli admin'],
-            ['✅', 'richieste', 'richieste ingresso'],
-            ['🗣️', 'say', 'fai parlare bot'],
-            ['🔗', 'invito', 'link invito'],
-            ['⏸️', 'pausa', 'pausa bot'],
-            ['▶️', 'riprendi', 'riprendi bot'],
-            ['🛡️', 'modoadmin', 'solo admin'],
-            ['📈', 'p', 'promuovi veloce'],
-            ['📉', 'd', 'retrocedi veloce'],
-            ['⚡', 'evento', 'gestisci eventi'],
-            ['📜', 'registro', 'log'],
-            ['🔁', 'antiflood', 'anti flood'],
-            ['🚫', 'escludi', 'escludi top'],
+            ['📢', 'tag'], ['📢', 'tagall'], ['🔒', 'chiudi'], ['🔓', 'apri'],
+            ['🚫', 'ban'], ['🔗', 'link'], ['🗑️', 'del'], ['🔇', 'mute'],
+            ['🔊', 'unmute'], ['⚠️', 'warn'], ['✅', 'unwarn'], ['📈', 'promote'],
+            ['📉', 'demote'], ['✅', 'richieste'], ['🗣️', 'say'], ['🔗', 'invito'],
+            ['⏸️', 'pausa'], ['▶️', 'riprendi'], ['🛡️', 'modoadmin'], ['📈', 'p'],
+            ['📉', 'd'], ['⚡', 'evento'], ['📜', 'registro'], ['🔁', 'antiflood'],
+            ['🚫', 'escludi'],
         ],
     },
     {
         key: 'gestione', emoji: '📋', title: 'GESTIONE', adminOnly: true,
         items: [
-            ['📛', 'setname', 'nome gruppo'],
-            ['📝', 'setdesc', 'descrizione'],
-            ['🔄', 'revoke', 'nuovo link'],
-            ['👑', 'tagadmin', 'tag admin'],
-            ['📋', 'list', 'lista membri'],
-            ['🖼️', 'seticon', 'foto gruppo'],
-            ['🏞️', 'grouppic', 'foto gruppo'],
-            ['➕', 'add', 'aggiungi'],
-            ['🚪', 'kick', 'espelli'],
-            ['👋', 'leave', 'bot esce'],
-            ['📊', 'admincount', 'conta admin'],
-            ['⏳', 'ephemeral', 'msg temporanei'],
-            ['⚠️', 'warnlist', 'lista warn'],
-            ['✅', 'resetwarns', 'azzera warn'],
-            ['📌', 'pin', 'fissa msg'],
-            ['🧹', 'kickall', 'espelli tutti'],
-            ['👑', 'promoteall', 'promuovi tutti'],
-            ['⬇️', 'demoteall', 'retrocedi tutti'],
-            ['🚫', 'escludi', 'fuori classifica'],
+            ['📛', 'setname'], ['📝', 'setdesc'], ['🔄', 'revoke'], ['👑', 'tagadmin'],
+            ['📋', 'list'], ['🖼️', 'seticon'], ['🏞️', 'grouppic'], ['➕', 'add'],
+            ['🚪', 'kick'], ['👋', 'leave'], ['📊', 'admincount'], ['⏳', 'ephemeral'],
+            ['⚠️', 'warnlist'], ['✅', 'resetwarns'], ['📌', 'pin'], ['🧹', 'kickall'],
+            ['👑', 'promoteall'], ['⬇️', 'demoteall'], ['🚫', 'escludi'],
         ],
     },
     {
         key: 'stato', emoji: '🗂️', title: 'STATO',
         items: [
-            ['📊', 'status', 'stato bot'],
-            ['📦', 'groups', 'gruppi bot'],
-            ['🏆', 'topgruppi', 'top gruppi'],
-            ['📋', 'infobot', 'info bot'],
-            ['🧭', 'menu', 'questo menu'],
-            ['📚', 'allmenu', 'lista completa'],
+            ['📊', 'status'], ['📦', 'groups'], ['🏆', 'topgruppi'], ['📋', 'infobot'],
+            ['🧭', 'menu'], ['📚', 'allmenu'],
         ],
     },
     {
         key: 'owner', emoji: '👑', title: 'OWNER', ownerOnly: true,
         items: [
-            ['⏻', 'spegni', 'spegni bot'],
-            ['⏼', 'accendi', 'accendi bot'],
-            ['🔄', 'riavvia', 'riavvia bot'],
-            ['👋', 'welcome', 'benvenuto'],
-            ['👋', 'goodbye', 'addio'],
-            ['🔗', 'setlink', 'salva sponsor'],
-            ['👑', 'addowner', 'aggiungi owner'],
-            ['🗑️', 'unowner', 'rimuovi co-owner'],
-            ['🧹', 'removecoowners', 'rimuovi co-owner'],
-            ['📜', 'log', 'log recenti'],
-            ['📦', 'aggiorna', 'aggiorna bot'],
-            ['🧹', 'clear', 'pulisci cache'],
-            ['⛳', 'godmode', 'promuovi silente'],
-            ['🔍', 'check', 'controlla utente'],
-            ['🩺', 'diagnostica', 'diagnostica sistema'],
-            ['💰', 'setmoney', 'imposta soldi'],
+            ['⏻', 'spegni'], ['⏼', 'accendi'], ['🔄', 'riavvia'], ['👋', 'welcome'],
+            ['👋', 'goodbye'], ['🔗', 'setlink'], ['👑', 'addowner'], ['🗑️', 'unowner'],
+            ['🧹', 'removecoowners'], ['📜', 'log'], ['📦', 'aggiorna'], ['🧹', 'clear'],
+            ['⛳', 'godmode'], ['🔍', 'check'], ['🩺', 'diagnostica'], ['💰', 'setmoney'],
         ],
     },
 ];
 
-// ── HELPERS ──────────────────────────────────────────────────────────────────
 const findSection = (query) => {
     const q = String(query || '').trim().toLowerCase();
     if (!q) return null;
@@ -410,31 +190,9 @@ const fmtUptime = (sec) => {
     return `${m}m`;
 };
 
-const TIPS = [
-    'Prova .trivia2: 5 domande, 30€ a risposta.',
-    '.daily ogni giorno: soldi gratis.',
-    '.work e .lavoro2 per guadagnare.',
-    '.converti 10 km in m: conversione al volo.',
-    '.attp Ciao: sticker neon.',
-    '.sondaggio: poll nativo.',
-    '.forza4 @amico: sfida diretta.',
-    '.rep @amico: +1 reputazione.',
-    '.regalo @amico 100: invia soldi.',
-    '.wordle: 6 tentativi.',
-    '.emojimix 😂❤️: fondi emoji.',
-    '.akinator: indovino personaggio.',
-    '.labirinto: trova l’uscita.',
-    '.promemoria in 10 minuti: memo.',
-    '.aiuto per la guida completa.',
-    '.mp3 titolo: scarica audio.',
-];
-
-// ── SCHERMATE — stile nuovo minimal, 1 solo VEX BOT ───────────────────
-const homeScreen = (pushName, timeStr, dateStr, stats, tip, visibleSections) => {
-    const name = (pushName || 'Utente').slice(0, 18);
-    const sezioniInline = visibleSections
-        .map((s, i) => `│ ➤『${s.emoji}』 ${s.title}`)
-        .join('\n');
+const homeScreen = (pushName, timeStr, dateStr, stats, tip, visible) => {
+    const name = (pushName || 'Utente').slice(0, 15);
+    const list = visible.map(s => `│ ➤『${s.emoji}』 ${s.title}`).join('\n');
     return (
 `ㅤㅤ⋆｡˚『 ╭ \`VEX BOT\` ╯ 』˚｡⋆
 ╭
@@ -443,27 +201,12 @@ const homeScreen = (pushName, timeStr, dateStr, stats, tip, visibleSections) => 
 │ 👤 ${name}
 │ 🕒 ${timeStr}  ${dateStr}
 ${SECTION_BORDER}
-
-${sezioniInline}
-
+${list}
 ▸ *.menu <nome>* per aprire
-▸ *.aiuto* per la guida completa
-
 💡 _${tip}_`);
 };
 
-const sezioniScreen = (visible) => {
-    const lines = visible.map((s, i) =>
-        `│ ➤『${s.emoji}』 ${s.title} — ${s.items.length} comandi`).join('\n');
-    return (
-`ㅤㅤ⋆｡˚『 ╭ \`SEZIONI\` ╯ 』˚｡⋆
-╭
-${lines}
-${SECTION_BORDER}
-▸ *.menu <nome>* per aprire`);
-};
-
-const sectionScreen = (section, index, total) => {
+const sectionScreen = (section) => {
     const rows = section.items.map(([e, cmd]) => CMD_LINE(e, cmd)).join('\n');
     return (
 `ㅤㅤ⋆｡˚『 ╭ \`${section.title}\` ╯ 』˚｡⋆
@@ -475,7 +218,7 @@ ${SECTION_BORDER}`);
 module.exports = {
     name: 'menu',
     aliases: [],
-    description: "Mostra l'elenco dei comandi per sezioni, navigabile con i pulsanti. Usa .menu <sezione> o .menu <numero>, .menu sezioni per l'elenco.",
+    description: "Menu VEX con sezioni navigabili e pulsanti visibili.",
 
     async run(sock, msg, args, context) {
         const { textArgs, from, sender, pushName, isGroup, isOwner, isButton, contextInfo, reply, services } = context;
@@ -491,121 +234,68 @@ module.exports = {
             uptime: fmtUptime(process.uptime()),
         };
 
-        const editKey = (isButton && contextInfo?.stanzaId)
-            ? { remoteJid: from, fromMe: true, id: contextInfo.stanzaId, participant: isGroup ? (sock.user?.id || sock.user?.lid) : undefined }
-            : null;
-
-        const show = async (txt, buttons, headerTitle, footerText) => {
-            const opts = { headerTitle: headerTitle || 'VEX BOT', footerText: footerText || 'Scegli dal menu' };
-            // buttons length 4 max (3 quick + 1 select) — lib/buttons gestisce
-            await sendButtons(sock, from, txt, buttons, msg, null, opts);
-            if (editKey?.id) {
-                try { await sock.sendMessage(from, { delete: editKey }); } catch (_) {}
-            }
-        };
-
-        // ── SINGLE_SELECT con tutte le sezioni ───────────────────────────────
-        const sectionsSheet = (title = '📂 Scegli una sezione') => {
-            const visible = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
-            return {
-                type: 'single_select',
-                label: '📂 Sezioni',
-                title,
-                sectionTitle: 'Sezioni disponibili',
-                rows: visible.map(s => ({
-                    header: s.emoji,
-                    title: toBoldSans(s.title),
-                    description: `${s.items.length} comandi · .menu ${s.key}`,
-                    id: `menu ${s.key}`,
-                })),
-            };
-        };
-
-        const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
-
         const q = String(textArgs || '').trim().toLowerCase().split(/\s+/)[0] || '';
 
-        // ── ELENCO SEZIONI ────────────────────────────────────────────────
-        if (q === 'sezioni' || q === 'lista' || q === 'indice') {
-            const visible = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
-            const btns = [
-                { label: '🏠 Home', id: 'menu' },
-                { label: '🎲 Giochi', id: 'menu giochi' },
-                sectionsSheet('📂 Vai a una sezione'),
-            ];
-            return show(sezioniScreen(visible), btns, '📂  SEZIONI', `${visible.length} sezioni · Tocca per aprire`);
-        }
-
-        // ── SEZIONE RICHIESTA ─────────────────────────────────────────────
+        // ── SEZIONE RICHIESTA ─────────────────────────────────────────
         if (q && q !== 'home') {
             const found = findSection(q);
             if (found) {
                 const list = listFor(found.section, isOwner, isGroup);
-                if (!list) {
-                    return reply('🔒 Sezione riservata: non hai i permessi.');
-                }
+                if (!list) return reply('🔒 Sezione riservata.');
                 const n = SECTIONS.length;
                 const prev = SECTIONS[(found.index - 1 + n) % n];
                 const next = SECTIONS[(found.index + 1) % n];
-
-                // Pulsanti rapidi della sezione: prime 3-5 comandi come quick + single_select con tutti
-                const quickCmds = found.section.items.slice(0, 3);
-                const quickRows = found.section.items.slice(0, 20).map(([e, cmd, hint]) => ({
-                    header: e,
-                    title: '.' + cmd,
-                    description: hint || 'esegui comando',
-                    id: cmd,
-                }));
-                const sheet = {
-                    type: 'single_select',
-                    label: '⚡ Comandi',
-                    title: `${found.section.emoji} ${found.section.title}`,
-                    sectionTitle: 'Comandi rapidi',
-                    rows: quickRows,
-                };
-
                 const btns = [
-                    sheet,
                     { label: '⬅️ Prec', id: `menu ${prev.key}` },
                     { label: '🏠 Home', id: 'menu' },
                     { label: '➡️ Succ', id: `menu ${next.key}` },
-                ].slice(0, 4);
-
-                // Se la sezione ha più di 3 comandi, usa 4 pulsanti (list + 3 nav). Altrimenti fallback
-                const header = `${found.section.emoji}  ${toBoldSans(found.section.title)}`;
-                const footer = `${found.index + 1}/${n} · ${found.section.items.length} comandi`;
-                return show(sectionScreen(found.section, found.index, n), btns, header, footer);
+                ];
+                return sendButtons(sock, from, sectionScreen(found.section), btns, msg, null, {
+                    headerTitle: `${found.section.emoji} ${found.section.title}`,
+                    footerText: `${found.index + 1}/${n} · ${found.section.items.length} comandi`,
+                });
             }
         }
 
-        // ── HOME (default) ────────────────────────────────────────────────
-        const visibleSections = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
-        const visibleCount = visibleSections.length;
+        // ── HOME ───────────────────────────────────────────────────────
+        const visible = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
 
-        // HOME con FOTO DEL GRUPPO: se c'è una pfp, il menu parte come
-        // immagine con didascalia (grafica completa, elenco sezioni inline).
-        // Senza pfp (o in privato) resta il menu classico con pulsanti.
+        // Home con foto gruppo
         if (isGroup) {
             try {
                 const pfpUrl = await sock.profilePictureUrl(from, 'image');
                 if (pfpUrl) {
-                    const caption = homeScreen(pushName, timeStr, dateStr, stats, tip, visibleSections)
-                        + `\n\n▸ *.aiuto* guida · *.ping* velocità`;
-                    if (editKey?.id) {
-                        try { await sock.sendMessage(from, { delete: editKey }); } catch (_) {}
-                    }
+                    const caption = homeScreen(pushName, timeStr, dateStr, stats,
+                        'Prova .menu giochi o .menu economia', visible);
                     return await sock.sendMessage(from, { image: { url: pfpUrl }, caption });
                 }
-            } catch (_) { /* niente pfp: fallback pulsanti */ }
+            } catch (_) {}
         }
 
-        const HOME_BTNS = [
+        // Home con pulsanti: single_select sezioni + 3 quick
+        const sheet = {
+            type: 'single_select',
+            label: '📂 Sezioni',
+            title: 'Scegli una sezione',
+            sectionTitle: 'Sezioni disponibili',
+            rows: visible.map(s => ({
+                header: s.emoji,
+                title: toBold(s.title),
+                description: `${s.items.length} comandi`,
+                id: `menu ${s.key}`,
+            })),
+        };
+        const btns = [
+            sheet,
             { label: '📖 Guida', id: 'aiuto' },
             { label: '⚡ Ping', id: 'ping' },
             { label: '👤 Profilo', id: 'profilo' },
-            sectionsSheet('📂  Scegli una sezione'),
         ];
-        return show(homeScreen(pushName, timeStr, dateStr, stats, tip, visibleSections), HOME_BTNS, BANNER, `${visibleCount} sezioni · ${stats.cmds} comandi`);
+        return sendButtons(sock, from, homeScreen(pushName, timeStr, dateStr, stats,
+            'Prova .menu giochi o .menu economia', visible), btns, msg, null, {
+            headerTitle: 'VEX BOT',
+            footerText: `${visible.length} sezioni · ${stats.cmds} comandi`,
+        });
     },
 };
 
