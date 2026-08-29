@@ -43,6 +43,22 @@ module.exports = {
             return reply(`Testo attuale: ${cur}\nUsa .menu set <testo>`);
         }
 
+        // ── LISTA SEZIONI (pulsanti normali) ──────────────────────────────
+        if (q === 'sezioni') {
+            const txt =
+`ㅤㅤ⋆｡˚『 ╭ \`SEZIONI\` ╯ 』˚｡⋆
+╭
+${SECTIONS.map(s => `│ ➤『${s.emoji}』 ${s.label} — ${s.desc}`).join('\n')}
+╰⭒─ׄ─ׅ─ׄ─⭒
+Tocca un pulsante qui sotto`;
+            return sendButtons(sock, msg.from, txt, [
+                { label: '🛠️ Tool', id: 'menu tool' },
+                { label: '🎲 Fun', id: 'menu fun' },
+                { label: '💰 Economia', id: 'menu economia' },
+                { label: `°${styledEntra}°`, url: sponsorLink },
+            ], msg, null, { headerTitle: 'VEX — SEZIONI', footerText: '6 sezioni' });
+        }
+
         // ── SE HAI SCELTO UNA SEZIONE (arriva come "tool", "fun", ecc.) ──
         const found = SECTIONS.find(s => s.key === q);
         if (found) {
@@ -73,28 +89,14 @@ ${list || '│ (nessun comando)'}
 │   per vedere le sezioni
 ╰⭒─ׄ─ׅ─ׄ─⭒`;
 
-        // Unico pulsante che apre il riquadro sezioni
-        const sheet = {
-            type: 'single_select',
-            label: '📂 SCEGLI SEZIONE',
-            title: 'Sezioni VEX',
-            sectionTitle: 'Tocca una sezione',
-            rows: SECTIONS.map(s => ({
-                header: s.emoji,
-                title: s.label,
-                description: s.desc,
-                id: `menu ${s.key}`,
-            })),
-        };
-
         const whiteLabel = `°${styledEntra}°`;
 
         return sendButtons(sock, msg.from, caption, [
-            sheet,
+            { label: '📂 SEZIONI', id: 'menu sezioni' },
             { label: whiteLabel, url: sponsorLink },
         ], msg, null, {
             headerTitle: 'VEX  -  BOT  -  2K26',
-            footerText: 'Scegli una sezione',
+            footerText: 'Tocca per aprire',
         });
     },
 };
