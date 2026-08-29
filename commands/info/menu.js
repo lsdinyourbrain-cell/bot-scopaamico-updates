@@ -17,8 +17,9 @@ const toBold = toBoldSans;
 
 const BANNER = `*VEX BOT*`;
 
-// Riga comando pulita — senza bold per restare <1024 byte (ogni bold è 4 byte)
-const L = (emoji, cmd, hint = '') => `${emoji} \`.${cmd}\`${hint ? ` — ${hint}` : ''}`;
+// ── STILE DECORATIVO ─────────────────────────────────────────────────────────
+const SECTION_BORDER = '╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─';
+const CMD_LINE = (emoji, cmd) => `│ ➤『${emoji}』 .${cmd}`;
 
 // ── DEFINIZIONE SEZIONI ──────────────────────────────────────────────────────
 const SECTIONS = [
@@ -432,19 +433,20 @@ const TIPS = [
 const homeScreen = (pushName, timeStr, dateStr, stats, tip, visibleSections) => {
     const name = (pushName || 'Utente').slice(0, 18);
     const sezioniInline = visibleSections
-        .map((s, i) => `${s.emoji} *${i + 1}·* ${s.title}`)
-        .join('\n┃ ');
+        .map((s, i) => `│ ➤『${s.emoji}』 ${s.title}`)
+        .join('\n');
     return (
-`┏━━  ⚜️ ${BANNER} ⚜️  ━━┓
-┃  ✦ ${stats.cmds} comandi · v${stats.version}
-┃  ✦ uptime ${stats.uptime}
-┃  👤 ${name}
-┃  🕒 ${timeStr}  ${dateStr}
-┗${LINE}┛
+`ㅤㅤ⋆｡˚『 ╭ \`VEX BOT\` ╯ 』˚｡⋆
+╭
+│ ⚜️ ${stats.cmds} comandi · v${stats.version}
+│ ⏱️ uptime ${stats.uptime}
+│ 👤 ${name}
+│ 🕒 ${timeStr}  ${dateStr}
+${SECTION_BORDER}
 
-┃ ${sezioniInline}
+${sezioniInline}
 
-▸ *.menu <numero/nome>* per aprire
+▸ *.menu <nome>* per aprire
 ▸ *.aiuto* per la guida completa
 
 💡 _${tip}_`);
@@ -452,21 +454,22 @@ const homeScreen = (pushName, timeStr, dateStr, stats, tip, visibleSections) => 
 
 const sezioniScreen = (visible) => {
     const lines = visible.map((s, i) =>
-        `${String(i + 1).padStart(2, '0')}. ${s.emoji}  *${s.title}*  — ${s.items.length} comandi`).join('\n');
+        `│ ➤『${s.emoji}』 ${s.title} — ${s.items.length} comandi`).join('\n');
     return (
-`┏━━  *SEZIONI* (${visible.length})  ━━┓
+`ㅤㅤ⋆｡˚『 ╭ \`SEZIONI\` ╯ 』˚｡⋆
+╭
 ${lines}
-┗${LINE}┛
-▸ Scrivi  .menu 1 … .menu ${visible.length}  o  .menu <nome>`);
+${SECTION_BORDER}
+▸ *.menu <nome>* per aprire`);
 };
 
 const sectionScreen = (section, index, total) => {
-    const rows = section.items.map(([e, cmd, hint]) => L(e, cmd, hint)).join('\n');
+    const rows = section.items.map(([e, cmd]) => CMD_LINE(e, cmd)).join('\n');
     return (
-`┏━━  ${section.emoji}  *${section.title}*  [${index + 1}/${total}]  ━━┓
+`ㅤㅤ⋆｡˚『 ╭ \`${section.title}\` ╯ 』˚｡⋆
+╭
 ${rows}
-┗${LINE}┛
-▸ *.aiuto <comando>* per dettagli`);
+${SECTION_BORDER}`);
 };
 
 module.exports = {
