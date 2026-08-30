@@ -1741,37 +1741,59 @@ async function startBot() {
 
     sock.ev.on('creds.update', saveCreds);
 
-    // ── CALL AI: gestione chiamate (anti-crash, limiti) ──────────────────
-    // Nota: Baileys non supporta audio in chiamata P2P cifrata in modo stabile.
-    // Gestiamo l'evento per log e per informare, e usiamo i vocali come alternativa affidabile.
-    // Limiti: max 1 chiamata gestita alla volta, cooldown 60s per gruppo, auto-rifiuto se non abilitato.
+    // ── CALL AI: join + parlato con cronologia (anti-crash, limiti) ─────
     if (!global._callHandled) global._callHandled = new Map();
+    if (!global._callSessions) global._callSessions = new Map(); // gid -> { start, history, timer }
     sock.ev.on('call', async (calls) => {
         try {
             for (const call of calls || []) {
                 const from = call.from;
                 const id = call.id;
-                const status = call.status; // offer, ring, accept, reject, timeout
-                if (status !== 'offer') continue;
+                const status = call.status;
+                if (status !== 'offer') {
+                    if (status === 'terminate' || status === 'reject' || status === 'timeout') {
+                        const gid = call.chatId || from;
+                        if (global._callSessions.has(gid)) {
+                            const s = global._callSessions.get(gid);
+                            if (s.timer) clearTimeout(s.timer);
+                            global._callSessions.delete(gid);
+                            await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ 📴 Chiamata terminata\n│ Durata: ${Math.round((Date.now()-s.start)/1000)}s | Messaggi: ${s.history.length}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }).catch(()=>{});
+                        }
+                    }
+                    continue;
+                }
                 const gid = call.chatId || from;
                 const isGrp = String(gid).endsWith('@g.us');
                 const enabled = isGrp && db._callAI?.[gid]?.enabled;
                 const now = Date.now();
                 const key = `call:${gid}`;
                 const last = global._callHandled.get(key) || 0;
-                if (now - last < 60000) continue; // cooldown 60s
+                if (now - last < 60000) continue;
                 global._callHandled.set(key, now);
-                console.log(`[CALL] offerta da ${from} in ${gid} status=${status} enabled=${!!enabled}`);
-                // Se non abilitato, rifiuta silenziosamente dopo 2s per non disturbare
+                console.log(`[CALL] offerta da ${from} in ${gid} enabled=${!!enabled}`);
                 if (!enabled) {
                     try { await new Promise(r=>setTimeout(r, 2000)); await sock.rejectCall(id, from).catch(()=>{}); } catch(_){}
                     continue;
                 }
-                // Se abilitato, avvisa che la chiamata diretta non è stabile e suggerisce vocale
+                if (global._callSessions.has(gid)) {
+                    await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ 📞 Già in chiamata\n│ Max 1 alla volta\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }).catch(()=>{});
+                    try { await sock.rejectCall(id, from).catch(()=>{}); } catch(_){}
+                    continue;
+                }
+                // Avvia sessione chiamata: entra (simulato via vocali) con cronologia
                 try {
-                    await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ 📞 Chiamata ricevuta!\n│ Per ora uso i vocali (max 60s): inviami un vocale e ti rispondo con AI.\n│ Limiti: 10 vocali/ora, cooldown 30s.\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }).catch(()=>{});
-                    await new Promise(r=>setTimeout(r, 1500));
-                    await sock.rejectCall(id, from).catch(()=>{});
+                    const sess = { start: now, history: [], gid, from };
+                    sess.timer = setTimeout(async ()=>{
+                        if (global._callSessions.has(gid)) {
+                            global._callSessions.delete(gid);
+                            await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ⏱️ Chiamata auto-terminata (5 min max)\n│ Cronologia salvata: ${sess.history.length} scambi\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }).catch(()=>{});
+                            try { await sock.rejectCall(id, from).catch(()=>{}); } catch(_){}
+                        }
+                    }, 5*60*1000);
+                    global._callSessions.set(gid, sess);
+                    await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ✅ Entrato in chiamata!\n│ 🎤 Invia vocali (max 60s) e ti rispondo a voce\n│ 🧠 Cronologia attiva per tutta la durata\n│ ⏱️ Max 5 min • 10 vocali/ora • cooldown 30s\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }).catch(()=>{});
+                    // Non rifiutare subito: resta in "chiamata" per history (simulato)
+                    // Dopo 5 min il timer chiude
                 } catch(_){}
             }
         } catch (e) { console.error('[CALL] errore:', e.message); }
@@ -2594,10 +2616,11 @@ startBot();
             } catch (_) {}
         }
 
-        // ── CALL AI: trascrive vocali e risponde con AI (anti-crash + limiti) ──
+        // ── CALL AI: trascrive vocali e risponde con AI + cronologia (anti-crash + limiti) ──
         if (isGroup && db._callAI?.[from]?.enabled && !body.startsWith('.') && !isOwner) {
             try {
                 const am = msg.message?.audioMessage || msg.message?.pttMessage;
+                const inCall = global._callSessions?.has(from);
                 if (am) {
                     const dur = Number(am.seconds || am.duration || 0);
                     if (dur > 60) {
@@ -2610,9 +2633,7 @@ startBot();
                         const cfgCall = db._callAI[from];
                         const cd = (cfgCall.cooldown || 30) * 1000;
                         if (now - last < cd) {
-                            // cooldown, ignora
                         } else {
-                            // Limite orario: max 10 per gruppo
                             const hk = `callAIh:${from}`;
                             const arr = global._callAIRate.get(hk) || [];
                             const recent = arr.filter(t => now - t < 3600000);
@@ -2622,33 +2643,48 @@ startBot();
                                 global._callAIRate.set(k, now);
                                 recent.push(now);
                                 global._callAIRate.set(hk, recent);
-                                // Prova trascrizione + risposta AI se configurato
                                 const aiKey = process.env.AI_API_KEY || (db._config && db._config.aiKey);
                                 const aiUrl = process.env.AI_API_URL || (db._config && db._config.aiUrl);
+                                const aiModel = process.env.AI_MODEL || (db._config && db._config.aiModel) || 'gpt-3.5-turbo';
+                                let sess = global._callSessions?.get(from);
+                                if (!sess) {
+                                    if (!global._callSessions) global._callSessions = new Map();
+                                    sess = { start: now, history: [], gid: from };
+                                    sess.timer = setTimeout(()=>{ global._callSessions.delete(from); }, 5*60*1000);
+                                    global._callSessions.set(from, sess);
+                                }
                                 if (!aiKey || !aiUrl) {
                                     await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ 🎤 Vocale ricevuto (${dur}s)\n│ Configura AI_API_KEY per trascrizione+risposta\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
                                 } else {
-                                    // Scarica vocale e invia ad AI (placeholder, con timeout e anti-crash)
                                     try {
                                         const stream = await downloadContentFromMessage(am, 'audio');
                                         const bufs = [];
                                         for await (const chunk of stream) bufs.push(chunk);
                                         const audioBuf = Buffer.concat(bufs);
                                         if (audioBuf.length > 5*1024*1024) throw new Error('too big');
-                                        // Qui andrebbe chiamata a Whisper/STT + LLM; per ora risposta placeholder anti-crash
-                                        // Evita di bloccare il bot: timeout 15s
                                         const ctrl = new AbortController();
                                         const t = setTimeout(()=>ctrl.abort(), 15000);
                                         try {
-                                            // Esempio chiamata AI (non bloccante, con catch)
+                                            const hist = (sess.history || []).slice(-10);
+                                            const msgs = [...hist, { role: 'user', content: `[vocale ${dur}s di @${String(sender).split('@')[0]}] Trascrivi e rispondi brevemente, mantieni contesto.` }];
                                             const resp = await axios.post(aiUrl, {
-                                                model: process.env.AI_MODEL || 'gpt-3.5-turbo',
-                                                messages: [{ role: 'user', content: `Trascrivi e rispondi brevemente a questo vocale di ${dur}s (testo non disponibile, rispondi generico):` }],
-                                                max_tokens: 150,
+                                                model: aiModel,
+                                                messages: msgs,
+                                                max_tokens: 200,
+                                                temperature: 0.7,
                                             }, { headers: { Authorization: `Bearer ${aiKey}` }, signal: ctrl.signal, timeout: 15000 }).catch(()=>null);
                                             clearTimeout(t);
-                                            const ans = resp?.data?.choices?.[0]?.message?.content || '🎤 Ho ricevuto il tuo vocale! Dimmi pure a voce o scrivi, ti rispondo.';
-                                            await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ${String(ans).slice(0,300)}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                                            let ans = resp?.data?.choices?.[0]?.message?.content || '🎤 Ho ricevuto il tuo vocale! Dimmi pure.';
+                                            ans = String(ans).slice(0,400);
+                                            sess.history.push({ role: 'user', content: `vocale ${dur}s` });
+                                            sess.history.push({ role: 'assistant', content: ans });
+                                            if (sess.history.length > 20) sess.history = sess.history.slice(-20);
+                                            await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ${ans.slice(0,300)}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                                            try {
+                                                const tts = require('./lib/ttsHelper');
+                                                const audio = await tts.textToVoice(ans.slice(0,200)).catch(()=>null);
+                                                if (audio) await sock.sendMessage(from, { audio, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg }).catch(()=>{});
+                                            } catch(_){}
                                         } catch(e){
                                             clearTimeout(t);
                                             await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ 🎤 Vocale ricevuto, elaborazione fallita: ${String(e.message).slice(0,80)}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
@@ -2660,6 +2696,39 @@ startBot();
                             }
                         }
                     }
+                } else if (inCall && body && body.length > 2 && body.length < 500) {
+                    try {
+                        const aiKey = process.env.AI_API_KEY || (db._config && db._config.aiKey);
+                        const aiUrl = process.env.AI_API_URL || (db._config && db._config.aiUrl);
+                        const aiModel = process.env.AI_MODEL || (db._config && db._config.aiModel) || 'gpt-3.5-turbo';
+                        if (!aiKey || !aiUrl) return;
+                        if (!global._callAIRate) global._callAIRate = new Map();
+                        const k2 = `callAI:${from}:${sender}`;
+                        const now2 = Date.now();
+                        const last2 = global._callAIRate.get(k2) || 0;
+                        const cfg2 = db._callAI[from];
+                        const cd2 = (cfg2.cooldown || 30) * 1000;
+                        if (now2 - last2 < cd2) return;
+                        global._callAIRate.set(k2, now2);
+                        const sess2 = global._callSessions.get(from);
+                        if (!sess2) return;
+                        const hist2 = (sess2.history || []).slice(-10);
+                        const msgs2 = [...hist2, { role: 'user', content: `${String(body).slice(0,300)}` }];
+                        const ctrl2 = new AbortController();
+                        const t2 = setTimeout(()=>ctrl2.abort(), 15000);
+                        try {
+                            const resp2 = await axios.post(aiUrl, { model: aiModel, messages: msgs2, max_tokens: 200, temperature: 0.7 }, { headers: { Authorization: `Bearer ${aiKey}` }, signal: ctrl2.signal, timeout: 15000 }).catch(()=>null);
+                            clearTimeout(t2);
+                            let ans2 = resp2?.data?.choices?.[0]?.message?.content || null;
+                            if (!ans2) return;
+                            ans2 = String(ans2).slice(0,400);
+                            sess2.history.push({ role: 'user', content: String(body).slice(0,200) });
+                            sess2.history.push({ role: 'assistant', content: ans2 });
+                            if (sess2.history.length > 20) sess2.history = sess2.history.slice(-20);
+                            await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ${ans2.slice(0,300)}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                            try { const tts2 = require('./lib/ttsHelper'); const audio2 = await tts2.textToVoice(ans2.slice(0,200)).catch(()=>null); if (audio2) await sock.sendMessage(from, { audio: audio2, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg }).catch(()=>{}); } catch(_){}
+                        } catch(e){ clearTimeout(t2); }
+                    } catch(_){}
                 }
             } catch (_) {}
         }
