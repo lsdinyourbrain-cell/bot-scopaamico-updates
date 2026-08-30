@@ -18,8 +18,24 @@ ${line('Comando riservato')}
 ${line("all'Owner del bot.")}
 ${boxEnd()}`);
             
-            await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ 🔄 Riavvio del processo...\n  Torno operativo a breve! 🚀\n━━━━━━━━━━━━━━━━━━\n");
-            // Codice 42 = "riavviami": start.bat lo rileva e rilancia node.
-            setTimeout(() => process.exit(42), 1500);
+            await reply(`${sec('SISTEMA')}\n${boxOpen()}\n${line('🔄 Riavvio del processo...')}\n${line('Torno operativo a breve! 🚀')}\n${boxEnd()}`);
+            try {
+                const p = require('path');
+                const flag = p.join(p.dirname(p.dirname(__dirname)), '.restart');
+                require('fs').writeFileSync(flag, String(Date.now()), 'utf-8');
+            } catch (_) {}
+            setTimeout(() => {
+                try {
+                    const { spawn } = require('child_process');
+                    const p = require('path');
+                    // Se non è gestito da PM2/start.sh, rilancia da solo
+                    const managed = !!process.env.PM2_HOME || !!process.env.PM2_USAGE;
+                    if (!managed) {
+                        const entry = p.join(p.dirname(p.dirname(__dirname)), 'index.js');
+                        spawn(process.execPath, [entry], { detached: true, stdio: 'ignore', cwd: p.dirname(entry) }).unref();
+                    }
+                } catch (_) {}
+                process.exit(0);
+            }, 1500);
     },
 };

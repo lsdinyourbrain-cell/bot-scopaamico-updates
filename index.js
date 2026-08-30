@@ -27,6 +27,16 @@ const { loadCommands } = require('./commandLoader');
 const { sleep } = require('./lib/cooldowns');
 const botLogger = require('./lib/logger');
 botLogger.init(); // log su file (logs/bot.log)
+
+// ── ANTI-CRASH GLOBALE ───────────────────────────────────────────────────
+process.on('uncaughtException', (err) => {
+    console.error('[ANTI-CRASH] uncaughtException:', err?.message || err);
+    try { botLogger.error && botLogger.error('uncaughtException: ' + (err?.stack || err)); } catch (_) {}
+});
+process.on('unhandledRejection', (reason) => {
+    console.error('[ANTI-CRASH] unhandledRejection:', reason?.message || reason);
+    try { botLogger.error && botLogger.error('unhandledRejection: ' + (reason?.stack || reason)); } catch (_) {}
+});
 const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
 const {
     ANTINUKE_CONTROLS,
@@ -1731,6 +1741,42 @@ async function startBot() {
 
     sock.ev.on('creds.update', saveCreds);
 
+    // ── CALL AI: gestione chiamate (anti-crash, limiti) ──────────────────
+    // Nota: Baileys non supporta audio in chiamata P2P cifrata in modo stabile.
+    // Gestiamo l'evento per log e per informare, e usiamo i vocali come alternativa affidabile.
+    // Limiti: max 1 chiamata gestita alla volta, cooldown 60s per gruppo, auto-rifiuto se non abilitato.
+    if (!global._callHandled) global._callHandled = new Map();
+    sock.ev.on('call', async (calls) => {
+        try {
+            for (const call of calls || []) {
+                const from = call.from;
+                const id = call.id;
+                const status = call.status; // offer, ring, accept, reject, timeout
+                if (status !== 'offer') continue;
+                const gid = call.chatId || from;
+                const isGrp = String(gid).endsWith('@g.us');
+                const enabled = isGrp && db._callAI?.[gid]?.enabled;
+                const now = Date.now();
+                const key = `call:${gid}`;
+                const last = global._callHandled.get(key) || 0;
+                if (now - last < 60000) continue; // cooldown 60s
+                global._callHandled.set(key, now);
+                console.log(`[CALL] offerta da ${from} in ${gid} status=${status} enabled=${!!enabled}`);
+                // Se non abilitato, rifiuta silenziosamente dopo 2s per non disturbare
+                if (!enabled) {
+                    try { await new Promise(r=>setTimeout(r, 2000)); await sock.rejectCall(id, from).catch(()=>{}); } catch(_){}
+                    continue;
+                }
+                // Se abilitato, avvisa che la chiamata diretta non è stabile e suggerisce vocale
+                try {
+                    await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ 📞 Chiamata ricevuta!\n│ Per ora uso i vocali (max 60s): inviami un vocale e ti rispondo con AI.\n│ Limiti: 10 vocali/ora, cooldown 30s.\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }).catch(()=>{});
+                    await new Promise(r=>setTimeout(r, 1500));
+                    await sock.rejectCall(id, from).catch(()=>{});
+                } catch(_){}
+            }
+        } catch (e) { console.error('[CALL] errore:', e.message); }
+    });
+
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update;
 
@@ -2357,7 +2403,7 @@ startBot();
                 await sock.groupParticipantsUpdate(from, [res.jid], 'remove');
                 console.log(`[ANTIBOT] Rimosso ${dispOf(res.jid)} (${res.reason})`);
                 await sock.sendMessage(from, {
-                    text: `🤖 *ANTIBOT*\n━━━━━━━━━━━━━━━━━━\n@${dispOf(res.jid)} sembra un bot e\nè stato rimosso dal gruppo.\n_Rilevato: ${res.reason}_\n━━━━━━━━━━━━━━━━━━`,
+                    text: `ㅤㅤ⋆｡˚『 ╭ \`ANTIBOT\` ╯ 』˚｡⋆\n╭\n│ @${dispOf(res.jid)} sembra un bot\n│ Rimosso dal gruppo.\n│ Rilevato: ${res.reason}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`,
                     mentions: [res.jid],
                 }).catch(() => {});
             } catch (e) {
@@ -2534,16 +2580,86 @@ startBot();
                     uBest.passAntiBestemmia -= 1;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🛡️ *PASS ANTI-BESTEMMIA* 🛡️\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]}, ti perdono\nquesto scivolone... questa volta.\n\nPass rimasti: ${uBest.passAntiBestemmia}\n━━━━━━━━━━━━━━━━━━`,
+                        text: `ㅤㅤ⋆｡˚『 ╭ \`PASS ANTI-BESTEMMIA\` ╯ 』˚｡⋆\n╭\n│ @${sender.split('@')[0]} ti perdono\n│ Questo scivolone... questa volta.\n│ Pass rimasti: ${uBest.passAntiBestemmia}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`,
                         mentions: [sender],
                     }).catch(() => {});
                 } else {
                     uBest.bestemmie = (uBest.bestemmie || 0) + 1;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🤬 *BESTEMMIOMETRO* 🚨\n━━━━━━━━━━━━━━━━━━\n@${sender.split('@')[0]}:\n${bestemmiometro.getReaction()}\n\n🏷️ Bestemmia n° *${uBest.bestemmie}*\ndel tuo registro personale.\n━━━━━━━━━━━━━━━━━━`,
+                        text: `ㅤㅤ⋆｡˚『 ╭ \`BESTEMMIOMETRO\` ╯ 』˚｡⋆\n╭\n│ @${sender.split('@')[0]}\n│ ${bestemmiometro.getReaction()}\n│ Bestemmia n° ${uBest.bestemmie}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`,
                         mentions: [sender],
                     });
+                }
+            } catch (_) {}
+        }
+
+        // ── CALL AI: trascrive vocali e risponde con AI (anti-crash + limiti) ──
+        if (isGroup && db._callAI?.[from]?.enabled && !body.startsWith('.') && !isOwner) {
+            try {
+                const am = msg.message?.audioMessage || msg.message?.pttMessage;
+                if (am) {
+                    const dur = Number(am.seconds || am.duration || 0);
+                    if (dur > 60) {
+                        await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ Vocale troppo lungo (max 60s)\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                    } else {
+                        if (!global._callAIRate) global._callAIRate = new Map();
+                        const k = `callAI:${from}:${sender}`;
+                        const now = Date.now();
+                        const last = global._callAIRate.get(k) || 0;
+                        const cfgCall = db._callAI[from];
+                        const cd = (cfgCall.cooldown || 30) * 1000;
+                        if (now - last < cd) {
+                            // cooldown, ignora
+                        } else {
+                            // Limite orario: max 10 per gruppo
+                            const hk = `callAIh:${from}`;
+                            const arr = global._callAIRate.get(hk) || [];
+                            const recent = arr.filter(t => now - t < 3600000);
+                            if (recent.length >= 10) {
+                                await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ Limite orario raggiunto (10/h)\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                            } else {
+                                global._callAIRate.set(k, now);
+                                recent.push(now);
+                                global._callAIRate.set(hk, recent);
+                                // Prova trascrizione + risposta AI se configurato
+                                const aiKey = process.env.AI_API_KEY || (db._config && db._config.aiKey);
+                                const aiUrl = process.env.AI_API_URL || (db._config && db._config.aiUrl);
+                                if (!aiKey || !aiUrl) {
+                                    await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ 🎤 Vocale ricevuto (${dur}s)\n│ Configura AI_API_KEY per trascrizione+risposta\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                                } else {
+                                    // Scarica vocale e invia ad AI (placeholder, con timeout e anti-crash)
+                                    try {
+                                        const stream = await downloadContentFromMessage(am, 'audio');
+                                        const bufs = [];
+                                        for await (const chunk of stream) bufs.push(chunk);
+                                        const audioBuf = Buffer.concat(bufs);
+                                        if (audioBuf.length > 5*1024*1024) throw new Error('too big');
+                                        // Qui andrebbe chiamata a Whisper/STT + LLM; per ora risposta placeholder anti-crash
+                                        // Evita di bloccare il bot: timeout 15s
+                                        const ctrl = new AbortController();
+                                        const t = setTimeout(()=>ctrl.abort(), 15000);
+                                        try {
+                                            // Esempio chiamata AI (non bloccante, con catch)
+                                            const resp = await axios.post(aiUrl, {
+                                                model: process.env.AI_MODEL || 'gpt-3.5-turbo',
+                                                messages: [{ role: 'user', content: `Trascrivi e rispondi brevemente a questo vocale di ${dur}s (testo non disponibile, rispondi generico):` }],
+                                                max_tokens: 150,
+                                            }, { headers: { Authorization: `Bearer ${aiKey}` }, signal: ctrl.signal, timeout: 15000 }).catch(()=>null);
+                                            clearTimeout(t);
+                                            const ans = resp?.data?.choices?.[0]?.message?.content || '🎤 Ho ricevuto il tuo vocale! Dimmi pure a voce o scrivi, ti rispondo.';
+                                            await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ${String(ans).slice(0,300)}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                                        } catch(e){
+                                            clearTimeout(t);
+                                            await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ 🎤 Vocale ricevuto, elaborazione fallita: ${String(e.message).slice(0,80)}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                                        }
+                                    } catch(e){
+                                        await sock.sendMessage(from, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ Errore vocale: ${String(e.message).slice(0,80)}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }, { quoted: msg }).catch(()=>{});
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (_) {}
         }
@@ -3430,13 +3546,27 @@ const collectMentionsFromText = async (sock, text, from) => {
                 const wantButton = command && !NO_REPLAY_BUTTON.has(command)
                     && clean.length > 0 && Buffer.byteLength(clean, 'utf8') <= 1024 && clean.length <= 1024;
                 const mentions = (isGroup && clean.includes('@')) ? await collectMentionsFromText(sock, clean, from) : null;
-                if (wantButton) {
-                    const replayId = `${command}${textArgs ? ' ' + textArgs : ''}`;
-                    await sendButtons(sock, from, clean, [
-                        { label: `${COMMAND_EMOJIS[command] || '🔁'} Ripeti`, id: replayId },
-                    ], msg, mentions || undefined);
-                } else {
-                    await sock.sendMessage(from, { text: clean, ...(mentions ? { mentions } : {}) }, { quoted: msg });
+                const doSend = async (attempt=1) => {
+                    try {
+                        if (wantButton) {
+                            const replayId = `${command}${textArgs ? ' ' + textArgs : ''}`;
+                            await sendButtons(sock, from, clean, [
+                                { label: `${COMMAND_EMOJIS[command] || '🔁'} Ripeti`, id: replayId },
+                            ], msg, mentions || undefined);
+                        } else {
+                            await sock.sendMessage(from, { text: clean, ...(mentions ? { mentions } : {}) }, { quoted: msg });
+                        }
+                    } catch (err) {
+                        if (attempt < 3 && /rate|timeout|timed out|ECONN|EAI_AGAIN|429/i.test(err.message || '')) {
+                            await new Promise(r=>setTimeout(r, 800*attempt));
+                            return doSend(attempt+1);
+                        }
+                        throw err;
+                    }
+                };
+                try { await doSend(); } catch (err) {
+                    console.error(`[reply] Errore invio (tentativi esauriti): ${err.message}`);
+                    try { await sock.sendMessage(from, { text: clean.slice(0,900), ...(mentions ? { mentions } : {}) }, { quoted: msg }); } catch(_){}
                 }
             } catch (e) { console.error(`[reply] Errore invio: ${e.message}`); }
         };

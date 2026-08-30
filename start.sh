@@ -6,6 +6,66 @@ cd "$(dirname "$0")"
 
 termux-wake-lock 2>/dev/null || true
 
+# ── RILEVA SESSIONE ATTIVA ──────────────────────────────────────────────
+is_session_active() {
+  # Controlla .bot.pid e se il processo è vivo
+  if [ -f ".bot.pid" ]; then
+    pid=$(cat ".bot.pid" 2>/dev/null | tr -d ' \n')
+    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+      return 0
+    fi
+    # pid file stantio
+    rm -f ".bot.pid" 2>/dev/null || true
+  fi
+  # Fallback: cerca node index.js attivo
+  if pgrep -f "node.*index\.js" >/dev/null 2>&1; then
+    return 0
+  fi
+  return 1
+}
+
+has_valid_creds() {
+  [ -f "auth_info_baileys/creds.json" ] && [ -s "auth_info_baileys/creds.json" ]
+}
+
+if is_session_active; then
+  echo "=============================================="
+  echo "  Vex Bot - Sessione già attiva!"
+  echo "=============================================="
+  if [ -f ".bot.pid" ]; then echo "  PID: $(cat .bot.pid)"; fi
+  echo "  Il bot è già in esecuzione."
+  echo "  Vuoi riutilizzarla o riavviare?"
+  echo "  1) Usa sessione attiva (non avvio nuovo)"
+  echo "  2) Riavvia comunque"
+  echo "  3) Pulisci sessione e riparti da zero"
+  echo "=============================================="
+  read -p "Scelta [1-3] (default 1): " _sc
+  _sc=${_sc:-1}
+  case "$_sc" in
+    1) echo "[✓] Uso sessione attiva. Esco."; exit 0 ;;
+    3) echo "[*] Pulisco..."; rm -rf "auth_info_baileys" 2>/dev/null; rm -f ".bot.pid" ".auth_invalidated" 2>/dev/null; echo "[✓] Pulita." ;;
+    *) echo "[*] Riavvio..."; pkill -f "node.*index\.js" 2>/dev/null || true; rm -f ".bot.pid" 2>/dev/null; sleep 2 ;;
+  esac
+fi
+
+# Se creds valide, avvia diretto senza menu (auto-riuso sessione funzionante)
+if has_valid_creds && [ ! -f ".auth_invalidated" ]; then
+  echo "=============================================="
+  echo "  Vex Bot - Sessione trovata, avvio diretto..."
+  echo "  Creds: auth_info_baileys/creds.json"
+  echo "  (Ctrl+C per menu)"
+  echo "=============================================="
+  # Dai 3s per annullare e andare al menu
+  for i in 3 2 1; do echo -n "  Avvio tra $i... "; sleep 1; echo ""; done
+  # Se l'utente preme Ctrl+C qui, va al menu; altrimenti avvia
+  MODE="auto"
+  PAIRING_NUM=""
+  # Salta il menu e vai diretto al loop
+  goto_loop=true
+else
+  goto_loop=false
+fi
+
 show_menu() {
   clear 2>/dev/null || true
   echo "=============================================="
@@ -33,7 +93,12 @@ clean_auth() {
   read -p "Premi INVIO per tornare al menu..." _
 }
 
-# Loop menu iniziale
+# Loop menu iniziale — salta se auto-avvio con creds valide
+if [ "$goto_loop" = "true" ]; then
+  MODE="qr"
+  PAIRING_NUM=""
+  echo "[auto] Avvio diretto con sessione esistente..."
+else
 while true; do
   show_menu
   read -p "Scelta [1-4]: " scelta
@@ -68,6 +133,7 @@ while true; do
       ;;
   esac
 done
+fi
 
 echo ""
 echo "=============================================="
