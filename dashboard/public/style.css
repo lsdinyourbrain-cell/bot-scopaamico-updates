@@ -542,21 +542,21 @@ body.liquid-glass .row-item{
   border-radius:0 0 20px 20px;
 }
 
-/* Liquid Glass — Apple puro, modalità massima */
+/* Liquid Glass iOS26 — scuro elegante, non bianco accecante */
 body.liquid-glass{
   background:
-    radial-gradient(ellipse 60% 50% at 10% 10%, rgba(124,92,255,0.45), transparent 65%),
-    radial-gradient(ellipse 50% 40% at 90% 10%, rgba(255,78,205,0.35), transparent 60%),
-    radial-gradient(ellipse 40% 50% at 50% 90%, rgba(255,138,0,0.3), transparent 60%),
-    linear-gradient(180deg, #050310 0%, #0c0618 30%, #160e2a 60%, #1e1430 100%);
+    radial-gradient(ellipse 70% 60% at 15% 5%, rgba(124,92,255,0.35), transparent 65%),
+    radial-gradient(ellipse 50% 45% at 85% 15%, rgba(255,78,205,0.22), transparent 60%),
+    radial-gradient(ellipse 45% 55% at 50% 95%, rgba(0,210,255,0.12), transparent 65%),
+    linear-gradient(180deg, #040408 0%, #08081a 35%, #0e0a24 100%);
   background-attachment: fixed;
 }
 body.liquid-glass .panel,
 body.liquid-glass .card,
 body.liquid-glass .row-item{
-  background: rgba(255,255,255,0.45) !important;
-  backdrop-filter: blur(30px) saturate(220%) brightness(1.05) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(220%) brightness(1.05) !important;
+  background: rgba(22,22,32,0.55) !important;
+  backdrop-filter: blur(32px) saturate(200%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.08) !important;
   border: 1px solid rgba(255,255,255,0.55) !important;
   box-shadow:
     0 12px 48px rgba(0,0,0,0.2) !important,
@@ -565,47 +565,47 @@ body.liquid-glass .row-item{
     0 0 60px rgba(var(--accent-rgb),0.12) !important;
 }
 body.liquid-glass .panel-head{
-  background: rgba(255,255,255,0.12) !important;
-  border-color: rgba(255,255,255,0.35) !important;
-  color:#1a1a1a !important;
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  color: var(--text) !important;
 }
 body.liquid-glass .card-icon{
-  background: linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.1)) !important;
-  border-color: rgba(255,255,255,0.4) !important;
+  background: linear-gradient(135deg,rgba(var(--accent-rgb),0.25),rgba(var(--accent2-rgb),0.15)) !important;
+  border-color: rgba(255,255,255,0.25) !important;
 }
 body.liquid-glass .topbar,
 body.liquid-glass .sidebar{
-  background: rgba(255,255,255,0.42) !important;
+  background: rgba(20,20,30,0.55) !important;
   backdrop-filter: blur(30px) saturate(220%) !important;
   -webkit-backdrop-filter: blur(30px) saturate(220%) !important;
-  border-color: rgba(255,255,255,0.5) !important;
+  border-color: rgba(255,255,255,0.2) !important;
 }
 body.liquid-glass .input{
-  background: rgba(255,255,255,0.45) !important;
-  border-color: rgba(255,255,255,0.55) !important;
-  color: #1a1a1a !important;
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  color: #f0f0f5 !important;
 }
-body.liquid-glass .input::placeholder{color:rgba(0,0,0,0.4) !important}
+body.liquid-glass .input::placeholder{color:rgba(255,255,255,0.35) !important}
 body.liquid-glass .input:focus{
-  background: rgba(255,255,255,0.6) !important;
+  background: rgba(255,255,255,0.14) !important;
   border-color: rgba(var(--accent-rgb),0.5) !important;
 }
 body.liquid-glass .title,
 body.liquid-glass .title b,
-body.liquid-glass .card-val{color:#1a1a1a !important; text-shadow:0 1px 2px rgba(255,255,255,0.8)}
+body.liquid-glass .card-val{color: #fff !important; text-shadow:0 1px 8px rgba(0,0,0,0.4)}
 body.liquid-glass .row-item .title,
-body.liquid-glass .row-item .title b{color:#1a1a1a !important}
-body.liquid-glass .row-item .sub{color:rgba(0,0,0,0.6) !important}
-body.liquid-glass .muted{color:rgba(0,0,0,0.5) !important}
-body.liquid-glass .hint{color:rgba(0,0,0,0.55) !important}
-body.liquid-glass .badge{border-color:rgba(255,255,255,0.5) !important}
-body.liquid-glass .badge.on{background:rgba(34,197,94,0.25) !important}
-body.liquid-glass .badge.off{background:rgba(0,0,0,0.1) !important; color:rgba(0,0,0,0.55) !important}
-body.liquid-glass .panel-head{color:#1a1a1a !important; border-color:rgba(255,255,255,0.4) !important}
-body.liquid-glass .card-label{color:rgba(0,0,0,0.5) !important}
-body.liquid-glass .top-pill .brand-title.neon{color:#1a1a1a !important; text-shadow:0 1px 3px rgba(255,255,255,0.9) !important}
+body.liquid-glass .row-item .title b{color: #fff !important}
+body.liquid-glass .row-item .sub{color: rgba(255,255,255,0.65) !important}
+body.liquid-glass .muted{color: rgba(255,255,255,0.55) !important}
+body.liquid-glass .hint{color: rgba(255,255,255,0.5) !important}
+body.liquid-glass .badge{border-color:rgba(255,255,255,0.2) !important; background:rgba(255,255,255,0.08) !important}
+body.liquid-glass .badge.on{background:rgba(34,197,94,.2) !important; color:#6ee7b7 !important}
+body.liquid-glass .badge.off{background:rgba(239,68,68,.15) !important; color:#fca5a5 !important}
+body.liquid-glass .panel-head{color: #fff !important; border-color:rgba(255,255,255,0.15) !important}
+body.liquid-glass .card-label{color: rgba(255,255,255,0.6) !important}
+body.liquid-glass .top-pill .brand-title.neon{color:#fff !important; text-shadow:0 0 8px rgba(var(--accent-rgb),0.6) !important}
 body.liquid-glass .top-pill .brand-sub,
-body.liquid-glass .top-pill #topTime{color:rgba(0,0,0,0.55) !important}
+body.liquid-glass .top-pill #topTime{color:rgba(255,255,255,0.7) !important}
 body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.45) !important}
 body.liquid-glass .avatar{
   background:linear-gradient(135deg,rgba(var(--accent-rgb),0.4),rgba(var(--accent2-rgb),0.3)) !important;
@@ -811,3 +811,13 @@ body.liquid-glass .pill-indicator{
   .topbar{flex-direction:column;align-items:flex-start;gap:8px}
 }
 .hidden{display:none !important}
+
+/* Apertura riquadri — spring cute, fluidissimo iOS26 */
+.page.active{ animation: pageIn .5s cubic-bezier(0.32,0.72,0,1) }
+@keyframes pageIn{ from{ opacity:0; transform: translateY(16px) scale(.98) } to{ opacity:1; transform:none } }
+.modal:not(.hidden) .modal-panel{ animation: modalIn .45s cubic-bezier(0.32,0.72,0,1) }
+@keyframes modalIn{ from{ opacity:0; transform: translateY(12px) scale(.96) } to{ opacity:1; transform:none } }
+.modal-backdrop{ animation: fadeIn .25s ease }
+.row-item, .card{ transition: transform .35s cubic-bezier(0.32,0.72,0,1), box-shadow .35s ease, border-color .35s ease }
+.pill-btn, .btn, .tab{ transition: all .3s cubic-bezier(0.32,0.72,0,1) }
+.input, .panel{ transition: all .3s cubic-bezier(0.32,0.72,0,1) }

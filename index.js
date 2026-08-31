@@ -1943,15 +1943,15 @@ startBot();
                                 if (purl) g.photoUrl = purl;
                             } catch (_) {}
                             db._groupInfo[gid] = g;
-                            // Salva anche PFP per tutti i partecipanti che non l'hanno ancora (per dashboard)
+                            // Salva PFP per tutti i partecipanti (per dashboard) — max 20 per gruppo ad avvio, poi resto in background
                             try {
                                 const needPfp = (meta.participants || []).filter(p => {
                                     const jid = p?.id || p?.jid || '';
                                     if (!jid || jid.endsWith('@g.us')) return false;
                                     const chat = db[gid] || {};
                                     const udata = chat[jid];
-                                    return !udata?.pfpUrl || (Date.now() - (udata.pfpUpdated||0) > 7*24*60*60*1000);
-                                }).slice(0, 8); // max 8 per gruppo ad avvio per non spammare
+                                    return !udata?.pfpUrl || (Date.now() - (udata.pfpUpdated||0) > 3*24*60*60*1000);
+                                }).slice(0, 20);
                                 for (const p of needPfp) {
                                     const jid = p?.id || p?.jid || '';
                                     try {

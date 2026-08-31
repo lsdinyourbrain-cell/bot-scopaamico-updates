@@ -942,6 +942,26 @@ app.post('/api/update', async (req, res) => {
     }
 });
 
+// ── API: Theme (persistenza colori/sfondo) ──────────────────────────────
+const THEME_FILE = path.join(__dirname, 'theme.json');
+app.get('/api/theme', (req, res) => {
+    try {
+        const t = safeReadJSON(THEME_FILE, null);
+        res.json({ ok: true, theme: t });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+app.put('/api/theme', (req, res) => {
+    try {
+        const body = req.body || {};
+        // Salva solo campi noti
+        const allowed = ['accent','accent2','bg','panel','blur','opacity','indicator','liquid','bgPreset','bgUrl','bgData'];
+        const out = {};
+        for (const k of allowed) if (body[k] !== undefined) out[k] = body[k];
+        if (!safeWriteJSON(THEME_FILE, out)) return res.status(500).json({ ok: false, error: 'Scrittura fallita' });
+        res.json({ ok: true, theme: out });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 // ── Static ──────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
 

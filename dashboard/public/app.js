@@ -1163,7 +1163,7 @@ function updateTheme(){
     } else {
         document.body.style.background = `radial-gradient(1200px 600px at 10% -10%, rgba(${hexToRgb(accent)},0.15), transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(${hexToRgb(accent2)},0.10), transparent 60%), linear-gradient(180deg, ${bg} 0%, #08080c 100%)`;
     }
-    // Auto-salva dopo 400ms di inattività — così non serve cliccare Salva
+    // Auto-salva dopo 400ms — locale + server per persistenza
     clearTimeout(_themeSaveTimer);
     _themeSaveTimer = setTimeout(() => {
         const data = {
@@ -1174,8 +1174,12 @@ function updateTheme(){
             blur: $('#blurRange')?.value,
             opacity: $('#opacityRange')?.value,
             indicator: $('#colorIndicator')?.value,
+            liquid: document.body.classList.contains('liquid-glass'),
+            bgPreset: localStorage.getItem('vex_bg') || '',
+            bgUrl: localStorage.getItem('vex_bgUrl') || '',
         };
         try { localStorage.setItem('vex_theme', JSON.stringify(data)); } catch (_) {}
+        try { fetch('/api/theme', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }).catch(()=>{}); } catch(_){}
     }, 400);
 }
 function saveTheme(){
@@ -1188,8 +1192,12 @@ function saveTheme(){
         opacity: $('#opacityRange')?.value,
         indicator: $('#colorIndicator')?.value,
         liquid: document.body.classList.contains('liquid-glass'),
+        bgPreset: localStorage.getItem('vex_bg') || '',
+        bgUrl: localStorage.getItem('vex_bgUrl') || '',
     };
     localStorage.setItem('vex_theme', JSON.stringify(data));
+    // Salva anche sul server per persistenza cross-device
+    fetch('/api/theme', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }).catch(()=>{});
     toast('Tema salvato ✦');
 }
 function resetTheme(){
@@ -1300,11 +1308,19 @@ async function doUpdate(){
         if (btn) { btn.disabled = false; btn.textContent = '↻ Aggiorna'; }
     }
 }
-function loadTheme(){
+async function loadTheme(){
     try{
-        const raw = localStorage.getItem('vex_theme');
-        if (raw) {
-            const d = JSON.parse(raw);
+        // Prova server prima (cross-device), fallback a localStorage
+        let d=null;
+        try {
+            const r=await fetch('/api/theme').then(x=>x.json()).catch(()=>null);
+            if(r && r.ok && r.theme) d=r.theme;
+        } catch(_){}
+        if(!d){
+            const raw = localStorage.getItem('vex_theme');
+            if (raw) d=JSON.parse(raw);
+        }
+        if (d) {
             if (d.accent) $('#colorAccent').value = d.accent;
             if (d.accent2) $('#colorAccent2').value = d.accent2;
             if (d.bg) $('#colorBg').value = d.bg;
@@ -1316,6 +1332,10 @@ function loadTheme(){
                 document.body.classList.add('liquid-glass');
                 const t = $('#liquidToggle'); if (t) t.checked = true;
             }
+            if (d.bgPreset) try{ setPresetBg(d.bgPreset); }catch(_){}
+            if (d.bgUrl) try{ setCustomBgUrl(d.bgUrl); }catch(_){}
+            // Se abbiamo bgData (immagine base64), ripristinalo
+            if (d.bgData) try{ document.body.style.backgroundImage=`url(${d.bgData})`; document.body.style.backgroundSize='cover'; document.body.style.backgroundAttachment='fixed'; }catch(_){}
         }
         // Fallback per liquid salvato separatamente
         try { if (localStorage.getItem('vex_liquid') === '1') { document.body.classList.add('liquid-glass'); const t=$('#liquidToggle'); if(t) t.checked=true; } } catch(_){}
