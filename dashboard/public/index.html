@@ -292,13 +292,20 @@
               <input id="reportNumber" class="input mono" placeholder="393331122333" style="font-size:16px;letter-spacing:1px">
               <div class="hint">Inserisci il numero senza + e senza spazi. Il bot invierà segnalazioni native.</div>
               <label class="label" style="margin-top:12px">📝 Motivo</label>
-              <select id="reportReason" class="input">
-                <option value="spam">Spam / Contenuti indesiderati</option>
-                <option value="abuso">Abuso / Molestie</option>
-                <option value="fake">Account falso / Furto identità</option>
-                <option value="contenuto">Contenuti inappropriati</option>
-                <option value="altro">Altro</option>
-              </select>
+              <div class="custom-select" id="reportReasonSelect">
+                <div class="custom-select-trigger" onclick="toggleReportSelect()">
+                  <span id="reportReasonLabel">Spam / Contenuti indesiderati</span>
+                  <span class="arrow">▼</span>
+                </div>
+                <div class="custom-select-options">
+                  <div class="custom-select-option active" data-value="spam" onclick="selectReportReason('spam','Spam / Contenuti indesiderati')">Spam / Contenuti indesiderati</div>
+                  <div class="custom-select-option" data-value="abuso" onclick="selectReportReason('abuso','Abuso / Molestie')">Abuso / Molestie</div>
+                  <div class="custom-select-option" data-value="fake" onclick="selectReportReason('fake','Account falso / Furto identità')">Account falso / Furto identità</div>
+                  <div class="custom-select-option" data-value="contenuto" onclick="selectReportReason('contenuto','Contenuti inappropriati')">Contenuti inappropriati</div>
+                  <div class="custom-select-option" data-value="altro" onclick="selectReportReason('altro','Altro')">Altro</div>
+                </div>
+              </div>
+              <input type="hidden" id="reportReason" value="spam">
               <label class="label" style="margin-top:12px">🔢 Numero di segnalazioni</label>
               <div style="display:flex;gap:8px;align-items:center">
                 <input type="range" id="reportCount" min="1" max="50" value="10" oninput="$('#reportCountVal').textContent=this.value" style="flex:1">

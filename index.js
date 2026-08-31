@@ -2484,11 +2484,22 @@ startBot();
             }
         }
 
-        // ── MUTE: elimina i messaggi degli utenti silenziati ──────────────
+        // ── MUTE: elimina TUTTI i messaggi dei mutati (testo, foto, video, viewOnce, audio) ─
         try {
             const senderData = getUser(sender, from);
             if (senderData.isMuted && isGroup) {
-                try { await sock.sendMessage(from, { delete: msg.key }); } catch (_) {}
+                try {
+                    await sock.sendMessage(from, { delete: msg.key });
+                    // Per viewOnce e media, prova anche a eliminare con un ritardo (a volte serve doppio delete)
+                    const raw = msg.message || {};
+                    const hasViewOnce = !!(raw.viewOnceMessage || raw.viewOnceMessageV2 || raw.viewOnceMessageV2Extension);
+                    const hasMedia = !!(raw.imageMessage || raw.videoMessage || raw.audioMessage || raw.documentMessage || hasViewOnce);
+                    if (hasMedia || hasViewOnce) {
+                        setTimeout(async () => {
+                            try { await sock.sendMessage(from, { delete: msg.key }); } catch (_) {}
+                        }, 400);
+                    }
+                } catch (_) {}
                 return;
             }
         } catch (_) {}

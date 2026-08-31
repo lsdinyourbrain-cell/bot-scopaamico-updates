@@ -1389,6 +1389,25 @@ async function clearReportHistory(){
     if (!(await customConfirm('Pulire storico segnalazioni?', 'Pulisci'))) return;
     try{ await fetchJSON('/api/report/history', { method:'DELETE' }); toast('Storico pulito'); loadReportHistory(); }catch(e){ toast(e.message,'err'); }
 }
+function toggleReportSelect(){
+    const el=$('#reportReasonSelect');
+    if(!el) return;
+    el.classList.toggle('open');
+}
+function selectReportReason(val, label){
+    const inp=$('#reportReason'), lab=$('#reportReasonLabel'), sel=$('#reportReasonSelect');
+    if(inp) inp.value=val;
+    if(lab) lab.textContent=label;
+    if(sel){
+        sel.classList.remove('open');
+        sel.querySelectorAll('.custom-select-option').forEach(o=> o.classList.toggle('active', o.dataset.value===val));
+    }
+}
+document.addEventListener('click', (e)=>{
+    const sel=$('#reportReasonSelect');
+    if(!sel) return;
+    if(!sel.contains(e.target)) sel.classList.remove('open');
+});
 async function loadTheme(){
     try{
         // Prova server prima (cross-device), fallback a localStorage
