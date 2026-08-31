@@ -63,28 +63,40 @@ function formatDate(iso){
     try { return new Date(iso).toLocaleString('it-IT'); } catch { return String(iso||''); }
 }
 
-// ── Pill indicator — usa offsetLeft (relativo a pill padding box) per centraggio perfetto ─
+// ── Pill indicator — perfetto, usa active reale e rAF per layout stabile ─
 function updatePillIndicator(page, instant=false){
     const pill = $('#bottomPill'), ind = $('#pillIndicator');
     if (!pill || !ind) return;
-    const btn = pill.querySelector(`.pill-btn[data-page="${page}"]`);
+    // Usa sempre il bottone realmente attivo per evitare disallineamenti
+    let btn = pill.querySelector('.pill-btn.active');
+    if (!btn) btn = pill.querySelector(`.pill-btn[data-page="${page}"]`);
     if (!btn) return;
-    const x = btn.offsetLeft;
-    const w = btn.offsetWidth;
-    if (instant) {
-        ind.style.transition = 'none';
-        ind.style.transform = `translateX(${x}px)`;
-        ind.style.width = w + 'px';
-        void ind.offsetWidth;
-        ind.style.transition = '';
-    } else {
-        ind.style.transform = `translateX(${x}px)`;
-        ind.style.width = w + 'px';
-    }
+    // Aspetta layout completo (font, flex gap)
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            const x = btn.offsetLeft;
+            const w = btn.offsetWidth;
+            if (instant) {
+                ind.style.transition = 'none';
+                ind.style.transform = `translateX(${x}px)`;
+                ind.style.width = w + 'px';
+                void ind.offsetWidth;
+                ind.style.transition = '';
+            } else {
+                ind.style.transform = `translateX(${x}px)`;
+                ind.style.width = w + 'px';
+            }
+        });
+    });
 }
 window.addEventListener('resize', () => {
     const active = document.querySelector('.pill-btn.active');
     if (active) updatePillIndicator(active.dataset.page, true);
+});
+// Ricalcola dopo load completo (font Outfit)
+window.addEventListener('load', () => {
+    const active = document.querySelector('.pill-btn.active');
+    if (active) setTimeout(() => updatePillIndicator(active.dataset.page, true), 100);
 });
 
 function navigate(page){

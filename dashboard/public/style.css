@@ -453,12 +453,13 @@ body.liquid-glass .top-pill .brand-sub,
 body.liquid-glass .top-pill #topTime{color:rgba(0,0,0,0.6) !important}
 body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
 
-/* Bottom pill — rifatta da 0, perfettamente centrata, mai tagliata */
+/* Bottom pill — perfettamente centrata, mai tagliata */
 .bottom-pill{
   position:fixed;
   bottom:16px;
-  left:50%;
-  transform:translateX(-50%);
+  left:0;
+  right:0;
+  margin:0 auto;
   display:flex;
   align-items:center;
   justify-content:center;
