@@ -2222,12 +2222,21 @@ startBot();
                     if (userData.phoneNumber && !userData.lid && primary.endsWith('@lid')) userData.lid = primary;
                     if (userData.lid && !userData.phoneNumber && alt && alt.endsWith('@s.whatsapp.net')) userData.phoneNumber = alt;
                 } catch (_) {}
-                // Salva PFP utente in background (se non già salvata di recente)
+                // Salva PFP utente in background (per dashboard, con lid+phone)
                 if (!userData.pfpUpdated || Date.now() - (userData.pfpUpdated || 0) > 3600000) {
                     (async () => {
                         try {
                             const url = await sock.profilePictureUrl(sender, 'image').catch(() => null);
-                            if (url) { userData.pfpUrl = url; userData.pfpUpdated = Date.now(); }
+                            if (url) {
+                                userData.pfpUrl = url; userData.pfpUpdated = Date.now();
+                                // Salva anche per l'altro JID (lid<->phone) se diverso
+                                if (senderAlt && senderAlt !== sender) {
+                                    try {
+                                        const altData = getUser(senderAlt, from);
+                                        if (!altData.pfpUrl || altData.pfpUrl !== url) { altData.pfpUrl = url; altData.pfpUpdated = Date.now(); }
+                                    } catch(_){}
+                                }
+                            }
                         } catch (_) {}
                     })();
                 }

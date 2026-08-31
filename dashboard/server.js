@@ -732,13 +732,31 @@ app.get('/api/pfp/:jid', async (req, res) => {
                 pfpCache.set(jid, { url: real, ts: Date.now() });
                 return res.json({ ok: true, url: real, real: true });
             }
-            // Cerca in tutti i gruppi per utenti
+            // Cerca in tutti i gruppi per utenti — gestisce lid <-> phoneNumber
+            const cleanJid = String(jid).split('@')[0].replace(/[^0-9]/g,'');
             for (const gid of Object.keys(db)) {
                 if (!gid.endsWith('@g.us')) continue;
-                const u = db[gid] && db[gid][jid];
-                if (u && u.pfpUrl) {
-                    pfpCache.set(jid, { url: u.pfpUrl, ts: Date.now() });
-                    return res.json({ ok: true, url: u.pfpUrl, real: true });
+                const chat = db[gid];
+                if (!chat || typeof chat !== 'object') continue;
+                // Prova match esatto prima
+                if (chat[jid] && chat[jid].pfpUrl) {
+                    pfpCache.set(jid, { url: chat[jid].pfpUrl, ts: Date.now() });
+                    return res.json({ ok: true, url: chat[jid].pfpUrl, real: true });
+                }
+                // Prova per numero (lid <-> pn)
+                for (const [ujid, udata] of Object.entries(chat)) {
+                    if (!udata || typeof udata !== 'object' || !udata.pfpUrl) continue;
+                    const uNum = String(udata.phoneNumber||'').replace(/[^0-9]/g,'') || String(ujid).replace(/[^0-9]/g,'');
+                    const uLidNum = String(udata.lid||'').replace(/[^0-9]/g,'');
+                    const jNum = cleanJid;
+                    if (uNum && jNum && (uNum===jNum || uNum.includes(jNum) || jNum.includes(uNum) || uLidNum===jNum || jNum===uLidNum)) {
+                        // Se URL ha più di 20h, potrebbe essere scaduto — ritorna comunque ma marca come staled
+                        const age = Date.now() - (udata.pfpUpdated||0);
+                        if (age < 20*60*60*1000) {
+                            pfpCache.set(jid, { url: udata.pfpUrl, ts: Date.now() });
+                            return res.json({ ok: true, url: udata.pfpUrl, real: true });
+                        }
+                    }
                 }
             }
         } catch (_) {}
@@ -757,28 +775,64 @@ app.get('/api/pfp/:jid', async (req, res) => {
         } catch (_) {}
         const placeholder = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${bg}&color=fff&size=128&bold=true&format=svg`;
         if (isImageReq) {
-            // Prova a trovare URL reale, altrimenti placeholder
             let realUrl = null;
             try {
                 const db2 = safeReadJSON(DB_FILE, {});
                 if (jid.endsWith('@g.us') && db2._groupInfo?.[jid]?.photoUrl) realUrl = db2._groupInfo[jid].photoUrl;
                 else {
+                    const cleanJid2 = String(jid).split('@')[0].replace(/[^0-9]/g,'');
                     for (const gid of Object.keys(db2)) {
                         if (!gid.endsWith('@g.us')) continue;
-                        const u = db2[gid]?.[jid];
-                        if (u?.pfpUrl) { realUrl = u.pfpUrl; break; }
+                        const chat2 = db2[gid];
+                        if (!chat2 || typeof chat2 !== 'object') continue;
+                        const direct = chat2[jid];
+                        if (direct?.pfpUrl && (!direct.pfpUpdated || Date.now() - direct.pfpUpdated < 20*60*60*1000)) { realUrl = direct.pfpUrl; break; }
+                        for (const [ujid2, udata2] of Object.entries(chat2)) {
+                            if (!udata2?.pfpUrl) continue;
+                            if (udata2.pfpUpdated && Date.now() - udata2.pfpUpdated >= 20*60*60*1000) continue;
+                            const uNum2 = String(udata2.phoneNumber||'').replace(/[^0-9]/g,'') || String(ujid2).replace(/[^0-9]/g,'');
+                            const uLidNum2 = String(udata2.lid||'').replace(/[^0-9]/g,'');
+                            if (uNum2===cleanJid2 || uLidNum2===cleanJid2 || (uNum2 && cleanJid2 && (uNum2.includes(cleanJid2) || cleanJid2.includes(uNum2)))) { realUrl = udata2.pfpUrl; break; }
+                        }
+                        if (realUrl) break;
                     }
                 }
             } catch (_) {}
             const target = realUrl || placeholder;
-            // Se è un URL http, fai redirect, altrimenti prova a fetchare e proxyare
-            if (target.startsWith('http')) return res.redirect(target);
+            if (target.startsWith('http')) {
+                // Prova a fare proxy dell'immagine per evitare problemi CORS/scadenza
+                // Se è placeholder ui-avatars, fai redirect diretto
+                if (target.includes('ui-avatars.com')) return res.redirect(target);
+                // Per URL WhatsApp (pps.whatsapp.net), prova a fare fetch e stream
+                try {
+                    const https = require('https');
+                    const http = require('http');
+                    const lib = target.startsWith('https') ? https : http;
+                    const u = new URL(target);
+                    // Imposta timeout e headers per fetch
+                    const fetchPromise = new Promise((resolve, reject) => {
+                        const req = lib.request({ hostname: u.hostname, path: u.pathname + u.search, method: 'GET', timeout: 4000, headers: { 'User-Agent': 'VexBot/1.0' } }, (r) => {
+                            if (r.statusCode >= 200 && r.statusCode < 300) {
+                                res.setHeader('Content-Type', r.headers['content-type'] || 'image/jpeg');
+                                res.setHeader('Cache-Control', 'public, max-age=3600');
+                                r.pipe(res);
+                                resolve(true);
+                            } else {
+                                reject(new Error('status '+r.statusCode));
+                            }
+                        });
+                        req.on('error', reject);
+                        req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+                        req.end();
+                    });
+                    const ok = await Promise.race([fetchPromise, new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4500))]).catch(()=>false);
+                    if (ok) return;
+                } catch(_){}
+                return res.redirect(target);
+            }
             return res.json({ ok: true, url: target });
         }
 
-        // Se il bot è in esecuzione, potremmo provare a usare Baileys per fetch reale,
-        // ma per ora restituiamo placeholder con cache. Il frontend proverà a caricare
-        // la vera PFP via WhatsApp se disponibile, altrimenti placeholder.
         pfpCache.set(jid, { url: placeholder, ts: Date.now() });
         res.json({ ok: true, url: placeholder, placeholder: true });
     } catch (e) {
