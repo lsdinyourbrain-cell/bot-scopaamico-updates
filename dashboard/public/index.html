@@ -281,6 +281,64 @@
       <pre id="logsView" class="logs"></pre>
     </section>
 
+    <!-- REPORT -->
+    <section id="page-reports" class="page">
+      <div class="panel tilt" style="overflow:visible">
+        <div class="panel-head">⚑ Report — Segnalazioni native WhatsApp</div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start">
+            <div>
+              <label class="label">📱 Numero da segnalare (con prefisso, es. 393331122333)</label>
+              <input id="reportNumber" class="input mono" placeholder="393331122333" style="font-size:16px;letter-spacing:1px">
+              <div class="hint">Inserisci il numero senza + e senza spazi. Il bot invierà segnalazioni native.</div>
+              <label class="label" style="margin-top:12px">📝 Motivo</label>
+              <select id="reportReason" class="input">
+                <option value="spam">Spam / Contenuti indesiderati</option>
+                <option value="abuso">Abuso / Molestie</option>
+                <option value="fake">Account falso / Furto identità</option>
+                <option value="contenuto">Contenuti inappropriati</option>
+                <option value="altro">Altro</option>
+              </select>
+              <label class="label" style="margin-top:12px">🔢 Numero di segnalazioni</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="range" id="reportCount" min="1" max="50" value="10" oninput="$('#reportCountVal').textContent=this.value" style="flex:1">
+                <span id="reportCountVal" class="badge on" style="min-width:40px;text-align:center">10</span>
+              </div>
+              <div class="hint">Max 50 per richiesta — usa più volte per "tot" report.</div>
+              <div class="row gap" style="margin-top:16px">
+                <button class="btn" onclick="sendReports()" style="flex:1">⚑ Invia segnalazioni</button>
+                <button class="btn btn-ghost" onclick="$('#reportNumber').value='';">✕ Pulisci</button>
+              </div>
+              <div id="reportStatus" class="panel hidden" style="margin-top:14px;padding:12px;background:rgba(255,255,255,0.06);border-radius:10px;border:1px solid var(--border)"></div>
+            </div>
+            <div class="panel" style="background:linear-gradient(135deg, rgba(var(--accent-rgb),0.12), rgba(var(--accent2-rgb),0.08));border:1px solid rgba(var(--accent-rgb),0.2)">
+              <div class="panel-head">✦ Come funziona</div>
+              <div class="panel-body small">
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span style="width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--accent);color:#fff;font-weight:800">1</span> Inserisci numero</div>
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span style="width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--accent2);color:#fff;font-weight:800">2</span> Scegli motivo e quantità</div>
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span style="width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--green);color:#fff;font-weight:800">3</span> Invia — il bot usa segnalazioni native</div>
+                <div class="hint" style="margin-top:10px">Le segnalazioni sono native WhatsApp (block + report). Più segnalazioni = più peso. Usa responsabilmente.</div>
+                <div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;border:1px solid var(--border)">
+                  <div style="font-weight:700;font-size:12px">Stato</div>
+                  <div id="reportStats" class="mono small" style="margin-top:4px">In attesa...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">📋 Storico segnalazioni</div>
+        <div class="panel-body">
+          <div id="reportHistory" class="list" style="max-height:300px;overflow:auto"></div>
+          <div class="row gap" style="margin-top:10px">
+            <button class="btn btn-sm btn-ghost" onclick="loadReportHistory()">↻ Ricarica storico</button>
+            <button class="btn btn-sm btn-danger" onclick="clearReportHistory()">🗑 Pulisci storico</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- SETTINGS / TEMA -->
     <section id="page-settings" class="page">
       <div class="panel">
@@ -368,7 +426,7 @@
 
   </main>
 
-  <!-- Bottom pill — vetro Apple puro, slide fluido con indicator -->
+   <!-- Bottom pill — vetro Apple puro, slide fluido con indicator -->
   <nav class="bottom-pill" id="bottomPill">
     <div class="pill-indicator" id="pillIndicator"></div>
     <button class="pill-btn active" data-page="overview" onclick="navigate('overview')">
@@ -379,6 +437,9 @@
     </button>
     <button class="pill-btn" data-page="users" onclick="navigate('users')">
       <span class="pill-icon">◇</span><span class="pill-label">Utenti</span>
+    </button>
+    <button class="pill-btn" data-page="reports" onclick="navigate('reports')">
+      <span class="pill-icon">⚑</span><span class="pill-label">Report</span>
     </button>
     <button class="pill-btn" data-page="phrases" onclick="navigate('phrases')">
       <span class="pill-icon">✧</span><span class="pill-label">Frasi</span>

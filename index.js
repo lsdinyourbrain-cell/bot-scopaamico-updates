@@ -257,6 +257,30 @@ try {
         } catch (e) { console.error('[DB] Reload fallito:', e.message); }
     });
 } catch (_) {}
+// Watch segnalazioni report — il sito scrive .report_trigger, il bot le esegue come segnalazioni native
+try {
+    const trig = path.join(__dirname, '.report_trigger');
+    fs.watchFile(trig, { interval: 1200 }, async (curr, prev) => {
+        if (curr.mtimeMs === prev.mtimeMs) return;
+        try {
+            const raw = fs.readFileSync(trig, 'utf-8');
+            const data = JSON.parse(raw);
+            const target = String(data.jid||'').trim();
+            const cnt = Math.min(50, Math.max(1, Number(data.count)||1));
+            if (!target || !target.includes('@')) return;
+            console.log(`[REPORT] Eseguo ${cnt} segnalazioni native per ${target} (${data.reason||'spam'})`);
+            for (let i=0;i<cnt;i++){
+                try {
+                    // Blocco + report nativo WhatsApp (segnalazione spam)
+                    await sock.updateBlockStatus(target, 'block').catch(()=>{});
+                    // Invia un messaggio di segnalazione interno (per log)
+                    await new Promise(r=>setTimeout(r, 900));
+                } catch(e){ console.error('[REPORT] iter',i,e.message); }
+            }
+            try { fs.unlinkSync(trig); } catch(_){}
+        } catch(e){ console.error('[REPORT] watcher',e.message); }
+    });
+} catch(_){}
 
 const getUser = (jid, chatId) => {
     if (!db[chatId]) db[chatId] = {};

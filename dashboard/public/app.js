@@ -153,6 +153,7 @@ function navigate(page){
         overview: ['Overview','Stato del bot e sistema'],
         groups: ['Gruppi','Gestisci impostazioni per gruppo'],
         users: ['Utenti','Economia e moderazione per gruppo'],
+        reports: ['Report','Segnalazioni native WhatsApp'],
         phrases: ['Frasi','Modifica i file phrases/*.txt'],
         files: ['File','Esplora e modifica le directory del bot'],
         owners: ['Owner','Gestisci gli owner del bot'],
@@ -167,6 +168,7 @@ function navigate(page){
     if (page === 'overview') fetchOverview();
     if (page === 'groups') fetchGroups();
     if (page === 'users') initUsersPage();
+    if (page === 'reports') loadReportHistory();
     if (page === 'phrases') fetchPhrases();
     if (page === 'files') loadFiles('');
     if (page === 'owners') fetchOwners();
@@ -513,8 +515,7 @@ function renderUsers(list){
     el.innerHTML = filtered.filter(u => u && typeof u === 'object').map(u => {
         const displayName = u?.name || u?.nickname || '';
         const phone = u?.phoneNumber ? String(u.phoneNumber).split('@')[0] : String(u?.jid || '').split('@')[0];
-        const displayNum = '+' + phone.replace(/[^0-9]/g,'');
-        const isLid = String(u?.jid || '').endsWith('@lid');
+        const displayNum = formatPhone(u?.phoneNumber || u?.jid || '');
         const totalMoney = u?.totalMoney ?? u?.money ?? 0;
         const totalMsgs = u?.totalMsgs ?? u?.msgCount ?? 0;
         const groupsCount = Array.isArray(u?.groups) ? u.groups.length : 0;
@@ -522,7 +523,7 @@ function renderUsers(list){
         <div class="row-item with-avatar" onclick="openUserDetail('${esc(u?.jid || '')}')" style="cursor:pointer">
             ${pfpHTML(u?.jid, displayName || u?.jid, u?.pfpUrl)}
             <div class="left">
-                <div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted mono" style="font-size:11px">${esc(displayNum)}</span>` : `<span class="mono">${esc(displayNum)}</span>`} ${isLid ? '<span class="badge" style="font-size:9px">lid</span>' : ''}</div>
+                <div class="title">${displayName ? `<b>${esc(displayName)}</b> <span class="muted mono" style="font-size:11px">${esc(displayNum)}</span>` : `<span class="mono">${esc(displayNum)}</span>`}</div>
                 <div class="sub">💰 ${totalMoney}€ · 💬 ${totalMsgs} · 👥 ${groupsCount} gruppi ${u?.bio ? '· 📝 '+esc(u.bio.slice(0,24)) : ''}</div>
             </div>
             <div class="right"><span class="muted" style="font-size:14px">→</span></div>
@@ -1333,6 +1334,60 @@ async function doUpdate(){
         toast('Aggiorna: ' + e.message, 'err');
         if (btn) { btn.disabled = false; btn.textContent = '↻ Aggiorna'; }
     }
+}
+// ── Report ────────────────────────────────────────────────────────────
+function formatPhone(jid){
+    // Mai mostrare @lid — converti in numero vero se possibile
+    if (!jid) return '';
+    const s = String(jid);
+    if (s.endsWith('@lid')) {
+        // Cerca in cache globale users per mapping lid->phone
+        const u = (typeof usersGlobalCache !== 'undefined' ? usersGlobalCache.find(x=>x.jid===s) : null);
+        if (u && u.phoneNumber) return '+' + String(u.phoneNumber).replace(/[^0-9]/g,'');
+        // Fallback: mostra solo numero senza @lid ma senza badge lid
+        return '+' + s.split('@')[0].replace(/[^0-9]/g,'');
+    }
+    if (s.includes('@')) return '+' + s.split('@')[0].replace(/[^0-9]/g,'');
+    return '+' + s.replace(/[^0-9]/g,'');
+}
+async function sendReports(){
+    const numEl = $('#reportNumber'), reasonEl=$('#reportReason'), countEl=$('#reportCount'), statusEl=$('#reportStatus'), statsEl=$('#reportStats');
+    const raw = String(numEl?.value||'').replace(/[^0-9]/g,'');
+    const reason = reasonEl?.value || 'spam';
+    const count = Math.min(50, Math.max(1, Number(countEl?.value||10)));
+    if (!raw || raw.length < 7) return toast('Numero non valido','err');
+    const jid = raw + '@s.whatsapp.net';
+    if (statusEl){ statusEl.classList.remove('hidden'); statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;display:inline-block;animation:spin 0.8s linear infinite"></span> Invio ${count} segnalazioni a ${esc(formatPhone(jid))}…</div>`; }
+    try{
+        const r = await fetchJSON('/api/report', { method:'POST', body: JSON.stringify({ jid, reason, count }) });
+        if (statusEl) statusEl.innerHTML = `<div style="color:var(--green)">✅ Inviate ${r.sent||count} segnalazioni a ${esc(formatPhone(jid))} (${esc(reason)})</div><div class="muted" style="margin-top:4px">${esc(r.message||'Fatto')}</div>`;
+        if (statsEl) statsEl.textContent = `Ultimo: ${formatPhone(jid)} — ${r.sent||count} report (${reason}) — ${new Date().toLocaleTimeString()}`;
+        toast(`Segnalazioni inviate: ${r.sent||count} ⚑`);
+        loadReportHistory();
+    }catch(e){
+        if (statusEl) statusEl.innerHTML = `<div style="color:var(--red)">❌ Errore: ${esc(e.message)}</div>`;
+        toast(e.message,'err');
+    }
+}
+async function loadReportHistory(){
+    const el=$('#reportHistory'), statsEl=$('#reportStats');
+    if (!el) return;
+    el.innerHTML='<div class="muted" style="padding:8px">Caricamento…</div>';
+    try{
+        const { history } = await fetchJSON('/api/report/history');
+        if (!history || !history.length){ el.innerHTML='<div class="muted" style="padding:8px">Nessuna segnalazione yet</div>'; if(statsEl) statsEl.textContent='Nessuno storico'; return; }
+        el.innerHTML = history.slice().reverse().slice(0,30).map(h=>`
+            <div class="row-item">
+                <div class="left"><div class="title">${esc(formatPhone(h.jid))} <span class="badge">${esc(h.reason||'spam')}</span></div><div class="sub">×${h.count} · ${esc(h.by||'dashboard')} · ${formatDate(h.at)}</div></div>
+                <div class="right"><span class="badge on">${h.sent||h.count} inviate</span></div>
+            </div>
+        `).join('');
+        if(statsEl) statsEl.textContent = `${history.length} segnalazioni totali`;
+    }catch(e){ el.innerHTML=`<div class="muted">Errore: ${esc(e.message)}</div>`; }
+}
+async function clearReportHistory(){
+    if (!(await customConfirm('Pulire storico segnalazioni?', 'Pulisci'))) return;
+    try{ await fetchJSON('/api/report/history', { method:'DELETE' }); toast('Storico pulito'); loadReportHistory(); }catch(e){ toast(e.message,'err'); }
 }
 async function loadTheme(){
     try{
