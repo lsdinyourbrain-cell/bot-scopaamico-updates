@@ -2,13 +2,13 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  METEO7 — Vex Bot
 //  Estensione di .weather: previsioni su 7 giorni (API gratuita wttr.in),
 //  una card al giorno con icona, temp max/min e pioggia.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 // Emoji per il codice/descrizione meteo di ogni fascia oraria.
 const iconFor = (desc, isDay) => {

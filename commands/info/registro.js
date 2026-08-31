@@ -2,12 +2,12 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  REGISTRO — Vex Bot
 //  .registro → mostra le ultime modifiche del gruppo (entrate, uscite,
 //  promote/demote, avvisi, nome, descrizione, impostazioni...).
 //  .registro <numero> → mostra le ultime N modifiche (max 50).
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const TIPO_EMOJI = {
     add: '➕', remove: '➖', promote: '📈', demote: '📉',

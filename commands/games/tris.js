@@ -70,7 +70,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🎮 *TRIS*\n━━━━━━━━━━━━━━━━━━\n🎉 Dai, si parte!\nChe figata 🔥\n❌ Sfidante: @${senderPn.split('@')[0]}\n⭕ Sfidato: @${opponentPn.split('@')[0]}\n\nTocca a ❌ (@${senderPn.split('@')[0]}).\nScrivi un numero *1-9*\nper mettere la X.\n━━━━━━━━━━━━━━━━━━`,
+            caption: `🎮 *TRIS*\n\n🎉 Dai, si parte!\nChe figata 🔥\n❌ Sfidante: @${senderPn.split('@')[0]}\n⭕ Sfidato: @${opponentPn.split('@')[0]}\n\nTocca a ❌ (@${senderPn.split('@')[0]}).\nScrivi un numero *1-9*\nper mettere la X.\n`,
             mentions: players,
         }, { quoted: msg });
 

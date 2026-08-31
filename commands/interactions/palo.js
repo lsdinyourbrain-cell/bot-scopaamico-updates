@@ -14,7 +14,7 @@ module.exports = {
         const { from, sender, targetJid, reply, services } = context;
         const { ARRAYS, randomChoice, randomInt, sendButtons } = services;
 
-        const SEP = '━━━━━━━━━━━━━━━━━━━━';
+        const SEP = '';
 
         if (!targetJid) return reply(`Tagga chi ti ha dato palo. Esempio: ${toBold('.palo @nome')}`);
 

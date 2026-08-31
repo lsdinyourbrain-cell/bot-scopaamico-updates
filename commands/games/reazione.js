@@ -38,7 +38,7 @@ module.exports = {
             };
             saveDB();
 
-            await reply("🧠 *_TEST DI REAZIONE_*\n━━━━━━━━━━━━━━\nQuando il bot manda il segnale,\nscrivi *GO* il più veloce!\n\n👀 Ti avviserò tra poco...\n");
+            await reply("🧠 *_TEST DI REAZIONE_*\n\nQuando il bot manda il segnale,\nscrivi *GO* il più veloce!\n\n👀 Ti avviserò tra poco...\n");
 
             const delay = randomInt(3000, 7000);
             setTimeout(() => {

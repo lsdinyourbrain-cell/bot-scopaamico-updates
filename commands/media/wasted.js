@@ -104,7 +104,7 @@ module.exports = {
 ▸ _Grand Theft Auto: Vex Bot Edition_
 `
             }, { quoted: msg });
-            await prog.done('💀 *_WASTED_*\n━━━━━━━━━━━━━━\n▸ _WASTED generato!_\n');
+            await prog.done('💀 *_WASTED_*\n\n▸ _WASTED generato!_\n');
 
         } catch (e) {
             console.error('[wasted]', e);

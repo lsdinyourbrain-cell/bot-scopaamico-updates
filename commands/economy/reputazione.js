@@ -60,7 +60,7 @@ ${boxEnd()}`);
         saveDB();
 
         return sock.sendMessage(from, {
-            text: `✅ @${disp(sender)} ha dato +1⭐\n▸ a @${disp(targetJid)}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.\n━━━━━━━━━━━━━━\n`,
+            text: `✅ @${disp(sender)} ha dato +1⭐\n▸ a @${disp(targetJid)}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.\n\n`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

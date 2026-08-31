@@ -201,7 +201,7 @@ module.exports = {
 ▸ _Per uso ludico - non ufficiale_ 😄
 `
             }, { quoted: msg });
-            await prog.done('📋 *_POKÉDEX_*\n━━━━━━━━━━━━━━\n▸ _Scheda Pokédex generata!_\n');
+            await prog.done('📋 *_POKÉDEX_*\n\n▸ _Scheda Pokédex generata!_\n');
 
         } catch (e) {
             console.error('[pokedex]', e);

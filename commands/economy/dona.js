@@ -36,7 +36,7 @@ ${boxEnd()}`);
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `🎁 *_DONAZIONE!_*\n━━━━━━━━━━━━━━\n▸ @${disp(sender)} ha donato _${amount}€_ a @${disp(targetJid)}! 🫶\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${formatMoney(senderData.money)}_\n`,
+            text: `🎁 *_DONAZIONE!_*\n\n▸ @${disp(sender)} ha donato _${amount}€_ a @${disp(targetJid)}! 🫶\n\n▸ 💰 Il tuo saldo: _${formatMoney(senderData.money)}_\n`,
             mentions: [sender, targetJid],
         });
     },

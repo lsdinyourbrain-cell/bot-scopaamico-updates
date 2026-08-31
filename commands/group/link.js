@@ -36,7 +36,7 @@ ${boxEnd()}`);
 ${enable
     ? '▸ Ora tutti i membri del gruppo possono usare *\.link*.'
     : '▸ Da ora solo gli *admin* possono usare *\.link*.'}
-━━━━━━━━━━━━━━`;
+`;
             return sendButtons(sock, from, text, [
                 { label: enable ? '.link off' : '.link on', id: enable ? 'link off' : 'link on' },
             ], msg);
@@ -53,7 +53,7 @@ ${boxEnd()}`);
         try {
             const inviteCode = await sock.groupInviteCode(from);
             const link = `https://chat.whatsapp.com/${inviteCode}`;
-            const linkText = `✦ ◆ ✦  *LINK DEL GRUPPO*  ✦ ◆ ✦\n━━━━━━━━━━━━━━━━━━━━\n✦ e pigliate sto link down 👇\n✦ \`${link}\`\n━━━━━━━━━━━━━━━━━━━━\n✦ ✧ ◆ ✧ ✦\n`;
+            const linkText = `✦ ◆ ✦  *LINK DEL GRUPPO*  ✦ ◆ ✦\n\n✦ e pigliate sto link down 👇\n✦ \`${link}\`\n\n✦ ✧ ◆ ✧ ✦\n`;
             await sendButtons(sock, from, linkText, [
                 { type: 'copy', label: '📋 Copia link', copy: link },
             ], msg);

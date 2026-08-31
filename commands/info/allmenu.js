@@ -22,7 +22,7 @@ module.exports = {
         const { from, services } = context;
         const { sendButtons, commands } = services || {};
 
-        // ── RACCOLTA COMANDI (unici, no hidden) ─────────────────────
+        // ── RACCOLTA COMANDI (unici, no hidden) 
         let mods = [];
         if (commands && typeof commands.values === 'function' && commands.size) {
             mods = [...new Set(commands.values())]

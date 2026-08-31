@@ -21,7 +21,7 @@ ${boxOpen()}
 ${line('[uso]: Metti almeno 2 opzioni separate da |')}
 ${boxEnd()}`);
         const chosen = options[Math.floor(Math.random() * options.length)];
-        await sendButtons(sock, from, `🎯 *_PICK_*\n━━━━━━━━━━━━━━\n▸ *Scelto:* _${chosen}_\n━━━━━━━━━━━━━━\n`, [
+        await sendButtons(sock, from, `🎯 *_PICK_*\n\n▸ *Scelto:* _${chosen}_\n\n`, [
             { label: '.pick', id: 'pick ' + textArgs },
         ], msg);
     },

@@ -30,7 +30,7 @@ ${boxEnd()}`);
             if (!rate) return prog.done(`⚠️ _Valuta "${toC}" non trovata._ Codici ISO validi: EUR, USD, GBP, JPY, CHF...`);
             const converted = (amount * rate).toLocaleString('it-IT', { maximumFractionDigits: 2 });
             const formatted = amount.toLocaleString('it-IT', { maximumFractionDigits: 2 });
-            await prog.done(`💱 *_CAMBIO VALUTA_*\n━━━━━━━━━━━━━━\n▸ _${formatted} ${fromC}_ = _*${converted} ${toC}*_\n▸ 📊 *Tasso:* _1 ${fromC} = ${rate.toFixed(4)} ${toC}_\n━━━━━━━━━━━━━━\n`);
+            await prog.done(`💱 *_CAMBIO VALUTA_*\n\n▸ _${formatted} ${fromC}_ = _*${converted} ${toC}*_\n▸ 📊 *Tasso:* _1 ${fromC} = ${rate.toFixed(4)} ${toC}_\n\n`);
         } catch (_) {
             await reply('⚠️ _Errore nel cambio valuta. Riprova più tardi._');
         }

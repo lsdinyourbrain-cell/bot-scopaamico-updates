@@ -113,7 +113,7 @@ module.exports = {
             return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Last.fm non configurato.')}\n${boxEnd()}`);
         }
 
-        // ── FUOCO: .cur fuoco / .cur fire / .cur 🔥 ─────────────────────
+        // ── FUOCO: .cur fuoco / .cur fire / .cur 🔥 
         const sub = String(textArgs||'').trim().toLowerCase();
         if (sub === 'fuoco' || sub === 'fire' || sub === '🔥' || sub === 'fuochi') {
             // Usa ultimo brano visto con .cur, altrimenti quello attuale del sender

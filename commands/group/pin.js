@@ -69,8 +69,8 @@ ${boxEnd()}`);
                 time,
             });
             const label = isUnpin
-                ? `🔓 *_UNPIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *sfissato*.\n━━━━━━━━━━━━━━\n`
-                : `📌 *_PIN_*\n━━━━━━━━━━━━━━\n▸ Messaggio *fissato* per _${time / 3600}h_.\n━━━━━━━━━━━━━━\n`;
+                ? `🔓 *_UNPIN_*\n\n▸ Messaggio *sfissato*.\n\n`
+                : `📌 *_PIN_*\n\n▸ Messaggio *fissato* per _${time / 3600}h_.\n\n`;
             await reply(label);
         } catch (e) {
             console.error('[pin] error:', e);

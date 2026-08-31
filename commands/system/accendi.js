@@ -28,6 +28,6 @@ ${line("all'Owner del bot.")}
 ${boxEnd()}`);
 
         setBotActive(true);
-        await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ ✅ Bot _ATTIVO_ e pronto! 🚀\n━━━━━━━━━━━━━━━━━━\n");
+        await reply("⚙️ *_SISTEMA_*\n\n▸ ✅ Bot _ATTIVO_ e pronto! 🚀\n\n");
     },
 };

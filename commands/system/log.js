@@ -48,7 +48,7 @@ ${boxEnd()}`);
         }
         if (current.trim()) chunks.push(current.trimEnd());
 
-        const header = `📄 *_LOG BOT_*\n━━━━━━━━━━━━━━━━━━\n▸ ${chunks.length === 1 ? `ultime ${n} righe` : `log in ${chunks.length} parti`}\n━━━━━━━━━━━━━━━━━━\n`;
+        const header = `📄 *_LOG BOT_*\n\n▸ ${chunks.length === 1 ? `ultime ${n} righe` : `log in ${chunks.length} parti`}\n\n`;
         await reply(header + '\n```\n' + chunks[0] + '\n```');
 
         for (let i = 1; i < chunks.length; i++) {

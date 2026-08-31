@@ -22,7 +22,7 @@ module.exports = {
 
         const sub = String(args[0] || '').toLowerCase();
 
-        // ── LISTA ──────────────────────────────────────────────────────
+        // ── LISTA 
         if (!sub || sub === 'lista' || sub === 'list') {
             const keys = phrasesLib.listKeys();
             // Aggiungi anche le chiavi ARRAYS/COPY che non hanno ancora file
@@ -50,7 +50,7 @@ ${footer()}`
             );
         }
 
-        // ── MOSTRA ─────────────────────────────────────────────────────
+        // ── MOSTRA 
         if (sub === 'mostra' || sub === 'show' || sub === 'vedi') {
             const key = String(args[1] || '').toLowerCase().trim();
             if (!key) return reply(`⚠️ Uso: _.frasi mostra <nome>_\nEs: _.frasi mostra schiaffi_`);
@@ -67,7 +67,7 @@ ${footer()}`
             return reply(txt);
         }
 
-        // ── AGGIUNGI ───────────────────────────────────────────────────
+        // ── AGGIUNGI 
         if (sub === 'aggiungi' || sub === 'add' || sub === 'nuova') {
             const key = String(args[1] || '').toLowerCase().trim();
             const frase = args.slice(2).join(' ').trim();
@@ -100,7 +100,7 @@ ${footer()}`
             );
         }
 
-        // ── SET (sovrascrivi tutto) ────────────────────────────────────
+        // ── SET (sovrascrivi tutto) 
         if (sub === 'set' || sub === 'imposta' || sub === 'sovrascrivi') {
             const key = String(args[1] || '').toLowerCase().trim();
             const rest = args.slice(2).join(' ').trim();
@@ -129,7 +129,7 @@ ${footer()}`
             );
         }
 
-        // ── RIMUOVI ────────────────────────────────────────────────────
+        // ── RIMUOVI 
         if (sub === 'rimuovi' || sub === 'elimina' || sub === 'del' || sub === 'remove') {
             const key = String(args[1] || '').toLowerCase().trim();
             const idxStr = String(args[2] || '').trim();
@@ -156,7 +156,7 @@ ${footer()}`
             );
         }
 
-        // ── RESET ──────────────────────────────────────────────────────
+        // ── RESET 
         if (sub === 'reset' || sub === 'ripristina' || sub === 'default') {
             const key = String(args[1] || '').toLowerCase().trim();
             if (!key) return reply(`⚠️ Uso: _.frasi reset <nome>_`);

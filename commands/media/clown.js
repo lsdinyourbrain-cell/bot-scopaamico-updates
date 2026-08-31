@@ -88,9 +88,9 @@ module.exports = {
 
             await sock.sendMessage(from, {
                 image: overlayed,
-                caption: '🤡 *_CLOWN_*\n━━━━━━━━━━━━━━\n▸ _Ecco a te, pagliaccio!_\n'
+                caption: '🤡 *_CLOWN_*\n\n▸ _Ecco a te, pagliaccio!_\n'
             }, { quoted: msg });
-            await prog.done('🤡 *_CLOWN_*\n━━━━━━━━━━━━━━\n▸ _Clown pronto!_\n');
+            await prog.done('🤡 *_CLOWN_*\n\n▸ _Clown pronto!_\n');
 
         } catch (e) {
             console.error('[clown]', e);

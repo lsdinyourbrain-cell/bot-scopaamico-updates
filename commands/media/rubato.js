@@ -47,7 +47,7 @@ ${boxEnd()}`);
 
             await sock.sendMessage(from, {
                 image: imageBuffer,
-                caption: '✅ *_STICKER → IMMAGINE_*\n━━━━━━━━━━━━━━\n▸ _Sticker convertito in immagine!_\n▸ Ora puoi _salvarla nel rullino_.\n'
+                caption: '✅ *_STICKER → IMMAGINE_*\n\n▸ _Sticker convertito in immagine!_\n▸ Ora puoi _salvarla nel rullino_.\n'
             }, { quoted: msg });
 
         } catch (e) {

@@ -23,12 +23,12 @@ ${boxEnd()}`);
 
         await reply(
 `⭐ *_RATE_*
-━━━━━━━━━━━━━━
+
 ▸ 📌 _${textArgs}_
 ▸ _${bar}_
 ▸ ${emojis[score]} _*${score}/10*_
 ▸ 💬 _${comment}_
-━━━━━━━━━━━━━━
+
 `);
     },
 };

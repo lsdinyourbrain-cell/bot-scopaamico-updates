@@ -24,12 +24,12 @@ ${boxEnd()}`);
             const normal = parts.filter(p => !p.admin);
             const total = parts.length;
 
-            let txt = `👥 *MEMBRI*\n━━━━━━━━━━━━━━\n👥 *${total}* partecipanti\n👑 *${admins.length}* admin\n👤 *${normal.length}* utenti\n`;
+            let txt = `👥 *MEMBRI*\n\n👥 *${total}* partecipanti\n👑 *${admins.length}* admin\n👤 *${normal.length}* utenti\n`;
             if (admins.length > 0) {
                 txt += `👑 *Admin:*\n`;
                 txt += admins.map(a => `@${jidOf(a).split('@')[0]}`).join('\n') + '\n';
             }
-            txt += `━━━━━━━━━━━━━━\n`;
+            txt += `\n`;
 
             const mentions = parts.map(jidOf).filter(Boolean);
             await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });

@@ -1,10 +1,10 @@
 'use strict';
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  ORGIA — Vex Bot
 //  Tagga 3 partecipanti a caso del gruppo (o i taggati nel comando) in una
 //  scena caotica con valutazioni assurde.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const { toStyle } = require('../../lib/font');
 const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');

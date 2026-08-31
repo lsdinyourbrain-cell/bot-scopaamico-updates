@@ -11,7 +11,7 @@ module.exports = {
         const { textArgs, from, reply } = context;
 
         if (!textArgs || !textArgs.includes('|')) {
-            return reply("📊 *_Come si usa_*\n━━━━━━━━━━━━━━━━━━\n▸ .sondaggio <domanda> | <opzione1> | <opzione2> | …\n▸ *Esempio:*\n  \`.sondaggio Dove andiamo sabato? | Mare | Montagna | Città\`\n▸ Aggiungi \`multi\` alla fine\n  per permettere più risposte.\n━━━━━━━━━━━━━━━━━━");
+            return reply("📊 *_Come si usa_*\n\n▸ .sondaggio <domanda> | <opzione1> | <opzione2> | …\n▸ *Esempio:*\n  \`.sondaggio Dove andiamo sabato? | Mare | Montagna | Città\`\n▸ Aggiungi \`multi\` alla fine\n  per permettere più risposte.\n");
         }
 
         const parts = String(textArgs).split('|').map((s) => s.trim()).filter(Boolean);

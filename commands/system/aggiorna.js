@@ -140,12 +140,12 @@ ${boxEnd()}`);
         const shortRemote = remoteHead.slice(0, 7);
         const infoParts = [
             '📦 *_Nuovo aggiornamento disponibile!_*',
-            '━━━━━━━━━━━━━━━━━━',
+            '',
             changelog ? `▸ 📝 *Modifiche:*\n${changelog}` : '▸ 📝 Nessun commit dettagliato.',
             `▸ 🔄 Applico la versione \`${shortRemote}\`...`,
         ];
         if (depsChanged) infoParts.push('▸ 📥 Installerò anche le nuove dipendenze.');
-        infoParts.push('━━━━━━━━━━━━━━━━━━', '');
+        infoParts.push('', '');
         await reply(infoParts.join('\n'));
 
         // 8) Applica la versione remota
@@ -183,7 +183,7 @@ ${boxEnd()}`);
                 path.join(projectDir, '.restart-msg.json'),
                 JSON.stringify({
                     from,
-                    message: `🔄 *_Aggiornamento completato e bot riavviato._*\n━━━━━━━━━━━━━━━━━━\n▸ Nuova versione: \`${shortRemote}\`\n▸ ✅ Bot operativo.\n━━━━━━━━━━━━━━━━━━\n`,
+                    message: `🔄 *_Aggiornamento completato e bot riavviato._*\n\n▸ Nuova versione: \`${shortRemote}\`\n▸ ✅ Bot operativo.\n\n`,
                 }),
                 'utf-8'
             );

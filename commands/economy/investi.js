@@ -90,7 +90,7 @@ module.exports = {
                 uDB.money -= costo;
                 uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + n;
                 saveDB();
-                return reply(`✅ *_COMPRATE!_*\n━━━━━━━━━━━━━━\n▸ 📈 Azioni: _${n}_\n▸ 🏢 _${azienda.name}_\n▸ 💰 Costo: _${costo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n`);
+                return reply(`✅ *_COMPRATE!_*\n\n▸ 📈 Azioni: _${n}_\n▸ 🏢 _${azienda.name}_\n▸ 💰 Costo: _${costo}€_\n\n▸ 💳 Saldo: _${uDB.money}€_\n`);
             }
 
             const q = Math.floor(parseInt(parts[2], 10));
@@ -103,7 +103,7 @@ module.exports = {
             if (uDB.azioni[target.toUpperCase()] <= 0) delete uDB.azioni[target.toUpperCase()];
             uDB.money += ricavo;
             saveDB();
-            return reply(`💰 *_VENDUTE!_*\n━━━━━━━━━━━━━━\n▸ 📉 Azioni: _${qty2}_\n▸ 🏢 _${azienda.name}_\n▸ 💵 Ricavo: _${ricavo}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo: _${uDB.money}€_\n`);
+            return reply(`💰 *_VENDUTE!_*\n\n▸ 📉 Azioni: _${qty2}_\n▸ 🏢 _${azienda.name}_\n▸ 💵 Ricavo: _${ricavo}€_\n\n▸ 💳 Saldo: _${uDB.money}€_\n`);
         }
 
         reply("⚠️ _[uso]:_\n▸ _*.investi*_ — portafoglio\n▸ _*.investi listino*_ — prezzi\n▸ _*.investi compra <codice> [n]*_\n▸ _*.investi vendi <codice> [n]*_");

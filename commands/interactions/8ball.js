@@ -39,7 +39,7 @@ ${boxOpen()}
 ${line('[uso]: Fai una domanda! Es: .8ball mi vuoi bene?')}
 ${boxEnd()}`);
         const a = answers[Math.floor(Math.random() * answers.length)];
-        await sendButtons(sock, from, `🎱 *_PALLA MAGICA_*\n━━━━━━━━━━━━━━\n▸ *Domanda:* _${textArgs}_\n━━━━━━━━━━━━━━\n${a}\n━━━━━━━━━━━━━━\n`, [
+        await sendButtons(sock, from, `🎱 *_PALLA MAGICA_*\n\n▸ *Domanda:* _${textArgs}_\n\n${a}\n\n`, [
             { label: '.8ball', id: '8ball ' + textArgs },
         ], msg);
     },

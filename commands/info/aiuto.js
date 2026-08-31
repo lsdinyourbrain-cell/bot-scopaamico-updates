@@ -2,18 +2,18 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  AIUTO — Vex Bot
 //  .aiuto            → invia un file .txt con TUTTI i comandi spiegati
 //  .aiuto <comando>  → spiega un singolo comando (uso, alias, descrizione)
 //  .aiuto <sezione>  → elenca tutti i comandi di una sezione con le descrizioni
 //  Le descrizioni sono prese direttamente dai moduli: sempre aggiornate.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const { SECTIONS } = require('./menu');
 const pkg = require('../../package.json');
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 // Raccoglie i comandi unici dal registro (la Map include alias → stesso modulo).
 // I comandi marcati hidden:true restano utilizzabili ma NON appaiono né nella
@@ -121,12 +121,12 @@ module.exports = {
         const mod = commands.get(q);
         if (mod) return reply(explain(mod));
 
-        // ── SEZIONE ───────────────────────────────────────────────────────
+        // ── SEZIONE 
         const sec = SECTIONS.find(s => s.key === q)
             || SECTIONS.find((s, i) => String(i + 1) === q);
         if (sec) return reply(sectionDump(sec, commands));
 
-        // ── NON TROVATO: suggerisci i comandi più simili ──────────────────
+        // ── NON TROVATO: suggerisci i comandi più simili 
         const near = uniqueCommands(commands)
             .map(m => m.name)
             .filter(n => n.includes(q) || q.includes(n))

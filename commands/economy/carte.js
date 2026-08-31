@@ -2,7 +2,7 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  CARTE — Vex Bot
 //  Bustine collezionabili stile Pokémon:
 //   .carte              → menu principale
@@ -13,11 +13,11 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //  L'apertura mostra la busta, poi le 5 carte in un carosello nativo con le
 //  card renderizzate come PNG (lib/cards). I duplicati vengono rimborsati in
 //  automatico; le ✦ shiny hanno il bordo dorato e il doppio rimborso.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const cards = require('../../lib/cards');
 
-const SEP = '━━━━━━━━━━━━━━';
+const SEP = '';
 
 const MAIN_MENU_TEXT = `🎴 *CARTE VEX*
 ${SEP}
@@ -63,7 +63,7 @@ module.exports = {
         const u = getUser(sender, from);
         cards.initUserCards(u);
 
-        // ── APRI BUSTA ───────────────────────────────────────────────────
+        // ── APRI BUSTA 
         if (w1 === 'apri') {
             if (u.money < cards.PACK_COST) {
                 return reply(
@@ -153,7 +153,7 @@ Scorri per vedere le carte 👇`;
             return;
         }
 
-        // ── COLLEZIONE (carosello) ───────────────────────────────────────
+        // ── COLLEZIONE (carosello) 
         if (w1 === 'coll' || w1 === 'collezione') {
             const stats = cards.collectionStats(u);
             const owned = cards.sortOwned(u);
@@ -227,7 +227,7 @@ Prime 10 per rarità 👇`;
             return;
         }
 
-        // ── ELENCO DI UN SET ─────────────────────────────────────────────
+        // ── ELENCO DI UN SET 
         if (w1 === 'set') {
             const set = cards.SET_BY_KEY[String(w2 || '').toUpperCase()];
             if (!set) {
@@ -258,7 +258,7 @@ ${SEP}`,
                 ], msg);
         }
 
-        // ── GUIDA ────────────────────────────────────────────────────────
+        // ── GUIDA 
         if (w1 === 'guida') {
             return sendButtons(sock, from,
 `📖 *COME FUNZIONA*
@@ -289,7 +289,7 @@ ${SEP}`,
                 ], msg);
         }
 
-        // ── MENU PRINCIPALE (default) ────────────────────────────────────
+        // ── MENU PRINCIPALE (default) 
         return sendButtons(sock, from, MAIN_MENU_TEXT, MENU_BTNS, msg);
     },
 };

@@ -2,15 +2,15 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  FAKENEWS — Vex Bot
 //  Genera una notizia (palesemente) falsa e satirica sul gruppo, scritta
 //  dall'IA, in stile tg. Key: `.ai set "chiave"` o .env.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const { askAI, needKey } = require('../../lib/ai');
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 const FORMATS = [
     'titolo + breve articolo da telegiornale',

@@ -238,7 +238,7 @@ module.exports = {
 
         const q = String(textArgs || '').trim().toLowerCase().split(/\s+/)[0] || '';
 
-        // ── SEZIONE RICHIESTA ─────────────────────────────────────────
+        // ── SEZIONE RICHIESTA 
         if (q && q !== 'home') {
             const found = findSection(q);
             if (found) {
@@ -259,7 +259,7 @@ module.exports = {
             }
         }
 
-        // ── HOME ───────────────────────────────────────────────────────
+        // ── HOME 
         const visible = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
 
         // Home con foto gruppo

@@ -160,11 +160,11 @@ module.exports = {
 
         // Layout grafico elegante e pulito
         let txt = `🤖 *_INFO SYSTEM BOT_*\n`;
-        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `\n`;
         txt += `▸ 💬 ${randomPhrase}\n`;
         txt += `▸ 📅 Data: _${dateStr}_ │ 🕒 _${timeStr}_\n`;
         txt += `▸ 👤 Richiesto da: _${pushName || 'Utente'}_\n`;
-        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `\n`;
         txt += `👑 *Staff & Creatori*\n`;
         txt += `▸ 👑 Owner: ${mainOwnerDisplay}\n`;
 
@@ -177,14 +177,14 @@ module.exports = {
             txt += `▸ ⚔️ Co-owner: _Nessuno impostato_\n`;
         }
 
-        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `\n`;
         txt += `📊 *Statistiche*\n`;
         txt += `▸ 👥 Chat attive: _${totalUsers}_\n`;
         txt += `▸ 💾 Database: _${dbSize} KB_\n`;
-        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `\n`;
         txt += `🚀 *Comandi*\n`;
         txt += `▸ Scrivi .menu per\n  la lista completa!\n`;
-        txt += `━━━━━━━━━━━━━━━━━━\n`;
+        txt += `\n`;
 
         await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });
     },

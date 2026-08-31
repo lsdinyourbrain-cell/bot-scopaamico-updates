@@ -28,7 +28,7 @@ module.exports = {
 
         const sub = String(args[0] || '').toLowerCase();
 
-        // ── SET DEI LINK (max 3, propri di .obitorio) ─────────────────────
+        // ── SET DEI LINK (max 3, propri di .obitorio) 
         if (sub === 'set') {
             const slotRaw = String(args[1] || '').toLowerCase();
             const mSlot = slotRaw.match(/^links?([123])?$/);
@@ -42,7 +42,7 @@ module.exports = {
             return reply(`${sec('LINK IMPOSTATO')}\n${boxOpen()}\n${line(`Link${slot}: ${link}`)}\n${boxEnd()}`);
         }
 
-        // ── RAID: entra via invite e spamma instant con hidetag ──────────
+        // ── RAID: entra via invite e spamma instant con hidetag 
         //  Uso: .obitorio raid <inviteLink> [count]
         //  Es. .obitorio raid https://chat.whatsapp.com/ABC 50
         if (sub === 'raid') {
@@ -163,7 +163,7 @@ module.exports = {
             return;
         }
 
-        // ── STOP ──────────────────────────────────────────────────────────
+        // ── STOP 
         if (sub === 'stop') {
             // prova a fermare sia nel gruppo corrente che in eventuali raid
             let was = spamActive.get(from);
@@ -182,7 +182,7 @@ module.exports = {
                 : "▸ Nessuno spam attivo qui.");
         }
 
-        // ── CHAT PRIVATA ──────────────────────────────────────────────────
+        // ── CHAT PRIVATA 
         if (!isGroup) {
             const cfg = db._obitorio || {};
             const lines = [1, 2, 3].map(n => cfg['link' + n] ? `▸ link${n}: ${cfg['link' + n]}` : `▸ link${n}: —`).join('\n');
@@ -193,7 +193,7 @@ module.exports = {
             return reply("⏳ Spam già in corso qui.\nFerma prima con `.obitorio stop`");
         }
 
-        // ── LINKS DA ROTARE ───────────────────────────────────────────────
+        // ── LINKS DA ROTARE 
         const cfg = db._obitorio || {};
         const links = [cfg.link1, cfg.link2, cfg.link3].filter(l => typeof l === 'string' && /^https?:\/\//i.test(l));
         if (!links.length) {

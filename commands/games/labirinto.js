@@ -2,7 +2,7 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  LABIRINTO — Vex Bot
 //  Flusso in 3 passi con UI nativa WhatsApp (carosello: come in .cerca, ogni
 //  card DEVE avere un'immagine o WhatsApp mostra "messaggio non supportato").
@@ -14,7 +14,7 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //  Lo stato vive in db[from].mazeGame (partita) e db[from].mazePending
 //  (carosello in attesa di scelta, con TTL). Se il carosello non si può
 //  inviare, si parte comunque con un labirinto casuale della difficoltà.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const { generateMaze, renderMaze, stepMaze, moveNavButton, MOVES_TEXT } = require('../../lib/maze');
 
@@ -43,7 +43,7 @@ const showDifficultyMenu = async (sock, msg, context) => {
     const { from, services } = context;
     const { sendButtons } = services;
     await sendButtons(sock, from,
-        `🌀 *LABIRINTO*\n━━━━━━━━━━━━━━━━━━\nScegli la *difficoltà*:\nti mostro 5 labirinti\ncasuali tra cui scegliere.\n\n🟢 facile · reticolo piccolo\n🟡 media · intermedio\n🔴 difficile · labirinto grande\n━━━━━━━━━━━━━━━━━━`,
+        `🌀 *LABIRINTO*\n\nScegli la *difficoltà*:\nti mostro 5 labirinti\ncasuali tra cui scegliere.\n\n🟢 facile · reticolo piccolo\n🟡 media · intermedio\n🔴 difficile · labirinto grande\n`,
         DIFF_BUTTONS,
         msg);
 };
@@ -164,7 +164,7 @@ const startGame = async (sock, msg, context, { maze, difficulty }) => {
 
     const sent = await sock.sendMessage(from, {
         image: boardBuffer,
-        caption: `🌀 *LABIRINTO · ${diff.emoji} ${diff.label}*\n━━━━━━━━━━━━━━━━━━\n🔴 Tu · 🟢 Uscita\n\n🎮 Muoviti con i pulsanti\nqui sotto, oppure scrivi\n*u/d/l/r* in chat.`,
+        caption: `🌀 *LABIRINTO · ${diff.emoji} ${diff.label}*\n\n🔴 Tu · 🟢 Uscita\n\n🎮 Muoviti con i pulsanti\nqui sotto, oppure scrivi\n*u/d/l/r* in chat.`,
     }, { quoted: msg });
 
     const btnKey = await sendButtonsWithKey(sock, from, MOVES_TEXT, [moveNavButton()], msg);
@@ -208,7 +208,7 @@ module.exports = {
         const [w1, w2] = t.split(/\s+/);
         const g = db[from]?.mazeGame;
 
-        // ── PARTITA IN CORSO ──────────────────────────────────────────────
+        // ── PARTITA IN CORSO 
         if (g?.active) {
             if (QUIT_WORDS.includes(w1)) {
                 delete db[from].mazeGame;
@@ -229,12 +229,12 @@ module.exports = {
             return reply("C'è già un labirinto in corso!\nUsa i pulsanti sotto la\nboard o scrivi *u/d/l/r*.");
         }
 
-        // ── PAROLE DI USCITA SENZA PARTITA ────────────────────────────────
+        // ── PAROLE DI USCITA SENZA PARTITA 
         if (QUIT_WORDS.includes(w1)) {
             return reply('Non c\u2019è nessun labirinto in corso.\nAvviane uno con `.labirinto`! 🌀');
         }
 
-        // ── SCELTA DEL LABIRINTO DAL CAROSELLO ────────────────────────────
+        // ── SCELTA DEL LABIRINTO DAL CAROSELLO 
         if (w1 === 'gioca') {
             const pending = db[from]?.mazePending;
             const n = parseInt(w2, 10);
@@ -257,7 +257,7 @@ ${boxEnd()}`);
             return showCarousel(sock, msg, context, DIFFICULTIES[diffKey]);
         }
 
-        // ── MENU DIFFICOLTÀ (default: nessun argomento) ───────────────────
+        // ── MENU DIFFICOLTÀ (default: nessun argomento) 
         return showDifficultyMenu(sock, msg, context);
     },
 };

@@ -17,7 +17,7 @@ ${boxOpen()}
 ${line('Tagga chi vuoi chiedere scusa. Esempio: .scusa @nome')}
 ${boxEnd()}`);
             await sock.sendMessage(from, {
-                text: `🙏 *_SCUSE_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} chiede scusa a @${targetJid.split('@')[0]}\n▸ _💬 ${randomChoice(ARRAYS.scusa)}_\n━━━━━━━━━━━━━━\n`,
+                text: `🙏 *_SCUSE_*\n\n▸ @${sender.split('@')[0]} chiede scusa a @${targetJid.split('@')[0]}\n▸ _💬 ${randomChoice(ARRAYS.scusa)}_\n\n`,
                 mentions: [sender, targetJid],
             });
     },

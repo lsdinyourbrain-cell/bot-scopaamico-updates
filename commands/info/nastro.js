@@ -2,14 +2,14 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  NASTRO — Vex Bot
 //  Riepilogo del gruppo: totale bestemmie, utente più attivo, totale
 //  messaggi, top XP e i soldi. Come la "carrellata di fine settimana" di
 //  un gruppo di amici. Solo nei gruppi.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 const fmtMoney = (n) => Number(n || 0).toLocaleString('it-IT');
 

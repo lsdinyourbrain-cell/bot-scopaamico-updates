@@ -45,7 +45,7 @@ ${boxEnd()}`);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'vibrato=f=5:d=0.5,aecho=0.8:0.9:200:0.2,asetrate=48000*0.95,aresample=48000', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🍻 *_DRUNK_*\n━━━━━━━━━━━━━━\n▸ _Effetto ubriaco pronto!_\n');
+            await prog.done('🍻 *_DRUNK_*\n\n▸ _Effetto ubriaco pronto!_\n');
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[drunk]', e);

@@ -42,10 +42,10 @@ ${boxEnd()}`);
             await sock.groupParticipantsUpdate(from, [useJid], 'promote');
 
             await sendButtons(sock, from,
-                `👑 ${sec('PROMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━━━━━\n`,
+                `👑 ${sec('PROMOTE')}\n\n▸ @${short} è stato *promosso* admin!\n\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
-                    text: `👑 ${sec('PROMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n━━━━━━━━━━━━━━━━━━\n`,
+                    text: `👑 ${sec('PROMOTE')}\n\n▸ @${short} è stato *promosso* admin!\n\n`,
                     mentions: [useJid],
                 }, { quoted: msg }));
         } catch (_) {

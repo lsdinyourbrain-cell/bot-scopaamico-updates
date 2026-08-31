@@ -51,10 +51,10 @@ ${boxEnd()}`);
             logGroupEvent(from, 'kick', sender, null, tgt, 'cacciato dal gruppo');
 
             await sendButtons(sock, from,
-                `👋 ${sec('KICK')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} *cacciato/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n`,
+                `👋 ${sec('KICK')}\n\n▸ @${short} *cacciato/a* dal gruppo.\n\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
-                    text: `👋 ${sec('KICK')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} *cacciato/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n`,
+                    text: `👋 ${sec('KICK')}\n\n▸ @${short} *cacciato/a* dal gruppo.\n\n`,
                     mentions: [useJid],
                 }, { quoted: msg }));
         } catch (_) {

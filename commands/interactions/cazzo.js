@@ -12,7 +12,7 @@ module.exports = {
         const { from, sender, targetJid, services } = context;
         const { ARRAYS, randomChoice, sendButtons } = services;
 
-        const SEP = '━━━━━━━━━━━━━━━━━━━━';
+        const SEP = '';
         const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 
         const target = targetJid || sender;

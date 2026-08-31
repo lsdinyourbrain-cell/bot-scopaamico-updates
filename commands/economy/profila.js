@@ -33,7 +33,7 @@ module.exports = {
         const sub = String(args[0] || '').toLowerCase();
         const uDBSelf = getUser(sender, from);
 
-        // ══ PERSONALIZZAZIONE ═════════════════════════════════════════════
+        // ══ PERSONALIZZAZIONE 
         if (sub === 'nick' || sub === 'nickname') {
             const nick = String(textArgs || '').replace(/^nick(name)?\s+/i, '').trim();
             if (!nick) return reply(`${sec('NICK')}\n${boxOpen()}\n${line('Uso: .profilo nick <nome>')}\n${boxEnd()}`);
@@ -70,7 +70,7 @@ module.exports = {
             return reply(`${sec('RESET')}\n${boxOpen()}\n${line('Nick, bio e stile azzerati.')}\n${boxEnd()}`);
         }
 
-        // ══ VISUALIZZAZIONE PROFILO ═══════════════════════════════════════
+        // ══ VISUALIZZAZIONE PROFILO 
         const target = targetJid || sender;
         let meta = null;
         try { meta = await getCachedGroupMeta(sock, from); } catch (_) {}

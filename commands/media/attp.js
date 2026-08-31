@@ -50,7 +50,7 @@ module.exports = {
         if (!text || text.length > 80) {
             return reply(`${sec('ERRORE')}
 ${boxOpen()}
-${line('[uso]: scrivi il testo da trasformare in sticker neon._ ━━━━━━━━━━━━━━ ▸ \`.at...')}
+${line('[uso]: scrivi il testo da trasformare in sticker neon._  ▸ \`.at...')}
 ${boxEnd()}`);
         }
 

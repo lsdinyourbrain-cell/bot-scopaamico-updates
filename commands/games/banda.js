@@ -2,16 +2,16 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  BANDA (MAFIA) — Vex Bot
 //  Gioco party a ruoli: notte/giorno. Di notte la banda elimina, il detective
 //  indaga e il medico salva (in chat PRIVATA). Di giorno il gruppo vota chi
 //  eliminare (in gruppo). Vince la banda o il villaggio.
 //  Lo stato vive in db[from].bandaGame; la mappa giocatore→gruppo in
 //  db._bandaMap per rispondere dalle chat private.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 const NIGHT_TIME_MS = 45000;   // finestra azioni notturne
 const DAY_TIME_MS = 60000;     // finestra votazioni
 
@@ -44,7 +44,7 @@ module.exports = {
         const [w1, w2] = q.split(/\s+/);
         let g = groupJid ? db[groupJid]?.bandaGame : null;
 
-        // ── AZIONE NOTTURNA (DM) ─────────────────────────────────────────
+        // ── AZIONE NOTTURNA (DM) 
         if (isDm && (w1 === 'kill' || w1 === 'check' || w1 === 'cura')) {
             if (!g || !g.active || g.phase !== 'night') return reply('Non c\'è una notte di gioco attiva.');
             const player = g.players.find(p => p.jid === sender);
@@ -71,7 +71,7 @@ module.exports = {
             return reply('Non hai il ruolo per questa azione!');
         }
 
-        // ── VOTO DI GIORNO (DM) ──────────────────────────────────────────
+        // ── VOTO DI GIORNO (DM) 
         if (isDm && w1 === 'vota') {
             if (!g || !g.active || g.phase !== 'day') return reply('Non c\'è una votazione attiva.');
             const targetJid = (w2 || '').replace(/\+/g, '@');
@@ -84,7 +84,7 @@ module.exports = {
             return reply(`🗳️ Voto registrato: *${target.name}*`);
         }
 
-        // ── STATO (DM) ───────────────────────────────────────────────────
+        // ── STATO (DM) 
         if (isDm && w1 === 'stato') {
             if (!g || !g.active) return reply('Nessuna partita attiva per te.');
             const p = g.players.find(x => x.jid === sender);
@@ -92,7 +92,7 @@ module.exports = {
             return reply(`🔫 *BANDA* · ${p.role === 'civile' ? '🙂 dormi pure' : `stai facendo il tuo dovere (${ROLES[p.role].name})`}. Fase: ${g.phase === 'night' ? '🌙 notte' : '☀️ giorno'}.`);
         }
 
-        // ── IN GRUPPO ────────────────────────────────────────────────────
+        // ── IN GRUPPO 
         if (isGroup) {
             // UNISCITI alla lobby
             if (w1 === 'unisciti' || w1 === 'join' || !w1 || q === 'banda') {
@@ -186,7 +186,7 @@ ${SEP}`,
     },
 };
 
-// ── LOGICA GIOCO ─────────────────────────────────────────────────────────────
+// ── LOGICA GIOCO 
 
 const shuffle = (arr) => {
     const a = arr.slice();

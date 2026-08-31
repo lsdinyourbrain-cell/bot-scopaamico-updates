@@ -35,7 +35,7 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
 
         const fact = facts[Math.floor(Math.random() * facts.length)];
-        await sendButtons(sock, from, `🧠 *_LO SAPEVI?_*\n━━━━━━━━━━━━━━\n▸ _${fact}_\n━━━━━━━━━━━━━━\n`, [
+        await sendButtons(sock, from, `🧠 *_LO SAPEVI?_*\n\n▸ _${fact}_\n\n`, [
             { label: '.fact', id: 'fact' },
         ], msg);
     },

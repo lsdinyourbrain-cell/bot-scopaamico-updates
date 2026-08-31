@@ -2,15 +2,15 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  FILM — Vex Bot
 //  10 film casuali/trending da TMDB: locandina, anno, voto + pulsante
 //  🎬 Trailer che lancia la ricerca su YouTube (yt-dlp).
 //  Serve una chiave TMDB gratuita (https://www.themoviedb.org/settings/api):
 //    .film set "la-tua-chiave"   (o variabile TMDB_API_KEY)
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 const BASE = 'https://api.themoviedb.org/3';
 const IMG = 'https://image.tmdb.org/t/p/w500';
@@ -27,7 +27,7 @@ module.exports = {
         const t = String(textArgs || '').trim();
         const [w1, w2] = t.split(/\s+/);
 
-        // ── SALVA CHIAVE TMDB ────────────────────────────────────────────
+        // ── SALVA CHIAVE TMDB 
         if (w1 === 'set') {
             const rawKey = (w2 || '').trim().replace(/^["']|["']$/g, '');
             if (!rawKey || rawKey.length < 10) {
@@ -36,7 +36,7 @@ module.exports = {
             if (!db._tmdb) db._tmdb = {};
             db._tmdb.apiKey = rawKey;
             saveDB();
-            return reply('✅ *_CHIAVE TMDB SALVATA_*\n━━━━━━━━━━━━━━━━━━\n▸ Ora usa `.film` per _i film casuali_.\n');
+            return reply('✅ *_CHIAVE TMDB SALVATA_*\n\n▸ Ora usa `.film` per _i film casuali_.\n');
         }
 
         const apiKey = (db?._tmdb?.apiKey) || process.env.TMDB_API_KEY || '';
@@ -54,12 +54,12 @@ ${SEP}
                 [{ label: 'ℹ️ Guida TMDB', id: 'film guida' }], msg);
         }
 
-        // ── GUIDA CHIAVE ─────────────────────────────────────────────────
+        // ── GUIDA CHIAVE 
         if (w1 === 'guida') {
             return reply(`🎬 *_CHIAVE TMDB (GRATUITA)_*\n${SEP}\n▸ 1. _Vai su themoviedb.org_\n▸ 2. _Registrati (gratis)_\n▸ 3. _Impostazioni → API_\n▸ 4. _Crea una chiave_\n▸ 5. _Salvala qui:_\n${SEP}\n▸ \`.film set "la-tua-chiave"\`\n${SEP}\n▸ Poi \`.film\` per _i film!_\n`);
         }
 
-        // ── TRAILER SU YOUTUBE ──────────────────────────────────────────
+        // ── TRAILER SU YOUTUBE 
         if (w1 === 'trailer') {
             const title = (w2 || '').replace(/\+/g, ' ').trim();
             if (!title) return reply(`${sec('ERRORE')}
@@ -86,7 +86,7 @@ ${SEP}
             }
         }
 
-        // ── CAROSELLO 10 FILM ────────────────────────────────────────────
+        // ── CAROSELLO 10 FILM 
         try {
             const page = Math.floor(Math.random() * 5) + 1;
             const { data } = await axios.get(`${BASE}/trending/movie/week`, {

@@ -25,15 +25,15 @@ ${boxEnd()}`);
 
         if (action === 'encode' || action === 'e') {
             const encoded = Buffer.from(input).toString('hex');
-            await reply(`🔢 *_HEX ENCODE_*\n━━━━━━━━━━━━━━\n▸ \`${encoded}\`\n━━━━━━━━━━━━━━\n`);
+            await reply(`🔢 *_HEX ENCODE_*\n\n▸ \`${encoded}\`\n\n`);
         } else if (action === 'decode' || action === 'd') {
             try {
                 const decoded = Buffer.from(input, 'hex').toString('utf-8');
-                await reply(`🔢 *_HEX DECODE_*\n━━━━━━━━━━━━━━\n▸ \`${decoded}\`\n━━━━━━━━━━━━━━\n`);
+                await reply(`🔢 *_HEX DECODE_*\n\n▸ \`${decoded}\`\n\n`);
             } catch { await reply("⚠️ _Hex non valido._"); }
         } else {
             const encoded = Buffer.from(textArgs).toString('hex');
-            await reply(`🔢 *_HEX ENCODE_*\n━━━━━━━━━━━━━━\n▸ \`${encoded}\`\n━━━━━━━━━━━━━━\n`);
+            await reply(`🔢 *_HEX ENCODE_*\n\n▸ \`${encoded}\`\n\n`);
         }
     },
 };

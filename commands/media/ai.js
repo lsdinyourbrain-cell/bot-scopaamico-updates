@@ -14,7 +14,7 @@ module.exports = {
 
             if (!textArgs) return reply("Fammi una domanda! Esempio: `.ai Qual è la capitale della Francia?`");
 
-            // ── SALVA LA API KEY (.ai set "sk-or-v1-...") ──────────────────
+            // ── SALVA LA API KEY (.ai set "sk-or-v1-...") 
             // La key viene conservata nel database del bot (persistente, e
             // sincronizzata col backup Gist), quindi non serve modificare .env.
             const setMatch = textArgs.trim().match(/^set\s+(.+)$/i);

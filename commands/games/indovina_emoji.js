@@ -2,12 +2,12 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  INDOVINA_EMOJI — Vex Bot
 //  Indovina film/serie/canzoni dai "rebus" a emoji. Livelli facile/media/
 //  difficile come l'impiccato. Risposta via pulsanti (3 opzioni).
 //  Stato della partita in db[from].emojiGame.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 // Rebus: { emoji, answer (nome), hints: [risposte sbagliate] }
 const PUZZLES = [
@@ -62,7 +62,7 @@ const cleanAnswers = (arr) => arr.filter(p => {
     return Boolean(clean);
 });
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 const LEVELS = {
     facile:    { emoji: '🟢', label: 'FACILE',    color: '🟢' },
@@ -93,7 +93,7 @@ module.exports = {
         const q = String(textArgs || '').trim().toLowerCase();
         const [w1, w2] = q.split(/\s+/);
 
-        // ── RISPOSTA DA PULSANTE ─────────────────────────────────────────
+        // ── RISPOSTA DA PULSANTE 
         if (w1 === 'risp' && w2) {
             const g = db[from]?.emojiGame;
             if (!g || !g.active) return reply('Nessuna partita attiva. Usa `.indovina_emoji`!');
@@ -134,7 +134,7 @@ Ancora: *${g.emoji}*
             }
         }
 
-        // ── RIVELA / PASSA ───────────────────────────────────────────────
+        // ── RIVELA / PASSA 
         if (w1 === 'passa' || w1 === 'rivela' || w1 === 'answer') {
             const g = db[from]?.emojiGame;
             if (!g?.active) return reply('Nessuna partita attiva.');
@@ -149,7 +149,7 @@ ${SEP}`,
                 ], msg);
         }
 
-        // ── SELEZIONE LIVELLO ────────────────────────────────────────────
+        // ── SELEZIONE LIVELLO 
         const level = LEVELS[q];
         if (!level) {
             if (db[from]?.emojiGame?.active && q === '') {
@@ -173,7 +173,7 @@ ${SEP}`,
                 ], msg);
         }
 
-        // ── NUOVO REBUS ─────────────────────────────────────────────────
+        // ── NUOVO REBUS 
         const pool = cleanAnswers(PUZZLES).filter(p => p.level === q || (!q && true));
         const pick = randomChoice(pool.length ? pool : cleanAnswers(PUZZLES));
 

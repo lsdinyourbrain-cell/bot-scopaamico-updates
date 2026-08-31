@@ -89,7 +89,7 @@ ${boxEnd()}`);
             fs.writeFileSync(path.join(services.projectDir, 'logs', 'diagnostica.txt'), report + '\n', 'utf-8');
         } catch (_) {}
 
-        const header = `🩺 *_Diagnostica del bot_*\n━━━━━━━━━━━━━━━━━━\n`;
+        const header = `🩺 *_Diagnostica del bot_*\n\n`;
         const chunks = [];
         let current = header;
         for (const line of out) {
@@ -97,7 +97,7 @@ ${boxEnd()}`);
             current += line + '\n';
         }
         if (current) chunks.push(current);
-        chunks[chunks.length - 1] = chunks[chunks.length - 1].trimEnd() + '\n━━━━━━━━━━━━━━━━━━\n📄 _Report salvato in logs/diagnostica.txt_\n';
+        chunks[chunks.length - 1] = chunks[chunks.length - 1].trimEnd() + '\n\n📄 _Report salvato in logs/diagnostica.txt_\n';
         for (const c of chunks) {
             await sock.sendMessage(from, { text: c }, { quoted: msg });
         }

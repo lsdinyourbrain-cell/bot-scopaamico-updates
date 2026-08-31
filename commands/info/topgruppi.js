@@ -2,7 +2,7 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-const SEP = '━━━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 

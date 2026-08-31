@@ -60,7 +60,7 @@ ${boxEnd()}`);
 
             await sleep(1000);
             await sock.sendMessage(from, {
-                text: `⚔️ *_DUELLO_*\n━━━━━━━━━━━━━━\n@${sShort} sfida\n@${tShort} a duello!\n\n▸ *Puntata:* _${puntata}€_\n`,
+                text: `⚔️ *_DUELLO_*\n\n@${sShort} sfida\n@${tShort} a duello!\n\n▸ *Puntata:* _${puntata}€_\n`,
                 mentions: [senderPn, tgtPn],
             });
             await sleep(2000);
@@ -81,7 +81,7 @@ ${boxEnd()}`);
             saveDB();
 
             await sock.sendMessage(from, {
-                text: `⚔️ *_RISULTATO DUELIO_*\n━━━━━━━━━━━━━━\n🎲 @${sShort} tira _${tiro1}_\n🎲 @${tShort} tira _${tiro2}_\n\n${msgText}\n`,
+                text: `⚔️ *_RISULTATO DUELIO_*\n\n🎲 @${sShort} tira _${tiro1}_\n🎲 @${tShort} tira _${tiro2}_\n\n${msgText}\n`,
                 mentions: [senderPn, tgtPn],
             });
     },

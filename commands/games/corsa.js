@@ -2,14 +2,14 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  CORSA — Vex Bot
 //  Gara di gruppo a turni: ogni partecipante risponde a mini-sfide a scelta
 //  multipla (pulsanti). Chi arriva prima al traguardo (3 risposte giuste)
 //  vince il montepremi. Lo stato vive in db[from].corsaGame.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 const ROUNDS_TO_WIN = 3;
 const MAX_PLAYERS = 8;
 const JOIN_TIME_MS = 60000; // finestra di iscrizione
@@ -67,7 +67,7 @@ module.exports = {
         // In LID mode il sender è un @lid: nei testi mostriamo il PN reale.
         const show = (jid, alt) => String(alt || jid || '').split('@')[0];
 
-        // ── PARTECIPA ────────────────────────────────────────────────────
+        // ── PARTECIPA 
         if (w1 === 'partecipa' || w1 === 'join' || w1 === 'io') {
             if (!g || !g.active || g.phase !== 'join') {
                 return sendButtons(sock, from,
@@ -103,7 +103,7 @@ Quando siete pronti, premi
                 ], msg, [sender]);
         }
 
-        // ── INIZIA ───────────────────────────────────────────────────────
+        // ── INIZIA 
         if (w1 === 'inizia' || w1 === 'start') {
             if (!g || !g.active || g.phase !== 'join') {
                 return reply('Non c\'è una gara in iscrizione. Usa `.corsa partecipa`!');
@@ -121,7 +121,7 @@ ${boxEnd()}`);
             return askTurn(sock, from, msg, services);
         }
 
-        // ── RISPOSTA (da pulsante) ───────────────────────────────────────
+        // ── RISPOSTA (da pulsante) 
         if (w1 === 'risp') {
             const gioc = g?.players?.find(p => p.jid === sender);
             if (!g || !g.active || g.phase !== 'playing') return reply('Nessuna gara in corso. `.corsa partecipa`!');
@@ -169,7 +169,7 @@ Prossima sfida 👇`,
             return reply(`❌ Sbagliata @${show(sender, senderAlt)}! Hai risposto "*(${answer})*". ${g.question?.q}`);
         }
 
-        // ── STATO ────────────────────────────────────────────────────────
+        // ── STATO 
         if (w1 === 'stato' || w1 === 'status') {
             if (!g || !g.active) return reply('Nessuna gara attiva.');
             return sendButtons(sock, from,
@@ -184,7 +184,7 @@ ${SEP}`,
                 ], msg);
         }
 
-        // ── DEFAULT: crea lobby (se nessuna) ─────────────────────────────
+        // ── DEFAULT: crea lobby (se nessuna) 
         if (!g || !g.active) {
             db[from] = db[from] || {};
             db[from].corsaGame = {

@@ -2,12 +2,12 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  STRUTTURA — Vex Bot (solo OWNER)
 //  Mostra tutte le cartelle del bot con i NOMI dei file che contengono.
 //  Solo nomi, nessun contenuto. Esclude le cartelle tecniche pesanti
 //  (node_modules, .git, sessione, media generati).
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const fs = require('fs');
 const path = require('path');

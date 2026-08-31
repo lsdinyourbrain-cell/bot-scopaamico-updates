@@ -20,7 +20,7 @@ module.exports = {
         try {
             const media = await downloadMediaBuffer(sock, msg, from, contextInfo, sender, downloadMediaMessage);
             if (!media || media.kind === 'video') {
-                return reply("⚠️ _[uso]: rispondi a un'immagine (o uno sticker) per convertirla in ASCII._\n━━━━━━━━━━━━━━\n▸ Uso: `.ascii` oppure `.ascii 60` — _per la larghezza_.");
+                return reply("⚠️ _[uso]: rispondi a un'immagine (o uno sticker) per convertirla in ASCII._\n\n▸ Uso: `.ascii` oppure `.ascii 60` — _per la larghezza_.");
             }
 
             const prog = await showProgress(sock, from, { label: 'ASCII ART', duration: 2500, quoted: msg });
@@ -35,7 +35,7 @@ module.exports = {
             }
 
             await sock.sendMessage(from, { text: `\`\`\`\n${ascii}\n\`\`\`` }, { quoted: msg });
-            await prog.done('🖼️ *_ASCII ART_*\n━━━━━━━━━━━━━━\n▸ _ASCII Art pronta!_\n');
+            await prog.done('🖼️ *_ASCII ART_*\n\n▸ _ASCII Art pronta!_\n');
         } catch (e) {
             console.error('[ascii]', e.message);
             return reply("❌ Errore durante la conversione. Riprova con un'immagine più semplice.");

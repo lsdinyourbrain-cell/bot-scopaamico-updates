@@ -2,15 +2,15 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  CERTIFICATO — Vex Bot
 //  Genera un certificato personalizzato (immagine) con nome, titolo e data.
 //  Uso: .certificato  → per chi invia il comando
 //       .certificato @amico  → per il taggato
 //       .certificato [titolo/descrizione]
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 // Sfugge il testo per l'SVG (non deve rompere l'XML).
 const esc = (s) => String(s)

@@ -24,7 +24,7 @@ ${boxEnd()}`);
         try {
             const senderLabel = `${sender.split('@')[0]} (${isGroup ? 'in gruppo' : 'in privato'})`;
             await sock.sendMessage(ownerJid, {
-                text: `🐛 *_SEGNALAZIONE_*\n━━━━━━━━━━━━━━━━━━\n▸ 👤 Da: _${senderLabel}_\n▸ 📍 Chat: _${from}_\n━━━━━━━━━━━━━━━━━━\n▸ 📝 ${issue.slice(0, 1000)}`,
+                text: `🐛 *_SEGNALAZIONE_*\n\n▸ 👤 Da: _${senderLabel}_\n▸ 📍 Chat: _${from}_\n\n▸ 📝 ${issue.slice(0, 1000)}`,
             });
             await reply(
 `✅ *_SEGNALAZIONE INVIATA_*

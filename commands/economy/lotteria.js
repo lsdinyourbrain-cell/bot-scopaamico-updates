@@ -38,7 +38,7 @@ ${boxEnd()}`);
                 delete db[from].lotteria;
                 saveDB();
                 return await sock.sendMessage(from, {
-                    text: `🎉 *_VINCITORE LOTTERIA!_*\n━━━━━━━━━━━━━━\n▸ 🏆 @${dispOf(winner, resolveJid(winner, meta))} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n━━━━━━━━━━━━━━\n`,
+                    text: `🎉 *_VINCITORE LOTTERIA!_*\n\n▸ 🏆 @${dispOf(winner, resolveJid(winner, meta))} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n\n`,
                     mentions: [winner],
                 });
             }
@@ -59,7 +59,7 @@ ${boxEnd()}`);
             saveDB();
 
             const poolFinale = Math.floor(lotto.pool);
-            await sendButtons(sock, from, `🎟️ *_LOTTERIA_*\n━━━━━━━━━━━━━━\n▸ ✅ Hai comprato un biglietto!\n▸ 🎟️ Totale tuoi: _${lotto.tickets[sender]}_\n▸ 💰 Montepremi: _${poolFinale}€_\n━━━━━━━━━━━━━━\n`, [
+            await sendButtons(sock, from, `🎟️ *_LOTTERIA_*\n\n▸ ✅ Hai comprato un biglietto!\n▸ 🎟️ Totale tuoi: _${lotto.tickets[sender]}_\n▸ 💰 Montepremi: _${poolFinale}€_\n\n`, [
                 { label: '.lotteria', id: 'lotteria' },
                 { label: '.lotteria estrai', id: 'lotteria estrai' },
             ], msg);

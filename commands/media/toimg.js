@@ -35,8 +35,8 @@ ${boxEnd()}`);
             const pngPath = path.join(os.tmpdir(), `${stamp}.png`);
             await sharp(buffer).png().toFile(pngPath);
 
-            await sock.sendMessage(from, { image: fs.readFileSync(pngPath), caption: '🖼️ *_TOIMG_*\n━━━━━━━━━━━━━━\n▸ _Ecco la tua immagine!_\n' }, { quoted: msg });
-            await prog.done('🖼️ *_IMMAGINE PRONTA_*\n━━━━━━━━━━━━━━\n▸ _Immagine pronta!_\n');
+            await sock.sendMessage(from, { image: fs.readFileSync(pngPath), caption: '🖼️ *_TOIMG_*\n\n▸ _Ecco la tua immagine!_\n' }, { quoted: msg });
+            await prog.done('🖼️ *_IMMAGINE PRONTA_*\n\n▸ _Immagine pronta!_\n');
             try { fs.unlinkSync(pngPath); } catch (e) {}
         } catch (err) {
             console.error('[toimg]', err.message);

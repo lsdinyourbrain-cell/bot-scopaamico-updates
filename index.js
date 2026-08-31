@@ -1647,6 +1647,34 @@ async function startBot() {
     });
     activeSock = sock;
 
+    // ── WRAPPER GLOBALE: auto-grafica per ogni sendMessage diretto ────────
+    // Anche i sock.sendMessage diretti (non via reply) vengono avvolti
+    const _origSend = sock.sendMessage.bind(sock);
+    const decorateText = (t) => {
+        if (!t || typeof t !== 'string' || t.includes('⋆｡˚') || t.includes('╰⭒')) return t;
+        let body = String(t).replace(/◈\s*_Vex Bot_\s*/gi,'').replace(/◈\s*_VEX BOT_\s*/gi,'').trim();
+        body = body.split('\n').map(l=>{ const s=l.trim(); if(/^[━─═━┈╌─]+$/.test(s)||/^◈/.test(s)||/^━+$/.test(s)) return ''; return l; }).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+        if (!body) return t;
+        let title = 'VEX';
+        const m1 = body.match(/^\s*[^\n]*\*([^*]{2,20})\*/);
+        if (m1) { const c=m1[1].replace(/[_*`]/g,'').trim().toUpperCase().slice(0,15); if(c) title=c; }
+        const lines = body.split('\n').map(l=>{ let s=l.trim(); if(!s) return ''; return '│ '+s.replace(/^▸\s*/,'').replace(/^•\s*/,''); }).filter(Boolean).join('\n');
+        let dec = `ㅤㅤ⋆｡˚『 ╭ \`${title}\` ╯ 』˚｡⋆\n╭\n${lines}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+        if (Buffer.byteLength(dec,'utf8')>1024) dec = dec.slice(0,1015)+'…\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─';
+        return dec;
+    };
+    sock.sendMessage = async (jid, content, opts) => {
+        try {
+            if (content && typeof content.text === 'string' && !content.text.includes('⋆｡˚')) {
+                content = { ...content, text: decorateText(content.text) };
+            }
+            if (content && typeof content.caption === 'string' && content.caption && !content.caption.includes('⋆｡˚') && content.caption.length < 800) {
+                content = { ...content, caption: decorateText(content.caption) };
+            }
+        } catch(_){}
+        return _origSend(jid, content, opts);
+    };
+
     // ── PAIRING CODE (Termux: bash start.sh -> 2) ────────────────────────
     if (usePairingCode && !state.creds.registered) {
         let phoneNumber = process.env.PAIRING_NUMBER || '';

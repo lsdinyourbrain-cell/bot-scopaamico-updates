@@ -15,7 +15,7 @@ module.exports = {
             const recipient = targetJid || sender;
             const flower = randomChoice(ARRAYS.fiori);
             await sock.sendMessage(from, {
-                text: `🌷 *_UN FIORE PER TE_*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} regala a @${recipient.split('@')[0]}\n▸ ${flower} ✨\n━━━━━━━━━━━━━━\n`,
+                text: `🌷 *_UN FIORE PER TE_*\n\n▸ @${sender.split('@')[0]} regala a @${recipient.split('@')[0]}\n▸ ${flower} ✨\n\n`,
                 mentions: [sender, recipient],
             }, { quoted: msg });
     },

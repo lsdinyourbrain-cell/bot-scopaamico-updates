@@ -47,10 +47,10 @@ ${boxEnd()}`);
             logGroupEvent(from, 'ban', sender, null, targetJid, 'rimosso dal gruppo');
 
             await sendButtons(sock, from,
-                `👋 ${sec('BAN')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n`,
+                `👋 ${sec('BAN')}\n\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
-                    text: `👋 ${sec('BAN')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n━━━━━━━━━━━━━━━━━━\n`,
+                    text: `👋 ${sec('BAN')}\n\n▸ @${short} è stato/a *rimosso/a* dal gruppo.\n\n`,
                     mentions: [useJid],
                 }, { quoted: msg }));
         } catch (_) {

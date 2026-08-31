@@ -34,6 +34,6 @@ ${line("all'Owner del bot.")}
 ${boxEnd()}`);
 
         setBotActive(false);
-        await reply("⚙️ *_SISTEMA_*\n━━━━━━━━━━━━━━━━━━\n▸ 🛑 Bot in modalità\n  _SOSPENSIONE_.\n▸ Non risponderò a nessuno,\n  tranne che all'Owner.\n━━━━━━━━━━━━━━━━━━\n");
+        await reply("⚙️ *_SISTEMA_*\n\n▸ 🛑 Bot in modalità\n  _SOSPENSIONE_.\n▸ Non risponderò a nessuno,\n  tranne che all'Owner.\n\n");
     },
 };

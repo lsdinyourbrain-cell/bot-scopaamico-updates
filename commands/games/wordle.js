@@ -61,7 +61,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `${diff.emoji} *WORDLE* · ${diff.key.toUpperCase()}\n━━━━━━━━━━━━━━━━━━\n🎉 Dai, si parte!\nChe figata 🔥\n🎯 Parola segreta di *${WORD_LEN}* lettere.\n🟩 verde = giusta, posto giusto\n🟨 giallo = giusta, ma spostata\n⬛ grigio = lettera assente\n\n_Hai ${diff.attempts} tentativi!_ \n_Scrivi una parola._\n━━━━━━━━━━━━━━━━━━`,
+            caption: `${diff.emoji} *WORDLE* · ${diff.key.toUpperCase()}\n\n🎉 Dai, si parte!\nChe figata 🔥\n🎯 Parola segreta di *${WORD_LEN}* lettere.\n🟩 verde = giusta, posto giusto\n🟨 giallo = giusta, ma spostata\n⬛ grigio = lettera assente\n\n_Hai ${diff.attempts} tentativi!_ \n_Scrivi una parola._\n`,
         }, { quoted: msg });
 
         db[from].wordleGame.lastMsgKey = sent?.key || null;

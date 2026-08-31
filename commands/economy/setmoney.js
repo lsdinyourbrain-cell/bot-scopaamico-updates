@@ -43,6 +43,6 @@ ${boxEnd()}`);
         const verb = diff >= 0 ? 'aggiunti' : 'rimossi';
         const emoji = diff >= 0 ? '➕' : '➖';
 
-        return reply(`💵 *_SOLDI_IMPOSTATI!_*\n━━━━━━━━━━━━━━\n▸ @${disp(target)}: _${prevMoney}€_ → _${amount}€_\n▸ ${emoji} ${verb} _${Math.abs(diff)}€_\n━━━━━━━━━━━━━━\n▸ 💳 Saldo attuale: _${formatMoney(targetData.money)}_\n`);
+        return reply(`💵 *_SOLDI_IMPOSTATI!_*\n\n▸ @${disp(target)}: _${prevMoney}€_ → _${amount}€_\n▸ ${emoji} ${verb} _${Math.abs(diff)}€_\n\n▸ 💳 Saldo attuale: _${formatMoney(targetData.money)}_\n`);
     },
 };

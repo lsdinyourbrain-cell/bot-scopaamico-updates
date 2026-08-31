@@ -55,7 +55,7 @@ module.exports = {
 
             try {
                 const flagUrl = `https://flagcdn.com/w320/${pick.code.toLowerCase()}.png`;
-                const caption = `🏁 *_INDOVINA LA BANDIERA_*\n━━━━━━━━━━━━━━\n${optionsText}\n\n⚡ Rispondi con A/B/C/D!\n⏳ Hai 30 secondi!\n`;
+                const caption = `🏁 *_INDOVINA LA BANDIERA_*\n\n${optionsText}\n\n⚡ Rispondi con A/B/C/D!\n⏳ Hai 30 secondi!\n`;
                 await sock.sendMessage(from, {
                     image: { url: flagUrl },
                     caption,

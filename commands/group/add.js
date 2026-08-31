@@ -19,7 +19,7 @@ module.exports = {
         const { from, sender, isGroup, isOwner, isSenderAdmin, isBotAdmin, reply, textArgs, services } = context;
         const { db, saveDB, axios } = services;
 
-        // ── DM: .add <link> → il bot entra nel gruppo/community ────────────
+        // ── DM: .add <link> → il bot entra nel gruppo/community 
         if (!isGroup) {
             if (!isOwner) return reply("⚠️ _[uso]:_ in privato *\.add* è riservato all'*Owner del bot*.");
             const code = extractInviteCode(textArgs);
@@ -30,7 +30,7 @@ ${boxEnd()}`);
             return joinViaInvite(sock, from, code, reply);
         }
 
-        // ── GRUPPO: aggiungi un utente al gruppo ───────────────────────────
+        // ── GRUPPO: aggiungi un utente al gruppo 
         if (!isSenderAdmin) return reply(`${sec('ERRORE')}
 ${boxOpen()}
 ${line('solo gli admin.')}
@@ -100,7 +100,7 @@ ${boxEnd()}`);
 ${communityJid ? '▸ Sono entrato nella community e in tutti i suoi gruppi.' : '▸ Sono entrato nella community.'}
 ▸ *Gruppi:*
 ${groups}
-━━━━━━━━━━━━━━`
+`
             );
         } catch (e) {
             console.error('[add] Errore ingresso community:', e.message);
@@ -119,7 +119,7 @@ ${groups}
         }
         return reply(`✅ *_RICHIESTA INVIATA_*
 ▸ Richiesta di ingresso inviata al gruppo _(attende approvazione di un admin)_.
-━━━━━━━━━━━━━━`);
+`);
     } catch (e) {
         console.error('[add] Errore ingresso gruppo:', e.message);
         return reply("⚠️ _[uso]:_ non riesco a entrare nel gruppo. Potrebbe richiedere l'approvazione di un admin o il link è scaduto.");

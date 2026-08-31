@@ -71,7 +71,7 @@ ${boxEnd()}`);
             const isRicco = (thiefData.money > 5000) || (thiefData.totaleRubato > 5000);
             const extraRicco = isRicco ? `\n▸ _${pickFrase()}_` : '';
             await sock.sendMessage(from, {
-                text: `🕵️ *_FURTO!_*\n━━━━━━━━━━━━━━\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!${extraRicco}\n━━━━━━━━━━━━━━\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n`,
+                text: `🕵️ *_FURTO!_*\n\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!${extraRicco}\n\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n`,
                 mentions: [sender, targetJid],
             });
     },

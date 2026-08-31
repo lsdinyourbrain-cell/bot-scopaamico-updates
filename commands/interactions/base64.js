@@ -25,16 +25,16 @@ ${boxEnd()}`);
 
         if (action === 'encode' || action === 'e') {
             const encoded = Buffer.from(input).toString('base64');
-            await reply(`📦 *_BASE64 ENCODE_*\n━━━━━━━━━━━━━━\n▸ \`${encoded}\`\n━━━━━━━━━━━━━━\n`);
+            await reply(`📦 *_BASE64 ENCODE_*\n\n▸ \`${encoded}\`\n\n`);
         } else if (action === 'decode' || action === 'd') {
             try {
                 const decoded = Buffer.from(input, 'base64').toString('utf-8');
-                await reply(`📦 *_BASE64 DECODE_*\n━━━━━━━━━━━━━━\n▸ \`${decoded}\`\n━━━━━━━━━━━━━━\n`);
+                await reply(`📦 *_BASE64 DECODE_*\n\n▸ \`${decoded}\`\n\n`);
             } catch { await reply("⚠️ _Testo non valido per decodifica Base64._"); }
         } else {
             // Default: encode
             const encoded = Buffer.from(textArgs).toString('base64');
-            await reply(`📦 *_BASE64 ENCODE_*\n━━━━━━━━━━━━━━\n▸ \`${encoded}\`\n━━━━━━━━━━━━━━\n`);
+            await reply(`📦 *_BASE64 ENCODE_*\n\n▸ \`${encoded}\`\n\n`);
         }
     },
 };

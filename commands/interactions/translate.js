@@ -40,7 +40,7 @@ ${boxEnd()}`);
             const translated = (data?.[0] || []).map(seg => seg?.[0] || '').join('').trim();
             if (!translated) return prog.done('⚠️ _Non riesco a tradurre questo testo._');
             const detected = data?.[2] || '?';
-            await prog.done(`🌐 *_TRADUZIONE_*\n━━━━━━━━━━━━━━\n▸ _Da ${detected} a ${target.toUpperCase()}_\n▸ ${translated}\n━━━━━━━━━━━━━━\n`);
+            await prog.done(`🌐 *_TRADUZIONE_*\n\n▸ _Da ${detected} a ${target.toUpperCase()}_\n▸ ${translated}\n\n`);
         } catch (_) {
             await reply('⚠️ _Errore nella traduzione. Riprova più tardi._');
         }

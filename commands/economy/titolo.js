@@ -16,24 +16,24 @@ module.exports = {
 
         if (!text) {
             const current = me.title ? `*${me.title.slice(0, 25)}*` : '_nessun titolo_';
-            return reply(`🏷️ *_IL TUO TITOLO_*\n━━━━━━━━━━━━━━\n▸ 🏷️ Titolo: ${current}\n▸ 📝 Impostane uno con _.titolo_\n▸ 🔠 _max 25 caratteri_\n━━━━━━━━━━━━━━\n`);
+            return reply(`🏷️ *_IL TUO TITOLO_*\n\n▸ 🏷️ Titolo: ${current}\n▸ 📝 Impostane uno con _.titolo_\n▸ 🔠 _max 25 caratteri_\n\n`);
         }
 
         if (text === '-') {
             delete me.title;
             saveDB();
-            return reply("🗑️ Titolo rimosso.\n━━━━━━━━━━━━━━\n");
+            return reply("🗑️ Titolo rimosso.\n\n");
         }
 
         if (text.length > 25) {
             return reply(`${sec('ERRORE')}
 ${boxOpen()}
-${line('Massimo 25 caratteri per il titolo. ━━━━━━━━━━━━━━')}
+${line('Massimo 25 caratteri per il titolo. ')}
 ${boxEnd()}`);
         }
 
         me.title = text;
         saveDB();
-        return reply(`🏷️ *_TITOLO IMPOSTATO_*\n━━━━━━━━━━━━━━\n▸ Da ora il tuo profilo mostra:\n▸ 👉 *${text}*\n━━━━━━━━━━━━━━\n`);
+        return reply(`🏷️ *_TITOLO IMPOSTATO_*\n\n▸ Da ora il tuo profilo mostra:\n▸ 👉 *${text}*\n\n`);
     },
 };

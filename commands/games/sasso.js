@@ -15,7 +15,7 @@ module.exports = {
             const choices = ['sasso', 'carta', 'forbici'];
             const userChoice = (args[0] || '').toString().toLowerCase() || command;
             if (!choices.includes(userChoice)) {
-                return await sendButtons(sock, from, "✊ ✋ ✌️ *_SASSO CARTA FORBICI_*\n━━━━━━━━━━━━━━\n▸ Scegli la tua mossa:\n", [
+                return await sendButtons(sock, from, "✊ ✋ ✌️ *_SASSO CARTA FORBICI_*\n\n▸ Scegli la tua mossa:\n", [
                     { label: '.sasso', id: 'sasso' },
                     { label: '.carta', id: 'carta' },
                     { label: '.forbici', id: 'forbici' },
@@ -28,7 +28,7 @@ module.exports = {
                 : beats[userChoice] === botChoice
                     ? '🥳 Hai vinto, easy.'
                     : '😅 Stavolta vince il bot.';
-            await sendButtons(sock, from, `✊ ✋ ✌️ *_SASSO CARTA FORBICI_*\n━━━━━━━━━━━━━━\n▸ *Tu:* _${userChoice}_\n▸ *Bot:* _${botChoice}_\n\n${result}\n`, [
+            await sendButtons(sock, from, `✊ ✋ ✌️ *_SASSO CARTA FORBICI_*\n\n▸ *Tu:* _${userChoice}_\n▸ *Bot:* _${botChoice}_\n\n${result}\n`, [
                 { label: '.sasso', id: 'sasso' },
                 { label: '.carta', id: 'carta' },
                 { label: '.forbici', id: 'forbici' },

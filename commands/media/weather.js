@@ -13,7 +13,7 @@ module.exports = {
 
 
             if (!textArgs) return sendButtons(sock, from,
-                "⚠️ _[uso]: scrivi una città._\n━━━━━━━━━━━━━━━━━━\n▸ Esempio: `.weather Milano`",
+                "⚠️ _[uso]: scrivi una città._\n\n▸ Esempio: `.weather Milano`",
                 [{ label: '.weather Roma', id: 'weather Roma' }],
                 msg);
             try {

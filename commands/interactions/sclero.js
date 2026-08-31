@@ -13,7 +13,7 @@ module.exports = {
 
 
             await sock.sendMessage(from, {
-                text: `🤯 *_SCLERO_*\n━━━━━━━━━━━━━━\n▸ 👤 @${sender.split('@')[0]}\n▸ 💢 _${randomChoice(ARRAYS.sclero)}_\n━━━━━━━━━━━━━━\n`,
+                text: `🤯 *_SCLERO_*\n\n▸ 👤 @${sender.split('@')[0]}\n▸ 💢 _${randomChoice(ARRAYS.sclero)}_\n\n`,
                 mentions: [sender],
             });
     },

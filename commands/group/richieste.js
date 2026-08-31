@@ -55,7 +55,7 @@ ${boxEnd()}`);
             }
         }
 
-        // ── Lista richieste ──────────────────────────────────────────────
+        // ── Lista richieste 
         try {
             const requests = await sock.groupRequestParticipantsList(from);
             if (!requests || requests.length === 0) return reply(`${sec('ERRORE')}

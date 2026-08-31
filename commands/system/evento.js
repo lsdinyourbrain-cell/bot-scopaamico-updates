@@ -17,7 +17,7 @@ module.exports = {
         const sub = String(textArgs || '').trim().toLowerCase().split(/\s+/)[0];
         const canManage = isOwner || (isGroup && isSenderAdmin);
 
-        // ── EVENTO BOSS: spara al boss ────────────────────────────────────
+        // ── EVENTO BOSS: spara al boss 
         if (sub === 'boss') {
             const shot = EV.bossShot(db, from, sender);
             if (shot.error === 'noboss') {
@@ -51,17 +51,17 @@ module.exports = {
 `);
         }
 
-        // ── EVENTO RACCOGLI: pioggia di soldi ─────────────────────────────
+        // ── EVENTO RACCOGLI: pioggia di soldi 
         if (sub === 'raccogli') {
             const rain = EV.takeRain(db, from);
             if (!rain) return reply("🌤️ Nessuna pioggia di soldi da raccogliere ora.");
             const u = getUser(sender, from);
             u.money = (u.money || 0) + rain.amount;
             saveDB();
-            return reply(`🌧️ *PIOGGIA RACCOLTA!* 🌧️\n━━━━━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha preso _+${rain.amount}€_\n▸ Saldo: _${u.money}€_\n━━━━━━━━━━━━━━━━━━\n`);
+            return reply(`🌧️ *PIOGGIA RACCOLTA!* 🌧️\n\n▸ @${sender.split('@')[0]} ha preso _+${rain.amount}€_\n▸ Saldo: _${u.money}€_\n\n`);
         }
 
-        // ── EVENTO APRI: cassa misteriosa ─────────────────────────────────
+        // ── EVENTO APRI: cassa misteriosa 
         if (sub === 'apri' || sub === 'cassa') {
             const res = EV.openCassa(db, from, sender);
             if (res.error === 'off') {
@@ -79,10 +79,10 @@ module.exports = {
             u.money = (u.money || 0) + res.money;
             saveDB();
             const badgeLine = res.badge ? '\n▸ 🏅 Pregio: *Fortunato della Cassa*' : '';
-            return reply(`🎁 *CASSA MISTERIOSA* 🎁\n━━━━━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ha trovato\n  _+${res.money}€_${badgeLine}\n▸ Saldo: _${u.money}€_\n▸ Prossima cassa: _60 min_\n━━━━━━━━━━━━━━━━━━\n`);
+            return reply(`🎁 *CASSA MISTERIOSA* 🎁\n\n▸ @${sender.split('@')[0]} ha trovato\n  _+${res.money}€_${badgeLine}\n▸ Saldo: _${u.money}€_\n▸ Prossima cassa: _60 min_\n\n`);
         }
 
-        // ── GESTIONE (solo owner/admin) ───────────────────────────────────
+        // ── GESTIONE (solo owner/admin) 
         if (sub === 'start' || sub === 'stop' || sub === 'random' || sub === 'casuale') {
             if (!canManage) return reply(`${sec('ERRORE')}
 ${boxOpen()}
@@ -164,7 +164,7 @@ ${boxEnd()}`);
 `);
         }
 
-        // ── STATO EVENTI ─────────────────────────────────────────────────
+        // ── STATO EVENTI 
         const attivi = EV.activeList(db, from);
         const nowLines = attivi.length
             ? attivi.map(t => {

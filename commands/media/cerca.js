@@ -79,7 +79,7 @@ const fmtViews = (n) => {
 
 const totalPages = (results) => Math.max(1, Math.ceil(results.length / 2));
 
-// ── UI PRINCIPALE: CAROSELLO (card orizzontali scorrevoli) ────────────────
+// ── UI PRINCIPALE: CAROSELLO (card orizzontali scorrevoli) 
 // Una card per video con thumbnail, titolo, canale e 3 pulsanti:
 // MP3 (download diretto), MP4 (download diretto), Info (dettagli).
 const buildCards = (results) => results.map((v, i) => {
@@ -111,7 +111,7 @@ module.exports = {
 
         const textArgs = (args || []).join(' ').trim();
 
-        // ── AGISCI SUI PULSANTI / SOTTOCOMANDI ────────────────────────────
+        // ── AGISCI SUI PULSANTI / SOTTOCOMANDI 
         const fn = String(textArgs).toLowerCase();
         const st = getState(from);
 
@@ -166,11 +166,11 @@ module.exports = {
             return runDownload(sock, from, video, 'video', msg, reply, height);
         }
 
-        // ── NUOVA RICERCA ─────────────────────────────────────────────────
+        // ── NUOVA RICERCA 
         const query = textArgs;
         if (!query) {
             return sendButtons(sock, from,
-                "🔎 *_RICERCA SU YOUTUBE_*\n━━━━━━━━━━━━━━\n▸ Scrivi cosa cerchi. Esempio:\n▸ `.cerca Blinding Lights The Weeknd`\n━━━━━━━━━━━━━━\n▸ Scorri le card, premi *MP3* (_audio_) o *MP4* (_video_).\n",
+                "🔎 *_RICERCA SU YOUTUBE_*\n\n▸ Scrivi cosa cerchi. Esempio:\n▸ `.cerca Blinding Lights The Weeknd`\n\n▸ Scorri le card, premi *MP3* (_audio_) o *MP4* (_video_).\n",
                 [{ label: '.cerca Blinding Lights', id: 'cerca Blinding Lights The Weeknd' }],
                 msg);
         }
@@ -195,7 +195,7 @@ module.exports = {
     },
 };
 
-// ── RENDER CAROSELLO ──────────────────────────────────────────────────────
+// ── RENDER CAROSELLO 
 async function renderCarousel(sock, from, st, msg, reply) {
     try {
         const sent = await sendCarousel(sock, from, {
@@ -209,7 +209,7 @@ async function renderCarousel(sock, from, st, msg, reply) {
     }
 }
 
-// ── FALLBACK TESTUALE (pagine, 2 video per pagina) ─────────────────────────
+// ── FALLBACK TESTUALE (pagine, 2 video per pagina) 
 // Usa solo sendButtons con NUOVO messaggio: niente edit, quindi risponde
 // SEMPRE con qualcosa di visibile su ogni pulsante premuto.
 const resultsText = (st) => {
@@ -262,7 +262,7 @@ async function renderResultsFallback(sock, from, st, msg, sendButtons) {
     return sendButtons(sock, from, resultsText(st), nav ? [...selButtons, nav] : selButtons, msg);
 }
 
-// ── RENDER INFO VIDEO ─────────────────────────────────────────────────────
+// ── RENDER INFO VIDEO 
 async function renderPick(sock, from, st, video, msg, sendButtons) {
     const idx = st.results.indexOf(video) + 1;
     const buttons = [
@@ -273,7 +273,7 @@ async function renderPick(sock, from, st, video, msg, sendButtons) {
     return sendButtons(sock, from, pickText(video), buttons, msg);
 }
 
-// ── RENDER MENU QUALITÀ VIDEO ──────────────────────────────────────────────
+// ── RENDER MENU QUALITÀ VIDEO 
 // Max 3 pulsanti per messaggio: 360p, 720p, 1080p (480p resta selezionabile
 // scrivendo ".cerca vq <n> 480").
 const QUALITY_OPTIONS = [
@@ -287,7 +287,7 @@ async function renderQualityMenu(sock, from, st, video, msg, sendButtons) {
     return sendButtons(
         sock,
         from,
-        `🎥 *_${video.title}_*\n━━━━━━━━━━━━━━━━━━\n▸ 📥 _Scegli la qualità del video:_\n`,
+        `🎥 *_${video.title}_*\n\n▸ 📥 _Scegli la qualità del video:_\n`,
         QUALITY_OPTIONS.map((o) => ({ label: o.label, id: o.id(idx) })),
         msg
     );
@@ -301,7 +301,7 @@ ${video.views ? `▸ 👁 _${fmtViews(video.views)} visualizzazioni_` : ''}
 `
 );
 
-// ── DOWNLOAD ED INVIO ─────────────────────────────────────────────────────
+// ── DOWNLOAD ED INVIO 
 async function runDownload(sock, from, video, kind, msg, reply, height) {
     // Il video viene inviato SENZA messaggi di contorno: solo il video.
     if (kind === 'audio') {
@@ -329,7 +329,7 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
                 quoted: msg,
                 mediaUploadTimeoutMs: 120000,
             }));
-            await reply(`🎵 *_AUDIO PRONTO_*\n━━━━━━━━━━━━━━━━━━\n▸ _${video.title}_\n`);
+            await reply(`🎵 *_AUDIO PRONTO_*\n\n▸ _${video.title}_\n`);
         } else {
             // Il video è garantito in .mp4 (mediaDownloader converte
             // .webm/.mkv e i codec non h264): mimetype corretto.

@@ -182,7 +182,7 @@ parola da indovinare:
 🟡 Media · parole medie
 🔴 Difficile · parole
 lunghe e poche chances!
-━━━━━━━━━━━━━━━━━━`,
+`,
                 [
                     { label: '🟢 Facile', id: 'impiccato facile' },
                     { label: '🟡 Media', id: 'impiccato media' },
@@ -212,10 +212,10 @@ lunghe e poche chances!
 
         const boardText =
             `${diff.emoji} *IMPICCATO* · ${diff.label}\n` +
-            `━━━━━━━━━━━━━━━━━━\n` +
+            `\n` +
             `${buildBoardText({ word, categoria: withCat(picked.categoria), wrong: 0, guessed: [], maxWrong: diff.maxWrong })}\n` +
             `⏳ Tempo: 2 minuti` +
-            `\n━━━━━━━━━━━━━━━━━━`;
+            `\n`;
 
         // Invio come messaggio "pulito" (senza pulsante Ripeti) per poterlo
         // modificare dopo con l'edit di Baileys. Il key viene salvato nello

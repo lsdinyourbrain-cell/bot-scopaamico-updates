@@ -35,7 +35,7 @@ module.exports = {
         if (emojis.length < 2) {
             return reply(`${sec('ERRORE')}
 ${boxOpen()}
-${line('[uso]: fonde due emoji in una sola._ ━━━━━━━━━━━━━━ ▸ \`.emojimix <emoji1> <em...')}
+${line('[uso]: fonde due emoji in una sola._  ▸ \`.emojimix <emoji1> <em...')}
 ${boxEnd()}`);
         }
 

@@ -4,7 +4,7 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const { flagForJid } = require('../../lib/flag');
 
-const SEP = '━━━━━━━━━━━━━━';
+const SEP = '';
 
 module.exports = {
     name: 'tagall',

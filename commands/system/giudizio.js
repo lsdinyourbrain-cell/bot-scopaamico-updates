@@ -2,7 +2,7 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  GIUDIZIO — Vex Bot (solo OWNER)
 //  I link dei gruppi nuovi si impostano (massimo 3):
 //   `.giudizio set link1 <url>`  (oppure `.giudizio set link <url>`)
@@ -16,7 +16,7 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //      link2/link3 come messaggi separati, ognuno con hide tag a tutti
 //   5. manda la frase finale e svuota il gruppo da tutti
 //  Invia SOLO i testi previsti qui sotto, nessun messaggio aggiuntivo.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const GROUP_NAME = '⌜ˢᵛᵗ ᵇʸ 𝓭𝑒𝐍ย𝐍ĆƗ𝐚я丂Ɨ⌟';
 
@@ -45,7 +45,7 @@ ${line("all'Owner del bot.")}
 ${boxEnd()}`);
         }
 
-        // ── SET DEI LINK (max 3) ──────────────────────────────────────────
+        // ── SET DEI LINK (max 3) 
         const sub = String(args[0] || '').toLowerCase();
         if (sub === 'set') {
             const slotRaw = String(args[1] || '').toLowerCase();
@@ -54,19 +54,19 @@ ${boxEnd()}`);
             if (!mSlot || !/^https?:\/\/\S+$/i.test(link)) {
                 return reply(`${sec('ERRORE')}
 ${boxOpen()}
-${line('USO* ━━━━━━━━━━━━━━ ▸ \`.giudizio set link1 <url>\` ▸ \`.giudizio set link2 <url...')}
+${line('USO*  ▸ \`.giudizio set link1 <url>\` ▸ \`.giudizio set link2 <url...')}
 ${boxEnd()}`);
             }
             const slot = mSlot[1] || '1';
             db._giudizio = { ...(db._giudizio || {}), ['link' + slot]: link };
             saveDB();
-            return reply(`✅ *LINK${slot} IMPOSTATO*\n━━━━━━━━━━━━━━\n▸ ${link}\n━━━━━━━━━━━━━━\n`);
+            return reply(`✅ *LINK${slot} IMPOSTATO*\n\n▸ ${link}\n\n`);
         }
 
         if (!isGroup) {
             const cfg = db._giudizio || {};
             const lines = [1, 2, 3].map(n => cfg['link' + n] ? `▸ link${n}: ${cfg['link' + n]}` : `▸ link${n}: —`).join('\n');
-            return reply(`⚖️ *GIUDIZIO*\n━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━\n▸ Imposta: \`.giudizio set link1/2/3 <url>\`\n▸ Nei gruppi: \`.giudizio\`\n━━━━━━━━━━━━━━\n`);
+            return reply(`⚖️ *GIUDIZIO*\n\n${lines}\n\n▸ Imposta: \`.giudizio set link1/2/3 <url>\`\n▸ Nei gruppi: \`.giudizio\`\n\n`);
         }
 
         const cfg = db._giudizio || {};
@@ -74,7 +74,7 @@ ${boxEnd()}`);
         if (!links.length) {
             return reply(`${sec('ERRORE')}
 ${boxOpen()}
-${line('NESSUN LINK* ━━━━━━━━━━━━━━ ▸ Prima imposta almeno il primo link: ▸ \`.giudizi...')}
+${line('NESSUN LINK*  ▸ Prima imposta almeno il primo link: ▸ \`.giudizi...')}
 ${boxEnd()}`);
         }
 

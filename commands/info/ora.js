@@ -21,7 +21,7 @@ module.exports = {
                 const time = dt.toLocaleTimeString('it-IT');
                 const date = dt.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
                 const tz = data.utc_offset || '?';
-                await prog.done(`🕐 *_Ora a ${city}_*\n━━━━━━━━━━━━━━━━━━\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n▸ 🌍 Timezone: _UTC${tz}_\n━━━━━━━━━━━━━━━━━━\n`);
+                await prog.done(`🕐 *_Ora a ${city}_*\n\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n▸ 🌍 Timezone: _UTC${tz}_\n\n`);
                 return;
             }
         } catch (_) {}
@@ -30,7 +30,7 @@ module.exports = {
             const now = new Date();
             const time = now.toLocaleTimeString('it-IT');
             const date = now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-            await sendButtons(sock, from, `🕐 *_Ora di sistema_*\n━━━━━━━━━━━━━━━━━━\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n━━━━━━━━━━━━━━━━━━\nℹ️ Città "${city}" non trovata; mostro l'ora del server.\n`, [
+            await sendButtons(sock, from, `🕐 *_Ora di sistema_*\n\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n\nℹ️ Città "${city}" non trovata; mostro l'ora del server.\n`, [
                 { label: '.ora', id: 'ora' },
             ], msg);
         } catch (_) {

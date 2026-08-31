@@ -2,16 +2,16 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  MINE — Vex Bot
 //  Versione strategica di .scava: campo 3x3 con 2 bombe nascoste. Paghi un
 //  biglietto (20€), scavi le celle con i pulsanti: ogni cella sicura aggiunge
 //  al montepremi, ogni bomba azzera tutto. Puoi incassare quando vuoi.
 //  Lo stato vive in db[from].mineGame (una partita alla volta per gruppo).
 //  Pulsanti "Scava <riga><colonna>" (es. 12 = riga 1 colonna 2).
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
-const SEP = '━━━━━━━━━━━━━━';
+const SEP = '';
 const TICKET = 20;      // costo biglietto
 const CELL_REWARD = 15; // premio per cella sicura (EV casa ~ -6%: il bot incassa nel lungo periodo)
 const BOMBS = 2;        // bombe nel campo
@@ -79,7 +79,7 @@ module.exports = {
         const [w1, w2] = q.split(/\s+/);
         const g = db[from]?.mineGame;
 
-        // ── INCASSA / FINE ───────────────────────────────────────────────
+        // ── INCASSA / FINE 
         if (w1 === 'incassa' || w1 === 'stop' || w1 === 'fine') {
             if (!g || !g.active) return reply('Nessuna partita attiva. Usa `.mine` per iniziare!');
             if (g.sender !== sender) return reply('Non è la tua partita!');
@@ -98,7 +98,7 @@ ${SEP}
                 [{ label: '🔁 Nuova partita', id: 'mine' }, { label: '🏠 Menu', id: 'menu' }], msg);
         }
 
-        // ── SCAVO (da pulsante, es. "mine scava 12") ─────────────────────
+        // ── SCAVO (da pulsante, es. "mine scava 12") 
         const cellMatch = q.match(/(?:scava|dig|cella)\s*(\d)(\d)$/);
         if (w1 === 'scava' || w1 === 'dig' || w1 === 'cella' || cellMatch) {
             if (!g || !g.active) return reply('Nessuna partita attiva. Usa `.mine` per iniziare!');
@@ -151,7 +151,7 @@ Continua a scavare o incassa 👇`,
                 btns, msg);
         }
 
-        // ── PARTITA GIÀ ATTIVA ───────────────────────────────────────────
+        // ── PARTITA GIÀ ATTIVA 
         if (g?.active) {
             return sendButtons(sock, from,
 `⛏️ C'è già una partita attiva
@@ -167,7 +167,7 @@ ${SEP}
                 ], msg);
         }
 
-        // ── AVVIO NUOVA PARTITA ──────────────────────────────────────────
+        // ── AVVIO NUOVA PARTITA 
         const u = getUser(sender, from);
         if (u.money < TICKET) {
             return reply(`❌ Servono *${TICKET}€* (biglietto). Hai ${u.money}€.\nUsa \`.daily\` o \`.work\`!`);

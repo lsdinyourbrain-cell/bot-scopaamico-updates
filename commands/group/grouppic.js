@@ -18,7 +18,7 @@ ${boxEnd()}`);
             const url = await sock.profilePictureUrl(from, 'image');
             await sock.sendMessage(from, {
                 image: { url },
-                caption: `🖼️ *_FOTO DEL GRUPPO_*\n━━━━━━━━━━━━━━\n`,
+                caption: `🖼️ *_FOTO DEL GRUPPO_*\n\n`,
             }, { quoted: msg });
         } catch (_) {
             await reply("⚠️ _[uso]:_ nessuna foto profilo trovata.");

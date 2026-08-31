@@ -23,7 +23,7 @@ ${boxOpen()}
 ${line('funziona solo nei gruppi.')}
 ${boxEnd()}`);
 
-        // ── CAMBIO FONT TAG (admin) ────────────────────────────────────
+        // ── CAMBIO FONT TAG (admin) 
         const subFont = String(textArgs || '').trim().toLowerCase();
         if (subFont.startsWith('font ')) {
             if (!isSenderAdmin && !isOwner) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('solo admin.')}\n${boxEnd()}`);

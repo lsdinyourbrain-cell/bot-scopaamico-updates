@@ -19,7 +19,7 @@ module.exports = {
 
         const apiKey = getApiKey();
         if (!apiKey) {
-            return reply("🔑 *_REMOVE.BG NON CONFIGURATO_*\n━━━━━━━━━━━━━━\n▸ Aggiungi nel file _`.env`_ del bot:\n▸ `REMOVEBG_API_KEY=tua_chiave`\n━━━━━━━━━━━━━━\n▸ La chiave è _gratuita_ su https://www.remove.bg/it/api");
+            return reply("🔑 *_REMOVE.BG NON CONFIGURATO_*\n\n▸ Aggiungi nel file _`.env`_ del bot:\n▸ `REMOVEBG_API_KEY=tua_chiave`\n\n▸ La chiave è _gratuita_ su https://www.remove.bg/it/api");
         }
 
         try {
@@ -49,8 +49,8 @@ module.exports = {
             }
 
             const result = Buffer.from(await res.arrayBuffer());
-            await sock.sendMessage(from, { image: result, caption: '🧹 *_SFONDO RIMOSSO_*\n━━━━━━━━━━━━━━\n▸ _Sfondo rimosso!_\n' }, { quoted: msg });
-            await prog.done('🧹 *_SFONDO RIMOSSO_*\n━━━━━━━━━━━━━━\n▸ _Sfondo rimosso!_\n');
+            await sock.sendMessage(from, { image: result, caption: '🧹 *_SFONDO RIMOSSO_*\n\n▸ _Sfondo rimosso!_\n' }, { quoted: msg });
+            await prog.done('🧹 *_SFONDO RIMOSSO_*\n\n▸ _Sfondo rimosso!_\n');
         } catch (e) {
             console.error('[removebg]', e.message);
             return reply("❌ Errore durante la rimozione dello sfondo. Riprova.");

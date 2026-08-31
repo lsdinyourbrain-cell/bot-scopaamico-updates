@@ -65,7 +65,7 @@ ${mask(db[from].wordGame)}
                 if (wg?.active && Date.now() - wg.timestamp >= 90000) {
                     wg.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `⏰ *TEMPO SCADUTO*\n━━━━━━━━━━━━━━\nLa parola era: *${wg.word}*\n━━━━━━━━━━━━━━` }).catch(() => {});
+                    sock.sendMessage(from, { text: `⏰ *TEMPO SCADUTO*\n\nLa parola era: *${wg.word}*\n` }).catch(() => {});
                 }
             }, 90000);
     },

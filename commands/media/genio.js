@@ -2,15 +2,15 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  GENIO — Vex Bot
 //  Chiedi qualcosa al Genio della lampada: risponde con saggezza, ironia o
 //  poesia (a scelta), sempre con l'IA. Key: `.ai set "chiave"` o .env.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const { askAI, needKey } = require('../../lib/ai');
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 const STYLES = {
     saggezza: 'rispondi con profonda saggezza zen, breve ma illuminante.',

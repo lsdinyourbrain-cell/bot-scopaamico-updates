@@ -2,14 +2,14 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  SHOP — Vex Bot
 //  Negozio con carosello: ogni card è un oggetto (emoji, prezzo, effetto) con
 //  i pulsanti 🛒 Compra / ℹ️ Info. Gli oggetti finiscono nello zaino
 //  (u.shopInv = { id: quantità }) e si usano con .shop usa <id>.
 //  Oggetti: cassa misteriosa, potenziamento XP, pass anti-bestemmia,
 //  regalo VIP.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const ITEMS = [
     {
@@ -46,7 +46,7 @@ const ITEMS = [
     },
 ];
 
-const SEP = '━━━━━━━━━━━━━━';
+const SEP = '';
 
 // Renderizza la card di un oggetto come immagine SVG → PNG (le card del
 // carosello WhatsApp DEVONO avere un'immagine, altrimenti il messaggio
@@ -86,7 +86,7 @@ module.exports = {
         const t = String(textArgs || '').trim().toLowerCase();
         const [w1, w2] = t.split(/\s+/);
 
-        // ── SHOP INVENTARIO ──────────────────────────────────────────────
+        // ── SHOP INVENTARIO 
         if (w1 === 'inv' || w1 === 'zaino' || w1 === 'inventory') {
             const owned = Object.entries(u.shopInv).filter(([, n]) => n > 0);
             if (!owned.length) {
@@ -115,7 +115,7 @@ Usa: \`.shop usa <oggetto>\``,
                 ], msg);
         }
 
-        // ── USA OGGETTO ──────────────────────────────────────────────────
+        // ── USA OGGETTO 
         if (w1 === 'usa' || w1 === 'use') {
             const id = (w2 || '').trim();
             const it = ITEMS.find(x => x.id === id || x.name.toLowerCase() === id);
@@ -150,7 +150,7 @@ Usa: \`.shop usa <oggetto>\``,
             return reply(`${it.emoji} *${it.name}* usato!\n${out.join('\n')}\n${SEP}\n💰 Saldo: *${formatMoney(u.money)}*`);
         }
 
-        // ── INFO OGGETTO ─────────────────────────────────────────────────
+        // ── INFO OGGETTO 
         if (w1 === 'info') {
             const id = (w2 || '').trim();
             const it = ITEMS.find(x => x.id === id || x.name.toLowerCase() === id);
@@ -158,7 +158,7 @@ Usa: \`.shop usa <oggetto>\``,
             return reply(`${it.emoji} *${it.name}*\n${SEP}\n💰 Prezzo: *${formatMoney(it.price)}*\n\n${it.desc}\n\n✨ Effetto:\n${it.effect}\n${SEP}\nCompra: \`.shop\`\nUsa: \`.shop usa ${it.id}\``);
         }
 
-        // ── COMPRA (da pulsante) ─────────────────────────────────────────
+        // ── COMPRA (da pulsante) 
         if (w1 === 'compra') {
             const id = (w2 || '').trim();
             const it = ITEMS.find(x => x.id === id || x.name.toLowerCase() === id);
@@ -189,7 +189,7 @@ Usalo subito: \`.shop usa ${it.id}\``,
                 ], msg);
         }
 
-        // ── NEGOZIO (carosello) ──────────────────────────────────────────
+        // ── NEGOZIO (carosello) 
         const cards = [];
         for (const it of ITEMS) {
             try {

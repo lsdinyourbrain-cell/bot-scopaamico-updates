@@ -43,7 +43,7 @@ module.exports = {
         await sock.sendMessage(from, {
             text:
                 `🏆 *_TRIVIA SFIDA_*\n` +
-                `━━━━━━━━━━━━━━\n` +
+                `\n` +
                 `${formatQuestion(q, 1)}\n` +
                 `⚡ Rispondi con *A/B/C/D*!\n` +
                 ``,

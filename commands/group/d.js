@@ -42,10 +42,10 @@ ${boxEnd()}`);
             await sock.groupParticipantsUpdate(from, [useJid], 'demote');
 
             await sendButtons(sock, from,
-                `⬇️ ${sec('DEMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} non è più *admin*.\n━━━━━━━━━━━━━━━━━━\n`,
+                `⬇️ ${sec('DEMOTE')}\n\n▸ @${short} non è più *admin*.\n\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
                 .catch(() => sock.sendMessage(from, {
-                    text: `⬇️ ${sec('DEMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} non è più *admin*.\n━━━━━━━━━━━━━━━━━━\n`,
+                    text: `⬇️ ${sec('DEMOTE')}\n\n▸ @${short} non è più *admin*.\n\n`,
                     mentions: [useJid],
                 }, { quoted: msg }));
         } catch (_) {

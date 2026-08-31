@@ -54,8 +54,8 @@ ${boxEnd()}`);
 
             const short = dispOf(useJid);
             const text = isPromote
-                ? `👑 ${sec('PROMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *promosso* admin!\n▸ Ora può gestire il gruppo.\n━━━━━━━━━━━━━━━━━━\n`
-                : `⬇️ ${sec('DEMOTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} non è più admin.\n▸ I suoi privilegi sono stati tolti.\n━━━━━━━━━━━━━━━━━━\n`;
+                ? `👑 ${sec('PROMOTE')}\n\n▸ @${short} è stato *promosso* admin!\n▸ Ora può gestire il gruppo.\n\n`
+                : `⬇️ ${sec('DEMOTE')}\n\n▸ @${short} non è più admin.\n▸ I suoi privilegi sono stati tolti.\n\n`;
 
             await sendButtons(sock, from, text, [
                 { label: '📜 Registro modifiche', id: 'registro' },

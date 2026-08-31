@@ -14,7 +14,7 @@ module.exports = {
 
         const parsed = parseDuration(textArgs);
         if (!parsed) {
-            return reply("⏳ *_Come si usa_*\n━━━━━━━━━━━━━━━━━━\n▸ .timer <durata>\n▸ *Esempi:*\n▸ ✦ .timer 5 minuti\n▸ ✦ .timer 1 ora\n▸ ✦ .timer 90s\n━━━━━━━━━━━━━━━━━━");
+            return reply("⏳ *_Come si usa_*\n\n▸ .timer <durata>\n▸ *Esempi:*\n▸ ✦ .timer 5 minuti\n▸ ✦ .timer 1 ora\n▸ ✦ .timer 90s\n");
         }
 
         const total = parsed.ms;
@@ -23,7 +23,7 @@ module.exports = {
 
         let sent;
         try {
-            sent = await sock.sendMessage(from, { text: `⏳ *_Timer avviato_* (_${label}_)\n━━━━━━━━━━━━━━━━━━\n▸ 🔻 Residuo: _${formatCountdown(total)}_\n━━━━━━━━━━━━━━━━━━\n` }, { quoted: msg });
+            sent = await sock.sendMessage(from, { text: `⏳ *_Timer avviato_* (_${label}_)\n\n▸ 🔻 Residuo: _${formatCountdown(total)}_\n\n` }, { quoted: msg });
         } catch (_) {
             return reply("❌ Non riesco a inviare il timer.");
         }
@@ -34,12 +34,12 @@ module.exports = {
             const remain = total - (Date.now() - started);
             if (remain <= 0) {
                 clearInterval(iv);
-                const final = `⏰ *_TEMPO SCADUTO!_*\n━━━━━━━━━━━━━━━━━━\n▸ Il timer da _${label}_ è terminato.\n━━━━━━━━━━━━━━━━━━\n`;
+                const final = `⏰ *_TEMPO SCADUTO!_*\n\n▸ Il timer da _${label}_ è terminato.\n\n`;
                 if (key) sock.sendMessage(from, { text: final, edit: key }).catch(() => {});
                 else sock.sendMessage(from, { text: final }).catch(() => {});
             } else if (key) {
                 sock.sendMessage(from, {
-                    text: `⏳ *_Timer avviato_* (_${label}_)\n━━━━━━━━━━━━━━━━━━\n▸ 🔻 Residuo: _${formatCountdown(remain)}_\n━━━━━━━━━━━━━━━━━━\n`,
+                    text: `⏳ *_Timer avviato_* (_${label}_)\n\n▸ 🔻 Residuo: _${formatCountdown(remain)}_\n\n`,
                     edit: key,
                 }).catch(() => {});
             }

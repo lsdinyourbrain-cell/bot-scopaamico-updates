@@ -2,11 +2,11 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  STRIPTEASE — Vex Bot
 //  Show a 3 atti sul bersaglio taggato: musica, luce, finale con voto.
 //  Grafica unicode pulita, niente linee ASCII lunghe.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const { toStyle } = require('../../lib/font');
 

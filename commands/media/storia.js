@@ -2,16 +2,16 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  STORIA — Vex Bot
 //  Racconta una mini-storia scritta dall'IA, con protagonisti a scelta
 //  (membri del gruppo, @tag, o personaggi inventati). Usa la key salvata
 //  con `.ai set` oppure quella in .env (AI_API_KEY).
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 const { askAI, needKey } = require('../../lib/ai');
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 const TEMPLATES = [
     'tre amici si perdono in un bosco incantato dove gli alberi parlano',

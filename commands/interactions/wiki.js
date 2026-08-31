@@ -32,7 +32,7 @@ ${boxEnd()}`);
             }
 
             const ext = data.extract;
-            const txt = `📚 *_${data.title}_*\n━━━━━━━━━━━━━━\n▸ ${ext.length > 900 ? ext.slice(0, 900) + '…' : ext}\n▸ 🔗 _${data.content_urls?.desktop?.page || ''}_\n━━━━━━━━━━━━━━\n`;
+            const txt = `📚 *_${data.title}_*\n\n▸ ${ext.length > 900 ? ext.slice(0, 900) + '…' : ext}\n▸ 🔗 _${data.content_urls?.desktop?.page || ''}_\n\n`;
             const thumb = data.thumbnail?.source || null;
 
             if (thumb) {

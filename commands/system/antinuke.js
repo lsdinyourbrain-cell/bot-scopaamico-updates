@@ -13,7 +13,7 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, saveDB, getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS, sendButtons } = services;
 
-        if (!isGroup) return reply(`🛡️ ${sec('ANTINUKE')}\n━━━━━━━━━━━━━━━━━━\n▸ Funziona solo nei _gruppi_.\n━━━━━━━━━━━━━━━━━━`);
+        if (!isGroup) return reply(`🛡️ ${sec('ANTINUKE')}\n\n▸ Funziona solo nei _gruppi_.\n`);
 
         if (!isOwner) {
             return reply(`${sec('ACCESSO NEGATO')}
@@ -26,7 +26,7 @@ ${boxEnd()}`);
         const cfg = getAntinukeGroup(db, from);
         const sub = (textArgs || '').trim();
 
-        // ── STATO ─────────────────────────────────────────────────────────
+        // ── STATO 
         // Stato EFFETTIVO: un controllo è ON solo se antinuke è attivo E il
         // singolo controllo è acceso. Se antinuke è spento → tutto OFF.
         if (!sub) {
@@ -72,7 +72,7 @@ ${wlLines}
             return;
         }
 
-        // ── MASTER ON/OFF ─────────────────────────────────────────────────
+        // ── MASTER ON/OFF 
         if (sub === 'on' || sub === 'off') {
             cfg.enabled = sub === 'on';
             if (cfg.enabled) {
@@ -98,7 +98,7 @@ ${cfg.enabled
             );
         }
 
-        // ── ALL ON/OFF ────────────────────────────────────────────────────
+        // ── ALL ON/OFF 
         if (sub === 'all on' || sub === 'all off') {
             const value = sub === 'all on';
             for (const key of Object.keys(ANTINUKE_CONTROLS)) cfg.controls[key] = value;
@@ -106,11 +106,11 @@ ${cfg.enabled
             return reply(`🛡️ ${sec('ANTINUKE')} — tutti i controlli: _${value ? 'ON' : 'OFF'}_`);
         }
 
-        // ── WHITELIST ─────────────────────────────────────────────────────
+        // ── WHITELIST 
         if (sub === 'whitelist list' || sub === 'wl list') {
-            if (!cfg.whitelist.length) return reply(`📋 ${sec('WHITELIST ANTINUKE')}\n━━━━━━━━━━━━━━━━━━\n▸ _(vuota)_\n━━━━━━━━━━━━━━━━━━`);
+            if (!cfg.whitelist.length) return reply(`📋 ${sec('WHITELIST ANTINUKE')}\n\n▸ _(vuota)_\n`);
             const lines = cfg.whitelist.map(w => `▸ ${w.replace(/[^0-9]/g, '')}`).join('\n');
-            return reply(`📋 ${sec('WHITELIST ANTINUKE')}\n━━━━━━━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━━━━━━━\n`);
+            return reply(`📋 ${sec('WHITELIST ANTINUKE')}\n\n${lines}\n\n`);
         }
         if (/^(whitelist|wl)\s+/.test(sub)) {
             const raw = sub.replace(/^(whitelist|wl)\s+/, '').trim();
@@ -126,7 +126,7 @@ ${cfg.enabled
             return reply(`✅ _${num}_ aggiunto alla whitelist antinuke (esente da tutto).`);
         }
 
-        // ── CONTROLLO SINGOLO ─────────────────────────────────────────────
+        // ── CONTROLLO SINGOLO 
         const m = sub.match(/^(\S+)\s+(on|off)$/i);
         if (m && Object.prototype.hasOwnProperty.call(ANTINUKE_CONTROLS, m[1].toLowerCase())) {
             const key = m[1].toLowerCase();
@@ -154,7 +154,7 @@ ${cfg.enabled
 ▸ .antinuke whitelist list
 ▸ .antinuke all on/off
 ▸ Controlli: ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
-━━━━━━━━━━━━━━━━━━`
+`
         );
     },
 };

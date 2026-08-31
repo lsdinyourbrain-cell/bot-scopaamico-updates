@@ -12,7 +12,7 @@ module.exports = {
         const { from, targetJid, reply, services } = context;
         const { randomInt, sendButtons } = services;
 
-        const SEP = '━━━━━━━━━━━━━━━━━━━━';
+        const SEP = '';
         const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
 
         if (!targetJid) return reply(`Tagga una persona o rispondi a un suo messaggio. Esempio: ${toBold('.incinta @nome')}`);

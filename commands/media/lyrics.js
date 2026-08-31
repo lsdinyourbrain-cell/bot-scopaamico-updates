@@ -16,7 +16,7 @@ module.exports = {
         const query = (textArgs || '').trim();
         if (!query) {
             return sendButtons(sock, from,
-                "⚠️ _[uso]: scrivi il titolo e l'artista della canzone._\n━━━━━━━━━━━━━━\n▸ Esempio: `.lyrics Blinding Lights The Weeknd`",
+                "⚠️ _[uso]: scrivi il titolo e l'artista della canzone._\n\n▸ Esempio: `.lyrics Blinding Lights The Weeknd`",
                 [{ label: '.lyrics Blinding Lights', id: 'lyrics Blinding Lights The Weeknd' }],
                 msg);
         }

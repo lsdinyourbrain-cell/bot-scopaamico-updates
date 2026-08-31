@@ -51,7 +51,7 @@ module.exports = {
         const T = String(textArgs || '').trim();
         const m = T.match(/^(\d+(?:[.,]\d+)?)\s+(\S+)(?:\s+(?:in|to|a|->|=>)\s+|\s+)(\S+)\s*$/i);
         if (!m) {
-            return reply("🔄 *_Come si usa_*\n━━━━━━━━━━━━━━━━━━\n▸ .converti <valore> <unità> in <unità>\n▸ *Esempi:*\n▸ ✦ .converti 10 km in m\n▸ ✦ .converti 32 c in f\n▸ ✦ .converti 5 gb in mb\n▸ ✦ .converti 1.5 h in min\n━━━━━━━━━━━━━━━━━━");
+            return reply("🔄 *_Come si usa_*\n\n▸ .converti <valore> <unità> in <unità>\n▸ *Esempi:*\n▸ ✦ .converti 10 km in m\n▸ ✦ .converti 32 c in f\n▸ ✦ .converti 5 gb in mb\n▸ ✦ .converti 1.5 h in min\n");
         }
 
         const value = parseFloat(m[1].replace(',', '.'));
@@ -76,6 +76,6 @@ ${boxEnd()}`);
             return reply(`⚠️ Impossibile convertire *${from.key}* in *${to.key}*: unità non compatibili.`);
         }
 
-        return reply(`🔄 *_Conversione_*\n━━━━━━━━━━━━━━━━━━\n▸ _${String(m[1]).replace('.', ',')} ${from.key}_ → _${formatNum(result)}_ ${to.key}\n━━━━━━━━━━━━━━━━━━\n`);
+        return reply(`🔄 *_Conversione_*\n\n▸ _${String(m[1]).replace('.', ',')} ${from.key}_ → _${formatNum(result)}_ ${to.key}\n\n`);
     },
 };

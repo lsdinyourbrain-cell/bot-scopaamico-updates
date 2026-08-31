@@ -44,9 +44,9 @@ module.exports = {
             saveDB();
             logGroupEvent(from, 'unmute', sender, null, tgt, 'riabilitato (può scrivere)');
             return await sendButtons(sock, from,
-                `🔊 ${sec('UNMUTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} può *scrivere di nuovo*.\n━━━━━━━━━━━━━━━━━━\n`,
+                `🔊 ${sec('UNMUTE')}\n\n▸ @${short} può *scrivere di nuovo*.\n\n`,
                 [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
-                .catch(() => sock.sendMessage(from, { text: `🔊 ${sec('UNMUTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} può *scrivere di nuovo*.\n━━━━━━━━━━━━━━━━━━\n`, mentions: [useJid] }, { quoted: msg }));
+                .catch(() => sock.sendMessage(from, { text: `🔊 ${sec('UNMUTE')}\n\n▸ @${short} può *scrivere di nuovo*.\n\n`, mentions: [useJid] }, { quoted: msg }));
         }
 
         targetData.isMuted = true;
@@ -54,10 +54,10 @@ module.exports = {
         logGroupEvent(from, 'mute', sender, null, tgt, 'mutato (non può scrivere)');
 
         await sendButtons(sock, from,
-            `🔇 ${sec('MUTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *mutato* permanentemente.\n━━━━━━━━━━━━━━━━━━\n`,
+            `🔇 ${sec('MUTE')}\n\n▸ @${short} è stato *mutato* permanentemente.\n\n`,
             [{ label: '📜 Registro modifiche', id: 'registro' }], msg, [useJid])
             .catch(() => sock.sendMessage(from, {
-                text: `🔇 ${sec('MUTE')}\n━━━━━━━━━━━━━━━━━━\n▸ @${short} è stato *mutato* permanentemente.\n━━━━━━━━━━━━━━━━━━\n`,
+                text: `🔇 ${sec('MUTE')}\n\n▸ @${short} è stato *mutato* permanentemente.\n\n`,
                 mentions: [useJid],
             }, { quoted: msg }));
     },

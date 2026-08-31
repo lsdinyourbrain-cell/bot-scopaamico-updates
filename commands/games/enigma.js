@@ -34,7 +34,7 @@ module.exports = {
 
         const pick = riddles[randomInt(0, riddles.length - 1)];
 
-        // ── SUGGERIMENTO (pulsante 💡) ────────────────────────────────────
+        // ── SUGGERIMENTO (pulsante 💡) 
         if (String(args[0] || '').toLowerCase() === 'suggerimento') {
             const eg = db[from]?.enigma;
             if (!eg?.active) return reply('Nessun enigma attivo. Usa `.enigma` per iniziare!');

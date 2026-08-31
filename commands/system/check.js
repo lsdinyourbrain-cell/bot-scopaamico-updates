@@ -19,7 +19,7 @@ ${line('Comando riservato')}
 ${line("all'Owner del bot.")}
 ${boxEnd()}`);
 
-        // ── Risoluzione target ─────────────────────────────────────────────
+        // ── Risoluzione target 
         let target = mentioned[0] || targetJid || null;
         if (!target && isReply) target = contextInfo?.participant || null;
         if (!target && textArgs.trim()) {
@@ -41,7 +41,7 @@ ${boxEnd()}`);
 `);
         }
 
-        // ── Azione da eseguire ─────────────────────────────────────────────
+        // ── Azione da eseguire 
         const parts = textArgs.trim().split(/\s+/).map(p => p.trim()).filter(Boolean);
         const action = (parts.find(p => ['set', 'add', 'del', 'reset'].includes(p.toLowerCase())) || 'show').toLowerCase();
         const field = parts[parts.indexOf(parts.find(p => ['set', 'add', 'del'].includes(p.toLowerCase()))) + 1] || '';
@@ -50,7 +50,7 @@ ${boxEnd()}`);
         // Individua il record dell'utente in questa chat (o crealo)
         const userData = getUser(target, from);
 
-        // ── RESET: ripristina ai valori di default ─────────────────────────
+        // ── RESET: ripristina ai valori di default 
         if (action === 'reset') {
             const keys = Object.keys(userData);
             for (const k of keys) {
@@ -58,10 +58,10 @@ ${boxEnd()}`);
                 delete userData[k];
             }
             saveDB();
-            return reply(`🧹 *_RESET ESEGUITO_*\n━━━━━━━━━━━━━━━━━━\n▸ @${target.split('@')[0]} ripristinato ai valori di default.\n▸ Campi rimossi: _${keys.length}_\n━━━━━━━━━━━━━━━━━━\n`);
+            return reply(`🧹 *_RESET ESEGUITO_*\n\n▸ @${target.split('@')[0]} ripristinato ai valori di default.\n▸ Campi rimossi: _${keys.length}_\n\n`);
         }
 
-        // ── SET / ADD / DEL ────────────────────────────────────────────────
+        // ── SET / ADD / DEL 
         if ((action === 'set' || action === 'add') && !field) {
             return reply(`⚠️ Specifica il campo.\n▸ _es. .check @utente set money 5000_\n▸ _es. .check @utente add money 100_`);
         }
@@ -78,7 +78,7 @@ ${boxEnd()}`);
             const existed = field in userData;
             delete userData[field];
             if (existed) saveDB();
-            return reply(`🗑️ *_CAMPO ELIMINATO_*\n━━━━━━━━━━━━━━━━━━\n▸ Utente: _@${target.split('@')[0]}_\n▸ Campo: _${field}_\n▸ Stato: _${existed ? 'eliminato ✓' : 'non esisteva'}_\n━━━━━━━━━━━━━━━━━━\n`);
+            return reply(`🗑️ *_CAMPO ELIMINATO_*\n\n▸ Utente: _@${target.split('@')[0]}_\n▸ Campo: _${field}_\n▸ Stato: _${existed ? 'eliminato ✓' : 'non esisteva'}_\n\n`);
         }
 
         if (action === 'set' || action === 'add') {
@@ -131,7 +131,7 @@ ${boxEnd()}`);
 `);
         }
 
-        // ── SHOW: dump completo del record ─────────────────────────────────
+        // ── SHOW: dump completo del record 
         const short = target.split('@')[0];
         const linee = [];
         for (const [k, v] of Object.entries(userData)) {

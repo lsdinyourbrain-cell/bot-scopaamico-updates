@@ -2,13 +2,13 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 //  RICETTE — Vex Bot
 //  10 ricette random dall'API gratuita TheMealDB, una per card del carosello
 //  con foto e pulsante 👨🍳 Preparazione (ingredienti + passi).
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
-const SEP = '━━━━━━━━━━━━━━━━━━';
+const SEP = '';
 
 module.exports = {
     name: 'ricette',
@@ -22,7 +22,7 @@ module.exports = {
         const t = String(textArgs || '').trim().toLowerCase();
         const [w1, w2] = t.split(/\s+/);
 
-        // ── PREPARAZIONE (ingredienti + passi) ───────────────────────────
+        // ── PREPARAZIONE (ingredienti + passi) 
         if (w1 === 'prep' || w1 === 'preparazione') {
             const idMeal = (w2 || '').trim();
             if (!idMeal) return reply(`${sec('ERRORE')}
@@ -72,7 +72,7 @@ ${boxEnd()}`);
             return;
         }
 
-        // ── CAROSELLO 10 RICETTE RANDOM ─────────────────────────────────
+        // ── CAROSELLO 10 RICETTE RANDOM 
         await reply('👨🍳 Cerco 10 ricette casuali...');
         try {
             const results = [];

@@ -25,7 +25,7 @@ ${boxEnd()}`);
             const { data } = await axios.get('https://tinyurl.com/api-create.php', { params: { url }, timeout: 10000 });
             const short = String(data).trim();
             if (!/^https?:\/\//i.test(short)) return prog.done('⚠️ _Non riesco ad accorciare questo link._');
-            await prog.done(`🔗 *_LINK ACCORCIATO_*\n━━━━━━━━━━━━━━\n▸ _${short}_\n━━━━━━━━━━━━━━\n`);
+            await prog.done(`🔗 *_LINK ACCORCIATO_*\n\n▸ _${short}_\n\n`);
         } catch (_) {
             await reply('⚠️ _Errore nell\'accorciare il link. Riprova più tardi._');
         }

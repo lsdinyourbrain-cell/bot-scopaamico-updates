@@ -26,7 +26,7 @@ module.exports = {
         if (!query) {
             return reply(`${sec('ERRORE')}
 ${boxOpen()}
-${line('[uso]: scrivi il titolo della canzone._ ━━━━━━━━━━━━━━ ▸ Esempio: \`.mp3 Blind...')}
+${line('[uso]: scrivi il titolo della canzone._  ▸ Esempio: \`.mp3 Blind...')}
 ${boxEnd()}`);
         }
 
@@ -56,7 +56,7 @@ ${boxEnd()}`);
                 fileName: `${cleanName}.${ext}`,
             }, { quoted: msg });
 
-            await prog.done(`🎵 *_MP3_*\n━━━━━━━━━━━━━━\n▸ _Scaricato_ *${query}* _intero!_\n`);
+            await prog.done(`🎵 *_MP3_*\n\n▸ _Scaricato_ *${query}* _intero!_\n`);
         } catch (e) {
             console.error('[mp3]', e.message);
             await prog.fail('❌ ' + getDownloadErrorMessage(e));
