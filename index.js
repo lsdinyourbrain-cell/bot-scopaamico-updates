@@ -2644,9 +2644,16 @@ startBot();
             } catch (_) {}
         }
 
-        // ── CALL AI: trascrive vocali e risponde con AI + cronologia (anti-crash + limiti) ──
+        // ── CALL AI: entra in chiamata, filtra voce host e risponde in chiamata ──
         if (isGroup && db._callAI?.[from]?.enabled && !body.startsWith('.') && !isOwner) {
             try {
+                // Filtra solo voce di chi ha avviato (.call entra/on) se host è impostato
+                const callHost = db._callAI?.[from]?.host || global._callSessions?.get(from)?.host;
+                if (callHost && sender !== callHost && senderAlt !== callHost) {
+                    // Ignora vocali/testi di altri durante chiamata filtrata
+                    // Ma lascia passare se non è in sessione attiva (solo enabled senza host)
+                    if (global._callSessions?.has(from)) return;
+                }
                 const am = msg.message?.audioMessage || msg.message?.pttMessage;
                 const inCall = global._callSessions?.has(from);
                 if (am) {
