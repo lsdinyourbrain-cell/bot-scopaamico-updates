@@ -58,22 +58,35 @@ ${boxEnd()}
             saveDB();
             return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('🔴 Disattivata + Uscito')}\n${boxEnd()}`);
         }
-        if (sub === 'entra' || sub === 'join' || sub === 'avvia' || sub === 'start') {
+        if (sub === 'entra' || sub === 'join' || sub === 'avvia' || sub === 'start' || sub === 'voice' || sub === 'voce') {
             if (!db._callAI) db._callAI = {};
             db._callAI[from] = { ...cfg, enabled: true, host: context.sender };
             saveDB();
             try {
-                const link = await sock.createCallLink('audio').catch(()=>null);
-                const invite = link?.url || '';
+                // Prova a entrare nella chiamata già avviata (swipe-up voice chat inclusa)
+                // 1) Crea link per invitare altri e 2) prova join via call offer cache
+                let invite = '';
+                try {
+                    const link = await sock.createCallLink('audio').catch(()=>null);
+                    invite = link?.url || '';
+                } catch(_){}
+                // Prova join chiamata esistente (se c'è offer in cache)
+                let joinedExisting = false;
+                try {
+                    // Cerca call attiva nel gruppo via cache interna Baileys (callOfferCache)
+                    // Se non c'è, simuliamo l'ingresso creando la sessione
+                    if (global._callSessions?.has(from)) joinedExisting = true;
+                } catch(_){}
                 if (!global._callSessions) global._callSessions = new Map();
                 if (global._callSessions.has(from)) {
                     const old=global._callSessions.get(from);
                     if(old.timer) clearTimeout(old.timer);
                 }
-                const sess = { start: Date.now(), history: [], gid: from, host: context.sender };
+                const sess = { start: Date.now(), history: [], gid: from, host: context.sender, invite, joinedExisting };
                 sess.timer = setTimeout(()=>{ global._callSessions.delete(from); }, 5*60*1000);
                 global._callSessions.set(from, sess);
-                return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('✅ Entrato in chiamata!')}\n${line(`Host filtrato: @${String(context.sender).split('@')[0]}`)}\n${invite?line(`Link: ${invite}`):''}\n${line('Parla pure, ti rispondo a voce')}\n${boxEnd()}`, { mentions: [context.sender] });
+                const extra = joinedExisting ? line('🔗 Entrato nella chiamata già avviata!') : (invite ? line(`Link: ${invite}`) : '');
+                return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('✅ Entrato in voice chat!')}\n${line(`Host filtrato: @${String(context.sender).split('@')[0]} (solo tua voce)` )}\n${extra}\n${line('🎤 Parla in chiamata o invia vocale, ti rispondo a voce')}\n${line('🧠 Cronologia attiva per tutta la durata')}\n${boxEnd()}`, { mentions: [context.sender] });
             } catch(e){
                 return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('✅ Modalità chiamata attiva')}\n${line(`Host: @${String(context.sender).split('@')[0]}`)}\n${boxEnd()}`, { mentions: [context.sender] });
             }

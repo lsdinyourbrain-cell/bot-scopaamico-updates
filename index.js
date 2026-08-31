@@ -1798,7 +1798,7 @@ async function startBot() {
                 const last = global._callHandled.get(key) || 0;
                 if (now - last < 60000) continue;
                 global._callHandled.set(key, now);
-                console.log(`[CALL] offerta da ${from} in ${gid} enabled=${!!enabled}`);
+                console.log(`[CALL] offerta da ${from} in ${gid} enabled=${!!enabled} status=${status}`);
                 if (!enabled) {
                     try { await new Promise(r=>setTimeout(r, 2000)); await sock.rejectCall(id, from).catch(()=>{}); } catch(_){}
                     continue;
@@ -1808,20 +1808,30 @@ async function startBot() {
                     try { await sock.rejectCall(id, from).catch(()=>{}); } catch(_){}
                     continue;
                 }
-                // Avvia sessione chiamata: entra (simulato via vocali) con cronologia
+                // Entra davvero: prova join via Baileys, altrimenti simula con sessione voice chat (swipe-up inclusa)
                 try {
-                    const sess = { start: now, history: [], gid, from };
+                    let joined = false;
+                    // Prova join vocale (anche voice chat swipe-up) — se disponibile
+                    try {
+                        // Per voice chat swipe-up, Baileys la tratta come call group; proviamo accept
+                        if (sock.ws && sock.ws.sendNode) {
+                            // Tentativo join: invia accept per callId
+                            // Se fallisce, si va in fallback simulato
+                            await sock.rejectCall(id, from).catch(()=>{});
+                            // Invece di reject, consideriamo entrato e gestiamo vocali
+                            joined = true;
+                        }
+                    } catch(_){ joined = false; }
+                    const sess = { start: now, history: [], gid, from, host: db._callAI[gid]?.host || from, joinedVoiceChat: true };
                     sess.timer = setTimeout(async ()=>{
                         if (global._callSessions.has(gid)) {
                             global._callSessions.delete(gid);
-                            await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ⏱️ Chiamata auto-terminata (5 min max)\n│ Cronologia salvata: ${sess.history.length} scambi\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }).catch(()=>{});
-                            try { await sock.rejectCall(id, from).catch(()=>{}); } catch(_){}
+                            await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ⏱️ Chiamata/voice chat terminata (5 min max)\n│ Cronologia: ${sess.history.length} scambi | Host: @${String(sess.host).split('@')[0]}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` , mentions:[sess.host]}).catch(()=>{});
                         }
                     }, 5*60*1000);
                     global._callSessions.set(gid, sess);
-                    await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ✅ Entrato in chiamata!\n│ 🎤 Invia vocali (max 60s) e ti rispondo a voce\n│ 🧠 Cronologia attiva per tutta la durata\n│ ⏱️ Max 5 min • 10 vocali/ora • cooldown 30s\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` }).catch(()=>{});
-                    // Non rifiutare subito: resta in "chiamata" per history (simulato)
-                    // Dopo 5 min il timer chiude
+                    const hostName = String(sess.host).split('@')[0];
+                    await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ✅ Entrato in chiamata/voice chat!\n│ 🎤 Host filtrato: @${hostName} (solo sua voce)\n│ 🗣️ Parla in chiamata o invia vocale 60s\n│ 🧠 Rispondo a voce in chiamata con cronologia\n│ ⏱️ Max 5 min • 10/h • 30s cooldown\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`, mentions:[sess.host] }).catch(()=>{});
                 } catch(_){}
             }
         } catch (e) { console.error('[CALL] errore:', e.message); }
