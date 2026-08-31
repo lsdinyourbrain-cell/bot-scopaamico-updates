@@ -13,7 +13,9 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { textArgs, sender, pushName, isGroup, reply, services } = context;
-        const { db, saveDB, lastfm, axios, sharp } = services;
+        const { lastfm, axios, sharp } = services || {};
+        const db = services?.db || context?.services?.db || {};
+        const saveDB = services?.saveDB || (()=>{});
 
         if (!lastfm.isConfigured()) {
             return reply('⚠️ _Last.fm non configurato._\n▸ L\'owner deve impostare una API key in `config.js` (LASTFM_API_KEY).');
@@ -31,13 +33,13 @@ module.exports = {
             let targetUsername = null;
             let targetJid = sender;
             if (mentionedJid) {
-                targetUsername = db._lastfm?.[mentionedJid] || null;
+                targetUsername = (db && db._lastfm && db._lastfm[mentionedJid]) || null;
                 targetJid = mentionedJid;
                 if (!targetUsername) {
                     return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Questo utente non ha collegato Last.fm.')}\n${boxEnd()}`);
                 }
             } else if (!raw || ['profilo','profile','me','io','mio','my'].includes(lower)) {
-                targetUsername = db._lastfm?.[sender] || null;
+                targetUsername = (db && db._lastfm && db._lastfm[sender]) || null;
                 if (!targetUsername) {
                     return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Non hai ancora collegato Last.fm.')}\n${line('Usa: .lastfm <nomeutente>')}\n${boxEnd()}`);
                 }
@@ -91,9 +93,9 @@ ${boxEnd()}`);
 
         // Scollegamento
         if (linkUsername.toLowerCase() === 'off') {
-            if (db._lastfm && db._lastfm[sender]) {
+            if (db && db._lastfm && db._lastfm[sender]) {
                 delete db._lastfm[sender];
-                saveDB();
+                try{ saveDB(); }catch(_){}
                 return reply('👋 _Account Last.fm scollegato._');
             }
             return reply('ℹ️ _Non avevi nessun account Last.fm collegato._');
@@ -102,9 +104,10 @@ ${boxEnd()}`);
         // Valida il nome sull'API prima di salvarlo
         try {
             const info = await lastfm.getUserInfo(linkUsername);
+            if (!db) return reply('⚠️ DB non disponibile');
             if (!db._lastfm) db._lastfm = {};
             db._lastfm[sender] = info.name;
-            saveDB();
+            try{ saveDB(); }catch(_){}
 
             const playcount = info.playcount.toLocaleString('it-IT');
             return reply(

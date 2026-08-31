@@ -138,9 +138,15 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { reply, from, sender, textArgs, mentioned, isGroup } = context;
-        const { db, lastfm, axios, sharp, sendButtons, saveDB } = context.services;
+        const services = context.services || {};
+        const db = services.db || {};
+        const lastfm = services.lastfm;
+        const axios = services.axios;
+        const sharp = services.sharp;
+        const sendButtons = services.sendButtons;
+        const saveDB = services.saveDB || (()=>{});
 
-        if (!lastfm.isConfigured()) {
+        if (!lastfm || !lastfm.isConfigured || !lastfm.isConfigured()) {
             return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Last.fm non configurato.')}\n${boxEnd()}`);
         }
 
@@ -183,22 +189,21 @@ module.exports = {
         const raw = String(textArgs||'').trim();
         const lower = raw.toLowerCase();
 
-        if (raw && !['fuoco','fire','🔥','fuochi'].includes(raw.split(/\s+/)[0])) {
-            const maybe = raw.trim().split(/\s+/)[0];
-            if (context.mentioned && context.mentioned.length>0 && textArgs.includes('@')) {
-                username = context.db._lastfm?.[context.mentioned[0]] ?? null;
+        if (raw && !['fuoco','fire','🔥','fuochi'].includes(raw.toLowerCase().split(/\s+/)[0])) {
+            if (mentioned && mentioned.length>0 && textArgs.includes('@')) {
+                username = (db && db._lastfm && db._lastfm[mentioned[0]]) || null;
                 if (!username) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Utente non collegato a Last.fm.')}\n${boxEnd()}`);
-                targetJid = context.mentioned[0];
+                targetJid = mentioned[0];
             } else {
                 username = raw.trim().split(/\s+/)[0];
                 targetJid = null;
             }
-        } else if (context.mentioned && context.mentioned.length > 0) {
-            username = context.db._lastfm?.[context.mentioned[0]] ?? null;
+        } else if (mentioned && mentioned.length > 0) {
+            username = (db && db._lastfm && db._lastfm[mentioned[0]]) || null;
             if (!username) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Questo utente non ha collegato un account Last.fm.')}\n${boxEnd()}`);
-            targetJid = context.mentioned[0];
+            targetJid = mentioned[0];
         } else {
-            username = context.db._lastfm?.[context.sender] ?? null;
+            username = (db && db._lastfm && db._lastfm[sender]) || null;
         }
 
         if (!username) {
