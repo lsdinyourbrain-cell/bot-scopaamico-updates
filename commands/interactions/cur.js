@@ -121,10 +121,15 @@ module.exports={
       try{ saveDB(); }catch(_){}
       const searchTerm=`${track.name} ${track.artist}`.trim().slice(0,80);
       let cardBuf=null;
-      try{
-        const { renderCurCard } = require('../../lib/lastfmCard');
-        cardBuf=await renderCurCard(sharp, {coverBuffer: cover, trackName: track.name, trackArtist: track.artist, username, isNowPlaying: !!npData.nowPlaying, userPlaycount: trackInfo.userplaycount||0, globalPlaycount: trackInfo.playcount||0, listeners: trackInfo.listeners||0});
-      }catch(e){ console.error('[cur] card render',e.message); cardBuf=null; }
+      const isTermux = !!(process.env.TERMUX_VERSION || process.env.TERMUX || require('fs').existsSync('/data/data/com.termux'));
+      if(!isTermux){
+        try{
+          const { renderCurCard } = require('../../lib/lastfmCard');
+          cardBuf=await renderCurCard(sharp, {coverBuffer: cover, trackName: track.name, trackArtist: track.artist, username, isNowPlaying: !!npData.nowPlaying, userPlaycount: trackInfo.userplaycount||0, globalPlaycount: trackInfo.playcount||0, listeners: trackInfo.listeners||0});
+        }catch(e){ console.error('[cur] card render',e.message); cardBuf=null; }
+      } else {
+        console.log('[cur] Termux rilevato: salto card traslucida, uso fallback caption per garantire scritte visibili');
+      }
       const fallback = sec('IN RIPRODUZIONE')+'\n'+boxOpen()+'\n'+line('🎵 '+tName)+'\n'+line('👤 '+tArtist)+'\n'+(durText!=='—'?line('⏱️ '+durText)+'\n':'')+line('🔥 Fuochi: '+fires)+'\n'+line('👤 @'+trunc(username,18))+'\n'+boxEnd();
       // SEMPRE manda qualcosa
       try{
