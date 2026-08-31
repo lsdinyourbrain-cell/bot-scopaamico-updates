@@ -888,7 +888,7 @@ async function saveFile(){
     const contentEl = $('#fileContent');
     if (!contentEl || !currentFilePath) return;
     const content = contentEl.value;
-    if (content.length > 500000) return toast('File troppo grande (max 500KB)','err');
+    if (content.length > 20 * 1024 * 1024) return toast('File troppo grande (max 20MB)','err');
     try{
         await fetchJSON('/api/files/write', { method:'PUT', body: JSON.stringify({ path: currentFilePath, content }) });
         toast('File salvato ✦');
@@ -931,7 +931,7 @@ async function createFolderPrompt(){
 async function handleFileUpload(input){
     const file = input.files && input.files[0];
     if (!file) return;
-    if (file.size > 5*1024*1024) return toast('Max 5MB','err');
+    if (file.size > 20*1024*1024) return toast('Max 20MB','err');
     const folder = $('#filePath')?.textContent?.replace(/^\//,'') || '';
     const full = (folder ? folder + '/' : '') + file.name;
     const reader = new FileReader();
@@ -1267,7 +1267,7 @@ function setPresetBg(key){
 function handleBgUpload(input){
     const file = input.files && input.files[0];
     if (!file) return;
-    if (file.size > 5*1024*1024) return toast('Max 5MB','err');
+    if (file.size > 20*1024*1024) return toast('Max 20MB','err');
     const reader = new FileReader();
     reader.onload = (e) => {
         const dataUrl = e.target.result;

@@ -901,7 +901,7 @@ app.get('/api/files/read', (req, res) => {
         if (!fs.existsSync(target)) return res.status(404).json({ ok: false, error: 'Non trovato' });
         const stat = fs.statSync(target);
         if (stat.isDirectory()) return res.status(400).json({ ok: false, error: 'È una directory' });
-        if (stat.size > 500000) return res.status(400).json({ ok: false, error: 'File troppo grande (max 500KB)' });
+        if (stat.size > 20 * 1024 * 1024) return res.status(400).json({ ok: false, error: 'File troppo grande (max 20MB)' });
         const content = fs.readFileSync(target, 'utf-8');
         res.json({ ok: true, path: rel, content, size: stat.size });
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
@@ -912,7 +912,7 @@ app.put('/api/files/write', (req, res) => {
         const { path: rel, content } = req.body || {};
         if (!rel) return res.status(400).json({ ok: false, error: 'path mancante' });
         if (typeof content !== 'string') return res.status(400).json({ ok: false, error: 'content deve essere stringa' });
-        if (content.length > 500000) return res.status(400).json({ ok: false, error: 'Contenuto troppo grande (max 500KB)' });
+        if (content.length > 20 * 1024 * 1024) return res.status(400).json({ ok: false, error: 'Contenuto troppo grande (max 20MB)' });
         const target = path.resolve(ROOT, rel);
         if (!isPathAllowed(target)) return res.status(403).json({ ok: false, error: 'Non consentito' });
         if (BLOCKED_NAMES.has(path.basename(target))) return res.status(403).json({ ok: false, error: 'File bloccato' });
