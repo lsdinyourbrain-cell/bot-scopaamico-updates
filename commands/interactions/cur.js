@@ -214,40 +214,57 @@ module.exports = {
         const durText = fmtDuration(durationSec);
         const tName = truncate(track.name, 30);
         const tArtist = truncate(track.artist, 30);
-        const tAlbum = track.album ? truncate(track.album, 28) : '';
         const firesKey = `${track.artist} — ${track.name}`.toLowerCase().slice(0,120);
         const fires = (db._curFires && db._curFires[firesKey]?.count) || 0;
-        // Salva ultimo brano per fuoco
         if (!db._lastCur) db._lastCur = {};
         db._lastCur[sender] = { key: firesKey, artist: track.artist, title: track.name };
         try { saveDB(); } catch(_){}
 
-        // Caption solo riproduzione, anti-glitch (truncate + box)
-        const caption =
+        // ── RENDER CARD TRASLUCIDA (foto + info canzone + profilo) ──
+        const searchTerm = `${track.name} ${track.artist}`.trim().slice(0,80);
+        // Ottieni info utente per i contatori globali
+        let userInfoForCard = { playcount: 0 };
+        try { const u = await lastfm.getUserInfo(username); userInfoForCard = u; } catch(_){}
+        const cardOpts = {
+            coverBuffer,
+            trackName: track.name,
+            trackArtist: track.artist,
+            trackAlbum: track.album,
+            username,
+            isNowPlaying: !!nowPlaying,
+            userPlaycount: trackInfo.userplaycount || 0,
+            globalPlaycount: trackInfo.playcount || 0,
+            listeners: trackInfo.listeners || 0,
+            durationText: durText
+        };
+        let cardBuffer = null;
+        try {
+            const { renderCurCard } = require('../../lib/lastfmCard');
+            cardBuffer = await renderCurCard(sharp, cardOpts);
+        } catch(e){ console.error('[cur] card render', e.message); }
+
+        // Fallback caption testuale se card fallisce
+        const fallbackCaption =
 `${sec('IN RIPRODUZIONE')}
 ${boxOpen()}
 ${line(`🎵 ${tName}`)}
 ${line(`👤 ${tArtist}`)}
-${tAlbum ? line(`💿 ${tAlbum}`) : ''}
 ${durText !== '—' ? line(`⏱️ ${durText}`) : ''}
 ${line(`🔥 Fuochi: ${fires}`)}
-${line(`🔗 ${truncate(track.url, 42)}`)}
-${boxEnd()}
-▸ Account: ${truncate(username,18)}`;
+${line(`👤 @${truncate(username,18)} `)}
+${boxEnd()}`;
 
-        const searchTerm = `${track.name} ${track.artist}`.trim().slice(0,80);
-
-        // Sempre foto: se coverBuffer c'è, manda immagine + caption, altrimenti manda caption come immagine placeholder già generata
         try {
-            if (coverBuffer) {
-                await sock.sendMessage(from, { image: coverBuffer, caption }, { quoted: msg });
+            if (cardBuffer) {
+                await sock.sendMessage(from, { image: cardBuffer, caption: `🔥 ${fires} fuochi • ${durText} • @${username}` }, { quoted: msg });
+            } else if (coverBuffer) {
+                await sock.sendMessage(from, { image: coverBuffer, caption: fallbackCaption }, { quoted: msg });
             } else {
-                // Ultimo fallback: manda caption come testo (non dovrebbe mai accadere)
-                await reply(caption);
+                await reply(fallbackCaption);
             }
         } catch (imgErr) {
             console.error('[cur] image:', imgErr.message);
-            try { await reply(caption); } catch(_){}
+            try { await reply(fallbackCaption); } catch(_){}
         }
 
         // Sotto: chiede download e lyrics + fuoco
