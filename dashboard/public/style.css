@@ -12,6 +12,8 @@
   --accent2:#ff4ecd;
   --accent-rgb:124,92,255;
   --accent2-rgb:255,78,205;
+  --indicator:#ff4ecd;
+  --indicator-rgb:255,78,205;
   --green:#22c55e;
   --yellow:#eab308;
   --red:#ef4444;
@@ -444,11 +446,54 @@ a{color:var(--accent);text-decoration:none}
   color:var(--accent2);
   text-shadow:0 0 5px rgba(255,78,205,0.9), 0 0 14px rgba(255,78,205,0.5), 0 0 32px rgba(255,78,205,0.3);
 }
-/* Glass extra */
+/* Glass extra — iOS26 liquid glass */
 .panel, .card, .row-item{
   backdrop-filter:blur(var(--blur)) saturate(180%) brightness(1.02);
   -webkit-backdrop-filter:blur(var(--blur)) saturate(180%) brightness(1.02);
 }
+body.liquid-glass .panel,
+body.liquid-glass .card,
+body.liquid-glass .row-item{
+  backdrop-filter:blur(32px) saturate(220%) brightness(1.06) contrast(1.04) !important;
+  -webkit-backdrop-filter:blur(32px) saturate(220%) brightness(1.06) contrast(1.04) !important;
+}
+
+/* Cute animations — iOS26 fluid */
+@keyframes shimmer{
+  0%{background-position:-200% 0}
+  100%{background-position:200% 0}
+}
+@keyframes bounceCute{
+  0%,100%{transform:translateY(0) scale(1)}
+  25%{transform:translateY(-4px) scale(1.02)}
+  50%{transform:translateY(0) scale(0.98)}
+  75%{transform:translateY(-2px) scale(1.01)}
+}
+@keyframes heartBeat{
+  0%,100%{transform:scale(1)}
+  14%{transform:scale(1.12)}
+  28%{transform:scale(1)}
+  42%{transform:scale(1.08)}
+  70%{transform:scale(1)}
+}
+@keyframes wiggle{
+  0%,100%{transform:rotate(0)}
+  25%{transform:rotate(-2deg)}
+  75%{transform:rotate(2deg)}
+}
+@keyframes sparkle{
+  0%,100%{opacity:0; transform:scale(0) rotate(0deg)}
+  50%{opacity:1; transform:scale(1) rotate(180deg)}
+}
+.card-icon{animation:float 4s ease-in-out infinite}
+.card:nth-child(2) .card-icon{animation-delay:.3s}
+.card:nth-child(3) .card-icon{animation-delay:.6s}
+.card:nth-child(4) .card-icon{animation-delay:.9s}
+.btn:active{animation:bounceCute .4s ease}
+.pill-btn:active{animation:bounceCute .3s ease}
+.row-item:hover .avatar{animation:heartBeat .6s ease}
+.brand-icon{animation:float 3.5s ease-in-out infinite, shimmer 3s linear infinite; background-size:200% 100%}
+.podium-step:hover{animation:wiggle .4s ease}
 
 /* Tilt */
 .tilt{
@@ -579,60 +624,71 @@ body.liquid-glass .bottom-pill{
 body.liquid-glass .pill-btn{
   color:#1a1a1a !important;
 }
-body.liquid-glass .pill-btn.active{color:#ff4ecd !important}
+body.liquid-glass .pill-btn.active{color:var(--indicator) !important}
 body.liquid-glass .pill-btn--circle{
   background:rgba(255,255,255,0.95) !important;
   color:#1a1a1a !important;
 }
 body.liquid-glass .pill-indicator{
-  background:linear-gradient(180deg,rgba(255,78,205,0.3) 0%,rgba(255,78,205,0.18) 100%) !important;
+  background:linear-gradient(180deg,rgba(var(--indicator-rgb),0.3) 0%,rgba(var(--indicator-rgb),0.18) 100%) !important;
 }
 
-/* Bottom pill — perfettamente centrata, Apple liquid glass */
+/* Bottom pill — iOS26 liquid glass, perfettamente centrata */
 .bottom-pill{
   position:fixed;
-  bottom:16px;
+  bottom:14px;
   left:50%;
   transform:translateX(-50%);
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:2px;
-  padding:6px 10px;
+  gap:3px;
+  padding:7px 10px;
   width: fit-content;
-  max-width: calc(100% - 24px);
-  height: 56px;
-  background: 
-    linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.05) 100%),
-    radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.15) 0%, transparent 60%);
-  backdrop-filter: blur(30px) saturate(220%) brightness(1.02);
-  -webkit-backdrop-filter: blur(30px) saturate(220%) brightness(1.02);
-  border: 1px solid rgba(255,255,255,0.35);
-  box-shadow: 
-    0 12px 40px rgba(0,0,0,0.18),
-    0 4px 16px rgba(0,0,0,0.12),
-    inset 0 1px 0 rgba(255,255,255,0.4),
-    inset 0 -1px 0 rgba(255,255,255,0.05);
+  max-width: calc(100% - 20px);
+  height: 58px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.14) 55%, rgba(255,255,255,0.06) 100%),
+    radial-gradient(ellipse at 30% 15%, rgba(255,255,255,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 85%, rgba(var(--indicator-rgb),0.08) 0%, transparent 50%);
+  backdrop-filter: blur(40px) saturate(240%) brightness(1.08) contrast(1.02);
+  -webkit-backdrop-filter: blur(40px) saturate(240%) brightness(1.08) contrast(1.02);
+  border: 1px solid rgba(255,255,255,0.42);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.22),
+    0 6px 20px rgba(0,0,0,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(0,0,0,0.06),
+    0 0 0 1px rgba(255,255,255,0.08) inset;
   border-radius: 999px;
   z-index:40;
   user-select:none;
   box-sizing:border-box;
   overflow:hidden;
 }
+.bottom-pill::before{
+  content:"";
+  position:absolute;inset:1px;
+  border-radius:999px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.18), transparent 40%);
+  pointer-events:none;
+}
 .pill-indicator{
   position:absolute;
-  top:5px;
-  bottom:5px;
+  top:6px;
+  bottom:6px;
   left:0;
-  background: linear-gradient(180deg, rgba(255,78,205,0.22) 0%, rgba(255,78,205,0.12) 100%);
+  background: linear-gradient(180deg, rgba(var(--indicator-rgb),0.28) 0%, rgba(var(--indicator-rgb),0.16) 100%);
+  border: 1px solid rgba(var(--indicator-rgb),0.18);
   border-radius: 999px;
   pointer-events:none;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), width 0.5s cubic-bezier(0.32, 0.72, 0, 1);
   will-change: transform, width;
-  box-shadow: 
-    inset 0 1px 0 rgba(255,255,255,0.3),
-    inset 0 -1px 0 rgba(0,0,0,0.05),
-    0 2px 8px rgba(255,78,205,0.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 -1px 0 rgba(0,0,0,0.04),
+    0 2px 12px rgba(var(--indicator-rgb),0.2),
+    0 1px 3px rgba(0,0,0,0.08);
 }
 .pill-btn{
   position:relative;
@@ -657,7 +713,7 @@ body.liquid-glass .pill-indicator{
   white-space:nowrap;
 }
 .pill-btn:hover{ color: rgba(0,0,0,0.85); }
-.pill-btn.active{ color: #ff4ecd; }
+.pill-btn.active{ color: var(--indicator); }
 .pill-btn.active .pill-icon{transform:scale(1.08)}
 .pill-btn--circle{
   flex:0 0 42px;

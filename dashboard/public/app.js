@@ -20,6 +20,46 @@ const toast = (msg, type = 'ok') => {
     el.classList.remove('hidden');
     setTimeout(() => el.classList.add('hidden'), 3500);
 };
+// ── Custom modal (sostituisce prompt/confirm/alert nativi) ───────────────
+let _customModalResolve = null;
+function showCustomModal({ title='Richiesta', text='', placeholder='', hint='', showInput=false, okText='Conferma', cancelText='Annulla', icon='✦' }){
+    return new Promise(res=>{
+        _customModalResolve = res;
+        const m=$('#customModal'), t=$('#customModalTitle'), tx=$('#customModalText'), inp=$('#customModalInput'), hi=$('#customModalHint'), ic=$('#customModalIcon'), ok=$('#customModalOk'), ca=$('#customModalCancel');
+        if(t) t.textContent=title;
+        if(tx) tx.textContent=text;
+        if(ic) ic.textContent=icon;
+        if(inp){ inp.style.display=showInput?'block':'none'; inp.value=''; inp.placeholder=placeholder||''; if(showInput) setTimeout(()=>inp.focus(),80); }
+        if(hi){ hi.style.display=hint?'block':'none'; hi.textContent=hint||''; }
+        if(ok) ok.textContent=okText;
+        if(ca) ca.textContent=cancelText;
+        if(ca) ca.style.display = (okText==='OK'?'none':'inline-flex');
+        if(m){ m.classList.remove('hidden'); m.style.animation='fadeIn .25s ease'; }
+        const onKey=(e)=>{ if(e.key==='Enter' && showInput){ confirmCustomModal(); } if(e.key==='Escape'){ closeCustomModal(null); } };
+        if(inp) inp.onkeydown=onKey;
+        document.addEventListener('keydown', onKey, {once:true});
+    });
+}
+function closeCustomModal(val){
+    const m=$('#customModal');
+    if(m) m.classList.add('hidden');
+    if(_customModalResolve){ const r=_customModalResolve; _customModalResolve=null; r(val); }
+}
+function confirmCustomModal(){
+    const inp=$('#customModalInput');
+    const showInput = inp && inp.style.display!=='none';
+    const val = showInput ? inp.value : true;
+    closeCustomModal(val);
+}
+function customPrompt(text, defVal='', placeholder=''){
+    return showCustomModal({ title:'Inserisci', text, placeholder: placeholder||String(defVal||''), hint:'', showInput:true, okText:'Conferma', cancelText:'Annulla', icon:'✎' }).then(v=> v===null?null:String(v||'').trim()||null);
+}
+function customConfirm(text, title='Conferma'){
+    return showCustomModal({ title, text, showInput:false, okText:'Sì', cancelText:'Annulla', icon:'⚠' }).then(v=> !!v);
+}
+function customAlert(text, title='Info'){
+    return showCustomModal({ title, text, showInput:false, okText:'OK', cancelText:'', icon:'✦' }).then(()=>true);
+}
 const fetchJSON = async (url, opts = {}) => {
     const res = await fetch(url, {
         headers: { 'Content-Type': 'application/json' },
@@ -396,7 +436,7 @@ async function saveWelcome(){
 }
 async function resetWelcome(){
     if (!currentGroupJid) return;
-    if (!confirm('Resettare welcome/goodbye a default (rimuove custom)?')) return;
+    if (!(await customConfirm('Resettare welcome/goodbye a default (rimuove custom)?','Reset'))) return;
     const w = $('#welcomeText'), g = $('#goodbyeText');
     if (w) w.value = ''; if (g) g.value = '';
     await saveWelcome();
@@ -436,7 +476,7 @@ async function saveGroupSettings(){
 }
 async function deleteGroup(){
     if (!currentGroupJid) return;
-    if (!confirm(`Eliminare tutti i dati di ${currentGroupJid}?\nVerranno rimossi da database.json, welcome.json e antilink.json.`)) return;
+    if (!(await customConfirm(`Eliminare tutti i dati di ${currentGroupJid}?\nVerranno rimossi da database.json, welcome.json e antilink.json.`, 'Elimina gruppo'))) return;
     try{
         await fetchJSON(`/api/groups/${encodeURIComponent(currentGroupJid)}`, { method: 'DELETE' });
         toast('Gruppo eliminato');
@@ -596,17 +636,17 @@ async function deleteUser(jid){
     const user = usersGlobalCache.find(u => u.jid === jid);
     if (!user || !user.groups || !user.groups.length) return;
     const groupsList = user.groups.map(g=>g.jid).join('\n');
-    const target = prompt(`Eliminare ${jid} da quale gruppo?\nGruppi:\n${groupsList}\n\nScrivi il JID del gruppo o "tutti" per rimuoverlo ovunque:`);
+    const target = await customPrompt(`Eliminare ${jid} da quale gruppo?\nGruppi:\n${groupsList}\n\nScrivi il JID del gruppo o "tutti" per rimuoverlo ovunque:`, '', 'tutti o JID');
     if (!target) return;
     if (target.toLowerCase() === 'tutti') {
-        if (!confirm(`Rimuovere ${jid} da TUTTI i ${user.groups.length} gruppi?`)) return;
+        if (!(await customConfirm(`Rimuovere ${jid} da TUTTI i ${user.groups.length} gruppi?`, 'Conferma rimozione'))) return;
         for (const g of user.groups) {
             try{ await fetchJSON(`/api/users/${encodeURIComponent(g.jid)}/${encodeURIComponent(jid)}`, { method:'DELETE' }); }catch{}
         }
         toast('Utente rimosso da tutti i gruppi');
     } else {
         const gid = target.trim();
-        if (!confirm(`Eliminare ${jid} da ${gid}?`)) return;
+        if (!(await customConfirm(`Eliminare ${jid} da ${gid}?`, 'Conferma'))) return;
         try{ await fetchJSON(`/api/users/${encodeURIComponent(gid)}/${encodeURIComponent(jid)}`, { method:'DELETE' }); toast('Utente eliminato da '+gid); }catch(e){ toast(e.message,'err'); return; }
     }
     await loadUsersGlobal();
@@ -715,7 +755,7 @@ async function addPhraseLine(){
     }catch(e){ toast(e.message,'err'); }
 }
 async function removePhraseLine(idx){
-    if (!confirm(`Rimuovere frase #${idx+1}?`)) return;
+    if (!(await customConfirm(`Rimuovere frase #${idx+1}?`, 'Rimuovi frase'))) return;
     try{
         await fetchJSON(`/api/phrases/${encodeURIComponent(currentPhraseKey)}/${idx}`, { method: 'DELETE' });
         currentPhraseLines.splice(idx, 1);
@@ -726,9 +766,9 @@ async function removePhraseLine(idx){
         fetchPhrases();
     }catch(e){ toast(e.message,'err'); }
 }
-function editPhraseLine(idx){
+async function editPhraseLine(idx){
     const cur = currentPhraseLines[idx];
-    const next = prompt(`Modifica frase #${idx+1}:`, cur);
+    const next = await customPrompt(`Modifica frase #${idx+1}:`, cur, 'Nuova frase');
     if (next === null) return;
     const trimmed = next.trim();
     if (!trimmed) return toast('Frase vuota','err');
@@ -765,7 +805,7 @@ async function reloadPhrases(){
     openPhrase(currentPhraseKey);
 }
 async function createPhraseFile(){
-    const key = prompt('Nome nuovo file (solo a-z0-9_-):');
+    const key = await customPrompt('Nome nuovo file (solo a-z0-9_-):', '', 'es. saluti');
     if (!key) return;
     const clean = key.toLowerCase().replace(/[^a-z0-9_-]/g,'');
     if (!clean) return toast('Nome non valido','err');
@@ -855,7 +895,7 @@ async function saveFile(){
     }catch(e){ toast(e.message,'err'); }
 }
 async function deleteFile(rel, isDir){
-    if (!confirm(`Eliminare ${isDir?'cartella e tutto il contenuto':'file'} "${rel}"?`)) return;
+    if (!(await customConfirm(`Eliminare ${isDir?'cartella e tutto il contenuto':'file'} "${rel}"?`, 'Elimina'))) return;
     try{
         await fetchJSON(`/api/files?path=${encodeURIComponent(rel)}`, { method: 'DELETE' });
         toast(isDir ? 'Cartella eliminata' : 'File eliminato');
@@ -865,7 +905,7 @@ async function deleteFile(rel, isDir){
     }catch(e){ toast(e.message,'err'); }
 }
 async function createFolderPrompt(){
-    const name = prompt('Nome nuova cartella:');
+    const name = await customPrompt('Nome nuova cartella:', '', 'es. nuova/cartella');
     if (!name) return;
     const clean = name.trim().replace(/[\\/]/g,'');
     if (!clean) return toast('Nome non valido','err');
@@ -918,7 +958,7 @@ async function handleFileUpload(input){
     input.value = '';
 }
 async function createFilePrompt(){
-    const name = prompt('Nome nuovo file (es. note.txt):');
+    const name = await customPrompt('Nome nuovo file (es. note.txt):', '', 'es. note.txt');
     if (!name) return;
     const clean = name.trim();
     if (!clean || clean.includes('/') || clean.includes('\\')) return toast('Nome non valido','err');
@@ -1047,7 +1087,7 @@ async function addOwner(){
     }catch(e){ toast(e.message,'err'); }
 }
 async function removeOwner(jid){
-    if (!confirm(`Rimuovere owner ${jid}?`)) return;
+    if (!(await customConfirm(`Rimuovere owner ${jid}?`, 'Rimuovi owner'))) return;
     try{
         await fetchJSON('/api/owners', { method: 'POST', body: JSON.stringify({ action:'remove', jid }) });
         toast('Owner rimosso');
@@ -1098,6 +1138,7 @@ function updateTheme(){
     const panel = $('#colorPanel')?.value || '#15151d';
     const blur = $('#blurRange')?.value || 22;
     const opacity = $('#opacityRange')?.value || 55;
+    const indicator = $('#colorIndicator')?.value || '#ff4ecd';
     const root = document.documentElement;
     root.style.setProperty('--accent', accent);
     root.style.setProperty('--accent2', accent2);
@@ -1106,14 +1147,17 @@ function updateTheme(){
     root.style.setProperty('--bg', bg);
     root.style.setProperty('--panel', `rgba(${hexToRgb(panel)},${opacity/100})`);
     root.style.setProperty('--blur', blur + 'px');
+    root.style.setProperty('--indicator', indicator);
+    root.style.setProperty('--indicator-rgb', hexToRgb(indicator));
     const b = $('#blurVal'), o = $('#opacityVal');
     if (b) b.textContent = blur + 'px';
     if (o) o.textContent = opacity + '%';
-    const pa = $('#previewAccent'), pa2 = $('#previewAccent2'), pb = $('#previewBg'), pp = $('#previewPanel');
+    const pa = $('#previewAccent'), pa2 = $('#previewAccent2'), pb = $('#previewBg'), pp = $('#previewPanel'), pi = $('#previewIndicator');
     if (pa) pa.style.background = accent;
     if (pa2) pa2.style.background = accent2;
     if (pb) pb.style.background = bg;
     if (pp) pp.style.background = panel;
+    if (pi) pi.style.background = indicator;
     if (document.body.classList.contains('liquid-glass')) {
         document.body.style.background = '';
     } else {
@@ -1129,6 +1173,7 @@ function updateTheme(){
             panel: $('#colorPanel')?.value,
             blur: $('#blurRange')?.value,
             opacity: $('#opacityRange')?.value,
+            indicator: $('#colorIndicator')?.value,
         };
         try { localStorage.setItem('vex_theme', JSON.stringify(data)); } catch (_) {}
     }, 400);
@@ -1141,6 +1186,7 @@ function saveTheme(){
         panel: $('#colorPanel')?.value,
         blur: $('#blurRange')?.value,
         opacity: $('#opacityRange')?.value,
+        indicator: $('#colorIndicator')?.value,
         liquid: document.body.classList.contains('liquid-glass'),
     };
     localStorage.setItem('vex_theme', JSON.stringify(data));
@@ -1155,7 +1201,7 @@ function resetTheme(){
     document.body.style.backgroundSize = '';
     document.body.style.backgroundAttachment = '';
     const t = $('#liquidToggle'); if (t) t.checked = false;
-    $('#colorAccent').value='#7c5cff'; $('#colorAccent2').value='#ff4ecd'; $('#colorBg').value='#08080c'; $('#colorPanel').value='#15151d';
+    $('#colorAccent').value='#7c5cff'; $('#colorAccent2').value='#ff4ecd'; $('#colorBg').value='#08080c'; $('#colorPanel').value='#15151d'; $('#colorIndicator').value='#ff4ecd';
     $('#blurRange').value=22; $('#opacityRange').value=55;
     $$('.bg-preset').forEach(p => p.classList.remove('active'));
     updateTheme();
@@ -1241,7 +1287,7 @@ function loadBg(){
 }
 setTimeout(loadBg, 150);
 async function doUpdate(){
-    if (!confirm('Aggiornare bot e dashboard dal repo e riavviare?')) return;
+    if (!(await customConfirm('Aggiornare bot e dashboard dal repo e riavviare?', 'Aggiorna'))) return;
     const btn = $('#updateBtn');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Aggiorno...'; }
     try{
@@ -1265,6 +1311,7 @@ function loadTheme(){
             if (d.panel) $('#colorPanel').value = d.panel;
             if (d.blur) $('#blurRange').value = d.blur;
             if (d.opacity) $('#opacityRange').value = d.opacity;
+            if (d.indicator) $('#colorIndicator').value = d.indicator;
             if (d.liquid) {
                 document.body.classList.add('liquid-glass');
                 const t = $('#liquidToggle'); if (t) t.checked = true;

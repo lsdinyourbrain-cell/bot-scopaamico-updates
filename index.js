@@ -1943,6 +1943,31 @@ startBot();
                                 if (purl) g.photoUrl = purl;
                             } catch (_) {}
                             db._groupInfo[gid] = g;
+                            // Salva anche PFP per tutti i partecipanti che non l'hanno ancora (per dashboard)
+                            try {
+                                const needPfp = (meta.participants || []).filter(p => {
+                                    const jid = p?.id || p?.jid || '';
+                                    if (!jid || jid.endsWith('@g.us')) return false;
+                                    const chat = db[gid] || {};
+                                    const udata = chat[jid];
+                                    return !udata?.pfpUrl || (Date.now() - (udata.pfpUpdated||0) > 7*24*60*60*1000);
+                                }).slice(0, 8); // max 8 per gruppo ad avvio per non spammare
+                                for (const p of needPfp) {
+                                    const jid = p?.id || p?.jid || '';
+                                    try {
+                                        const upurl = await sock.profilePictureUrl(jid, 'image').catch(()=>null);
+                                        if (upurl) {
+                                            if (!db[gid]) db[gid] = {};
+                                            if (!db[gid][jid]) db[gid][jid] = { money: 100, warnings: 0, warnLog: [], isMuted: false, msgCount: 0, spouse: null, children: [], parents: [], inventory: [] };
+                                            db[gid][jid].pfpUrl = upurl;
+                                            db[gid][jid].pfpUpdated = Date.now();
+                                            if (p.phoneNumber) db[gid][jid].phoneNumber = p.phoneNumber;
+                                            if (p.id && p.id.endsWith('@lid')) db[gid][jid].lid = p.id;
+                                            await new Promise(r=>setTimeout(r, 900));
+                                        }
+                                    } catch(_){}
+                                }
+                            } catch(_){}
                             await new Promise(r=>setTimeout(r, 700));
                         } catch (_) {}
                     }
@@ -2205,6 +2230,19 @@ startBot();
                             if (url) { userData.pfpUrl = url; userData.pfpUpdated = Date.now(); }
                         } catch (_) {}
                     })();
+                }
+                // Salva PFP anche per utenti menzionati (per dashboard, max 3)
+                if (mentioned && Array.isArray(mentioned) && mentioned.length) {
+                    for (const mjid of mentioned.slice(0,3)) {
+                        try {
+                            const mData = getUser(mjid, from);
+                            if (!mData.pfpUpdated || Date.now() - (mData.pfpUpdated||0) > 3600000) {
+                                (async (jid, data) => {
+                                    try { const u = await sock.profilePictureUrl(jid, 'image').catch(()=>null); if(u){ data.pfpUrl=u; data.pfpUpdated=Date.now(); } } catch(_){}
+                                })(mjid, mData);
+                            }
+                        } catch(_){}
+                    }
                 }
 
                 // Salva info gruppo (nome + foto) per dashboard — in background, non blocca
