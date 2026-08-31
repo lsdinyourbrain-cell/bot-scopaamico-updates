@@ -212,14 +212,17 @@
       <div id="fileDrop" class="panel" style="padding:12px;text-align:center;border-style:dashed;margin-bottom:10px;display:none">Trascina qui i file per caricarli</div>
       <div id="filesList" class="list"></div>
 
-      <div id="fileEditor" class="panel hidden" style="margin-top:16px">
-        <div class="panel-head">⬥ Editor — <span id="fileName" class="mono"></span> <span id="fileSize" class="muted"></span> <button class="btn btn-sm" style="float:right" onclick="closeFileEditor()">✕</button></div>
-        <div class="panel-body">
-          <textarea id="fileContent" class="input textarea" rows="20" style="font-family:monospace;font-size:12px;min-height:340px" placeholder="Contenuto file..."></textarea>
-          <div class="row gap" style="margin-top:10px">
-            <button class="btn" onclick="saveFile()">✦ Salva</button>
+      <div id="fileEditor" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeFileEditor()"></div>
+        <div class="modal-panel tilt" style="width:min(760px,96vw);max-height:90vh">
+          <div class="modal-head">⬥ Editor — <span id="fileName" class="mono"></span> <span id="fileSize" class="muted"></span> <button class="btn btn-sm btn-ghost" onclick="closeFileEditor()">✕</button></div>
+          <div class="modal-body" style="max-height:70vh;overflow:auto">
+            <textarea id="fileContent" class="input textarea" rows="20" style="font-family:monospace;font-size:12px;min-height:360px" placeholder="Contenuto file..."></textarea>
+          </div>
+          <div class="modal-foot">
+            <span class="muted small" style="margin-right:auto">Ctrl+S per salvare · Max 500KB</span>
             <button class="btn btn-ghost" onclick="closeFileEditor()">Annulla</button>
-            <span class="muted small">Ctrl+S per salvare · Max 500KB</span>
+            <button class="btn" onclick="saveFile()">✦ Salva</button>
           </div>
         </div>
       </div>
@@ -323,6 +326,9 @@
           </div>
           <label class="check" style="margin-top:12px;background:rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
             <input type="checkbox" id="liquidToggle" onchange="toggleLiquidGlass(this.checked)"> <b>✨ Liquid Glass Apple</b> — sfondo iper-saturo + vetro <code>rgba(255,255,255,0.4)</code> + <code>blur(25px) saturate(200%)</code>
+          </label>
+          <label class="check" style="margin-top:8px;background:rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
+            <input type="checkbox" id="adaptiveToggle" onchange="toggleAdaptive(this.checked)"> <b>🎨 Colore adattivo</b> — testi e accenti si adattano allo sfondo per massima leggibilità
           </label>
           <div class="hint">Effetto puro Apple: pill vuota <code>400×100 radius 50px</code> — qui applicato a pannelli/cards. Solo vetro, niente bottoni interni.</div>
 

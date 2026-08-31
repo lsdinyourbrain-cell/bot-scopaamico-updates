@@ -821,3 +821,14 @@ body.liquid-glass .pill-indicator{
 .row-item, .card{ transition: transform .35s cubic-bezier(0.32,0.72,0,1), box-shadow .35s ease, border-color .35s ease }
 .pill-btn, .btn, .tab{ transition: all .3s cubic-bezier(0.32,0.72,0,1) }
 .input, .panel{ transition: all .3s cubic-bezier(0.32,0.72,0,1) }
+/* Testi sempre leggibili — ombra + adattivo */
+.adaptive-text, .card-val, .panel-head, .row-item .title, .modal-head{
+  text-shadow: 0 1px 6px rgba(0,0,0,0.45), 0 0 20px rgba(0,0,0,0.25);
+}
+.card, .panel, .row-item, .modal-panel{
+  position:relative;
+}
+.card::after, .panel::after, .row-item::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 30%);
+}

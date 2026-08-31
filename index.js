@@ -3145,12 +3145,13 @@ startBot();
                     return;
                 }
 
-                const num = parseInt(body.trim(), 10);
+                const mNum = String(body).match(/\b[1-9]\b/);
+                const num = mNum ? parseInt(mNum[0], 10) : parseInt(body.trim(), 10);
                 if (isNaN(num) || num < 1 || num > 9) return;
 
-                // Solo il giocatore che deve muovere può giocare
+                // Solo il giocatore che deve muovere può giocare (gestisce @lid vs @s.whatsapp.net)
                 const currentPlayer = game.players[game.current];
-                if (!sameJid(sender, currentPlayer)) return;
+                if (!sameJid(sender, currentPlayer) && !sameJid(senderAlt, currentPlayer)) return;
 
                 const idx = num - 1;
                 if (game.board[idx] !== null) {
@@ -3264,11 +3265,12 @@ startBot();
                     return;
                 }
 
-                const num = parseInt(body.trim(), 10);
+                const mNum4 = String(body).match(/\b[1-7]\b/);
+                const num = mNum4 ? parseInt(mNum4[0], 10) : parseInt(body.trim(), 10);
                 if (isNaN(num) || num < 1 || num > 7) return;
 
                 const currentPlayer = game.players[game.current];
-                if (!sameJid(sender, currentPlayer)) return;
+                if (!sameJid(sender, currentPlayer) && !sameJid(senderAlt, currentPlayer)) return;
 
                 if (!forza4Lib.isValidMove(game.board, num - 1)) {
                     await sock.sendMessage(from, { text: `⚠️ Colonna ${num} piena, fra! Scegline un'altra.` });

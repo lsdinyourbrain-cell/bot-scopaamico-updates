@@ -1126,9 +1126,29 @@ function hexToRgb(hex){
 function toggleLiquidGlass(on){
     document.body.classList.toggle('liquid-glass', !!on);
     try { localStorage.setItem('vex_liquid', on ? '1' : '0'); } catch (_) {}
-    // Aggiorna anche i colori e lo sfondo
     updateTheme();
     toast(on ? '✨ Liquid Glass attivato' : 'Liquid Glass disattivato');
+}
+function toggleAdaptive(on){
+    document.body.classList.toggle('adaptive', !!on);
+    try { localStorage.setItem('vex_adaptive', on ? '1' : '0'); } catch (_) {}
+    if(on){
+        // Calcola luminosità sfondo e adatta testi
+        try{
+            const bg = getComputedStyle(document.body).backgroundColor || getComputedStyle(document.documentElement).getPropertyValue('--bg') || '#08080c';
+            // Estrai luminanza da --bg o da body
+            const hex = $('#colorBg')?.value || '#08080c';
+            const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+            const lum = 0.2126*r + 0.7152*g + 0.0722*b;
+            document.documentElement.style.setProperty('--adaptive-text', lum > 140 ? '#0a0a0f' : '#f0f0f5');
+            document.documentElement.style.setProperty('--adaptive-muted', lum > 140 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.6)');
+        }catch(_){}
+    } else {
+        document.documentElement.style.removeProperty('--adaptive-text');
+        document.documentElement.style.removeProperty('--adaptive-muted');
+    }
+    updateTheme();
+    toast(on ? '🎨 Adattivo attivato — testi ottimizzati' : 'Adattivo disattivato');
 }
 let _themeSaveTimer = null;
 function updateTheme(){
@@ -1192,11 +1212,12 @@ function saveTheme(){
         opacity: $('#opacityRange')?.value,
         indicator: $('#colorIndicator')?.value,
         liquid: document.body.classList.contains('liquid-glass'),
+        adaptive: document.body.classList.contains('adaptive'),
         bgPreset: localStorage.getItem('vex_bg') || '',
         bgUrl: localStorage.getItem('vex_bgUrl') || '',
     };
     localStorage.setItem('vex_theme', JSON.stringify(data));
-    // Salva anche sul server per persistenza cross-device
+    try { localStorage.setItem('vex_adaptive', data.adaptive ? '1' : '0'); } catch(_){}
     fetch('/api/theme', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }).catch(()=>{});
     toast('Tema salvato ✦');
 }
@@ -1204,11 +1225,16 @@ function resetTheme(){
     localStorage.removeItem('vex_theme');
     localStorage.removeItem('vex_liquid');
     localStorage.removeItem('vex_bg');
+    localStorage.removeItem('vex_adaptive');
     document.body.classList.remove('liquid-glass');
+    document.body.classList.remove('adaptive');
     document.body.style.backgroundImage = '';
     document.body.style.backgroundSize = '';
     document.body.style.backgroundAttachment = '';
     const t = $('#liquidToggle'); if (t) t.checked = false;
+    const at = $('#adaptiveToggle'); if(at) at.checked=false;
+    document.documentElement.style.removeProperty('--adaptive-text');
+    document.documentElement.style.removeProperty('--adaptive-muted');
     $('#colorAccent').value='#7c5cff'; $('#colorAccent2').value='#ff4ecd'; $('#colorBg').value='#08080c'; $('#colorPanel').value='#15151d'; $('#colorIndicator').value='#ff4ecd';
     $('#blurRange').value=22; $('#opacityRange').value=55;
     $$('.bg-preset').forEach(p => p.classList.remove('active'));
@@ -1332,11 +1358,16 @@ async function loadTheme(){
                 document.body.classList.add('liquid-glass');
                 const t = $('#liquidToggle'); if (t) t.checked = true;
             }
+            if (d.adaptive) {
+                document.body.classList.add('adaptive');
+                const at = $('#adaptiveToggle'); if(at) at.checked = true;
+                toggleAdaptive(true);
+            }
             if (d.bgPreset) try{ setPresetBg(d.bgPreset); }catch(_){}
             if (d.bgUrl) try{ setCustomBgUrl(d.bgUrl); }catch(_){}
-            // Se abbiamo bgData (immagine base64), ripristinalo
             if (d.bgData) try{ document.body.style.backgroundImage=`url(${d.bgData})`; document.body.style.backgroundSize='cover'; document.body.style.backgroundAttachment='fixed'; }catch(_){}
         }
+        try { if (localStorage.getItem('vex_adaptive')==='1'){ document.body.classList.add('adaptive'); const at=$('#adaptiveToggle'); if(at) at.checked=true; toggleAdaptive(true); } } catch(_){}
         // Fallback per liquid salvato separatamente
         try { if (localStorage.getItem('vex_liquid') === '1') { document.body.classList.add('liquid-glass'); const t=$('#liquidToggle'); if(t) t.checked=true; } } catch(_){}
         updateTheme();
