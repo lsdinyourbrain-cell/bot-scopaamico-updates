@@ -457,9 +457,8 @@ body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
 .bottom-pill{
   position:fixed;
   bottom:16px;
-  left:0;
-  right:0;
-  margin:0 auto;
+  left:50%;
+  transform:translateX(-50%);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -483,6 +482,7 @@ body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
   position:absolute;
   top:6px;
   bottom:6px;
+  left:0;
   background: rgba(255,78,205,0.16);
   border-radius: 999px;
   pointer-events:none;
@@ -521,6 +521,15 @@ body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
   width:42px;
   height:42px;
   padding:0;
+  border-radius:50%;
+  background: rgba(255,255,255,0.9);
+  color:#1a1a1a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.pill-btn--circle:hover{
+  background: #fff;
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 .pill-icon{
   font-size:18px;
@@ -531,21 +540,6 @@ body.liquid-glass .file-icon{border-color:rgba(255,255,255,0.35) !important}
   font-size:10px;
   letter-spacing:0.2px;
   line-height:1;
-}
-.pill-btn--circle{
-  min-width:44px;
-  width:44px;
-  height:44px;
-  padding:0;
-  border-radius:50%;
-  background: rgba(255,255,255,0.9);
-  color:#1a1a1a;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.pill-btn--circle:hover{
-  background: #fff;
-  transform: translateY(-1px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 @media(max-width:640px){
   .bottom-pill{

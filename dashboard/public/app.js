@@ -63,21 +63,18 @@ function formatDate(iso){
     try { return new Date(iso).toLocaleString('it-IT'); } catch { return String(iso||''); }
 }
 
-// ── Pill indicator — semplice, stabile, senza drag glitchato ─────────────
+// ── Pill indicator — usa offsetLeft (relativo a pill padding box) per centraggio perfetto ─
 function updatePillIndicator(page, instant=false){
     const pill = $('#bottomPill'), ind = $('#pillIndicator');
     if (!pill || !ind) return;
     const btn = pill.querySelector(`.pill-btn[data-page="${page}"]`);
     if (!btn) return;
-    const pillRect = pill.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-    const x = btnRect.left - pillRect.left;
-    const w = btnRect.width;
+    const x = btn.offsetLeft;
+    const w = btn.offsetWidth;
     if (instant) {
         ind.style.transition = 'none';
         ind.style.transform = `translateX(${x}px)`;
         ind.style.width = w + 'px';
-        // Force reflow
         void ind.offsetWidth;
         ind.style.transition = '';
     } else {
@@ -243,12 +240,13 @@ async function fetchGroups(){
     }
 }
 function pfpHTML(jid, name, photoUrl, size=''){
-    if (photoUrl) {
-        const cls = size ? `avatar ${size}` : 'avatar';
-        const init = initialsFrom(jid, name);
-        return `<div class="${cls}" style="overflow:hidden"><img src="${esc(photoUrl)}" alt="${esc(name||jid)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'"><span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:800;background:${avatarColor(jid||name||'x')}">${esc(init)}</span></div>`;
-    }
-    return avatarHTML(jid, name, size);
+    // Sempre via /api/pfp per avere URL fresco (photoUrl diretto scade dopo 24h)
+    // Se photoUrl è già noto lo passiamo come hint, ma src è sempre /api/pfp per redirect/cache
+    const cls = size ? `avatar ${size}` : 'avatar';
+    const init = initialsFrom(jid, name);
+    const bg = avatarColor(jid || name || 'x');
+    const apiSrc = `/api/pfp/${encodeURIComponent(jid || '')}`;
+    return `<div class="${cls}" style="overflow:hidden;background:${bg}"><img src="${apiSrc}" alt="${esc(name||jid)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'"><span class="avatar-fallback" style="display:none;place-items:center;width:100%;height:100%;font-weight:800;color:#fff">${esc(init)}</span></div>`;
 }
 let groupSort = localStorage.getItem('vex_groupSort') || 'name';
 function renderGroups(list){
