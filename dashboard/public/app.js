@@ -63,19 +63,21 @@ function formatDate(iso){
     try { return new Date(iso).toLocaleString('it-IT'); } catch { return String(iso||''); }
 }
 
-// ── Pill indicator — perfetto, usa active reale e rAF per layout stabile ─
+// ── Pill indicator — robusto con getBoundingClientRect, niente offset padding/gap ─
 function updatePillIndicator(page, instant=false){
     const pill = $('#bottomPill'), ind = $('#pillIndicator');
     if (!pill || !ind) return;
-    // Usa sempre il bottone realmente attivo per evitare disallineamenti
+    // Usa sempre il bottone realmente attivo
     let btn = pill.querySelector('.pill-btn.active');
     if (!btn) btn = pill.querySelector(`.pill-btn[data-page="${page}"]`);
     if (!btn) return;
     // Aspetta layout completo (font, flex gap)
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            const x = btn.offsetLeft;
-            const w = btn.offsetWidth;
+            const pillRect = pill.getBoundingClientRect();
+            const btnRect = btn.getBoundingClientRect();
+            const x = btnRect.left - pillRect.left;
+            const w = btnRect.width;
             if (instant) {
                 ind.style.transition = 'none';
                 ind.style.transform = `translateX(${x}px)`;
