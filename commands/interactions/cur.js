@@ -133,12 +133,10 @@ module.exports={
       // SEMPRE invia testo PRIMA
       await reply(fallback);
       let cardBuf=null;
-      if(!process.env.TERMUX_VERSION && !process.env.TERMUX && !require('fs').existsSync('/data/data/com.termux')){
-        try{
-          const { renderCurCard } = require('../../lib/lastfmCard');
-          cardBuf=await renderCurCard(sharp, {coverBuffer: cover, trackName: track.name, trackArtist: track.artist, username, isNowPlaying: !!npData.nowPlaying, userPlaycount: trackInfo.userplaycount||0, globalPlaycount: trackInfo.playcount||0, listeners: trackInfo.listeners||0});
-        }catch(e){ console.error('[cur] card render',e.message); }
-      }
+      try{
+        const { renderCurCard } = require('../../lib/lastfmCard');
+        cardBuf=await renderCurCard(sharp, {coverBuffer: cover, trackName: track.name, trackArtist: track.artist, username, isNowPlaying: !!npData.nowPlaying, userPlaycount: trackInfo.userplaycount||0, globalPlaycount: trackInfo.playcount||0, listeners: trackInfo.listeners||0});
+      }catch(e){ console.error('[cur] card render',e.message); cardBuf=null; }
       // SEMPRE manda qualcosa - prima testo, poi immagine
       try{
         if(cardBuf){
