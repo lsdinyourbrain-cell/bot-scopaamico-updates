@@ -1,5 +1,6 @@
 'use strict';
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
+
 function trunc(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
 function fmtDuration(sec){
   const s=Number(sec)||0;
@@ -103,7 +104,7 @@ module.exports={
       if(!track) return await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(username+' non ha ancora ascoltato nulla.')}\n${boxEnd()}`);
       let trackInfo={playcount:0,listeners:0,userplaycount:0,duration:0};
       try{ trackInfo=await lastfm.getTrackInfo(track.artist, track.name, username); }catch(e){ console.error('[cur] trackInfo',e.message); }
-      let cover=null; let durSec=trackInfo.duration||0;
+      let cover; let durSec = trackInfo.duration || 0;
       try{ const f=await fetchCover(axios, sharp, track); cover=f.cover; if(f.duration>0) durSec=f.duration; }catch(e){ console.error('[cur] cover',e.message); }
       if(!cover){
         try{
@@ -111,43 +112,47 @@ module.exports={
           cover=await sharp(Buffer.from(svg)).png().toBuffer();
         }catch(_){ cover=null; }
       }
-      const durText=fmtDuration(durSec);
-      const tName=trunc(track.name,30);
-      const tArtist=trunc(track.artist,30);
+      const searchTerm=`${track.name} ${track.artist}`.trim().slice(0,80);
       const firesKey=`${track.artist} — ${track.name}`.toLowerCase().slice(0,120);
       const fires=(db._curFires && db._curFires[firesKey]?.count)||0;
+      const durText=fmtDuration(durSec);
       if(!db._lastCur) db._lastCur={};
       db._lastCur[sender]={key:firesKey, artist:track.artist, title:track.name};
       try{ saveDB(); }catch(_){}
-      const searchTerm=`${track.name} ${track.artist}`.trim().slice(0,80);
+      // ALWAYS send text fallback FIRST (garantito visibile su Termux)
+      const fallback = 
+        sec('IN RIPRODUZIONE')+'\n'+
+        boxOpen()+'\n'+
+        line('🎵 '+trunc(track.name,30))+'\n'+
+        line('👤 '+trunc(track.artist,30))+'\n'+
+        (track.album ? line('💿 '+trunc(track.album,28))+'\n' : '')+
+        (durText!=='—' ? line('⏱️ '+durText)+'\n' : '')+
+        line('🔥 Fuochi: '+fires)+'\n'+
+        line('👤 @'+trunc(username,18))+'\n'+
+        boxEnd();
+      // SEMPRE invia testo PRIMA
+      await reply(fallback);
       let cardBuf=null;
-      const isTermux = !!(process.env.TERMUX_VERSION || process.env.TERMUX || require('fs').existsSync('/data/data/com.termux'));
-      if(!isTermux){
+      if(!process.env.TERMUX_VERSION && !process.env.TERMUX && !require('fs').existsSync('/data/data/com.termux')){
         try{
           const { renderCurCard } = require('../../lib/lastfmCard');
           cardBuf=await renderCurCard(sharp, {coverBuffer: cover, trackName: track.name, trackArtist: track.artist, username, isNowPlaying: !!npData.nowPlaying, userPlaycount: trackInfo.userplaycount||0, globalPlaycount: trackInfo.playcount||0, listeners: trackInfo.listeners||0});
-        }catch(e){ console.error('[cur] card render',e.message); cardBuf=null; }
-      } else {
-        console.log('[cur] Termux rilevato: salto card traslucida, uso fallback caption per garantire scritte visibili');
+        }catch(e){ console.error('[cur] card render',e.message); }
       }
-      const fallback = sec('IN RIPRODUZIONE')+'\n'+boxOpen()+'\n'+line('🎵 '+tName)+'\n'+line('👤 '+tArtist)+'\n'+(durText!=='—'?line('⏱️ '+durText)+'\n':'')+line('🔥 Fuochi: '+fires)+'\n'+line('👤 @'+trunc(username,18))+'\n'+boxEnd();
-      // SEMPRE manda qualcosa
+      // SEMPRE manda qualcosa - prima testo, poi immagine
       try{
         if(cardBuf){
-          await sock.sendMessage(from, {image: cardBuf, caption: `🔥 ${fires} fuochi • ${durText} • @${username}`}, {quoted: msg});
+          await sock.sendMessage(from, {image: cardBuf, caption: `🔥 ${fires} fuochi • ${fmtDuration(durSec)} • @${username}`}, {quoted: msg});
         } else if(cover){
-          await sock.sendMessage(from, {image: cover, caption: fallback}, {quoted: msg});
-        } else {
-          await reply(fallback);
+          await sock.sendMessage(from, {image: cover, caption: `🎵 ${trunc(track.name,30)}\n👤 ${trunc(track.artist,30)}\n🔥 ${((db._curFires && db._curFires[`${track.artist} — ${track.name}`.toLowerCase().slice(0,120)]?.count)||0)} fuochi • ${fmtDuration(durSec)} • @${username}`}, {quoted: msg});
         }
       }catch(e){
         console.error('[cur] send image failed',e.message);
-        await reply(fallback);
       }
       // pulsanti
       const fireLabel=fires>0?`🔥 Fuoco (${fires})`:'🔥 Fuoco';
       try{
-        if(sendButtons) await sendButtons(sock, from, `Cosa vuoi fare?`, [{label:'📝 Testo', id:`lyrics ${searchTerm}`},{label:'🎵 MP3', id:`mp3 ${searchTerm}`},{label:fireLabel, id:`cur fuoco`}], msg);
+        if(sendButtons) await sendButtons(sock, from, `Cosa vuoi fare?`, [{label:'📝 Testo', id:`lyrics ${searchTerm}`},{label:'🎵 MP3', id:`mp3 ${searchTerm}`},{label:fires>0?`🔥 Fuoco (${fires})`:'🔥 Fuoco', id:`cur fuoco`}], msg);
       }catch(e){ console.error('[cur] buttons',e.message); }
     }catch(e){
       console.error('[cur] FATAL',e.message, e.stack);
