@@ -58,8 +58,10 @@ module.exports={
     let sharp = services.sharp;
     let sendButtons = services.sendButtons;
     let saveDB = services.saveDB || (()=>{});
+    console.log(`[cur] run from ${sender} in ${from} textArgs="${textArgs}" lastfmCfg=${!!lastfm?.isConfigured?.()}`);
     try{
       if(!lastfm || !lastfm.isConfigured || !lastfm.isConfigured()){
+        console.log('[cur] not configured');
         return await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Last.fm non configurato.')}\n${boxEnd()}`);
       }
       const sub = String(textArgs||'').trim().toLowerCase();
