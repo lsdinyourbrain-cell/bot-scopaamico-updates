@@ -247,20 +247,15 @@ module.exports = {
                 const n = SECTIONS.length;
                 const prev = SECTIONS[(found.index - 1 + n) % n];
                 const next = SECTIONS[(found.index + 1) % n];
-                const txt = sectionScreen(found.section);
-                try {
-                    const btns = [
-                        { label: '⬅️ Prec', id: `menu ${prev.key}` },
-                        { label: '🏠 Home', id: 'menu' },
-                        { label: '➡️ Succ', id: `menu ${next.key}` },
-                    ];
-                    const ok = await sendButtons(sock, from, txt, btns, msg, null, {
-                        headerTitle: `${found.section.emoji} ${found.section.title}`,
-                        footerText: `${found.index + 1}/${n} · ${found.section.items.length} comandi`,
-                    });
-                    if (ok) return;
-                } catch (e) { console.error('[menu] sezione fail', e.message); }
-                return reply(txt);
+                const btns = [
+                    { label: '⬅️ Prec', id: `menu ${prev.key}` },
+                    { label: '🏠 Home', id: 'menu' },
+                    { label: '➡️ Succ', id: `menu ${next.key}` },
+                ];
+                return sendButtons(sock, from, sectionScreen(found.section), btns, msg, null, {
+                    headerTitle: `${found.section.emoji} ${found.section.title}`,
+                    footerText: `${found.index + 1}/${n} · ${found.section.items.length} comandi`,
+                });
             }
         }
 
@@ -274,39 +269,35 @@ module.exports = {
                 if (pfpUrl) {
                     const caption = homeScreen(pushName, timeStr, dateStr, stats,
                         'Prova .menu giochi o .menu economia', visible);
-                    try { return await sock.sendMessage(from, { image: { url: pfpUrl }, caption }); } catch (_) {}
+                    return await sock.sendMessage(from, { image: { url: pfpUrl }, caption });
                 }
             } catch (_) {}
         }
 
-        // Home con pulsanti: single_select sezioni + 3 quick (fallback testo puro garantito)
-        const caption0 = homeScreen(pushName, timeStr, dateStr, stats, 'Prova .menu giochi o .menu economia', visible);
-        try {
-            const sheet = {
-                type: 'single_select',
-                label: '📂 Sezioni',
-                title: 'Scegli una sezione',
-                sectionTitle: 'Sezioni disponibili',
-                rows: visible.map(s => ({
-                    header: s.emoji,
-                    title: toBold(s.title),
-                    description: `${s.items.length} comandi`,
-                    id: `menu ${s.key}`,
-                })),
-            };
-            const btns = [
-                sheet,
-                { label: '📖 Guida', id: 'aiuto' },
-                { label: '⚡ Ping', id: 'ping' },
-                { label: '👤 Profilo', id: 'profilo' },
-            ];
-            const ok = await sendButtons(sock, from, caption0, btns, msg, null, {
-                headerTitle: 'VEX BOT',
-                footerText: `${visible.length} sezioni · ${stats.cmds} comandi`,
-            });
-            if (ok) return;
-        } catch (e) { console.error('[menu] home fail', e.message); }
-        return reply(caption0);
+        // Home con pulsanti: single_select sezioni + 3 quick
+        const sheet = {
+            type: 'single_select',
+            label: '📂 Sezioni',
+            title: 'Scegli una sezione',
+            sectionTitle: 'Sezioni disponibili',
+            rows: visible.map(s => ({
+                header: s.emoji,
+                title: toBold(s.title),
+                description: `${s.items.length} comandi`,
+                id: `menu ${s.key}`,
+            })),
+        };
+        const btns = [
+            sheet,
+            { label: '📖 Guida', id: 'aiuto' },
+            { label: '⚡ Ping', id: 'ping' },
+            { label: '👤 Profilo', id: 'profilo' },
+        ];
+        return sendButtons(sock, from, homeScreen(pushName, timeStr, dateStr, stats,
+            'Prova .menu giochi o .menu economia', visible), btns, msg, null, {
+            headerTitle: 'VEX BOT',
+            footerText: `${visible.length} sezioni · ${stats.cmds} comandi`,
+        });
     },
 };
 
