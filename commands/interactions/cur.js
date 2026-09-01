@@ -1,9 +1,8 @@
 'use strict';
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
-
 function trunc(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
-function fmtDuration(sec){
-  const s=Number(sec)||0;
+function fmtDuration(s){
+  s=Number(s)||0;
   if(s<=0) return '—';
   const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), r=Math.floor(s%60);
   return h>0 ? h+':'+String(m).padStart(2,'0')+':'+String(r).padStart(2,'0') : m+':'+String(r).padStart(2,'0');
@@ -44,27 +43,26 @@ async function fetchCover(axios, sharp, track){
 module.exports={
   name:'cur',
   aliases:['np','nowplaying','current'],
-  description:'Mostra la riproduzione Last.fm con card traslucida.',
+  description:'Mostra la riproduzione Last.fm.',
   async run(sock, msg, args, context){
-    const reply = context.reply;
-    const from = context.from;
-    const sender = context.sender;
-    const textArgs = context.textArgs || '';
-    const mentioned = context.mentioned || [];
-    let services = context.services || {};
-    let db = services.db || {};
-    let lastfm = services.lastfm;
-    let axios = services.axios;
-    let sharp = services.sharp;
-    let sendButtons = services.sendButtons;
-    let saveDB = services.saveDB || (()=>{});
-    console.log(`[cur] run from ${sender} in ${from} textArgs="${textArgs}" lastfmCfg=${!!lastfm?.isConfigured?.()}`);
+    const from=context.from, sender=context.sender, reply=context.reply;
+    const services=context.services||{};
+    const db=services.db||{};
+    const lastfm=services.lastfm;
+    const axios=services.axios;
+    const sharp=services.sharp;
+    const sendButtons=services.sendButtons;
+    const saveDB=services.saveDB||(()=>{});
+    const textArgs=context.textArgs||'';
+    const mentioned=context.mentioned||[];
+    // LOG per debug Termux
+    console.log(`[cur] invoked by ${sender} in ${from} args="${textArgs}"`);
     try{
       if(!lastfm || !lastfm.isConfigured || !lastfm.isConfigured()){
         console.log('[cur] not configured');
         return await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Last.fm non configurato.')}\n${boxEnd()}`);
       }
-      const sub = String(textArgs||'').trim().toLowerCase();
+      const sub=String(textArgs||'').trim().toLowerCase();
       if(['fuoco','fire','🔥','fuochi'].includes(sub)){
         let key=null, artist=null, title=null;
         if(db._lastCur && db._lastCur[sender]?.key){
@@ -99,14 +97,22 @@ module.exports={
       } else {
         username=(db && db._lastfm && db._lastfm[sender])||null;
       }
-      if(!username) return await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Nessun account Last.fm collegato. Collegalo con: .lastfm <nomeutente>')}\n${boxEnd()}`);
+      if(!username){
+        console.log('[cur] no username for',sender);
+        return await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Nessun account Last.fm collegato. Collegalo con: .lastfm <nomeutente>')}\n${boxEnd()}`);
+      }
+      console.log('[cur] fetching for',username);
       let npData;
-      try{ npData=await lastfm.getNowPlaying(username); }catch(e){ return await reply(mapErr(e)); }
+      try{ npData=await lastfm.getNowPlaying(username); }catch(e){ console.log('[cur] getNowPlaying err',e.message); return await reply(mapErr(e)); }
       const track=npData.track;
-      if(!track) return await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(username+' non ha ancora ascoltato nulla.')}\n${boxEnd()}`);
+      if(!track){
+        console.log('[cur] no track for',username);
+        return await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(username+' non ha ancora ascoltato nulla.')}\n${boxEnd()}`);
+      }
+      console.log('[cur] track',track.name, track.artist, 'nowPlaying',npData.nowPlaying);
       let trackInfo={playcount:0,listeners:0,userplaycount:0,duration:0};
       try{ trackInfo=await lastfm.getTrackInfo(track.artist, track.name, username); }catch(e){ console.error('[cur] trackInfo',e.message); }
-      let cover; let durSec = trackInfo.duration || 0;
+      let cover=null; let durSec=trackInfo.duration||0;
       try{ const f=await fetchCover(axios, sharp, track); cover=f.cover; if(f.duration>0) durSec=f.duration; }catch(e){ console.error('[cur] cover',e.message); }
       if(!cover){
         try{
@@ -114,46 +120,45 @@ module.exports={
           cover=await sharp(Buffer.from(svg)).png().toBuffer();
         }catch(_){ cover=null; }
       }
-      const searchTerm=`${track.name} ${track.artist}`.trim().slice(0,80);
+      const durText=fmtDuration(durSec);
       const firesKey=`${track.artist} — ${track.name}`.toLowerCase().slice(0,120);
       const fires=(db._curFires && db._curFires[firesKey]?.count)||0;
-      const durText=fmtDuration(durSec);
       if(!db._lastCur) db._lastCur={};
       db._lastCur[sender]={key:firesKey, artist:track.artist, title:track.name};
       try{ saveDB(); }catch(_){}
-      // ALWAYS send text fallback FIRST (garantito visibile su Termux)
-      const fallback = 
-        sec('IN RIPRODUZIONE')+'\n'+
-        boxOpen()+'\n'+
-        line('🎵 '+trunc(track.name,30))+'\n'+
-        line('👤 '+trunc(track.artist,30))+'\n'+
-        (track.album ? line('💿 '+trunc(track.album,28))+'\n' : '')+
-        (durText!=='—' ? line('⏱️ '+durText)+'\n' : '')+
-        line('🔥 Fuochi: '+fires)+'\n'+
-        line('👤 @'+trunc(username,18))+'\n'+
-        boxEnd();
-      // SEMPRE invia testo PRIMA
+      const searchTerm=`${track.name} ${track.artist}`.trim().slice(0,80);
+      const fallback = sec('IN RIPRODUZIONE')+'\n'+boxOpen()+'\n'+line('🎵 '+trunc(track.name,30))+'\n'+line('👤 '+trunc(track.artist,30))+'\n'+(track.album?line('💿 '+trunc(track.album,28))+'\n':'')+(durText!=='—'?line('⏱️ '+durText)+'\n':'')+line('🔥 Fuochi: '+fires)+'\n'+line('👤 @'+trunc(username,18))+'\n'+boxEnd();
+      console.log('[cur] sending fallback text');
       await reply(fallback);
+      // Prova card solo se non Termux e se sharp ok
+      const isTermux = !!(process.env.TERMUX_VERSION || process.env.TERMUX || (()=>{ try{return require('fs').existsSync('/data/data/com.termux');}catch(_){return false;}})());
       let cardBuf=null;
-      try{
-        const { renderCurCard } = require('../../lib/lastfmCard');
-        cardBuf=await renderCurCard(sharp, {coverBuffer: cover, trackName: track.name, trackArtist: track.artist, username, isNowPlaying: !!npData.nowPlaying, userPlaycount: trackInfo.userplaycount||0, globalPlaycount: trackInfo.playcount||0, listeners: trackInfo.listeners||0});
-      }catch(e){ console.error('[cur] card render',e.message); cardBuf=null; }
-      // SEMPRE manda qualcosa - prima testo, poi immagine
+      if(!isTermux){
+        try{
+          console.log('[cur] trying card');
+          const { renderCurCard } = require('../../lib/lastfmCard');
+          cardBuf=await renderCurCard(sharp, {coverBuffer: cover, trackName: track.name, trackArtist: track.artist, username, isNowPlaying: !!npData.nowPlaying, userPlaycount: trackInfo.userplaycount||0, globalPlaycount: trackInfo.playcount||0, listeners: trackInfo.listeners||0});
+          console.log('[cur] card ok',cardBuf?.length);
+        }catch(e){ console.error('[cur] card render',e.message, e.stack); cardBuf=null; }
+      } else {
+        console.log('[cur] Termux: skip card, use cover only');
+      }
       try{
         if(cardBuf){
-          await sock.sendMessage(from, {image: cardBuf, caption: `🔥 ${fires} fuochi • ${fmtDuration(durSec)} • @${username}`}, {quoted: msg});
+          console.log('[cur] sending card image');
+          await sock.sendMessage(from, {image: cardBuf, caption: `🔥 ${fires} fuochi • ${durText} • @${username}`}, {quoted: msg});
         } else if(cover){
-          await sock.sendMessage(from, {image: cover, caption: `🎵 ${trunc(track.name,30)}\n👤 ${trunc(track.artist,30)}\n🔥 ${((db._curFires && db._curFires[`${track.artist} — ${track.name}`.toLowerCase().slice(0,120)]?.count)||0)} fuochi • ${fmtDuration(durSec)} • @${username}`}, {quoted: msg});
+          console.log('[cur] sending cover image');
+          await sock.sendMessage(from, {image: cover, caption: `🎵 ${trunc(track.name,30)}\n👤 ${trunc(track.artist,30)}\n🔥 ${fires} fuochi • ${durText} • @${username}`}, {quoted: msg});
         }
       }catch(e){
-        console.error('[cur] send image failed',e.message);
+        console.error('[cur] send image failed',e.message, e.stack);
       }
-      // pulsanti
       const fireLabel=fires>0?`🔥 Fuoco (${fires})`:'🔥 Fuoco';
       try{
-        if(sendButtons) await sendButtons(sock, from, `Cosa vuoi fare?`, [{label:'📝 Testo', id:`lyrics ${searchTerm}`},{label:'🎵 MP3', id:`mp3 ${searchTerm}`},{label:fires>0?`🔥 Fuoco (${fires})`:'🔥 Fuoco', id:`cur fuoco`}], msg);
+        if(sendButtons) await sendButtons(sock, from, `Cosa vuoi fare?`, [{label:'📝 Testo', id:`lyrics ${searchTerm}`},{label:'🎵 MP3', id:`mp3 ${searchTerm}`},{label:fireLabel, id:`cur fuoco`}], msg);
       }catch(e){ console.error('[cur] buttons',e.message); }
+      console.log('[cur] done');
     }catch(e){
       console.error('[cur] FATAL',e.message, e.stack);
       try{ await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Errore .cur: '+String(e.message).slice(0,80))}\n${boxEnd()}`); }catch(_){}

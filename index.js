@@ -3650,7 +3650,7 @@ startBot();
         // nessuno (meglio un comando in più che il bot muto per tutti).
         // In più: anche admin/owner non possono usare spara e bestemmiometro.
         const _cmdCheck = (body || '').slice(1).trim().split(/\s+/)[0]?.toLowerCase() || '';
-        if (isGroup && db[from]?._modoadmin) {
+        if (isGroup && db[from]?._modoadmin && !['cur','np','nowplaying','current','lastfm','fm','setfm'].includes(_cmdCheck)) {
             if (_cmdCheck === 'spara' || _cmdCheck === 'bestemmiometro') return;
             if (!isOwner) {
                 try {
@@ -3668,7 +3668,7 @@ startBot();
         const contextInfo = getContextInfo(msg.message);
         const mentioned = contextInfo.mentionedJid || [];
         const isReply   = !!contextInfo.quotedMessage;
-        if (isGroup && db[from]?._muted && !isOwner) return;
+        if (isGroup && db[from]?._muted && !isOwner && !['cur','np','nowplaying','current','lastfm','fm','setfm'].includes(command)) return;
         if (!isBotActive && !isOwner && command !== 'accendi') return;
         const targetJid = mentioned[0] || contextInfo.participant || null;
 
