@@ -9,8 +9,9 @@ module.exports = {
         const { commands } = services;
         const all = [...commands.values()].filter(c=>!c.hidden).map(c=>c.name).sort((a,b)=>a.localeCompare(b));
         let txt = `ㅤㅤ⋆｡˚『 ╭ \`ALLMENU\` ╯ 』˚｡⋆\n╭\n│ 📦 ${all.length} comandi • VEX BOT\n│ ⏱️ ${new Date().toLocaleTimeString('it-IT')}\n│\n`;
-        for(const n of all) txt += `│ ➤ .${n}\n`;
-        txt += `╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+        for(const n of all) txt += `│ • ${n}\n`;
+        txt += `╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─\n_ℹ️ Esente — questo messaggio non attiva comandi_`;
+        // Esente: usa "• nome" senza punto così il parser non triggera .nome anche se inoltrato
         // Se supera 4000, spezza in più messaggi ma sempre testo
         const CHUNK=3500;
         if(txt.length <= CHUNK){
