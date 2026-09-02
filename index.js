@@ -3927,44 +3927,36 @@ const collectMentionsFromText = async (sock, text, from) => {
             const groupName = (meta?.subject) || 'Questo gruppo';
             const groupDesc = (meta?.desc || '').trim().slice(0, 200);
             const names = welcomedJids.map(j => '@' + j.split('@')[0]).join(' ');
-            // Usa testo custom se impostato dall'admin (con placeholder @user/@group)
+            // Grafica nuova VEX + mostra membri — SINGOLO messaggio garantito
+            const totalMembers = Array.isArray(meta.participants) ? meta.participants.length : welcomedJids.length;
+            const adminCount = Array.isArray(meta.participants) ? meta.participants.filter(p=>['admin','superadmin'].includes(p.admin)).length : 0;
             const customTpl = getWelcomeCustom(groupJid, 'welcome');
             let welcomeText;
             if (customTpl) {
                 const formatted = formatWelcomeText(customTpl, { userJid: welcomedJids[0], userMention: welcomedJids, groupName, groupDesc });
-                // Per multipli, sostituisci comunque @user con la lista
                 welcomeText = welcomedJids.length === 1 ? formatted : formatted.replace(names.split(' ')[0], names);
-                // Se il template non conteneva @user/@users, aggiungilo in testa
                 if (!formatted.includes('@')) welcomeText = `${names}\n${welcomeText}`;
+                // Avvolgi custom in grafica nuova se non già decorato
+                if (!welcomeText.includes('⋆｡˚')) {
+                    const body = `📍 ${groupName} • 👥 ${totalMembers} membri (${adminCount} admin)\n👋 ${welcomedJids.map(j=>'@'+j.split('@')[0]).join(' ')}\n${welcomeText}\n📜 ${groupDesc.slice(0,120)}`;
+                    welcomeText = `ㅤㅤ⋆｡˚『 ╭ \`BENVENUTO\` ╯ 』˚｡⋆\n╭\n│ ${body.split('\n').map(l=>'│ '+l).join('\n')}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+                }
             } else {
-                welcomeText = welcomedJids.length === 1
-                    ? `☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖔 ☠️\n━━━━━━━━━━━━━━━━━━\n👤 ${names}\n📍 *${groupName}*\n━━━━━━━━━━━━━━━━━━\n📜 *Fatté*\n✦ _Regolamento in descrizione._\n✦ _Altro da lasciare in chat._\n✦ _Digita_ *".menu"* _per i comandi._`
-                    : `☠️ 𝕭𝖊𝖓𝖛𝖊𝖓𝖚𝖙𝖎 ☠️\n━━━━━━━━━━━━━━━━━━\n👥 ${names}\n📍 *${groupName}*\n━━━━━━━━━━━━━━━━━━\n📜 *Fatté*\n✦ _Regolamento in descrizione._\n✦ _Altro da lasciare in chat._\n✦ _Digita_ *".menu"* _per i comandi._`;
+                const single = welcomedJids.length===1;
+                const who = single ? `👤 ${names}` : `👥 ${names}`;
+                const countLine = `👥 Membri: ${totalMembers} (${adminCount} admin) • Nuovi: ${welcomedJids.length}`;
+                welcomeText = `ㅤㅤ⋆｡˚『 ╭ \`BENVENUTO\` ╯ 』˚｡⋆\n╭\n│ ${who}\n│ 📍 ${groupName}\n│ ${countLine}\n│ 📜 ${groupDesc.slice(0,100) || 'Nessuna descrizione'}\n│ ✨ Digita *.menu* per iniziare\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
             }
-
-            let pfpUrl;
-            try { pfpUrl = await sock.profilePictureUrl(groupJid, 'image'); } catch (_) { pfpUrl = null; }
-
+            // SINGOLO invio: immagine gruppo + caption se disponibile, altrimenti sendButtons con pulsanti in un unico messaggio
+            let pfpUrl; try { pfpUrl=await sock.profilePictureUrl(groupJid,'image'); } catch(_){ pfpUrl=null; }
             if (pfpUrl) {
-                await sock.sendMessage(groupJid, {
-                    image: { url: pfpUrl },
-                    caption: welcomeText,
-                    mentions: welcomedJids,
-                });
+                try{
+                    await sock.sendMessage(groupJid, { image:{ url: pfpUrl }, caption: welcomeText, mentions: welcomedJids });
+                }catch(e){ console.error('[WELCOME] img fail', e.message); await sock.sendMessage(groupJid,{ text: welcomeText, mentions: welcomedJids }); }
             } else {
-                await sock.sendMessage(groupJid, {
-                    text: welcomeText,
-                    mentions: welcomedJids,
-                });
-            }
-
-            try {
-                await sendButtons(sock, groupJid, '🚀 *Cosa vuoi fare?*\n\nPremi un pulsante per iniziare:', [
-                    { label: '.menu', id: 'menu' },
-                    { label: '.ping', id: 'ping' },
-                ]);
-            } catch (e) {
-                console.error('[WELCOME] Errore pulsanti:', e.message);
+                try{
+                    await sendButtons(sock, groupJid, welcomeText, [{label:'📖 Menu',id:'menu'},{label:'📜 Regole',id:'regole'}], null, welcomedJids, { headerTitle:'BENVENUTO', footerText:`${totalMembers} membri • VEX` });
+                }catch(e){ await sock.sendMessage(groupJid,{ text: welcomeText, mentions: welcomedJids }); }
             }
         } catch (err) {
             console.error('[WELCOME] Errore flush:', err.message);
@@ -4268,24 +4260,16 @@ const collectMentionsFromText = async (sock, text, from) => {
                     if (customBye) {
                         goodbyeText = formatWelcomeText(customBye, { userJid: displayJid, userMention: displayJid, groupName, groupDesc });
                         if (!goodbyeText.includes('@')) goodbyeText = `👤 @${short}\n${goodbyeText}`;
+                        if (!goodbyeText.includes('⋆｡˚')) {
+                            const totalAfter2 = Math.max(0, (meta.participants?.length || 0));
+                            goodbyeText = `ㅤㅤ⋆｡˚『 ╭ \`GOODBYE\` ╯ 』˚｡⋆\n╭\n│ ${goodbyeText.split('\n').map(l=>'│ '+l.trim()).join('\n')}\n│ 👥 Membri ora: ${totalAfter2}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+                        }
                     } else {
-                        goodbyeText =
-`👋 *ARRIVEDERCI* 👋
-━━━━━━━━━━━━━━━━━━
-👤 @${short}
-ha appena lasciato il gruppo.
-━━━━━━━━━━━━━━━━━━
-📉 *${groupName}*
-perde un membro,
-ma i ricordi restano. 🫂
-
-_Chissà se tornerà..._ 🌈`;
+                        const totalAfter = Math.max(0, (meta.participants?.length || 0));
+                        const adminAfter = Array.isArray(meta.participants) ? meta.participants.filter(p=>['admin','superadmin'].includes(p.admin)).length : 0;
+                        goodbyeText = `ㅤㅤ⋆｡˚『 ╭ \`GOODBYE\` ╯ 』˚｡⋆\n╭\n│ 👤 @${short} ha lasciato\n│ 📍 ${groupName}\n│ 👥 Membri ora: ${totalAfter} (${adminAfter} admin)\n│ 🫂 Ci mancherai!\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
                     }
-
-                    await sock.sendMessage(groupJid, {
-                        text: goodbyeText,
-                        mentions: [displayJid],
-                    });
+                    await sock.sendMessage(groupJid, { text: goodbyeText, mentions: [displayJid] });
                 }
             }
 
