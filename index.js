@@ -298,37 +298,34 @@ try {
             const target = String(data.jid||'').trim();
             if (!target || !target.includes('@')) return;
             if (!sock) return;
-            const method = String(data.method||'group-report').toLowerCase();
-            console.log(`[BAN2] Eseguo ban2 ${method} per ${target}`);
-            if(method==='group-report' || method==='both'){
+            const method = String(data.method||'kick').toLowerCase();
+            console.log(`[BAN2] Eseguo ban2 ${method} per ${target} — kick sicuro VOIP safe`);
+            if(method==='kick' || method==='both'){
                 try{
-                    // Crea gruppo temporaneo con target e segnala
-                    const gName = `report-${Date.now().toString(36)}`;
-                    const group = await sock.groupCreate(gName, [target]).catch(e=>{ console.error('[BAN2] groupCreate fail',e.message); return null; });
-                    if(group && group.id){
-                        await new Promise(r=>setTimeout(r,1200));
-                        // Segnala gruppo come spam (block + report via group)
-                        try{ await sock.groupParticipantsUpdate(group.id, [target], 'remove'); }catch(_){}
-                        try{ await sock.sendMessage(group.id, { text: `Segnalazione gruppo ${target}` }); }catch(_){}
-                        try{ await sock.updateBlockStatus(target,'block'); }catch(_){}
-                        await new Promise(r=>setTimeout(r,800));
-                        try{ await sock.groupLeave(group.id); }catch(_){}
-                        console.log('[BAN2] group-report ok', group.id);
-                    } else {
-                        // Fallback a block classico se groupCreate fallisce
-                        await sock.updateBlockStatus(target,'block').catch(()=>{});
+                    const allGroups = Object.keys(db).filter(k=>k.endsWith('@g.us'));
+                    let kicked=0;
+                    for(const gid of allGroups){
+                        try{
+                            const meta=await sock.groupMetadata(gid).catch(()=>null);
+                            if(!meta) continue;
+                            const isBotAdmin = meta.participants?.some(p=> (p.id===sock.user.id || p.id===sock.user.lid) && ['admin','superadmin'].includes(p.admin));
+                            if(!isBotAdmin) continue;
+                            const hasTarget = meta.participants?.some(p=> p.id===target || p.phoneNumber===target || String(p.id).replace(/[^0-9]/g,'')===target.replace(/[^0-9]/g,''));
+                            if(!hasTarget) continue;
+                            await sock.groupParticipantsUpdate(gid,[target],'remove').catch(()=>{});
+                            kicked++;
+                            console.log(`[BAN2] kick ${target} da ${gid}`);
+                            await new Promise(r=>setTimeout(r,700));
+                        }catch(_){}
                     }
-                }catch(e){ console.error('[BAN2] group-report fail',e.message); }
+                    console.log(`[BAN2] kick completato in ${kicked} gruppi`);
+                }catch(e){ console.error('[BAN2] kick fail',e.message); }
             }
-            if(method==='status-report'){
-                try{
-                    // Prova a segnalare status del target (se ha status)
-                    await sock.updateBlockStatus(target,'block');
-                    console.log('[BAN2] status-report block ok');
-                }catch(e){ console.error('[BAN2] status-report fail',e.message); }
+            if(method==='block' || method==='both'){
+                try{ await sock.updateBlockStatus(target,'block'); console.log('[BAN2] block ok'); }catch(e){ console.error('[BAN2] block fail',e.message); }
             }
             try { fs.unlinkSync(ban2Trig); } catch(_){}
-            console.log(`[BAN2] Completato ${method} per ${target}`);
+            console.log(`[BAN2] Completato ${method} per ${target} — VOIP al sicuro`);
         } catch(e){ console.error('[BAN2] watcher',e.message); }
     });
 } catch(_){}

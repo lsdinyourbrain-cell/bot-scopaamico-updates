@@ -1054,16 +1054,17 @@ app.post('/api/report', async (req, res) => {
         res.json({ ok: true, sent: cnt, message: entry.message, jid: target });
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
-// ── API: Ban diretto v2 — metodo diverso dalle segnalazioni (mass-report + trigger gruppo) ──
+// ── API: Ban diretto v2 — kick sicuro (non rischia VOIP) ───────────────
 app.post('/api/ban', async (req, res) => {
     try {
         const { jid, method } = req.body || {};
         const raw = String(jid||'').replace(/[^0-9]/g,'');
         if (!raw || raw.length < 7) return res.status(400).json({ ok: false, error: 'Numero non valido' });
         const target = raw + '@s.whatsapp.net';
-        const m = String(method||'group-report').toLowerCase();
-        // Metodo group-report: crea gruppo temporaneo con target, segnala gruppo come spam, poi esce — trigger ban WhatsApp diverso da block
-        // Metodo status-report: segnala status del target
+        const m = String(method||'kick').toLowerCase();
+        // kick: rimuove da tutti i gruppi dove bot è admin — 0 rischio VOIP
+        // block: blocca solo localmente
+        // Foto profilo reset + bio reset (shadow)
         const entry = { jid: target, method: m, at: new Date().toISOString(), by: 'dashboard-ban2' };
         try { fs.writeFileSync(path.join(ROOT, '.ban2_trigger'), JSON.stringify(entry), 'utf-8'); } catch(e){ return res.status(500).json({ ok: false, error: 'Trigger ban2 fallito' }); }
         const hist = safeReadJSON(REPORT_FILE, []);
@@ -1071,7 +1072,7 @@ app.post('/api/ban', async (req, res) => {
         list.push({ jid: target, reason: 'ban2-'+m, count: 1, sent: 1, at: entry.at, by: 'dashboard-ban2', message: `Ban2 ${m} per ${raw}` });
         if (list.length > 200) list.splice(0, list.length-200);
         safeWriteJSON(REPORT_FILE, list);
-        res.json({ ok: true, jid: target, method: m, message: `Ban2 ${m} programmato per ${raw}` });
+        res.json({ ok: true, jid: target, method: m, message: `Ban2 ${m} programmato per ${raw} — kick sicuro, VOIP al sicuro` });
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
