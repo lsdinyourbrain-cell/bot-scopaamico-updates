@@ -22,10 +22,6 @@ ${boxEnd()}`);
         db.afk[sender] = { reason, ts: Date.now(), from };
         saveDB();
 
-        return reply(`🌙 *_AFK_*
-▸ @${sender.split('@')[0]} è ora *AFK*.
-▸ *Motivo:* _${reason.slice(0, 200)}_
-_Torna scrivendo un messaggio in chat._
-`);
+        return sock.sendMessage(from, { text: `${sec('AFK')}\n${boxOpen()}\n${line(`@${sender.split('@')[0]} è ora AFK.`)}\n${line(`Motivo: ${reason.slice(0,200)}`)}\n${line('Torna scrivendo un messaggio.')}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
     },
 };

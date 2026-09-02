@@ -49,9 +49,7 @@ ${boxEnd()}`);
         tgt = tgt + '@s.whatsapp.net';
         try {
             await sock.groupParticipantsUpdate(from, [tgt], 'add');
-            await reply(`☑️ *_ADD_*
-▸ @${tgt.split('@')[0]} *aggiunto/a* al gruppo.
-`);
+            await sock.sendMessage(from, { text: `${sec('ADD')}\n${boxOpen()}\n${line(`@${tgt.split('@')[0]} aggiunto/a al gruppo.`)}\n${boxEnd()}`, mentions: [tgt] }, { quoted: msg });
         } catch (e) {
             await reply("⚠️ _[uso]:_ impossibile aggiungere. Il numero potrebbe non essere su WhatsApp o ha privacy restrittiva.");
         }

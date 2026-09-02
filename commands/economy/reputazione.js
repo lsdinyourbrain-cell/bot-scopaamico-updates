@@ -28,14 +28,7 @@ ${boxEnd()}`);
             const u = getUser(sender, from);
             const rep = Number(u.rep) || 0;
             const badge = rep >= 100 ? '👑' : rep >= 50 ? '🌟' : rep >= 20 ? '⭐' : rep >= 5 ? '👍' : '🐣';
-            return reply(
-`🏷️ *_REPUTAZIONE_*
-▸ ${badge} @${sender.split('@')[0]}
-▸ ⭐ Punti: _${rep}_
-▸ ${repBar(rep)}
-▸ 🗳️ _._rep @utente_ per votare
-▸ ⏳ _1 voto ogni 6 ore_
-`);
+            return sock.sendMessage(from, { text: `${sec('REPUTAZIONE')}\n${boxOpen()}\n${line(`${badge} @${sender.split('@')[0]}`)}\n${line(`Punti: ${rep}`)}\n${line(repBar(rep))}\n${line('._rep @utente per votare')}\n${line('1 voto ogni 6 ore')}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
         }
 
         if (sameJid(targetJid, sender)) return reply("Non puoi votare te stesso!");
