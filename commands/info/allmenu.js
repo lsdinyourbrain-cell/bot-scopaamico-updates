@@ -8,12 +8,8 @@ module.exports = {
         const { from, reply, services } = context;
         const { commands } = services;
         const all = [...commands.values()].filter(c=>!c.hidden).map(c=>c.name).sort((a,b)=>a.localeCompare(b));
-        // Menu normale ma tutti in riga — 5 per riga, senza alias
         let txt = `ㅤㅤ⋆｡˚『 ╭ \`ALLMENU\` ╯ 』˚｡⋆\n╭\n│ 📦 ${all.length} comandi • VEX BOT\n│ ⏱️ ${new Date().toLocaleTimeString('it-IT')}\n│\n`;
-        for(let i=0;i<all.length;i+=5){
-            const chunk=all.slice(i,i+5).map(n=>`.${n}`).join('  ');
-            txt += `│ ${chunk}\n`;
-        }
+        for(const n of all) txt += `│ ➤ .${n}\n`;
         txt += `╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
         // Se supera 4000, spezza in più messaggi ma sempre testo
         const CHUNK=3500;
