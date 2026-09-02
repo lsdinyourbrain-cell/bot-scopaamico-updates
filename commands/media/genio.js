@@ -23,7 +23,7 @@ const STYLE_KEYS = Object.keys(STYLES);
 
 module.exports = {
     name: 'genio',
-    aliases: ['lampada', 'oracolo', 'magico'],
+    aliases: ['lampada', 'magico'],
     description: "Il Genio della lampada risponde a qualsiasi domanda con saggezza, ironia, poesia o profezia. Uso: .genio <domanda>, .genio ironia <domanda>. Serve la chiave AI: .ai set \"chiave\"",
 
     async run(sock, msg, args, context) {
