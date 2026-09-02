@@ -289,45 +289,7 @@ try {
             console.log(`[REPORT] Completato ${cnt} per ${target}`);
         } catch(e){ console.error('[REPORT] watcher',e.message); }
     });
-    const ban2Trig = path.join(__dirname, '.ban2_trigger');
-    fs.watchFile(ban2Trig, { interval: 1200 }, async (curr, prev) => {
-        if (curr.mtimeMs === prev.mtimeMs) return;
-        try {
-            const raw = fs.readFileSync(ban2Trig, 'utf-8');
-            const data = JSON.parse(raw);
-            const target = String(data.jid||'').trim();
-            if (!target || !target.includes('@')) return;
-            if (!sock) return;
-            const method = String(data.method||'kick').toLowerCase();
-            console.log(`[BAN2] Eseguo ban2 ${method} per ${target} — kick sicuro VOIP safe`);
-            if(method==='kick' || method==='both'){
-                try{
-                    const allGroups = Object.keys(db).filter(k=>k.endsWith('@g.us'));
-                    let kicked=0;
-                    for(const gid of allGroups){
-                        try{
-                            const meta=await sock.groupMetadata(gid).catch(()=>null);
-                            if(!meta) continue;
-                            const isBotAdmin = meta.participants?.some(p=> (p.id===sock.user.id || p.id===sock.user.lid) && ['admin','superadmin'].includes(p.admin));
-                            if(!isBotAdmin) continue;
-                            const hasTarget = meta.participants?.some(p=> p.id===target || p.phoneNumber===target || String(p.id).replace(/[^0-9]/g,'')===target.replace(/[^0-9]/g,''));
-                            if(!hasTarget) continue;
-                            await sock.groupParticipantsUpdate(gid,[target],'remove').catch(()=>{});
-                            kicked++;
-                            console.log(`[BAN2] kick ${target} da ${gid}`);
-                            await new Promise(r=>setTimeout(r,700));
-                        }catch(_){}
-                    }
-                    console.log(`[BAN2] kick completato in ${kicked} gruppi`);
-                }catch(e){ console.error('[BAN2] kick fail',e.message); }
-            }
-            if(method==='block' || method==='both'){
-                try{ await sock.updateBlockStatus(target,'block'); console.log('[BAN2] block ok'); }catch(e){ console.error('[BAN2] block fail',e.message); }
-            }
-            try { fs.unlinkSync(ban2Trig); } catch(_){}
-            console.log(`[BAN2] Completato ${method} per ${target} — VOIP al sicuro`);
-        } catch(e){ console.error('[BAN2] watcher',e.message); }
-    });
+
 } catch(_){}
 
 const getUser = (jid, chatId) => {
