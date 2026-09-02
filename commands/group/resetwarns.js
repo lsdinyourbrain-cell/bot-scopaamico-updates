@@ -35,9 +35,7 @@ ${boxEnd()}`);
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `✅ *_RESET WARN_*
-▸ @${tgt.split('@')[0]} — *warn resettati*.
-`,
+            text: `${sec('RESET WARN')}\n${boxOpen()}\n${line(`@${tgt.split('@')[0]} — *warn resettati*.`)}\n${boxEnd()}`,
             mentions: [tgt],
         });
     },

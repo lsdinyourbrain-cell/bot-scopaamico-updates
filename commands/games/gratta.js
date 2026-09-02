@@ -22,13 +22,13 @@ module.exports = {
             const cdMs = 8000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`⏳ Calma! Puoi grattare tra *${remain}s*.`);
+                return reply(`${sec('GRATTA')}\n${boxOpen()}\n${line(`⏳ Calma! Puoi grattare tra *${remain}s*.`)}\n${boxEnd()}`);
             }
             userData.cooldowns[cooldownKey] = now;
 
             const cost = 15;
             const uDB = getUser(sender, from);
-            if (uDB.money < cost) return reply("❌ Servono 15€ per un gratta e vinci.");
+            if (uDB.money < cost) return reply(`${sec('GRATTA')}\n${boxOpen()}\n${line('❌ Servono 15€ per un gratta e vinci.')}\n${boxEnd()}`);
 
             const symbols = ['🍒', '🍋', '🍇', '⭐', '💎', '🎰'];
             const prizes = { '🍒': 20, '🍋': 25, '🍇': 35, '⭐': 45, '💎': 60, '🎰': 100 };
@@ -41,10 +41,10 @@ module.exports = {
             ];
 
             let winLine = null;
-            for (const line of lines) {
-                const [a, b, c] = line;
+            for (const l of lines) {
+                const [a, b, c] = l;
                 if (grid[a] === grid[b] && grid[b] === grid[c]) {
-                    winLine = line;
+                    winLine = l;
                     break;
                 }
             }
@@ -56,7 +56,7 @@ module.exports = {
                 esito = `🎉 *TRIS DI ${grid[winLine[0]]}!* Vinci ${formatMoney(prize)}!${prize > prizes[grid[winLine[0]]] ? ' 🎰x3' : ''}`;
             } else {
                 uDB.money -= cost;
-                esito = `😞 Niente tris questa volta.\nHai speso ${formatMoney(cost)}.`;
+                esito = `😞 Niente tris questa volta. Hai speso ${formatMoney(cost)}.`;
             }
 
             const render = (grid) => {
@@ -65,13 +65,7 @@ module.exports = {
 
             saveDB();
 
-            const resultText =
-`🎟️ *_GRATTA E VINCI_*
-${render(grid)}
-
-${esito}
-▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-`;
+            const resultText = `${sec('GRATTA E VINCI')}\n${boxOpen()}\n${render(grid).split('\n').map(r => line(r)).join('\n')}\n${line(esito)}\n${line(`Saldo attuale: _${formatMoney(uDB.money)}_` )}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

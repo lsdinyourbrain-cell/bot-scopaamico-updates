@@ -45,7 +45,7 @@ ${boxEnd()}`);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'areverse', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('⏪ *_REVERSE_*\n\n▸ _Audio invertito!_\n');
+            await prog.done(`${sec('REVERSE')}\n${boxOpen()}\n${line('_Audio invertito!_')}\n${boxEnd()}`);
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[reverse]', e);

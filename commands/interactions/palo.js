@@ -39,13 +39,7 @@ ${SEP}
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${toBold('ANCORA?')}  ·  🪵 ${toBold('PALO')}
-${SEP}
-▸ @${sender.split('@')[0]} ↔ @${targetJid.split('@')[0]}
-▸ ${b}
-${SEP}
-Scegli sotto
-◈ Vex Bot`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🪵 ${toBold('PALO')}`)}\n${line(`${SEP}`)}\n${line(`@${sender.split('@')[0]} ↔ @${targetJid.split('@')[0]}`)}\n${line(`${b}`)}\n${line(`${SEP}`)}\n${line('Scegli sotto')}\n${line('◈ Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [sender, targetJid], { headerTitle: '🪵 PALO', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

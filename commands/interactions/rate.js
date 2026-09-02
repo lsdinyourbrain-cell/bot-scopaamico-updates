@@ -22,13 +22,6 @@ ${boxEnd()}`);
         const comment = score <= 2 ? "Penoso." : score <= 4 ? "Meh." : score <= 6 ? "Niente male." : score <= 8 ? "Bello!" : score <= 9 ? "Eccellente!" : "🎯 PERFETTO!";
 
         await reply(
-`⭐ *_RATE_*
-
-▸ 📌 _${textArgs}_
-▸ _${bar}_
-▸ ${emojis[score]} _*${score}/10*_
-▸ 💬 _${comment}_
-
-`);
+`${sec('RATE')}\n${boxOpen()}\n${line(`📌 _${textArgs}_`)}\n${line(`_${bar}_`)}\n${line(`${emojis[score]} _*${score}/10*_`)}\n${line(`💬 _${comment}_`)}\n${boxEnd()}`);
     },
 };

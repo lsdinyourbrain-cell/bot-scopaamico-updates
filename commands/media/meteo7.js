@@ -118,7 +118,7 @@ ${SEP}
             }
 
             const sent = await sendCarousel(sock, from, {
-                text: `🌤️ *_PREVISIONI 7 GIORNI_*\n${SEP}\n▸ 📍 _${cityName}_\n${SEP}\n▸ _Scorri per vedere la_\n  _settimana giorno per giorno_ 👇\n${SEP}\n`,
+                text: `${sec('PREVISIONI 7 GIORNI')}\n${boxOpen()}\n${line(`🌤️ *_PREVISIONI 7 GIORNI_*\n${SEP}\n▸ 📍 _${cityName}_\n${SEP}\n▸ _Scorri per vedere la_\n  _settimana giorno per giorno_ 👇\n${SEP}\n`)}\n${boxEnd()}`,
                 cards,
             }, msg);
             if (!sent) {

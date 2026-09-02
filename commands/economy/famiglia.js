@@ -32,13 +32,13 @@ module.exports = {
             if ((subCmd === 'si' || subCmd === 'sì' || subCmd === 'no') && proposalId) {
                 const proposals = db[from]?.familyProposals || {};
                 const prop = proposals[proposalId];
-                if (!prop) return reply(`❌ ${T('Proposta scaduta')}\n${SEP}\n▸ Questa proposta non è\n  più valida.`);
+                if (!prop) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`❌ ${T('Proposta scaduta')}\n${SEP}\n▸ Questa proposta non è\n  più valida.`)}\n${boxEnd()}`);
                 // Solo la persona designata può accettare/rifiutare.
-                if (!sameJid(sender, prop.target)) return reply(`❌ ${T('Errore')}\n${SEP}\n▸ Questa proposta non è per te.`);
+                if (!sameJid(sender, prop.target)) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`❌ ${T('Errore')}\n${SEP}\n▸ Questa proposta non è per te.`)}\n${boxEnd()}`);
                 if (Date.now() - prop.timestamp > 120000) {
                     delete proposals[proposalId];
                     saveDB();
-                    return reply(`⏰ ${T('Tempo scaduto')}\n${SEP}\n▸ La proposta è durata\n  2 minuti.\n▸ Rifai la richiesta.`);
+                    return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`⏰ ${T('Tempo scaduto')}\n${SEP}\n▸ La proposta è durata\n  2 minuti.\n▸ Rifai la richiesta.`)}\n${boxEnd()}`);
                 }
 
                 const isAccept = subCmd === 'si' || subCmd === 'sì';
@@ -47,7 +47,7 @@ module.exports = {
 
                 if (!isAccept) {
                     await sock.sendMessage(from, {
-                        text: `💔 ${T('Rifiuto')}\n${SEP}\n▸ @${disp(sender)} ha detto *no*\n▸ alla proposta di @${disp(prop.proposer)}\n\n`,
+                        text: `${sec('NO')}\n${boxOpen()}\n${line(`💔 ${T('Rifiuto')}\n${SEP}\n▸ @${disp(sender)} ha detto *no*\n▸ alla proposta di @${disp(prop.proposer)}\n\n`)}\n${boxEnd()}`,
                         mentions: [sender, prop.proposer],
                     });
                     return;
@@ -58,24 +58,24 @@ module.exports = {
 
                 if (prop.type === 'sposa') {
                     if (proposerDB.spouse || targetDB.spouse) {
-                        return reply(`❌ ${T('Annullato')}\n${SEP}\n▸ Uno dei due risulta\n  già sposato/a.`);
+                        return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`❌ ${T('Annullato')}\n${SEP}\n▸ Uno dei due risulta\n  già sposato/a.`)}\n${boxEnd()}`);
                     }
                     proposerDB.spouse = prop.target;
                     targetDB.spouse = prop.proposer;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `💒 ${T('Matrimonio')}\n${SEP}\n▸ @${disp(prop.proposer)}\n▸ 　💞 💞 💞\n▸ @${disp(prop.target)}\n\n🎊 _Ora siete marito e moglie!_\n💍 _Che il bot benedica questa unione._\n\n`,
+                        text: `${sec('INFO')}\n${boxOpen()}\n${line(`💒 ${T('Matrimonio')}\n${SEP}\n▸ @${disp(prop.proposer)}\n▸ 　💞 💞 💞\n▸ @${disp(prop.target)}\n\n🎊 _Ora siete marito e moglie!_\n💍 _Che il bot benedica questa unione._\n\n`)}\n${boxEnd()}`,
                         mentions: [prop.proposer, prop.target],
                     });
                 } else if (prop.type === 'adotta') {
                     if (proposerDB.children.includes(prop.target)) {
-                        return reply(`❌ ${T('Errore')}\n${SEP}\n▸ Fa già parte della famiglia.`);
+                        return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`❌ ${T('Errore')}\n${SEP}\n▸ Fa già parte della famiglia.`)}\n${boxEnd()}`);
                     }
                     proposerDB.children.push(prop.target);
                     if (!targetDB.parents.includes(prop.proposer)) targetDB.parents.push(prop.proposer);
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🍼 ${T('Adozione')}\n${SEP}\n▸ @${disp(prop.proposer)} ha adottato\n▸ @${disp(prop.target)}\n\n🎈 _Benvenuto nella famiglia!_\n\n`,
+                        text: `${sec('INFO')}\n${boxOpen()}\n${line(`🍼 ${T('Adozione')}\n${SEP}\n▸ @${disp(prop.proposer)} ha adottato\n▸ @${disp(prop.target)}\n\n🎈 _Benvenuto nella famiglia!_\n\n`)}\n${boxEnd()}`,
                         mentions: [prop.proposer, prop.target],
                     });
                 }
@@ -108,28 +108,15 @@ module.exports = {
                 }
 
                 const albero =
-`${T('Famiglia')} 🌳
-${SEP}
-▸ 👤 *${pushName.slice(0, 20)}*
-
-${T('coniuge')} 💍
-${partnerLine}
-
-${T('genitori')} 👴
-${parentsLine}
-
-${T('figli')} 🍼
-${childrenLine}
-
-`;
+`${sec('TFAMIGLIA')}\n${boxOpen()}\n${line(`${T('Famiglia')} 🌳`)}\n${line(`${SEP}`)}\n${line(`👤 *${pushName.slice(0, 20)}*`)}\n${line(`${T('coniuge')} 💍`)}\n${line(`${partnerLine}`)}\n${line(`${T('genitori')} 👴`)}\n${line(`${parentsLine}`)}\n${line(`${T('figli')} 🍼`)}\n${line(`${childrenLine}`)}\n${boxEnd()}`;
 
                 await sock.sendMessage(from, { text: albero, mentions: familyMentions });
             }
             else if (subCmd === 'sposa' && target) {
-                if (sameJid(target, sender)) return reply(`😅 ${T('Impossibile')}\n${SEP}\n▸ Non puoi sposare\n  te stesso/a.`);
+                if (sameJid(target, sender)) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`😅 ${T('Impossibile')}\n${SEP}\n▸ Non puoi sposare\n  te stesso/a.`)}\n${boxEnd()}`);
                 const tDB = getUser(target, from);
-                if (uDB.spouse) return reply(`💔 ${T('Già sposato/a')}\n${SEP}\n▸ In questo gruppo hai già\n  una moglie/un marito.\n▸ Prima: _.famiglia divorzia_`);
-                if (tDB.spouse) return reply(`💔 ${T('Occupato/a')}\n${SEP}\n▸ Questo utente è già\n  sposato/a con qualcun altro.`);
+                if (uDB.spouse) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`💔 ${T('Già sposato/a')}\n${SEP}\n▸ In questo gruppo hai già\n  una moglie/un marito.\n▸ Prima: _.famiglia divorzia_`)}\n${boxEnd()}`);
+                if (tDB.spouse) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`💔 ${T('Occupato/a')}\n${SEP}\n▸ Questo utente è già\n  sposato/a con qualcun altro.`)}\n${boxEnd()}`);
 
                 // Creo una proposta: serve il consenso dell'altra persona.
                 const proposals = db[from]?.familyProposals || (db[from].familyProposals = {});
@@ -151,21 +138,21 @@ ${SEP}`,
                     msg);
             }
             else if (subCmd === 'divorzia') {
-                if (!uDB.spouse) return reply(`💔 ${T('Single')}\n${SEP}\n▸ Non sei sposato/a\n  con nessuno qui.`);
+                if (!uDB.spouse) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`💔 ${T('Single')}\n${SEP}\n▸ Non sei sposato/a\n  con nessuno qui.`)}\n${boxEnd()}`);
                 const ex = uDB.spouse;
                 const exDB = getUser(ex, from);
                 uDB.spouse = null;
                 exDB.spouse = null;
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🧾 ${T('Divorzio')}\n${SEP}\n▸ @${disp(sender)} ha divorziato\n▸ da @${disp(ex)}\n\n💸 _L'avvocato ringrazia,_\n_la metà dei soldi resta dove sta._\n\n`,
+                    text: `${sec('INFO')}\n${boxOpen()}\n${line(`🧾 ${T('Divorzio')}\n${SEP}\n▸ @${disp(sender)} ha divorziato\n▸ da @${disp(ex)}\n\n💸 _L'avvocato ringrazia,_\n_la metà dei soldi resta dove sta._\n\n`)}\n${boxEnd()}`,
                     mentions: [sender, ex],
                 });
             }
             else if (subCmd === 'adotta') {
-                if (!target) return reply(`🍼 ${T('Adotta')}\n${SEP}\n▸ Tagga la persona da\n  adottare: _.famiglia adotta @utente_`);
-                if (sameJid(target, sender)) return reply(`😅 ${T('Impossibile')}\n${SEP}\n▸ Non puoi adottare\n  te stesso/a, dai.`);
-                if (uDB.children.includes(target)) return reply(`❌ ${T('Già in famiglia')}\n${SEP}\n▸ Questa persona fa già\n  parte della tua famiglia.`);
+                if (!target) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`🍼 ${T('Adotta')}\n${SEP}\n▸ Tagga la persona da\n  adottare: _.famiglia adotta @utente_`)}\n${boxEnd()}`);
+                if (sameJid(target, sender)) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`😅 ${T('Impossibile')}\n${SEP}\n▸ Non puoi adottare\n  te stesso/a, dai.`)}\n${boxEnd()}`);
+                if (uDB.children.includes(target)) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`❌ ${T('Già in famiglia')}\n${SEP}\n▸ Questa persona fa già\n  parte della tua famiglia.`)}\n${boxEnd()}`);
 
                 // Creo una proposta: serve il consenso dell'altra persona.
                 const proposals = db[from]?.familyProposals || (db[from].familyProposals = {});
@@ -186,20 +173,20 @@ ${SEP}`,
                     msg);
             }
             else if (subCmd === 'caccia') {
-                if (!target) return reply(`🚪 ${T('Caccia')}\n${SEP}\n▸ Tagga la persona da\n  rimuovere dalla famiglia.`);
-                if (!uDB.children.includes(target)) return reply(`❓ ${T('Non trovato')}\n${SEP}\n▸ Questa persona non è\n  tra i tuoi figli nel bot.`);
+                if (!target) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`🚪 ${T('Caccia')}\n${SEP}\n▸ Tagga la persona da\n  rimuovere dalla famiglia.`)}\n${boxEnd()}`);
+                if (!uDB.children.includes(target)) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`❓ ${T('Non trovato')}\n${SEP}\n▸ Questa persona non è\n  tra i tuoi figli nel bot.`)}\n${boxEnd()}`);
 
                 const tDB = getUser(target, from);
                 uDB.children = uDB.children.filter(child => child !== target);
                 tDB.parents = tDB.parents.filter(parent => parent !== sender);
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚪 ${T('Cacciato/a')}\n${SEP}\n▸ @${disp(target)} non è più\n▸ nella famiglia di @${disp(sender)}\n\n🧳 _Fatti le valigie._\n\n`,
+                    text: `${sec('INFO')}\n${boxOpen()}\n${line(`🚪 ${T('Cacciato/a')}\n${SEP}\n▸ @${disp(target)} non è più\n▸ nella famiglia di @${disp(sender)}\n\n🧳 _Fatti le valigie._\n\n`)}\n${boxEnd()}`,
                     mentions: [sender, target],
                 });
             }
             else if (subCmd === 'abbandona') {
-                if (uDB.parents.length === 0) return reply(`🚶 ${T('Impossibile')}\n${SEP}\n▸ Non hai genitori\n  registrati nel bot.`);
+                if (uDB.parents.length === 0) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`🚶 ${T('Impossibile')}\n${SEP}\n▸ Non hai genitori\n  registrati nel bot.`)}\n${boxEnd()}`);
                 const parents = [...uDB.parents];
                 for (const parent of parents) {
                     const parentDB = getUser(parent, from);
@@ -208,25 +195,16 @@ ${SEP}`,
                 uDB.parents = [];
                 saveDB();
                 await sock.sendMessage(from, {
-                    text: `🚶 ${T('Abbandono')}\n${SEP}\n▸ @${disp(sender)} ha lasciato\n▸ la famiglia per la sua strada\n\n🌙 _In bocca al lupo._\n\n`,
+                    text: `${sec('INFO')}\n${boxOpen()}\n${line(`🚶 ${T('Abbandono')}\n${SEP}\n▸ @${disp(sender)} ha lasciato\n▸ la famiglia per la sua strada\n\n🌙 _In bocca al lupo._\n\n`)}\n${boxEnd()}`,
                     mentions: [sender],
                 });
             }
             else if (subCmd === 'sposa' || subCmd === 'adotta' || subCmd === 'caccia') {
-                await reply(`❓ ${T('Manca il tag')}\n${SEP}\n▸ Tagga qualcuno:\n▸ _.famiglia ${subCmd} @utente_`);
+                await reply(`${sec('INFO')}\n${boxOpen()}\n${line(`❓ ${T('Manca il tag')}\n${SEP}\n▸ Tagga qualcuno:\n▸ _.famiglia ${subCmd} @utente_`)}\n${boxEnd()}`);
             }
             else {
                 await reply(
-`📖 ${T('Guida famiglia')}
-${SEP}
-▸ _.famiglia_ — il tuo albero
-▸ _.famiglia sposa @utente_ — proposta 💍
-▸ _.famiglia adotta @utente_ — adozione 🍼
-▸ _.famiglia divorzia_ — fine matrimonio 💔
-▸ _.famiglia caccia @utente_ — caccia figlio 🚪
-▸ _.famiglia abbandona_ — lascia i genitori 🚶
-${SEP}
-`);
+`${sec('TGUIDA FAMIGLIA')}\n${boxOpen()}\n${line(`📖 ${T('Guida famiglia')}`)}\n${line(`${SEP}`)}\n${line('_.famiglia_ — il tuo albero')}\n${line('_.famiglia sposa @utente_ — proposta 💍')}\n${line('_.famiglia adotta @utente_ — adozione 🍼')}\n${line('_.famiglia divorzia_ — fine matrimonio 💔')}\n${line('_.famiglia caccia @utente_ — caccia figlio 🚪')}\n${line('_.famiglia abbandona_ — lascia i genitori 🚶')}\n${line(`${SEP}`)}\n${boxEnd()}`);
             }
     },
 };

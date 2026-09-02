@@ -24,7 +24,7 @@ module.exports = {
 
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`⏳ Scava e respira!\n▸ Riposa per ancora _${remain}s_ prima di riscavare.`);
+                return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`⏳ Scava e respira!\n▸ Riposa per ancora _${remain}s_ prima di riscavare.`)}\n${boxEnd()}`);
             }
 
             userData.cooldowns[cooldownKey] = now;

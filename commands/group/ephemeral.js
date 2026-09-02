@@ -41,8 +41,6 @@ ${boxEnd()}`);
 
         await sock.groupToggleEphemeral(from, duration);
         const label = duration === 0 ? 'DISATTIVATI' : `ATTIVATI (${duration / 3600}h)`;
-        await reply(`⏳ *_MESSAGGI TEMPORANEI_*
-▸ *Stato:* ${label}
-`);
+        await reply(`${sec('MESSAGGI TEMPORANEI')}\n${boxOpen()}\n${line(`*Stato:* ${label}`)}\n${boxEnd()}`);
     },
 };

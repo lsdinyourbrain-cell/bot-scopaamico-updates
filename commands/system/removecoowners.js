@@ -50,11 +50,7 @@ module.exports = {
         }
 
         return reply(
-`🗑️ *_CO-OWNER RIMOSSI_*
-▸ 🗑️ _${removed}_ co-owner rimossi!
-▸ 🔐 Restano solo
-  gli owner principali.
-`
+`${sec('COOWNER RIMOSSI')}\n${boxOpen()}\n${line(`🗑️ _${removed}_ co-owner rimossi!`)}\n${line('🔐 Restano solo')}\n${line('gli owner principali.')}\n${boxEnd()}`
         );
     },
 };

@@ -45,7 +45,7 @@ ${boxEnd()}`);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'atempo=0.7,asetrate=48000*0.7,aresample=48000', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🔊 *_DEEP_*\n\n▸ _Voce profonda pronta!_\n');
+            await prog.done(`${sec('DEEP')}\n${boxOpen()}\n${line('_Voce profonda pronta!_')}\n${boxEnd()}`);
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[deep]', e);

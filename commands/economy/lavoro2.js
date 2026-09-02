@@ -54,11 +54,7 @@ module.exports = {
         const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
 
         const text =
-`💪 _Lavoretto: ${gig.emoji} ${gig.nome}_
-▸ ${bonus ? '🔥 CRITICO! ' : ''}${randomChoice(gig.tip())}
-▸ Lordo: _+${formatMoney(gross)}_ ▸ Netto: _+${formatMoney(taxed.net)}_${taxLine}${evLine}
-▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo: _60 min_ | Lavoretti: _${userData.lavoro2.giorni}_
-▸ Vex Bot`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`💪 _Lavoretto: ${gig.emoji} ${gig.nome}_`)}\n${line(`${bonus ? '🔥 CRITICO! ' : ''}${randomChoice(gig.tip())}`)}\n${line(`Lordo: _+${formatMoney(gross)}_ ▸ Netto: _+${formatMoney(taxed.net)}_${taxLine}${evLine}`)}\n${line(`Saldo: _${formatMoney(userData.money)}€_ | Prossimo: _60 min_ | Lavoretti: _${userData.lavoro2.giorni}_`)}\n${line('Vex Bot')}\n${boxEnd()}`;
 
         await sendButtons(sock, from, toDarkFont(text), [
             { label: `💪 Altro lavoretto`, id: `.${command}` },

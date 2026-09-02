@@ -14,7 +14,7 @@ module.exports = {
 
             const anime = randomChoice(['protagonista shōnen', 'villain col passato triste', 'sensei rilassatissimo', 'salvatore in ritardo', 'friend che ruba la scena']);
             await sock.sendMessage(from, {
-                text: `✨ *_ANIME_*\n\n▸ @${sender.split('@')[0]} in un anime sarebbe: _*${anime}*_\n\n🎶 _Opening già in playlist, ovvio._\n`,
+                text: `${sec('ANIME')}\n${boxOpen()}\n${line(`✨ *_ANIME_*\n\n▸ @${sender.split('@')[0]} in un anime sarebbe: _*${anime}*_\n\n🎶 _Opening già in playlist, ovvio._\n`)}\n${boxEnd()}`,
                 mentions: [sender],
             });
     },

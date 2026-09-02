@@ -13,7 +13,7 @@ module.exports = {
 
 
             if (!textArgs) return sendButtons(sock, from,
-                "⚠️ _[uso]: scrivi una città._\n\n▸ Esempio: `.weather Milano`",
+                `${sec('METEO')}\n${boxOpen()}\n${line('⚠️ Uso: scrivi una città.')}\n${line('Esempio: *.weather Milano*')}\n${boxEnd()}`,
                 [{ label: '.weather Roma', id: 'weather Roma' }],
                 msg);
             try {
@@ -24,16 +24,9 @@ module.exports = {
                 if (!current) throw new Error('Dati meteo non disponibili');
                 const city = area?.areaName?.[0]?.value || textArgs;
                 const description = current.weatherDesc?.[0]?.value || 'N/D';
-                await prog.done(
-`🌦️ *_METEO_*
-▸ 📍 *${city}*
-▸ 🌡️ _${current.temp_C}°C_
-▸ _${description}_
-▸ 💧 _Umidità:_ ${current.humidity}%
-▸ 🌬️ _Vento:_ ${current.windspeedKmph} _km/h_
-`);
+                await prog.done(`${sec('METEO')}\n${boxOpen()}\n${line(`📍 *${city}*`)}\n${line(`🌡️ _${current.temp_C}°C_` )}\n${line(`_${description}_`)}\n${line(`💧 Umidità: ${current.humidity}%`)}\n${line(`🌬️ Vento: ${current.windspeedKmph} km/h`)}\n${boxEnd()}`);
             } catch (_) {
-                await reply("❌ Non trovo il meteo di questa città. Riprova con un nome più preciso.");
+                await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('❌ Non trovo il meteo di questa città. Riprova con un nome più preciso.')}\n${boxEnd()}`);
             }
     },
 };

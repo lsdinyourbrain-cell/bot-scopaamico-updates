@@ -94,11 +94,7 @@ ${boxEnd()}`);
                 ? linked.linkedGroups.map(g => `  ▸ ${g.subject}`).join('\n')
                 : '  (nessun sottogruppo)';
             return reply(
-`🌐 *_COMMUNITY RAGGIUNTA_*
-${communityJid ? '▸ Sono entrato nella community e in tutti i suoi gruppi.' : '▸ Sono entrato nella community.'}
-▸ *Gruppi:*
-${groups}
-`
+`${sec('COMMUNITY RAGGIUNTA')}\n${boxOpen()}\n${line(`${communityJid ? '▸ Sono entrato nella community e in tutti i suoi gruppi.' : '▸ Sono entrato nella community.'}`)}\n${line('*Gruppi:*')}\n${line(`${groups}`)}\n${boxEnd()}`
             );
         } catch (e) {
             console.error('[add] Errore ingresso community:', e.message);
@@ -111,13 +107,9 @@ ${groups}
     try {
         const groupJid = await sock.groupAcceptInvite(code);
         if (groupJid) {
-            return reply(`✅ *_ENTRATO NEL GRUPPO_*
-▸ *${info.subject || 'del link'}*
-`);
+            return reply(`${sec('ENTRATO NEL GRUPPO')}\n${boxOpen()}\n${line(`*${info.subject || 'del link'}*`)}\n${boxEnd()}`);
         }
-        return reply(`✅ *_RICHIESTA INVIATA_*
-▸ Richiesta di ingresso inviata al gruppo _(attende approvazione di un admin)_.
-`);
+        return reply(`${sec('RICHIESTA INVIATA')}\n${boxOpen()}\n${line('Richiesta di ingresso inviata al gruppo _(attende approvazione di un admin)_.')}\n${boxEnd()}`);
     } catch (e) {
         console.error('[add] Errore ingresso gruppo:', e.message);
         return reply("⚠️ _[uso]:_ non riesco a entrare nel gruppo. Potrebbe richiedere l'approvazione di un admin o il link è scaduto.");

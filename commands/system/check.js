@@ -58,12 +58,12 @@ ${boxEnd()}`);
                 delete userData[k];
             }
             saveDB();
-            return reply(`🧹 *_RESET ESEGUITO_*\n\n▸ @${target.split('@')[0]} ripristinato ai valori di default.\n▸ Campi rimossi: _${keys.length}_\n\n`);
+            return reply(`${sec('RESET ESEGUITO')}\n${boxOpen()}\n${line(`🧹 *_RESET ESEGUITO_*\n\n▸ @${target.split('@')[0]} ripristinato ai valori di default.\n▸ Campi rimossi: _${keys.length}_\n\n`)}\n${boxEnd()}`);
         }
 
         // ── SET / ADD / DEL 
         if ((action === 'set' || action === 'add') && !field) {
-            return reply(`⚠️ Specifica il campo.\n▸ _es. .check @utente set money 5000_\n▸ _es. .check @utente add money 100_`);
+            return reply(`${sec('INFO')}\n${boxOpen()}\n${line('⚠️ Specifica il campo.\n▸ _es. .check @utente set money 5000_\n▸ _es. .check @utente add money 100_')}\n${boxEnd()}`);
         }
 
         if (action === 'del') {
@@ -78,11 +78,11 @@ ${boxEnd()}`);
             const existed = field in userData;
             delete userData[field];
             if (existed) saveDB();
-            return reply(`🗑️ *_CAMPO ELIMINATO_*\n\n▸ Utente: _@${target.split('@')[0]}_\n▸ Campo: _${field}_\n▸ Stato: _${existed ? 'eliminato ✓' : 'non esisteva'}_\n\n`);
+            return reply(`${sec('CAMPO ELIMINATO')}\n${boxOpen()}\n${line(`🗑️ *_CAMPO ELIMINATO_*\n\n▸ Utente: _@${target.split('@')[0]}_\n▸ Campo: _${field}_\n▸ Stato: _${existed ? 'eliminato ✓' : 'non esisteva'}_\n\n`)}\n${boxEnd()}`);
         }
 
         if (action === 'set' || action === 'add') {
-            if (!rawValue) return reply(`⚠️ Specifica il valore.\n▸ _es. .check @utente set money 5000_`);
+            if (!rawValue) return reply(`${sec('INFO')}\n${boxOpen()}\n${line('⚠️ Specifica il valore.\n▸ _es. .check @utente set money 5000_')}\n${boxEnd()}`);
 
             if (action === 'add') {
                 const delta = Number(rawValue.replace(/[^\d\-.]/g, ''));
@@ -94,11 +94,7 @@ ${boxEnd()}`);
                 userData[field] = cur + delta;
                 saveDB();
                 return reply(
-`➕ *_CAMPO AGGIORNATO_*
-▸ Utente: _@${target.split('@')[0]}_
-▸ Campo: _${field}_
-▸ ${cur} → _${userData[field]}_ (${delta >= 0 ? '+' : ''}${delta})
-`);
+`${sec('CAMPO AGGIORNATO')}\n${boxOpen()}\n${line(`Utente: _@${target.split('@')[0]}_`)}\n${line(`Campo: _${field}_`)}\n${line(`${cur} → _${userData[field]}_ (${delta >= 0 ? '+' : ''}${delta})`)}\n${boxEnd()}`);
             }
 
             // SET con parsing automatico del valore
@@ -123,12 +119,7 @@ ${boxEnd()}`);
             const prevStr = prev === undefined ? '—' : (typeof prev === 'object' ? JSON.stringify(prev) : String(prev));
             const newStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
             return reply(
-`✏️ *_CAMPO IMPOSTATO_*
-▸ Utente: _@${target.split('@')[0]}_
-▸ Campo: _${field}_
-▸ Da: _${prevStr}_
-▸ A: _${newStr}_
-`);
+`${sec('CAMPO IMPOSTATO')}\n${boxOpen()}\n${line(`Utente: _@${target.split('@')[0]}_`)}\n${line(`Campo: _${field}_`)}\n${line(`Da: _${prevStr}_`)}\n${line(`A: _${newStr}_`)}\n${boxEnd()}`);
         }
 
         // ── SHOW: dump completo del record 

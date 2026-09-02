@@ -45,7 +45,7 @@ ${boxEnd()}`);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'atempo=1.25,asetrate=48000*1.3,aresample=48000', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('⚡ *_NIGHTCORE_*\n\n▸ _Versione Nightcore pronta!_\n');
+            await prog.done(`${sec('NIGHTCORE')}\n${boxOpen()}\n${line('_Versione Nightcore pronta!_')}\n${boxEnd()}`);
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[nightcore]', e);

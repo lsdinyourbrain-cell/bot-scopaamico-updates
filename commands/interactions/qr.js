@@ -27,7 +27,7 @@ ${boxEnd()}`);
             const buf = Buffer.from(res.data);
             await sock.sendMessage(from, {
                 image: buf,
-                caption: `✦ *_QR CODE_*\n\n▸ *Contenuto:* _${data.slice(0, 80)}_`,
+                caption: `${sec('QR CODE')}\n${boxOpen()}\n${line(`✦ *_QR CODE_*\n\n▸ *Contenuto:* _${data.slice(0, 80)}_`)}\n${boxEnd()}`,
             }, { quoted: msg });
         } catch (_) {
             await reply('⚠️ _Non riesco a generare il QR. Riprova più tardi._');

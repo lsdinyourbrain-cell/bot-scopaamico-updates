@@ -18,13 +18,7 @@ module.exports = {
         if (!isGroup) return reply("❌ Comando solo nei gruppi.");
         if (db._escludi?.[from]) {
             return reply(
-`🚫  ${toBold('CLASSIFICA DISATTIVATA')}
-${SEP}
-▸ Gruppo escluso con ${toBold('.escludi')}
-▸ Un admin può riammettere con
-  ${toBold('.escludi off')}
-${SEP}
-◈ Vex Bot`);
+`${sec('INFO')}\n${boxOpen()}\n${line(`🚫  ${toBold('CLASSIFICA DISATTIVATA')}`)}\n${line(`${SEP}`)}\n${line(`Gruppo escluso con ${toBold('.escludi')}`)}\n${line('Un admin può riammettere con')}\n${line(`${toBold('.escludi off')}`)}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`);
         }
 
         const want = parseInt(String(textArgs || '').trim(), 10);
@@ -77,12 +71,7 @@ ${SEP}
         }
 
         if (!allSorted.length) return reply(
-`📭  ${toBold('NESSUNA ATTIVITA')}
-${SEP}
-▸ Nessun dato disponibile.
-▸ Scrivi in chat e torna qui!
-${SEP}
-◈ Vex Bot`);
+`${sec('TOBOLDNESSUNA ATTIVI')}\n${boxOpen()}\n${line(`📭  ${toBold('NESSUNA ATTIVITA')}`)}\n${line(`${SEP}`)}\n${line('Nessun dato disponibile.')}\n${line('Scrivi in chat e torna qui!')}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`);
 
         const sorted = allSorted.slice(0, limit);
         const mentions = sorted.map(([jid]) => jid);

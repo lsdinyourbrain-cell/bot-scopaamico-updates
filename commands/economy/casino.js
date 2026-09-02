@@ -13,7 +13,7 @@ module.exports = {
 
 
             await sendButtons(sock, from,
-                "🎰 *_CASINÒ_*\n\n▸ 🎲 Premi un pulsante per giocare.\n▸ 🍀 Buona fortuna, ma senza vendere il divano 😭\n\n",
+                `${sec('CASINÒ')}\n${boxOpen()}\n${line('🎲 Premi un pulsante per giocare.')}\n${line('🍀 Buona fortuna, ma senza vendere il divano 😭')}\n${boxEnd()}`,
                 [
                     { label: '.dadi', id: 'dadi 100' },
                     { label: '.slot', id: 'slot 100' },

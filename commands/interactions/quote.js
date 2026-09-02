@@ -40,6 +40,6 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
         const q = quotes[Math.floor(Math.random() * quotes.length)];
-        await reply(`💭 *_CITAZIONE_*\n\n▸ _${q}_\n\n`);
+        await reply(`${sec('CITAZIONE')}\n${boxOpen()}\n\n${boxEnd()}`);
     },
 };

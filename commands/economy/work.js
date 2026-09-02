@@ -23,7 +23,7 @@ module.exports = {
         // Il pulsante "Nuovo turno" NON bypassa il cooldown (niente farming).
         if (now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 60000);
-            return reply(`⏳ Hai appena finito un turno!\n😴 Riposa per ancora _${remain} minuti_.`);
+            return reply(`${sec('ATTESA')}\n${boxOpen()}\n${line(`⏳ Hai appena finito un turno!`)}\n${line(`😴 Riposa per ancora _${remain} minuti_.`)}\n${boxEnd()}`);
         }
         userData.cooldowns[cooldownKey] = now;
 
@@ -58,14 +58,10 @@ module.exports = {
         saveDB();
 
         const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
-        const eventLine = event ? `\n▸ ${event.emoji} _${event.label}_` : '';
-        const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
+        const eventLine = event ? line(`${event.emoji} _${event.label}_`) : '';
+        const evLine = evMult > 1 ? line(`💰 _Evento: guadagno x${evMult}_`) : '';
 
-        const resultText =
-`💼 _${lavoro.emoji} ${lavoro.nome}_
-▸ Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}${eventLine}${evLine}
-▸ Saldo: _${formatMoney(userData.money)}€_ | Prossimo turno: _20 minuti_
-▸ Vex Bot`;
+        const resultText = `${sec('WORK')}\n${boxOpen()}\n${line(`💼 _${lavoro.emoji} ${lavoro.nome}_`)}\n${line(`Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${event ? eventLine : ''}\n${evMult > 1 ? evLine : ''}\n${line(`Saldo: _${formatMoney(userData.money)}€_ | Prossimo turno: _20 minuti_` )}\n${boxEnd()}`;
 
         await sendButtons(sock, from, toDarkFont(resultText), [
             { label: `💼 Nuovo turno`, id: `.${command}` },

@@ -18,15 +18,15 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { db, saveDB } = services;
 
-        if (!isGroup) return reply("La trivia si gioca solo nei gruppi.");
+        if (!isGroup) return reply(`${sec('GRUPPI')}\n${boxOpen()}\n${line('La trivia si gioca solo nei gruppi.')}\n${boxEnd()}`);
 
         if (db[from]?.triviaGame?.active) {
-            return reply("C'è già una trivia in corso! Rispondi con *A/B/C/D* per partecipare.");
+            return reply(`${sec('TRIVIA')}\n${boxOpen()}\n${line("C'è già una trivia in corso! Rispondi con *A/B/C/D* per partecipare.")}\n${boxEnd()}`);
         }
 
         const questions = pickQuestions(TOTAL_QUESTIONS);
         if (questions.length < 2) {
-            return reply("❌ Nessuna domanda disponibile. Riprova più tardi.");
+            return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('❌ Nessuna domanda disponibile. Riprova più tardi.')}\n${boxEnd()}`);
         }
 
         db[from] = db[from] || {};
@@ -41,12 +41,7 @@ module.exports = {
 
         const q = questions[0];
         await sock.sendMessage(from, {
-            text:
-                `🏆 *_TRIVIA SFIDA_*\n` +
-                `\n` +
-                `${formatQuestion(q, 1)}\n` +
-                `⚡ Rispondi con *A/B/C/D*!\n` +
-                ``,
+            text: `${sec('TRIVIA SFIDA')}\n${boxOpen()}\n${line(formatQuestion(q, 1))}\n${line('⚡ Rispondi con *A/B/C/D*!')}\n${boxEnd()}`,
         }, { quoted: msg });
 
         setTimeout(() => {
@@ -56,7 +51,7 @@ module.exports = {
                 saveDB();
                 const cur = g.questions[g.qIndex];
                 const answer = cur ? cur.options[cur.correct] : '';
-                sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa risposta era *${answer}*.` }).catch(() => {});
+                sock.sendMessage(from, { text: `${sec('TEMPO SCADUTO')}\n${boxOpen()}\n${line(`La risposta era *${answer}*.`)}\n${boxEnd()}` }).catch(() => {});
             }
         }, GAME_TIMEOUT_MS);
     },

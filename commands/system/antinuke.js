@@ -146,15 +146,7 @@ ${cfg.enabled
         }
 
         return reply(
-`⚠️ *_ANTINUKE — ERRORE_*
-▸ _[uso]:_ sottocomando non riconosciuto.
-▸ .antinuke on/off
-▸ .antinuke <controllo> on/off
-▸ .antinuke whitelist <numero>
-▸ .antinuke whitelist list
-▸ .antinuke all on/off
-▸ Controlli: ${Object.keys(ANTINUKE_CONTROLS).join(', ')}
-`
+`${sec('_ANTINUKE  ERRORE_')}\n${boxOpen()}\n${line('_[uso]:_ sottocomando non riconosciuto.')}\n${line('.antinuke on/off')}\n${line('.antinuke <controllo> on/off')}\n${line('.antinuke whitelist <numero>')}\n${line('.antinuke whitelist list')}\n${line('.antinuke all on/off')}\n${line(`Controlli: ${Object.keys(ANTINUKE_CONTROLS).join(', ')}`)}\n${boxEnd()}`
         );
     },
 };

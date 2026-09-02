@@ -45,9 +45,7 @@ ${boxEnd()}`);
                 const ok = results.filter(r => !r.status || r.status === '200').length;
                 const verb = action === 'accetta' ? 'accolte' : 'rifiutate';
                 return reply(
-`✅ *_RICHIESTE ${verb.toUpperCase()}_*
-▸ Hai ${action === 'accetta' ? 'accettato' : 'rifiutato'} *${ok}* su *${jids.length}* richieste di adesione.
-`
+`${sec('INFO')}\n${boxOpen()}\n${line(`Hai ${action === 'accetta' ? 'accettato' : 'rifiutato'} *${ok}* su *${jids.length}* richieste di adesione.`)}\n${boxEnd()}`
                 );
             } catch (e) {
                 console.error('[richieste]', e.message);
@@ -70,9 +68,7 @@ ${boxEnd()}`);
             }).join('\n');
             const extra = requests.length > 20 ? `\n… e altre *${requests.length - 20}* richieste` : '';
             const text =
-`📥 *_RICHIESTE DI ADESIONE_* — *${requests.length}* in attesa
-${rows}${extra}
-▸ Usa i pulsanti o *.accettarichieste 50*`;
+`${sec('RICHIESTE DI ADESIONE')}\n${boxOpen()}\n${line(`📥 *_RICHIESTE DI ADESIONE_* — *${requests.length}* in attesa`)}\n${line(`${rows}${extra}`)}\n${line('Usa i pulsanti o *.accettarichieste 50*')}\n${boxEnd()}`;
 
             await sendButtons(sock, from, text, [
                 { label: '✅ Accetta tutte', id: 'richieste accetta' },

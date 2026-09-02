@@ -42,13 +42,7 @@ ${SEP}
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${toBold('ANCORA?')}  ·  🍆 ${toBold('CAZZO')}
-${SEP}
-▸ @${target.split('@')[0]}  ·  ${valore}cm  ·  ${b}
-${DOT}
-Scegli sotto
-${SEP}
-◈ Vex Bot`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍆 ${toBold('CAZZO')}`)}\n${line(`${SEP}`)}\n${line(`@${target.split('@')[0]}  ·  ${valore}cm  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [target], { headerTitle: '🍆 CAZZO', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

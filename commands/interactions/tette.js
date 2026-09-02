@@ -46,13 +46,7 @@ ${SEP}
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${toBold('ANCORA?')}  ·  🍒 ${toBold('TETTE')}
-${SEP}
-▸ @${target.split('@')[0]}  ·  ${b}
-${DOT}
-Scegli sotto
-${SEP}
-◈ Vex Bot`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍒 ${toBold('TETTE')}`)}\n${line(`${SEP}`)}\n${line(`@${target.split('@')[0]}  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [target], { headerTitle: '🍒 TETTE', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

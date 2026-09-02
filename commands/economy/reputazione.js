@@ -40,7 +40,7 @@ ${boxEnd()}`);
         const CD_MS = 6 * 3600 * 1000;
         if (now - last < CD_MS) {
             const hours = Math.ceil((CD_MS - (now - last)) / 3600000);
-            return reply(`⏳ Hai già votato questo utente!\n▸ Riprova tra _${hours} ore_.`);
+            return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`${sec('INFO')}\n${boxOpen()}\n${line(`⏳ Hai già votato questo utente!\n▸ Riprova tra _${hours} ore_.`)}\n${boxEnd()}`)}\n${boxEnd()}`);
         }
         me.repGiven[targetJid] = now;
 
@@ -53,7 +53,7 @@ ${boxEnd()}`);
         saveDB();
 
         return sock.sendMessage(from, {
-            text: `✅ @${disp(sender)} ha dato +1⭐\n▸ a @${disp(targetJid)}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.\n\n`,
+            text: `${sec('INFO')}\n${boxOpen()}\n${line(`${sec('INFO')}\n${boxOpen()}\n${line(`✅ @${disp(sender)} ha dato +1⭐\n▸ a @${disp(targetJid)}!\n▸ 📊 La sua reputazione ora è _${target.rep}_ punti.\n\n`)}\n${boxEnd()}`)}\n${boxEnd()}`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

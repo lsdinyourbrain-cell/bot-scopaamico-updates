@@ -75,13 +75,7 @@ ${boxEnd()}`);
             saveDB();
 
             const resultText =
-`🎡 *_RUOTA DELLA FORTUNA_*
-🎡 La ruota gira...
-▸ *Settore:* _${win.name}_ ${win.emoji}
-
-${esito}
-▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-`;
+`${sec('RUOTA DELLA FORTUNA')}\n${boxOpen()}\n${line('🎡 La ruota gira...')}\n${line(`*Settore:* _${win.name}_ ${win.emoji}`)}\n${line(`${esito}`)}\n${line(`*Saldo attuale:* _${formatMoney(uDB.money)}_`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

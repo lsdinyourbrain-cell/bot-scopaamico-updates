@@ -23,7 +23,7 @@ module.exports = {
             .slice(0, 10);
 
         if (!list.length) {
-            return reply(`🏆  ${toBold('TOP GRUPPI')}\n${SEP}\n▸ Nessun dato ancora.\n${SEP}\n◈ Vex Bot`);
+            return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`🏆  ${toBold('TOP GRUPPI')}\n${SEP}\n▸ Nessun dato ancora.\n${SEP}\n◈ Vex Bot`)}\n${boxEnd()}`);
         }
 
         if (String(args[0] || '').toLowerCase() === 'info') {

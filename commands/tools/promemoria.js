@@ -14,7 +14,7 @@ module.exports = {
 
         const parsed = parseDuration(textArgs);
         if (!parsed) {
-            return reply("⏰ *_Come si usa_*\n\n▸ .promemoria <testo> in <tempo>\n▸ *Esempi:*\n▸ ✦ .promemoria compra il latte in 10 minuti\n▸ ✦ .promemoria pausa caffè tra 2 ore\n▸ ✦ .promemoria 30s\n");
+            return reply(`${sec('COME SI USA')}\n${boxOpen()}\n${line('.promemoria <testo> in <tempo>')}\n${line('*Esempi:*')}\n${line('✦ .promemoria compra il latte in 10 minuti')}\n${line('✦ .promemoria pausa caffè tra 2 ore')}\n${line('✦ .promemoria 30s')}\n${boxEnd()}`);
         }
 
         const clean = String(textArgs)
@@ -24,10 +24,10 @@ module.exports = {
             .trim();
         const reminderText = clean || '…ti avevo chiesto di ricordarti qualcosa!';
 
-        await reply(`⏰ *_Promemoria impostato!_*\n\n▸ 📝 _${reminderText.slice(0, 300)}_\n▸ ⏳ Tra _${humanizeMs(parsed.ms)}_\n▸ Ti avviserò quando sarà\n  il momento.\n\n`);
+        await reply(`${sec('PROMEMORIA IMPOSTATO')}\n${boxOpen()}\n${line(`${sec('PROMEMORIA IMPOSTATO')}\n${boxOpen()}\n${line(`⏰ *_Promemoria impostato!_*\n\n▸ 📝 _${reminderText.slice(0, 300)}_\n▸ ⏳ Tra _${humanizeMs(parsed.ms)}_\n▸ Ti avviserò quando sarà\n  il momento.\n\n`)}\n${boxEnd()}`)}\n${boxEnd()}`);
 
         setTimeout(() => {
-            const text = `⏰ *_PROMEMORIA_* @${sender.split('@')[0]}\n\n▸ 📝 _${reminderText}_\n\n`;
+            const text = `${sec('PROMEMORIA')}\n${boxOpen()}\n${line(`${sec('PROMEMORIA')}\n${boxOpen()}\n${line(`⏰ *_PROMEMORIA_* @${sender.split('@')[0]}\n\n▸ 📝 _${reminderText}_\n\n`)}\n${boxEnd()}`)}\n${boxEnd()}`;
             sock.sendMessage(from, { text, mentions: [sender] }).catch(() => {});
         }, parsed.ms);
     },

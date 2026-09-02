@@ -68,16 +68,16 @@ ${boxEnd()}`);
 
                 if (targetMessage.imageMessage) {
                     await sock.sendMessage(from,
-                        { image: buffer, caption: "👁️ *_VIEW ONCE SBLOCCATO_*\n\n▸ _Media sbloccato!_\n" },
+                        { image: buffer, caption: `${sec('VIEW ONCE SBLOCCATO')}\n${boxOpen()}\n${line('_Media sbloccato!_')}\n${boxEnd()}` },
                         { quoted: msg }
                     );
-                    await prog.done("👁️ *_VIEW ONCE SBLOCCATO_*\n\n▸ _Media sbloccato!_\n");
+                    await prog.done(`${sec('VIEW ONCE SBLOCCATO')}\n${boxOpen()}\n${line('_Media sbloccato!_')}\n${boxEnd()}`);
                 } else {
                     await sock.sendMessage(from,
-                        { video: buffer, caption: "👁️ *_VIEW ONCE SBLOCCATO_*\n\n▸ _Media sbloccato!_\n" },
+                        { video: buffer, caption: `${sec('VIEW ONCE SBLOCCATO')}\n${boxOpen()}\n${line('_Media sbloccato!_')}\n${boxEnd()}` },
                         { quoted: msg }
                     );
-                    await prog.done("👁️ *_VIEW ONCE SBLOCCATO_*\n\n▸ _Media sbloccato!_\n");
+                    await prog.done(`${sec('VIEW ONCE SBLOCCATO')}\n${boxOpen()}\n${line('_Media sbloccato!_')}\n${boxEnd()}`);
                 }
 
             } catch (err) {

@@ -17,10 +17,6 @@ module.exports = {
         const lines = textArgs.split('\n').length;
 
         await reply(
-`🔢 *_COUNT_*
-▸ 📝 *Caratteri:* _${chars}_
-▸ 📖 *Parole:* _${words}_
-▸ 📃 *Righe:* _${lines}_
-`);
+`${sec('COUNT')}\n${boxOpen()}\n${line(`📝 *Caratteri:* _${chars}_`)}\n${line(`📖 *Parole:* _${words}_`)}\n${line(`📃 *Righe:* _${lines}_`)}\n${boxEnd()}`);
     },
 };

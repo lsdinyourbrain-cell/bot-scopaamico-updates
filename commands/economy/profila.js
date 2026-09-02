@@ -118,7 +118,7 @@ ${line('👴 Genitori ' + parents + ' · 🍼 Figli ' + children)}
 ${line('💬 Messaggi ' + msgCount)}
 ${line('🤬 Bestemmie ' + bestemmie)}
 ${boxEnd()}
-${isSelf ? '▸ .profilo nick/bio/stile per personalizzare' : ''}`;
+${isSelf ? `${sec('INFO')}\n${boxOpen()}\n${line('.profilo nick/bio/stile per personalizzare')}\n${boxEnd()}` : ''}`;
 
         try {
             if (pfpUrl) {

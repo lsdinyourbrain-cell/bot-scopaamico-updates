@@ -14,10 +14,7 @@ module.exports = {
 
             if (!isGroup) {
                 return reply(
-`ℹ️ *_GROUPINFO_*
-▸ Questo comando funziona solo
-  all'interno di un _gruppo_. 👥
-`
+`${sec('GROUPINFO')}\n${boxOpen()}\n${line('Questo comando funziona solo')}\n${line('all\'interno di un _gruppo_. 👥')}\n${boxEnd()}`
                 );
             }
 
@@ -57,18 +54,7 @@ module.exports = {
                     .filter(Boolean);
 
                 const txt =
-`🏷️ *_INFORMAZIONI GRUPPO_*
-▸ 📛 Nome: _${meta.subject || 'N/D'}_
-▸ 🆔 ID: _${from}_
-▸ 📅 Creato: _${creation}_
-▸ 👥 Membri: _${totalMembers}_
-📝 *Descrizione*
-▸ _${desc}_
-👑 *Fondatore/SuperAdmin*
-${superAdminLines || '▸ _(nessuno)_'}
-⚙️ *Amministratori*
-${adminLines || '▸ _(nessuno)_'}
-`;
+`${sec('INFORMAZIONI GRUPPO')}\n${boxOpen()}\n${line(`📛 Nome: _${meta.subject || 'N/D'}_`)}\n${line(`🆔 ID: _${from}_`)}\n${line(`📅 Creato: _${creation}_`)}\n${line(`👥 Membri: _${totalMembers}_`)}\n${line('📝 *Descrizione*')}\n${line(`_${desc}_`)}\n${line('👑 *Fondatore/SuperAdmin*')}\n${line(`${superAdminLines || '▸ _(nessuno)_'}`)}\n${line('⚙️ *Amministratori*')}\n${line(`${adminLines || '▸ _(nessuno)_'}`)}\n${boxEnd()}`;
 
                 // PFP del gruppo come allegato (fallback: solo testo)
                 let pfpUrl;

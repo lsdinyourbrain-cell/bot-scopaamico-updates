@@ -71,7 +71,7 @@ ${boxEnd()}`);
                 mimetype: 'audio/ogg; codecs=opus',
                 ptt: true
             }, { quoted: msg });
-            await prog.done('🎧 *_AUDIO 8D_*\n\n▸ _Audio 8D generato!_\n');
+            await prog.done(`${sec('AUDIO 8D')}\n${boxOpen()}\n${line('_Audio 8D generato!_')}\n${boxEnd()}`);
 
             fs.unlinkSync(inputPath);
             fs.unlinkSync(outputPath);

@@ -60,7 +60,7 @@ ${boxEnd()}`);
 
             await sleep(1000);
             await sock.sendMessage(from, {
-                text: `⚔️ *_DUELLO_*\n\n@${sShort} sfida\n@${tShort} a duello!\n\n▸ *Puntata:* _${puntata}€_\n`,
+                text: `${sec('DUELLO')}\n${boxOpen()}\n${line(`${sec('DUELLO')}\n${boxOpen()}\n${line(`⚔️ *_DUELLO_*\n\n@${sShort} sfida\n@${tShort} a duello!\n\n▸ *Puntata:* _${puntata}€_\n`)}\n${boxEnd()}`)}\n${boxEnd()}`,
                 mentions: [senderPn, tgtPn],
             });
             await sleep(2000);

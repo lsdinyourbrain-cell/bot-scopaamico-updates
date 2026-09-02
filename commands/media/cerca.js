@@ -329,7 +329,7 @@ async function runDownload(sock, from, video, kind, msg, reply, height) {
                 quoted: msg,
                 mediaUploadTimeoutMs: 120000,
             }));
-            await reply(`🎵 *_AUDIO PRONTO_*\n\n▸ _${video.title}_\n`);
+            await reply(`${sec('AUDIO PRONTO')}\n${boxOpen()}\n${line(`🎵 *_AUDIO PRONTO_*\n\n▸ _${video.title}_\n`)}\n${boxEnd()}`);
         } else {
             // Il video è garantito in .mp4 (mediaDownloader converte
             // .webm/.mkv e i codec non h264): mimetype corretto.

@@ -51,11 +51,11 @@ module.exports = {
             };
             saveDB();
 
-            const optionsText = options.map((o, i) => `${optLetters[i]}) ${o.name}`).join('\n');
+            const optionsText = options.map((o, i) => line(`${optLetters[i]}) ${o.name}`)).join('\n');
 
             try {
                 const flagUrl = `https://flagcdn.com/w320/${pick.code.toLowerCase()}.png`;
-                const caption = `🏁 *_INDOVINA LA BANDIERA_*\n\n${optionsText}\n\n⚡ Rispondi con A/B/C/D!\n⏳ Hai 30 secondi!\n`;
+                const caption = `${sec('INDOVINA LA BANDIERA')}\n${boxOpen()}\n${optionsText}\n${line('⚡ Rispondi con A/B/C/D!')}\n${line('⏳ Hai 30 secondi!')}\n${boxEnd()}`;
                 await sock.sendMessage(from, {
                     image: { url: flagUrl },
                     caption,
@@ -65,11 +65,11 @@ module.exports = {
                     if (db[from]?.flagGame?.active && db[from]?.flagGame?.code === pick.code) {
                         db[from].flagGame.active = false;
                         saveDB();
-                        sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nEra *${pick.name}* 🇺🇳` }).catch(() => {});
+                        sock.sendMessage(from, { text: `${sec('TEMPO SCADUTO')}\n${boxOpen()}\n${line(`Era *${pick.name}*` )}\n${boxEnd()}` }).catch(() => {});
                     }
                 }, 30000);
             } catch (e) {
-                await reply("Non riesco a caricare la bandiera. Riprova più tardi.");
+                await reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Non riesco a caricare la bandiera. Riprova più tardi.')}\n${boxEnd()}`);
             }
     },
 };

@@ -56,7 +56,7 @@ ${boxEnd()}`);
                 fileName: `${cleanName}.${ext}`,
             }, { quoted: msg });
 
-            await prog.done(`🎵 *_MP3_*\n\n▸ _Scaricato_ *${query}* _intero!_\n`);
+            await prog.done(`${sec('MP3')}\n${boxOpen()}\n${line(`🎵 *_MP3_*\n\n▸ _Scaricato_ *${query}* _intero!_\n`)}\n${boxEnd()}`);
         } catch (e) {
             console.error('[mp3]', e.message);
             await prog.fail('❌ ' + getDownloadErrorMessage(e));

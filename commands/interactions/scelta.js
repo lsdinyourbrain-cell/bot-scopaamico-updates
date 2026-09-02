@@ -15,6 +15,6 @@ module.exports = {
 ${boxOpen()}
 ${line('[uso]: Dammi almeno due opzioni._ ▸ _Esempio: \\`.scelta pizza o pasta\\`')}
 ${boxEnd()}`);
-        await reply(`🎯 *_LA MIA SCELTA_*\n\n▸ Io direi: _*${randomChoice(options)}*_\n\n`);
+        await reply(`${sec('LA MIA SCELTA')}\n${boxOpen()}\n${line(`🎯 *_LA MIA SCELTA_*\n\n▸ Io direi: _*${randomChoice(options)}*_\n\n`)}\n${boxEnd()}`);
     },
 };

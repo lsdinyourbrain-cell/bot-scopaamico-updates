@@ -29,8 +29,6 @@ ${line('inserisci il nuovo nome.')}
 ${boxEnd()}`);
 
         await sock.groupUpdateSubject(from, textArgs);
-        await reply(`✅ *_NOME GRUPPO_*
-▸ Nome cambiato in: *${textArgs}*
-`);
+        await reply(`${sec('NOME GRUPPO')}\n${boxOpen()}\n${line(`Nome cambiato in: *${textArgs}*`)}\n${boxEnd()}`);
     },
 };

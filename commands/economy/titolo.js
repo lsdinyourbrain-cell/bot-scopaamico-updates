@@ -16,7 +16,7 @@ module.exports = {
 
         if (!text) {
             const current = me.title ? `*${me.title.slice(0, 25)}*` : '_nessun titolo_';
-            return reply(`🏷️ *_IL TUO TITOLO_*\n\n▸ 🏷️ Titolo: ${current}\n▸ 📝 Impostane uno con _.titolo_\n▸ 🔠 _max 25 caratteri_\n\n`);
+            return reply(`${sec('IL TUO TITOLO')}\n${boxOpen()}\n${line(`🏷️ *_IL TUO TITOLO_*\n\n▸ 🏷️ Titolo: ${current}\n▸ 📝 Impostane uno con _.titolo_\n▸ 🔠 _max 25 caratteri_\n\n`)}\n${boxEnd()}`);
         }
 
         if (text === '-') {
@@ -34,6 +34,6 @@ ${boxEnd()}`);
 
         me.title = text;
         saveDB();
-        return reply(`🏷️ *_TITOLO IMPOSTATO_*\n\n▸ Da ora il tuo profilo mostra:\n▸ 👉 *${text}*\n\n`);
+        return reply(`${sec('TITOLO IMPOSTATO')}\n${boxOpen()}\n${line(`🏷️ *_TITOLO IMPOSTATO_*\n\n▸ Da ora il tuo profilo mostra:\n▸ 👉 *${text}*\n\n`)}\n${boxEnd()}`);
     },
 };

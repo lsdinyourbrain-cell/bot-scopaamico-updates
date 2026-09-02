@@ -14,6 +14,6 @@ module.exports = {
 ${boxOpen()}
 ${line('[uso]: Scrivi qualcosa da misurare._ ▸ _Esempio: \\`.percentuale pizza\\`')}
 ${boxEnd()}`);
-        await reply(`📊 *_PERCENTUALE_*\n\n▸ _${textArgs}_\n▸ _*${randomInt(1, 100)}%*_. Ci sta.\n\n`);
+        await reply(`${sec('PERCENTUALE')}\n${boxOpen()}\n${line(`📊 *_PERCENTUALE_*\n\n▸ _${textArgs}_\n▸ _*${randomInt(1, 100)}%*_. Ci sta.\n\n`)}\n${boxEnd()}`);
     },
 };

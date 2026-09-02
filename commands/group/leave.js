@@ -19,9 +19,7 @@ ${boxOpen()}
 ${line('solo gli admin possono cacciarmi.')}
 ${boxEnd()}`);
 
-        await reply(`😔 *_LEAVE_*
-▸ Me ne vado... ciao!
-`);
+        await reply(`${sec('LEAVE')}\n${boxOpen()}\n${line('Me ne vado... ciao!')}\n${boxEnd()}`);
         await sock.groupLeave(from);
     },
 };

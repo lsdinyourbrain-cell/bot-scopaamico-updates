@@ -45,7 +45,7 @@ ${boxEnd()}`);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'aecho=0.8:0.9:1000:0.3', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🏔️ *_ECHO_*\n\n▸ _Riverbero aggiunto!_\n');
+            await prog.done(`${sec('ECHO')}\n${boxOpen()}\n${line('_Riverbero aggiunto!_')}\n${boxEnd()}`);
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[echo]', e);

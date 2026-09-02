@@ -63,14 +63,7 @@ ${boxEnd()}`);
             saveDB();
 
             const resultText =
-`🃏 *_ALTA O BASSA_*
-▸ *Carta mostrata:* _${symbols[cardOne]}_
-▸ *Carta successiva:* _${symbols[cardTwo]}_
-▸ *Avevi detto:* _${picked}_
-
-${esito}
-▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-`;
+`${sec('ALTA O BASSA')}\n${boxOpen()}\n${line(`*Carta mostrata:* _${symbols[cardOne]}_`)}\n${line(`*Carta successiva:* _${symbols[cardTwo]}_`)}\n${line(`*Avevi detto:* _${picked}_`)}\n${line(`${esito}`)}\n${line(`*Saldo attuale:* _${formatMoney(uDB.money)}_`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

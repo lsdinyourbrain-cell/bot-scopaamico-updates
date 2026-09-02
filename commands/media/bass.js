@@ -45,7 +45,7 @@ ${boxEnd()}`);
             await execFile(ffmpegPath, ['-y', '-i', inputPath, '-af', 'bass=g=20:f=100:w=1,equalizer=f=60:t=1:w=1:g=15', '-c:a', 'libopus', '-b:a', '64k', outputPath]);
             const result = fs.readFileSync(outputPath);
             await sock.sendMessage(from, { audio: result, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
-            await prog.done('🔊 *_BASS BOOST_*\n\n▸ _Bassi boostati con successo!_\n');
+            await prog.done(`${sec('BASS BOOST')}\n${boxOpen()}\n${line('_Bassi boostati con successo!_')}\n${boxEnd()}`);
             fs.unlinkSync(inputPath); fs.unlinkSync(outputPath);
         } catch (e) {
             console.error('[bass]', e);

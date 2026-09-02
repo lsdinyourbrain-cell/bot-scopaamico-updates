@@ -15,10 +15,7 @@ module.exports = {
             db[from]._muted = false;
             saveDB();
             return reply(
-`▶️ *_BOT RIPRESO_*
-▸ Il bot è di nuovo attivo
-  in questo gruppo! 🚀
-`);
+`${sec('BOT RIPRESO')}\n${boxOpen()}\n${line('Il bot è di nuovo attivo')}\n${line('in questo gruppo! 🚀')}\n${boxEnd()}`);
         }
 
         if (!isOwner) return reply(`${sec('ACCESSO NEGATO')}
@@ -28,6 +25,6 @@ ${line("all'Owner del bot.")}
 ${boxEnd()}`);
 
         setBotActive(true);
-        await reply("⚙️ *_SISTEMA_*\n\n▸ ✅ Bot _ATTIVO_ e pronto! 🚀\n\n");
+        await reply(`${sec('SISTEMA')}\n${boxOpen()}\n${line('✅ Bot _ATTIVO_ e pronto! 🚀')}\n${boxEnd()}`);
     },
 };

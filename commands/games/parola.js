@@ -21,12 +21,12 @@ module.exports = {
             const cdMs = 10000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`⏳ Calma! Puoi giocare tra *${remain}s*.`);
+                return reply(`${sec('ATTESA')}\n${boxOpen()}\n${line(`⏳ Calma! Puoi giocare tra *${remain}s*.`)}\n${boxEnd()}`);
             }
             userData.cooldowns[cooldownKey] = now;
 
             if (db[from]?.wordGame?.active) {
-                return reply("⏳ C'è già una partita di parola in corso! Scrivi una lettera o la parola intera.");
+                return reply(`${sec('PAROLA')}\n${boxOpen()}\n${line("⏳ C'è già una partita di parola in corso!")}\n${line('Scrivi una lettera o la parola intera.')}\n${boxEnd()}`);
             }
 
             // Anti-ripetizione: parole già usate da questo giocatore.
@@ -50,22 +50,14 @@ module.exports = {
 
             const mask = (wg) => wg.word.split('').map(ch => wg.guessed.includes(ch) ? ch : ' _ ').join('');
 
-            await reply(
-`🧩 *_INDOVINA LA PAROLA_*
-${mask(db[from].wordGame)}
-
-✏️ Scrivi una *lettera* o la
-*parola intera*!
-⏳ 90 secondi · 6 errori = fine.
-`
-            );
+            await reply(`${sec('INDOVINA LA PAROLA')}\n${boxOpen()}\n${line(mask(db[from].wordGame))}\n${line('')}\n${line('✏️ Scrivi una *lettera* o la *parola intera*!')}\n${line('⏳ 90 secondi · 6 errori = fine.')}\n${boxEnd()}`);
 
             setTimeout(() => {
                 const wg = db[from]?.wordGame;
                 if (wg?.active && Date.now() - wg.timestamp >= 90000) {
                     wg.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `⏰ *TEMPO SCADUTO*\n\nLa parola era: *${wg.word}*\n` }).catch(() => {});
+                    sock.sendMessage(from, { text: `${sec('TEMPO SCADUTO')}\n${boxOpen()}\n${line(`La parola era: *${wg.word}*`)}\n${boxEnd()}` }).catch(() => {});
                 }
             }, 90000);
     },

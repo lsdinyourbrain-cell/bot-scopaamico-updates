@@ -16,6 +16,6 @@ module.exports = {
 ${boxOpen()}
 ${line('[uso]: scrivi qualcosa da girare al contrario._ ▸ Esempio: \`.clona ciao\`')}
 ${boxEnd()}`);
-            await reply(`🪞 *_CLONA_*\n\n▸ _${Array.from(textArgs).reverse().join('')}_\n`);
+            await reply(`${sec('CLONA')}\n${boxOpen()}\n${line(`🪞 *_CLONA_*\n\n▸ _${Array.from(textArgs).reverse().join('')}_\n`)}\n${boxEnd()}`);
     },
 };

@@ -26,13 +26,13 @@ ${boxEnd()}`);
             if (!data || data.type === 'disambiguation' || !data.extract) {
                 const title = data?.title || term;
                 if (data?.type === 'disambiguation') {
-                    return prog.done(`⚠️ _${title} è una pagina di disambiguazione._\n▸ _Sii più specifico._\n▸ 🔗 _${data?.content_urls?.desktop?.page || ''}_`);
+                    return prog.done(`${sec('INFO')}\n${boxOpen()}\n${line(`⚠️ _${title} è una pagina di disambiguazione._\n▸ _Sii più specifico._\n▸ 🔗 _${data?.content_urls?.desktop?.page || ''}_`)}\n${boxEnd()}`);
                 }
                 return prog.done('⚠️ _Voce non trovata. Controlla l\'ortografia o prova un termine diverso._');
             }
 
             const ext = data.extract;
-            const txt = `📚 *_${data.title}_*\n\n▸ ${ext.length > 900 ? ext.slice(0, 900) + '…' : ext}\n▸ 🔗 _${data.content_urls?.desktop?.page || ''}_\n\n`;
+            const txt = `${sec('INFO')}\n${boxOpen()}\n${line(`📚 *_${data.title}_*\n\n▸ ${ext.length > 900 ? ext.slice(0, 900) + '…' : ext}\n▸ 🔗 _${data.content_urls?.desktop?.page || ''}_\n\n`)}\n${boxEnd()}`;
             const thumb = data.thumbnail?.source || null;
 
             if (thumb) {

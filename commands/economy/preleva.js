@@ -27,10 +27,6 @@ ${boxEnd()}`);
             saveDB();
 
             await reply(
-`🏦 *_PRELEVO_*
-▸ 📤 Prelievo: _${amount}€_
-▸ 💰 Contante: _${userData.money}€_
-▸ 🏦 Banca: _${userData.bank}€_
-`);
+`${sec('PRELEVO')}\n${boxOpen()}\n${line(`📤 Prelievo: _${amount}€_`)}\n${line(`💰 Contante: _${userData.money}€_`)}\n${line(`🏦 Banca: _${userData.bank}€_`)}\n${boxEnd()}`);
     },
 };

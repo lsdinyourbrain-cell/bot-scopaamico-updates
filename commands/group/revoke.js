@@ -27,9 +27,7 @@ ${boxEnd()}`);
         try {
             const code = await sock.groupRevokeInviteCode(from);
             const link = `https://chat.whatsapp.com/${code}`;
-            await reply(`🔗 *_NUOVO LINK_*
-▸ ${link}
-`);
+            await reply(`${sec('NUOVO LINK')}\n${boxOpen()}\n${line(`${link}`)}\n${boxEnd()}`);
         } catch (e) {
             await reply("⚠️ _[uso]:_ errore: " + e.message);
         }

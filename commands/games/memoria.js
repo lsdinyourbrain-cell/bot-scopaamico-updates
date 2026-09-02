@@ -20,12 +20,12 @@ module.exports = {
             const cdMs = 10000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`⏳ Calma! Puoi giocare tra *${remain}s*.`);
+                return reply(`${sec('ATTESA')}\n${boxOpen()}\n${line(`⏳ Calma! Puoi giocare tra *${remain}s*.`)}\n${boxEnd()}`);
             }
             userData.cooldowns[cooldownKey] = now;
 
             if (db[from]?.memGame?.active) {
-                return reply("⏳ C'è già una sequenza da ripetere in corso!");
+                return reply(`${sec('MEMORIA')}\n${boxOpen()}\n${line("⏳ C'è già una sequenza da ripetere in corso!")}\n${boxEnd()}`);
             }
 
             const COLOR_MAP = { R: '🔴', G: '🟢', B: '🔵', Y: '🟡' };
@@ -43,24 +43,14 @@ module.exports = {
 
             const display = sequence.map(k => `${COLOR_MAP[k]} ${k}`).join(' ');
 
-            await reply(
-`🧠 *_MEMORIA_*
-Memorizza questa sequenza:
-
-${display}
-
-✏️ Ripetila scrivendo le
-*lettere* (es: \`R G B Y\`)
-⏳ Hai 60 secondi.
-`
-            );
+            await reply(`${sec('MEMORIA')}\n${boxOpen()}\n${line('Memorizza questa sequenza:')}\n${line(display)}\n${line('')}\n${line('✏️ Ripetila scrivendo le *lettere* (es: `R G B Y`)')}\n${line('⏳ Hai 60 secondi.')}\n${boxEnd()}`);
 
             setTimeout(() => {
                 const mg = db[from]?.memGame;
                 if (mg?.active && Date.now() - mg.timestamp >= 60000) {
                     mg.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa sequenza era *${mg.sequence.join(' ')}*.` }).catch(() => {});
+                    sock.sendMessage(from, { text: `${sec('TEMPO SCADUTO')}\n${boxOpen()}\n${line(`La sequenza era *${mg.sequence.join(' ')}*.`)}\n${boxEnd()}` }).catch(() => {});
                 }
             }, 60000);
     },

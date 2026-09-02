@@ -16,7 +16,7 @@ module.exports = {
         const query = (textArgs || '').trim();
         if (!query) {
             return sendButtons(sock, from,
-                "⚠️ _[uso]: scrivi il titolo e l'artista della canzone._\n\n▸ Esempio: `.lyrics Blinding Lights The Weeknd`",
+                `${sec('INFO')}\n${boxOpen()}\n${line('⚠️ _[uso]: scrivi il titolo e l\'artista della canzone._')}\n${line(`Esempio: \`.lyrics Blinding Lights The Weeknd\``)}\n${boxEnd()}`,
                 [{ label: '.lyrics Blinding Lights', id: 'lyrics Blinding Lights The Weeknd' }],
                 msg);
         }
@@ -28,10 +28,7 @@ module.exports = {
             }
 
             const lyrics = found.lyrics.slice(0, 6000) + (found.lyrics.length > 6000 ? '\n\n…testo tagliato qui.' : '');
-            const head = `🎤 *_LYRICS_*
-▸ *${found.title || query}*${found.artist ? ' — _' + found.artist + '_' : ''}
-
-`;
+            const head = `${sec('LYRICS')}\n${boxOpen()}\n${line(`*${found.title || query}*${found.artist ? ' — _' + found.artist + '_' : ''}`)}\n${boxEnd()}`;
             await sock.sendMessage(from, { text: head + lyrics + '\n\n' }, { quoted: msg });
         } catch (e) {
             console.error('[lyrics]', e.message);

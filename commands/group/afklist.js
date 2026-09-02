@@ -26,7 +26,7 @@ Nessun utente è *AFK* in questo gruppo. Tutti in piedi! 💪
         });
 
         return sock.sendMessage(from, {
-            text: `🌙 *_AFK LIST_*\n\n▸ *Utenti AFK:* ${entries.length}\n` +
+            text: `${sec('AFK LIST')}\n${boxOpen()}\n${line(`🌙 *_AFK LIST_*\n\n▸ *Utenti AFK:* ${entries.length}\n`)}\n${boxEnd()}` +
                 lines.join('\n') +
                 `\n\n_Torna in chat con un messaggio per uscire dall'AFK._\n`,
             mentions,

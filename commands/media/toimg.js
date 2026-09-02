@@ -18,7 +18,7 @@ module.exports = {
         if (!sticker) {
             return reply(`${sec('ERRORE')}
 ${boxOpen()}
-${line('[uso]: rispondi a uno *sticker* per convertirlo in immagine._ ▸ *Uso:* rispon...')}
+${line(`${sec('STICKER')}\n${boxOpen()}\n${line('[uso]: rispondi a uno *sticker* per convertirlo in immagine._ ▸ *Uso:* rispon...')}\n${boxEnd()}`)}
 ${boxEnd()}`);
         }
 
@@ -35,8 +35,8 @@ ${boxEnd()}`);
             const pngPath = path.join(os.tmpdir(), `${stamp}.png`);
             await sharp(buffer).png().toFile(pngPath);
 
-            await sock.sendMessage(from, { image: fs.readFileSync(pngPath), caption: '🖼️ *_TOIMG_*\n\n▸ _Ecco la tua immagine!_\n' }, { quoted: msg });
-            await prog.done('🖼️ *_IMMAGINE PRONTA_*\n\n▸ _Immagine pronta!_\n');
+            await sock.sendMessage(from, { image: fs.readFileSync(pngPath), caption: `${sec('TOIMG')}\n${boxOpen()}\n${line('_Ecco la tua immagine!_')}\n${boxEnd()}` }, { quoted: msg });
+            await prog.done(`${sec('IMMAGINE PRONTA')}\n${boxOpen()}\n${line('_Immagine pronta!_')}\n${boxEnd()}`);
             try { fs.unlinkSync(pngPath); } catch (e) {}
         } catch (err) {
             console.error('[toimg]', err.message);

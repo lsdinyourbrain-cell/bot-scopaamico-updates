@@ -76,6 +76,6 @@ ${boxEnd()}`);
             return reply(`⚠️ Impossibile convertire *${from.key}* in *${to.key}*: unità non compatibili.`);
         }
 
-        return reply(`🔄 *_Conversione_*\n\n▸ _${String(m[1]).replace('.', ',')} ${from.key}_ → _${formatNum(result)}_ ${to.key}\n\n`);
+        return reply(`${sec('CONVERSIONE')}\n${boxOpen()}\n${line(`🔄 *_Conversione_*\n\n▸ _${String(m[1]).replace('.', ',')} ${from.key}_ → _${formatNum(result)}_ ${to.key}\n\n`)}\n${boxEnd()}`);
     },
 };

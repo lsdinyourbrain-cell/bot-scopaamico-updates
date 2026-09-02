@@ -56,10 +56,7 @@ ${boxEnd()}`);
                 const isRiccoFail = (thiefData.money > 5000) || ((thiefData.totaleRubato || 0) > 5000);
                 const extraFail = isRiccoFail ? `\n▸ _${pickFrase()}_` : '';
                 return reply(
-`🚔 *_BECCATO!_*
-▸ 😱 Il proprietario ti ha fatto una multa di _${penalty}€_!${extraFail}
-▸ 💰 Saldo: _${thiefData.money}€_
-`);
+`${sec('BECCATO')}\n${boxOpen()}\n${line(`😱 Il proprietario ti ha fatto una multa di _${penalty}€_!${extraFail}`)}\n${line(`💰 Saldo: _${thiefData.money}€_`)}\n${boxEnd()}`);
             }
 
             const stolen = Math.min(targetData.money, Math.floor(Math.random() * 100) + 20);
@@ -71,7 +68,7 @@ ${boxEnd()}`);
             const isRicco = (thiefData.money > 5000) || (thiefData.totaleRubato > 5000);
             const extraRicco = isRicco ? `\n▸ _${pickFrase()}_` : '';
             await sock.sendMessage(from, {
-                text: `🕵️ *_FURTO!_*\n\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!${extraRicco}\n\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n`,
+                text: `${sec('FURTO')}\n${boxOpen()}\n${line(`🕵️ *_FURTO!_*\n\n▸ 💀 @${disp(sender)} ha rubato _${stolen}€_ a @${disp(targetJid)}!${extraRicco}\n\n▸ 💰 Il tuo saldo: _${thiefData.money}€_\n`)}\n${boxEnd()}`,
                 mentions: [sender, targetJid],
             });
     },

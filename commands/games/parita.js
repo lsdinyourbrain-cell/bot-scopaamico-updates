@@ -64,13 +64,7 @@ ${boxEnd()}`);
             saveDB();
 
             const resultText =
-`🎲 *_PARI O DISPARI_*
-▸ *Hai scelto:* _${picked}_
-▸ *Dado uscito:* _${roll} (${result})_
-
-${esito}
-▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-`;
+`${sec('PARI O DISPARI')}\n${boxOpen()}\n${line(`*Hai scelto:* _${picked}_`)}\n${line(`*Dado uscito:* _${roll} (${result})_`)}\n${line(`${esito}`)}\n${line(`*Saldo attuale:* _${formatMoney(uDB.money)}_`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

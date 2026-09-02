@@ -18,11 +18,7 @@ module.exports = {
         if (!isGroup) return reply("❌ Comando solo nei gruppi.");
         if (db._escludi?.[from]) {
             return reply(
-`🚫  ${toBold('CLASSIFICA DISATTIVATA')}
-${SEP}
-▸ Gruppo escluso con ${toBold('.escludi')}
-${SEP}
-◈ Vex Bot`);
+`${sec('INFO')}\n${boxOpen()}\n${line(`🚫  ${toBold('CLASSIFICA DISATTIVATA')}`)}\n${line(`${SEP}`)}\n${line(`Gruppo escluso con ${toBold('.escludi')}`)}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`);
         }
 
         const want = parseInt(String(textArgs || '').trim(), 10);
@@ -60,7 +56,7 @@ ${SEP}
             return;
         }
 
-        if (!allSorted.length) return reply(`📭  ${toBold('NESSUNA RICCHEZZA')}\n${SEP}\n▸ Nessun dato.\n${SEP}\n◈ Vex Bot`);
+        if (!allSorted.length) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`📭  ${toBold('NESSUNA RICCHEZZA')}\n${SEP}\n▸ Nessun dato.\n${SEP}\n◈ Vex Bot`)}\n${boxEnd()}`);
 
         const sorted = allSorted.slice(0, limit);
         const mentions = sorted.map(([jid])=>jid);

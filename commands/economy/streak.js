@@ -30,7 +30,7 @@ module.exports = {
 
         if (lastKey === todayKey) {
             // Già preso oggi: nessun premio, mostra solo lo stato
-            return reply(`⏳ Hai già ritirato il premio di oggi!\n▸ 🔥 Serie: _${count} giorni_\n▸ 🕐 Torna domani per continuare la serie.`);
+            return reply(`${sec('STREAK')}\n${boxOpen()}\n${line(`⏳ Hai già ritirato il premio di oggi!`)}\n${line(`🔥 Serie: _${count} giorni_`)}\n${line('🕐 Torna domani per continuare la serie.')}\n${boxEnd()}`);
         }
 
         if (lastKey === yesterdayKey) {
@@ -49,11 +49,7 @@ module.exports = {
 
         const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
 
-        const resultText =
-`🔥 _Streak: ${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}_${newCount > 1 ? ' ✨' : ' 🆕'}
-▸ Lordo: _+${formatMoney(reward)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}
-▸ Saldo: _${uDB.money}€_
-▸ Vex Bot`;
+        const resultText = `${sec('STREAK')}\n${boxOpen()}\n${line(`🔥 Streak: ${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}${newCount > 1 ? ' ✨' : ' 🆕'}`)}\n${line(`${sec('INFO')}\n${boxOpen()}\n${line(`Lordo: _+${formatMoney(reward)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${boxEnd()}`)}\n${line(`Saldo: _${uDB.money}€_`)}\n${boxEnd()}`;
 
         await sendButtons(sock, from, toDarkFont(resultText), [
             { label: `.${command}`, id: `${command}` },

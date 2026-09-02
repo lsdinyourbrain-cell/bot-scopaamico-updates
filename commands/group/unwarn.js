@@ -24,9 +24,7 @@ ${boxEnd()}`);
         const targetData = getUser(targetJid, from);
         if ((targetData.warnings || 0) <= 0) {
             return await sock.sendMessage(from, {
-                text: `✅ *_UNWARN_*
-▸ @${targetJid.split('@')[0]} non ha *avvisi* da rimuovere.
-`,
+                text: `${sec('UNWARN')}\n${boxOpen()}\n${line(`@${targetJid.split('@')[0]} non ha *avvisi* da rimuovere.`)}\n${boxEnd()}`,
                 mentions: [targetJid],
             });
         }
@@ -37,10 +35,7 @@ ${boxEnd()}`);
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `✅ *_UNWARN_*
-▸ @${targetJid.split('@')[0]} ha ricevuto un *perdono*!
-▸ *Avvisi:* _${targetData.warnings}/3_
-`,
+            text: `${sec('UNWARN')}\n${boxOpen()}\n${line(`@${targetJid.split('@')[0]} ha ricevuto un *perdono*!`)}\n${line(`*Avvisi:* _${targetData.warnings}/3_`)}\n${boxEnd()}`,
             mentions: [targetJid],
         });
     },

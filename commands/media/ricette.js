@@ -64,7 +64,7 @@ ${boxEnd()}`);
                         else await sock.sendMessage(from, { text: body }, { quoted: msg }).catch(() => {});
                     }
                 } else {
-                    await reply(`${head}\n${SEP}\n▸ _Istruzioni non disponibili_\n`);
+                    await reply(`${sec('INFO')}\n${boxOpen()}\n${line(`${head}\n${SEP}\n▸ _Istruzioni non disponibili_\n`)}\n${boxEnd()}`);
                 }
             } catch (_) {
                 await reply('❌ Non trovo questa ricetta. Riprova.');
@@ -103,14 +103,7 @@ ${boxEnd()}`);
             }));
 
             const sent = await sendCarousel(sock, from, {
-                text: `👨🍳 *_RICETTE CASUALI_*
-${SEP}
-▸ _10 ricette da tutto il mondo._
-▸ _Scorri le card e premi_
-  *👨🍳 Preparazione* per
-  _ingredienti e passi!_
-${SEP}
-`,
+                text: `${sec('RICETTE CASUALI')}\n${boxOpen()}\n${line(`${SEP}`)}\n${line('_10 ricette da tutto il mondo._')}\n${line('_Scorri le card e premi_')}\n${line('*👨🍳 Preparazione* per')}\n${line('_ingredienti e passi!_')}\n${line(`${SEP}`)}\n${boxEnd()}`,
                 cards,
             }, msg);
             if (!sent) {

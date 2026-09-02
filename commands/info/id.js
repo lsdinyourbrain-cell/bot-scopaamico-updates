@@ -14,8 +14,8 @@ module.exports = {
         const userJid = sender || from;
         const groupJid = isGroup ? from : null;
 
-        let txt = `📱 *_ID INFO_*\n\n▸ 👤 *Tu:*\n▸ 📱 _${userJid}_\n`;
-        if (groupJid) txt += `▸ 👥 *Gruppo:*\n▸ 📱 _${groupJid}_\n`;
+        let txt = `${sec('ID INFO')}\n${boxOpen()}\n\n${boxEnd()}`;
+        if (groupJid) txt += `${sec('GRUPPON  _GROUPJID_N')}\n${boxOpen()}\n${line(`👥 *Gruppo:*\n▸ 📱 _${groupJid}_\n`)}\n${boxEnd()}`;
         txt += `\n`;
         await reply(txt);
     },

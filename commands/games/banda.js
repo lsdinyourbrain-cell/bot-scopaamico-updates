@@ -246,7 +246,7 @@ function startGame(sock, from, services) {
     }
 
     sock.sendMessage(from, {
-        text: `🌙 *LA NOTTE È CALATA* (n°1)\n${SEP}\nI ruoli sono stati inviati in\nprivato. La banda decide, il\ndetective indaga, il medico cura.\n${SEP}⏳ Azioni: 45 secondi...`,
+        text: `${sec('LA NOTTE È CALATA')}\n${boxOpen()}\n${line(`🌙 *LA NOTTE È CALATA* (n°1)\n${SEP}\nI ruoli sono stati inviati in\nprivato. La banda decide, il\ndetective indaga, il medico cura.\n${SEP}⏳ Azioni: 45 secondi...`)}\n${boxEnd()}`,
     }).catch(() => {});
 
     // Risoluzione notte dopo il timer.

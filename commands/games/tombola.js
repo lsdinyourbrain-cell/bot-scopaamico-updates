@@ -19,13 +19,13 @@ module.exports = {
         const cdMs = 15000;
         if (now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 1000);
-            return reply(`⏳ L'estrazione sta ancora girando. Riprova tra *${remain}s*.`);
+            return reply(`${sec('TOMBOLA')}\n${boxOpen()}\n${line(`⏳ L'estrazione sta ancora girando. Riprova tra *${remain}s*.`)}\n${boxEnd()}`);
         }
         userData.cooldowns[cooldownKey] = now;
 
         const uDB = getUser(sender, from);
         const costo = 15;
-        if (uDB.money < costo) return reply(`❌ Costa *${costo}€* estrarre una cartella. Saldo: *${uDB.money}€*.`);
+        if (uDB.money < costo) return reply(`${sec('TOMBOLA')}\n${boxOpen()}\n${line(`❌ Costa *${costo}€* estrarre una cartella. Saldo: *${uDB.money}€*.`)}\n${boxEnd()}`);
 
         uDB.money -= costo;
 
@@ -61,17 +61,7 @@ module.exports = {
             righe.push(row.map(n => estratti.includes(n) ? `▣` : n.toString().padStart(2, '0')).join(' · '));
         }
 
-        const resultText =
-`🎱 *_TOMBIOLA_*
-${righe[0]}
-${righe[1]}
-${righe[2]}
-
-▸ *Numeri estratti:* _${estratti.join(' ')}_
-▸ *In cartella:* _${inCartella.length}_
-${vincita > 0 ? `🎉 *Vincita: +${vincita}€!*` : '😿 Nessuna vincita.'}
-▸ *Saldo:* _${uDB.money}€_
-`;
+        const resultText = `${sec('TOMBOLA')}\n${boxOpen()}\n${line(righe[0])}\n${line(righe[1])}\n${line(righe[2])}\n${line('')}\n${line(`Numeri estratti: _${estratti.join(' ')}_` )}\n${line(`In cartella: _${inCartella.length}_`)}\n${line(vincita > 0 ? `🎉 Vincita: +${vincita}€!` : '😿 Nessuna vincita.')}\n${line(`Saldo: _${uDB.money}€_`)}\n${boxEnd()}`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

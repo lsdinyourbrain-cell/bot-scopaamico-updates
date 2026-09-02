@@ -37,10 +37,10 @@ module.exports = {
         // ── SUGGERIMENTO (pulsante 💡) 
         if (String(args[0] || '').toLowerCase() === 'suggerimento') {
             const eg = db[from]?.enigma;
-            if (!eg?.active) return reply('Nessun enigma attivo. Usa `.enigma` per iniziare!');
+            if (!eg?.active) return reply(`${sec('ENIGMA')}\n${boxOpen()}\n${line('Nessun enigma attivo. Usa *.enigma* per iniziare!')}\n${boxEnd()}`);
             const ans = String(eg.answer || '');
             const hint = `${ans[0].toUpperCase()}${ans.slice(1).replace(/\S/g, '_')}`;
-            return reply(`💡 *Suggerimento:*\nLa risposta inizia con *"${ans[0].toUpperCase()}"*\n${hint}`);
+            return reply(`${sec('SUGGERIMENTO')}\n${boxOpen()}\n${line(`La risposta inizia con *"${ans[0].toUpperCase()}"*`)}\n${line(hint)}\n${boxEnd()}`);
         }
 
         if (!db[from]) db[from] = {};
@@ -52,15 +52,7 @@ module.exports = {
         };
         saveDB();
 
-        const text =
-`🧩 *_ENIGMA_*
-*${pick.q}*
-
-🤔 Scrivi la risposta qui in
-chat entro 45 secondi!
-
-💰 Premio: *50€*
-`;
+        const text = `${sec('ENIGMA')}\n${boxOpen()}\n${line(`*${pick.q}*`)}\n${line('')}\n${line('🤔 Scrivi la risposta qui in chat entro 45 secondi!')}\n${line('💰 Premio: *50€*')}\n${boxEnd()}`;
 
         await sendButtons(sock, from, text, [
             { label: '💡 Suggerimento', id: 'enigma suggerimento' },
@@ -71,7 +63,7 @@ chat entro 45 secondi!
             if (db[from]?.enigma?.active) {
                 db[from].enigma.active = false;
                 saveDB();
-                sock.sendMessage(from, { text: `⏰ *Tempo scaduto!*\nLa risposta era: *${pick.a}*` }).catch(() => {});
+                sock.sendMessage(from, { text: `${sec('TEMPO SCADUTO')}\n${boxOpen()}\n${line(`La risposta era: *${pick.a}*`)}\n${boxEnd()}` }).catch(() => {});
             }
         }, 45000);
     },

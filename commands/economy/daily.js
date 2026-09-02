@@ -22,7 +22,7 @@ module.exports = {
                 const remaining = DAY_MS - (now - userData.lastDaily);
                 const hours = Math.floor(remaining / 3600000);
                 const mins = Math.floor((remaining % 3600000) / 60000);
-                return reply(`⏳ Hai già ritirato il daily!\n▸ Ripassa tra _${hours}h ${mins}m_.`);
+                return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`⏳ Hai già ritirato il daily!\n▸ Ripassa tra _${hours}h ${mins}m_.`)}\n${boxEnd()}`);
             }
 
             const evMult = EV.isActive(db, from, 'doppioguadagno') ? 2 : 1;

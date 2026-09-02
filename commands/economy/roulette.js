@@ -35,11 +35,7 @@ ${boxEnd()}`);
 
             const evLine = evMult > 1 && win ? `\n▸ 🎰 _Evento: vincita x${evMult}_` : '';
             const resultText =
-`🎡 *_ROULETTE_*
-▸ 💸 Puntata: _${formatMoney(puntata)}_
-▸ ${win ? '✨ È uscito il tuo numero!' : '🫠 Giro storto, andata male.'}${evLine}
-▸ 💰 Saldo: _${formatMoney(uDB.money)}_
-`;
+`${sec('ROULETTE')}\n${boxOpen()}\n${line(`💸 Puntata: _${formatMoney(puntata)}_`)}\n${line(`${win ? '✨ È uscito il tuo numero!' : '🫠 Giro storto, andata male.'}${evLine}`)}\n${line(`💰 Saldo: _${formatMoney(uDB.money)}_`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

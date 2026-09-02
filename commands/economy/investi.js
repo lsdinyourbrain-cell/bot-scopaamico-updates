@@ -54,23 +54,15 @@ module.exports = {
                 }, 0)
                 : 0;
 
-            const text =
-`📈 *_BORSA_*
-▸ ${linee.length ? linee.join('\n') : '📭 Portafoglio vuoto.\n▸ Compra azioni con: _*.investi compra GOOG*_'}
-▸ 💶 Valore azioni: _${tot}€_
-▸ 💳 Contante: _${uDB.money}€_
-`;
+            const portLines = linee.length ? linee.map(l => line(l)).join('\n') : `${line('📭 Portafoglio vuoto.')}\n${line('Compra azioni con: _*.investi compra GOOG*_')}`;
+            const text = `${sec('BORSA')}\n${boxOpen()}\n${portLines}\n${line(`💶 Valore azioni: _${tot}€_`)}\n${line(`💳 Contante: _${uDB.money}€_`)}\n${boxEnd()}`;
             return await sendButtons(sock, from, text, [
                 { label: '📝 Listino', id: 'investi listino' },
             ], msg);
         }
 
         if (azione === 'LISTINO') {
-            const listino =
-`📝 *_LISTINO AZIONI_*
-▸ ${AZIENDE.map(a => `${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`).join('\n')}
-▸ _*.investi compra <CODICE> [n]*_
-`;
+            const listino = `${sec('LISTINO AZIONI')}\n${boxOpen()}\n${AZIENDE.map(a => line(`${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`)).join('\n')}\n${line('*.investi compra <CODICE> [n]*')}\n${boxEnd()}`;
             return await sendButtons(sock, from, listino, [
                 { label: '📊 Il tuo portafoglio', id: 'investi' },
             ], msg);
@@ -79,33 +71,33 @@ module.exports = {
         if (azione === 'COMPRA' || azione === 'VENDI') {
             const target = (parts[1] || '').toUpperCase();
             const azienda = AZIENDE.find(a => a.code === target);
-            if (!azienda) return reply(`❌ Azione *${target}* non trovata.\nUsa *.investi listino*.`);
+            if (!azienda) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(`Azione *${target}* non trovata.`)}\n${line('Usa *.investi listino*.')}\n${boxEnd()}`);
 
             if (azione === 'COMPRA') {
                 const qty = Math.floor(parseInt(parts[2], 10));
-                if (parts[2] !== undefined && (isNaN(qty) || qty < 1)) return reply(`❌ Quantità non valida.`);
+                if (parts[2] !== undefined && (isNaN(qty) || qty < 1)) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Quantità non valida.')}\n${boxEnd()}`);
                 const n = (isNaN(qty) || qty < 1) ? 1 : qty;
                 const costo = azienda.price * n;
-                if (uDB.money < costo) return reply(`❌ Non ti bastano i soldi.\nServono *${costo}€*.`);
+                if (uDB.money < costo) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Non ti bastano i soldi.')}\n${line(`Servono *${costo}€*.`)}\n${boxEnd()}`);
                 uDB.money -= costo;
                 uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + n;
                 saveDB();
-                return reply(`✅ *_COMPRATE!_*\n\n▸ 📈 Azioni: _${n}_\n▸ 🏢 _${azienda.name}_\n▸ 💰 Costo: _${costo}€_\n\n▸ 💳 Saldo: _${uDB.money}€_\n`);
+                return reply(`${sec('COMPRATE')}\n${boxOpen()}\n${line(`📈 Azioni: _${n}_`)}\n${line(`🏢 _${azienda.name}_`)}\n${line(`💰 Costo: _${costo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_`)}\n${boxEnd()}`);
             }
 
             const q = Math.floor(parseInt(parts[2], 10));
-            if (parts[2] !== undefined && (isNaN(q) || q < 1)) return reply(`❌ Quantità non valida.`);
+            if (parts[2] !== undefined && (isNaN(q) || q < 1)) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Quantità non valida.')}\n${boxEnd()}`);
             const qty2 = (isNaN(q) || q < 1) ? (uDB.azioni[target.toUpperCase()] || 1) : q;
-            if (qty2 <= 0 || (uDB.azioni[target.toUpperCase()] || 0) < 1) return reply(`❌ Non possiedi azioni\ndi *${azienda.name}*.`);
-            if (qty2 > uDB.azioni[target.toUpperCase()]) return reply(`Ne possiedi solo *${uDB.azioni[target.toUpperCase()]}*.`);
+            if (qty2 <= 0 || (uDB.azioni[target.toUpperCase()] || 0) < 1) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(`Non possiedi azioni di *${azienda.name}*.`)}\n${boxEnd()}`);
+            if (qty2 > uDB.azioni[target.toUpperCase()]) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(`Ne possiedi solo *${uDB.azioni[target.toUpperCase()]}*.`)}\n${boxEnd()}`);
             const ricavo = azienda.price * qty2;
             uDB.azioni[target.toUpperCase()] -= qty2;
             if (uDB.azioni[target.toUpperCase()] <= 0) delete uDB.azioni[target.toUpperCase()];
             uDB.money += ricavo;
             saveDB();
-            return reply(`💰 *_VENDUTE!_*\n\n▸ 📉 Azioni: _${qty2}_\n▸ 🏢 _${azienda.name}_\n▸ 💵 Ricavo: _${ricavo}€_\n\n▸ 💳 Saldo: _${uDB.money}€_\n`);
+            return reply(`${sec('VENDUTE')}\n${boxOpen()}\n${line(`📉 Azioni: _${qty2}_`)}\n${line(`🏢 _${azienda.name}_`)}\n${line(`💵 Ricavo: _${ricavo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_`)}\n${boxEnd()}`);
         }
 
-        reply("⚠️ _[uso]:_\n▸ _*.investi*_ — portafoglio\n▸ _*.investi listino*_ — prezzi\n▸ _*.investi compra <codice> [n]*_\n▸ _*.investi vendi <codice> [n]*_");
+        return reply(`${sec('USO INVESTI')}\n${boxOpen()}\n${line('*.investi* — portafoglio')}\n${line('*.investi listino* — prezzi')}\n${line('*.investi compra <codice> [n]*')}\n${line('*.investi vendi <codice> [n]*')}\n${boxEnd()}`);
     },
 };

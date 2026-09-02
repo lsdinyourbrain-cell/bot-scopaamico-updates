@@ -16,7 +16,7 @@ module.exports = {
         let pass = '';
         for (let i = 0; i < len; i++) pass += chars[Math.floor(Math.random() * chars.length)];
 
-        await sendButtons(sock, from, `🔐 *_PASSWORD_*\n\n▸ *Lunghezza:* _${len} caratteri_\n▸ \`${pass}\`\n\n`, [
+        await sendButtons(sock, from, `${sec('PASSWORD')}\n${boxOpen()}\n${line(`Lunghezza: _${len} caratteri_` )}\n${line(`\`${pass}\``)}\n${boxEnd()}`, [
             { label: '.password', id: 'password ' + len },
         ], msg);
     },

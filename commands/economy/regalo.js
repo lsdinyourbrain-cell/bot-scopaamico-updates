@@ -58,13 +58,7 @@ ${boxEnd()}`);
         saveDB();
 
         return sock.sendMessage(from, {
-            text:
-`🎁 *_REGALO!_*
-▸ 🎀 @${disp(sender)} ha regalato _${formatMoney(amount)}_ a @${disp(targetJid)}!
-▸ _${randomChoice(GIFT_LINES)}_
-▸ 💳 Il tuo saldo: _${formatMoney(me.money)}_
-▸ 📦 Regali dati oggi: _${me.regali.n}/3_
-`,
+            text: `${sec('REGALO')}\n${boxOpen()}\n${line(`🎀 @${disp(sender)} ha regalato _${formatMoney(amount)}_ a @${disp(targetJid)}!`)}\n${line(`_${randomChoice(GIFT_LINES)}_`)}\n${line(`💳 Il tuo saldo: _${formatMoney(me.money)}_`)}\n${line(`📦 Regali dati oggi: _${me.regali.n}/3_`)}\n${boxEnd()}`,
             mentions: [sender, targetJid],
         }, { quoted: msg });
     },

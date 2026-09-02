@@ -18,16 +18,12 @@ ${boxOpen()}
 ${line('Nessuna taglia attiva in questo gruppo 🤷')}
 ${boxEnd()}`);
             if (result === 0) {
-                return reply("💥 Hai sparato ma il bersaglio si è schivato!\n▸ 😂 Per stavolta niente taglia!");
+                return reply(`${sec('INFO')}\n${boxOpen()}\n${line('💥 Hai sparato ma il bersaglio si è schivato!')}\n${line('😂 Per stavolta niente taglia!')}\n${boxEnd()}`);
             }
             const userData = getUser(sender, from);
             userData.money += result;
             saveDB();
             await reply(
-`🎯 *_TAGLIA!_*
-▸ 💥 Hai centrato il bersaglio!
-▸ 💰 Intascato: _${result}€_
-▸ 💳 Saldo: _${userData.money}€_
-`);
+`${sec('TAGLIA')}\n${boxOpen()}\n${line('💥 Hai centrato il bersaglio!')}\n${line(`💰 Intascato: _${result}€_`)}\n${line(`💳 Saldo: _${userData.money}€_`)}\n${boxEnd()}`);
     },
 };

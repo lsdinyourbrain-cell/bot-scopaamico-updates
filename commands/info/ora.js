@@ -21,7 +21,7 @@ module.exports = {
                 const time = dt.toLocaleTimeString('it-IT');
                 const date = dt.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
                 const tz = data.utc_offset || '?';
-                await prog.done(`🕐 *_Ora a ${city}_*\n\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n▸ 🌍 Timezone: _UTC${tz}_\n\n`);
+                await prog.done(`${sec('INFO')}\n${boxOpen()}\n${line(`🕐 *_Ora a ${city}_*\n\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n▸ 🌍 Timezone: _UTC${tz}_\n\n`)}\n${boxEnd()}`);
                 return;
             }
         } catch (_) {}

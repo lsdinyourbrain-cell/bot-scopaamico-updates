@@ -22,7 +22,7 @@ ${line('[uso]: Espressione non valida.')}
 ${boxEnd()}`);
         try {
             const result = Function('"use strict"; return (' + safe + ')')();
-            await reply(`🧮 *_CALCOLATRICE_*\n\n▸ _${safe}_ =\n▸ _*${result}*_\n\n`);
+            await reply(`${sec('CALCOLATRICE')}\n${boxOpen()}\n${line(`${sec('CALCOLATRICE')}\n${boxOpen()}\n\n${boxEnd()}`)}\n${boxEnd()}`);
         } catch (e) {
             await reply("⚠️ _Errore di calcolo._");
         }

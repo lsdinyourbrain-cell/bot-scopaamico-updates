@@ -26,10 +26,10 @@ module.exports = {
 
             await sock.sendMessage(
                 jid,
-                { video, caption: '✅ *_DOWNLOAD_*\n\n▸ _Download completato!_\n' },
+                { video, caption: `${sec('DOWNLOAD')}\n${boxOpen()}\n${line('_Download completato!_')}\n${boxEnd()}` },
                 { quoted: msg }
             );
-            await prog.done('📥 *_INSTAGRAM_*\n\n▸ _Video Instagram scaricato!_\n');
+            await prog.done(`${sec('INSTAGRAM')}\n${boxOpen()}\n${line('_Video Instagram scaricato!_')}\n${boxEnd()}`);
         } catch (error) {
             console.error('[ig]', error.message);
             await sock.sendMessage(jid, { text: "❌ Link non valido o download non disponibile." });

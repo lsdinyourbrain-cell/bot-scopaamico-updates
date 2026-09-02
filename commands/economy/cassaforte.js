@@ -15,13 +15,6 @@ module.exports = {
             const uDB = getUser(sender, from);
             const wallet = uDB.money || 0;
             const bank = uDB.bank || 0;
-            await reply(
-`🏦 *_CASSAFORTE_*
-▸ 👤 Titolare: _${pushName}_
-▸ 💰 Contante: _${wallet}€_
-▸ 🏦 Banca: _${bank}€_
-▸ 💵 Totale: _${wallet + bank}€_
-`
-            );
+            await reply(`${sec('CASSAFORTE')}\n${boxOpen()}\n${line(`👤 Titolare: _${pushName}_`)}\n${line(`💰 Contante: _${wallet}€_` )}\n${line(`🏦 Banca: _${bank}€_` )}\n${line(`💵 Totale: _${wallet + bank}€_` )}\n${boxEnd()}`);
     },
 };

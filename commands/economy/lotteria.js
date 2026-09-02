@@ -38,7 +38,7 @@ ${boxEnd()}`);
                 delete db[from].lotteria;
                 saveDB();
                 return await sock.sendMessage(from, {
-                    text: `🎉 *_VINCITORE LOTTERIA!_*\n\n▸ 🏆 @${dispOf(winner, resolveJid(winner, meta))} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n\n`,
+                    text: `${sec('VINCITORE LOTTERIA')}\n${boxOpen()}\n${line(`🎉 *_VINCITORE LOTTERIA!_*\n\n▸ 🏆 @${dispOf(winner, resolveJid(winner, meta))} vince _${premio}€_!\n▸ 🎟️ Biglietti: _${lotto.tickets[winner]}_\n\n`)}\n${boxEnd()}`,
                     mentions: [winner],
                 });
             }

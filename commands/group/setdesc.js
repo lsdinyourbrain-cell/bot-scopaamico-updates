@@ -29,8 +29,6 @@ ${line('inserisci la nuova descrizione.')}
 ${boxEnd()}`);
 
         await sock.groupUpdateDescription(from, textArgs);
-        await reply(`✅ *_DESCRIZIONE_*
-▸ Descrizione *aggiornata*.
-`);
+        await reply(`${sec('DESCRIZIONE')}\n${boxOpen()}\n${line('Descrizione *aggiornata*.')}\n${boxEnd()}`);
     },
 };

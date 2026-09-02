@@ -38,9 +38,7 @@ ${boxEnd()}`);
                 logger: console, reuploadRequest: sock.updateMediaMessage
             });
             await sock.updateProfilePicture(from, buffer);
-            await reply(`✅ *_FOTO GRUPPO_*
-▸ Foto gruppo *aggiornata*!
-`);
+            await reply(`${sec('FOTO GRUPPO')}\n${boxOpen()}\n${line('Foto gruppo *aggiornata*!')}\n${boxEnd()}`);
         } catch (e) {
             await reply("⚠️ _[uso]:_ errore. Riprova.");
         }

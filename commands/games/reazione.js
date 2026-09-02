@@ -20,12 +20,12 @@ module.exports = {
             const cdMs = 10000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`⏳ Calma! Puoi rifare il test tra *${remain}s*.`);
+                return reply(`${sec('ATTESA')}\n${boxOpen()}\n${line(`⏳ Calma! Puoi rifare il test tra *${remain}s*.`)}\n${boxEnd()}`);
             }
             userData.cooldowns[cooldownKey] = now;
 
             if (db[from]?.reactionGame?.active) {
-                return reply("⏳ C'è già un test di reazione in corso in questa chat!");
+                return reply(`${sec('REAZIONE')}\n${boxOpen()}\n${line("⏳ C'è già un test di reazione in corso in questa chat!")}\n${boxEnd()}`);
             }
 
             if (!db[from]) db[from] = {};
@@ -38,7 +38,7 @@ module.exports = {
             };
             saveDB();
 
-            await reply("🧠 *_TEST DI REAZIONE_*\n\nQuando il bot manda il segnale,\nscrivi *GO* il più veloce!\n\n👀 Ti avviserò tra poco...\n");
+            await reply(`${sec('TEST DI REAZIONE')}\n${boxOpen()}\n${line('Quando il bot manda il segnale,')}\n${line('scrivi *GO* il più veloce!')}\n${line('')}\n${line('👀 Ti avviserò tra poco...')}\n${boxEnd()}`);
 
             const delay = randomInt(3000, 7000);
             setTimeout(() => {
@@ -47,13 +47,13 @@ module.exports = {
                 game.phase = 'go';
                 game.deadline = Date.now() + 3000;
                 saveDB();
-                sock.sendMessage(from, { text: "⚡ *GO GO GO!*\nScrivi GO adesso! ⚡" }).catch(() => {});
+                sock.sendMessage(from, { text: `${sec('GO')}\n${boxOpen()}\n${line('⚡ GO GO GO! Scrivi GO adesso! ⚡')}\n${boxEnd()}` }).catch(() => {});
                 setTimeout(() => {
                     const g2 = db[from]?.reactionGame;
                     if (g2?.active && g2.phase === 'go') {
                         g2.active = false;
                         saveDB();
-                        sock.sendMessage(from, { text: "⏰ *TROPPO LENTO!*\nTempo scaduto 😴" }).catch(() => {});
+                        sock.sendMessage(from, { text: `${sec('TROPPO LENTO')}\n${boxOpen()}\n${line('⏰ Tempo scaduto 😴')}\n${boxEnd()}` }).catch(() => {});
                     }
                 }, 3000);
             }, delay);

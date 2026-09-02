@@ -24,14 +24,10 @@ ${boxEnd()}`);
         try {
             const senderLabel = `${sender.split('@')[0]} (${isGroup ? 'in gruppo' : 'in privato'})`;
             await sock.sendMessage(ownerJid, {
-                text: `🐛 *_SEGNALAZIONE_*\n\n▸ 👤 Da: _${senderLabel}_\n▸ 📍 Chat: _${from}_\n\n▸ 📝 ${issue.slice(0, 1000)}`,
+                text: `${sec('SEGNALAZIONE')}\n${boxOpen()}\n${line(`🐛 *_SEGNALAZIONE_*\n\n▸ 👤 Da: _${senderLabel}_\n▸ 📍 Chat: _${from}_\n\n▸ 📝 ${issue.slice(0, 1000)}`)}\n${boxEnd()}`,
             });
             await reply(
-`✅ *_SEGNALAZIONE INVIATA_*
-▸ Segnalazione inviata al
-  creatore del bot.
-▸ Grazie per l'aiuto! 🙏
-`);
+`${sec('SEGNALAZIONE INVIATA')}\n${boxOpen()}\n${line('Segnalazione inviata al')}\n${line('creatore del bot.')}\n${line('Grazie per l\'aiuto! 🙏')}\n${boxEnd()}`);
         } catch (_) {
             await reply('❌ Non riesco a inoltrare la segnalazione. Riprova più tardi.');
         }

@@ -69,12 +69,7 @@ ${boxEnd()}`);
             const extraRiccoDadi = uDB.money > 5000 ? `\n▸ _${frasiIronicheDadi[Math.floor(Math.random()*frasiIronicheDadi.length)]}_` : '';
 
             const resultText =
-`🎲 *_LANCIO DADI_*
-▸ 🧑 Tu: _${userRoll}_
-▸ 🤖 Bot: _${botRoll}_
-▸ ${esito}${extraRiccoDadi}
-▸ 💰 Saldo attuale: _${uDB.money}€_
-`;
+`${sec('LANCIO DADI')}\n${boxOpen()}\n${line(`🧑 Tu: _${userRoll}_`)}\n${line(`🤖 Bot: _${botRoll}_`)}\n${line(`${esito}${extraRiccoDadi}`)}\n${line(`💰 Saldo attuale: _${uDB.money}€_`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

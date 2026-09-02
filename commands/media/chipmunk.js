@@ -74,7 +74,7 @@ ${boxEnd()}`);
                 mimetype: 'audio/ogg; codecs=opus',
                 ptt: true
             }, { quoted: msg });
-            await prog.done('🐿️ *_CHIPMUNK_*\n\n▸ _Effetto scoiattolo pronto!_\n');
+            await prog.done(`${sec('CHIPMUNK')}\n${boxOpen()}\n${line('_Effetto scoiattolo pronto!_')}\n${boxEnd()}`);
 
             fs.unlinkSync(inputPath);
             fs.unlinkSync(outputPath);

@@ -28,8 +28,8 @@ ${boxEnd()}`);
                 const closed = command === 'chiudi';
                 await sock.groupSettingUpdate(from, closed ? 'announcement' : 'not_announcement');
                 await reply(closed
-                    ? `🔒 *_CHIUDI_*\n\n▸ Gruppo *chiuso*: ora possono scrivere solo gli *admin*.\n\n`
-                    : `🔓 *_APRI_*\n\n▸ Gruppo *riaperto*: tutti possono scrivere di nuovo.\n\n`);
+                    ? `${sec('CHIUDI')}\n${boxOpen()}\n${line('🔒 *_CHIUDI_*\n\n▸ Gruppo *chiuso*: ora possono scrivere solo gli *admin*.\n\n')}\n${boxEnd()}`
+                    : `${sec('APRI')}\n${boxOpen()}\n${line('🔓 *_APRI_*\n\n▸ Gruppo *riaperto*: tutti possono scrivere di nuovo.\n\n')}\n${boxEnd()}`);
             } catch (_) {
                 await reply("⚠️ _[uso]:_ non riesco a cambiare l’impostazione del gruppo.");
             }

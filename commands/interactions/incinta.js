@@ -42,13 +42,7 @@ ${SEP}
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${toBold('ANCORA?')}  ·  🍼 ${toBold('INCINTA')}
-${SEP}
-▸ @${targetJid.split('@')[0]}  ·  ${b}
-${DOT}
-Scegli sotto
-${SEP}
-◈ Vex Bot`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍼 ${toBold('INCINTA')}`)}\n${line(`${SEP}`)}\n${line(`@${targetJid.split('@')[0]}  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [targetJid], { headerTitle: '🍼 INCINTA', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

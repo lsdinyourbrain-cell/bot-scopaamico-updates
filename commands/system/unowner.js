@@ -53,13 +53,7 @@ module.exports = {
 
         const displayNum = (removed.number || removed.lid || target).split('@')[0];
         await sock.sendMessage(from, {
-            text:
-`🚫 *_UNOWNER_*
-▸ @${displayNum} non è più
-  owner. 😔
-▸ I privilegi sono
-  stati revocati.
-`,
+            text: `${sec('UNOWNER')}\n${boxOpen()}\n${line(`@${displayNum} non è più`)}\n${line('owner. 😔')}\n${line('I privilegi sono')}\n${line('stati revocati.')}\n${boxEnd()}`,
             mentions: [removed.number || removed.lid].filter(Boolean),
         }, { quoted: msg });
     },

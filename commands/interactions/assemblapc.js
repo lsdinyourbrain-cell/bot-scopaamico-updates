@@ -17,12 +17,6 @@ module.exports = {
             const ram = randomChoice(['16 GB DDR5', '32 GB DDR5', '64 GB DDR5']);
             const storage = randomChoice(['1 TB NVMe', '2 TB NVMe', '1 TB NVMe + 2 TB SSD']);
             await reply(
-`🖥️ *_PC DEL GIORNO_*
-▸ *CPU:* _${cpu}_
-▸ *GPU:* _${gpu}_
-▸ *RAM:* _${ram}_
-▸ *Spazio:* _${storage}_
-_Perfetto per giocare e fare tutto senza stress._
-`);
+`${sec('PC DEL GIORNO')}\n${boxOpen()}\n${line(`*CPU:* _${cpu}_`)}\n${line(`*GPU:* _${gpu}_`)}\n${line(`*RAM:* _${ram}_`)}\n${line(`*Spazio:* _${storage}_`)}\n${line('_Perfetto per giocare e fare tutto senza stress._')}\n${boxEnd()}`);
     },
 };

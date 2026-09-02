@@ -70,14 +70,7 @@ ${boxEnd()}`);
             saveDB();
 
             const resultText =
-`🎯 *_INDOVINA_*
-▸ *Difficoltà:* _${D.max <= 5 ? '🟢 Facile (1-5)' : D.max <= 10 ? '🟡 Media (1-10)' : '🔴 Difficile (1-20)'}_
-▸ *Hai scelto:* _${guess}_
-▸ *Numero segreto:* _${secret}_
-
-${esito}
-▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-`;
+`${sec('INDOVINA')}\n${boxOpen()}\n${line(`*Difficoltà:* _${D.max <= 5 ? '🟢 Facile (1-5)' : D.max <= 10 ? '🟡 Media (1-10)' : '🔴 Difficile (1-20)'}_`)}\n${line(`*Hai scelto:* _${guess}_`)}\n${line(`*Numero segreto:* _${secret}_`)}\n${line(`${esito}`)}\n${line(`*Saldo attuale:* _${formatMoney(uDB.money)}_`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

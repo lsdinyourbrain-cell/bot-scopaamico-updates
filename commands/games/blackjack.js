@@ -85,15 +85,7 @@ ${boxEnd()}`);
             saveDB();
 
             const resultText =
-`🃏 *_BLACKJACK_*
-▸ *Le tue carte:* _${playerCards.join(' | ')}_
-▸ *Il tuo totale:* _${playerTotal}_
-▸ *Carte bot:* _${dealerCards.join(' | ')}_
-▸ *Totale bot:* _${dealerTotal}_
-
-${esito}
-▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-`;
+`${sec('BLACKJACK')}\n${boxOpen()}\n${line(`*Le tue carte:* _${playerCards.join(' | ')}_`)}\n${line(`*Il tuo totale:* _${playerTotal}_`)}\n${line(`*Carte bot:* _${dealerCards.join(' | ')}_`)}\n${line(`*Totale bot:* _${dealerTotal}_`)}\n${line(`${esito}`)}\n${line(`*Saldo attuale:* _${formatMoney(uDB.money)}_`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

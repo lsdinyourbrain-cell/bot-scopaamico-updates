@@ -84,15 +84,7 @@ ${boxEnd()}`);
 
         const carta = (c) => `[${c.carta}${c.seme}]`;
         const resultText =
-`🃏 *_POKER_*
-▸ *Le tue carte:* _${manoUtente.map(carta).join(' ')}_
-▸ *La tua mano:* _${vu.nome}_
-▸ *Carte bot:* _${manoBot.map(carta).join(' ')}_
-▸ *Mano bot:* _${vb.nome}_
-
-${esito}
-▸ *Saldo:* _${uDB.money}€_
-`;
+`${sec('POKER')}\n${boxOpen()}\n${line(`*Le tue carte:* _${manoUtente.map(carta).join(' ')}_`)}\n${line(`*La tua mano:* _${vu.nome}_`)}\n${line(`*Carte bot:* _${manoBot.map(carta).join(' ')}_`)}\n${line(`*Mano bot:* _${vb.nome}_`)}\n${line(`${esito}`)}\n${line(`*Saldo:* _${uDB.money}€_`)}\n${boxEnd()}`;
 
         await sendButtons(sock, from, resultText, [
             { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },

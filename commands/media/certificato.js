@@ -90,10 +90,10 @@ module.exports = {
         const prog = await showProgress(sock, from, { label: 'STAMPO IL CERTIFICATO', duration: 2500, quoted: msg });
         try {
             const png = await buildCert(sharp, name, title);
-            await prog.done(`🏅 *_CERTIFICATO_*\n${SEP}\n▸ _Certificato pronto!_\n`);
+            await prog.done(`${sec('CERTIFICATO')}\n${boxOpen()}\n${line(`🏅 *_CERTIFICATO_*\n${SEP}\n▸ _Certificato pronto!_\n`)}\n${boxEnd()}`);
             await sock.sendMessage(from, {
                 image: png,
-                caption: `🏅 *_CERTIFICATO_*\n${SEP}\n▸ *Concesso a:* _${name}_\n▸ *Motivo:* _${title}_\n${SEP}\n`,
+                caption: `${sec('CERTIFICATO')}\n${boxOpen()}\n${line(`🏅 *_CERTIFICATO_*\n${SEP}\n▸ *Concesso a:* _${name}_\n▸ *Motivo:* _${title}_\n${SEP}\n`)}\n${boxEnd()}`,
             }, { quoted: msg });
         } catch (e) {
             console.error('[certificato]', e.message);

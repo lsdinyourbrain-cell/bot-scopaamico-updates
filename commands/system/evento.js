@@ -34,21 +34,11 @@ module.exports = {
                 if (u.pregi.length > 12) u.pregi = u.pregi.slice(-12);
                 saveDB();
                 return reply(
-`💥 *BOSS ABBATTUTO!* 💥
-▸ @${sender.split('@')[0]} ha dato il colpo
-  finale: _${shot.dmg} danno_!
-▸ 🏆 Bottino: _+${shot.reward}€_
-▸ 🐉 Pregio: *Cacciatore di Boss*
-`);
+`${sec('BOSS ABBATTUTO')}\n${boxOpen()}\n${line('💥 *BOSS ABBATTUTO!* 💥')}\n${line(`@${sender.split('@')[0]} ha dato il colpo`)}\n${line(`finale: _${shot.dmg} danno_!`)}\n${line(`🏆 Bottino: _+${shot.reward}€_`)}\n${line('🐉 Pregio: *Cacciatore di Boss*')}\n${boxEnd()}`);
             }
             const pct = Math.max(0, Math.min(100, Math.round((shot.hp / shot.maxHp) * 100)));
             return reply(
-`💥 *BOSS: ${shot.hp}/${shot.maxHp} HP* (${pct}%)
-▸ ⚔️ Colpo: _${shot.dmg} danno_
-▸ 🔥 Continua a sparare!
-▸ Chi dà il colpo finale
-  vince tutto il bottino.
-`);
+`${sec('INFO')}\n${boxOpen()}\n${line(`💥 *BOSS: ${shot.hp}/${shot.maxHp} HP* (${pct}%)`)}\n${line(`⚔️ Colpo: _${shot.dmg} danno_`)}\n${line('🔥 Continua a sparare!')}\n${line('Chi dà il colpo finale')}\n${line('vince tutto il bottino.')}\n${boxEnd()}`);
         }
 
         // ── EVENTO RACCOGLI: pioggia di soldi 
@@ -58,7 +48,7 @@ module.exports = {
             const u = getUser(sender, from);
             u.money = (u.money || 0) + rain.amount;
             saveDB();
-            return reply(`🌧️ *PIOGGIA RACCOLTA!* 🌧️\n\n▸ @${sender.split('@')[0]} ha preso _+${rain.amount}€_\n▸ Saldo: _${u.money}€_\n\n`);
+            return reply(`${sec('PIOGGIA RACCOLTA')}\n${boxOpen()}\n${line(`🌧️ *PIOGGIA RACCOLTA!* 🌧️\n\n▸ @${sender.split('@')[0]} ha preso _+${rain.amount}€_\n▸ Saldo: _${u.money}€_\n\n`)}\n${boxEnd()}`);
         }
 
         // ── EVENTO APRI: cassa misteriosa 
@@ -68,7 +58,7 @@ module.exports = {
                 return reply("🎁 La cassa misteriosa non è attiva ora.\n▸ Per attivarla: _.evento start cassa_ (owner/admin).");
             }
             if (res.error === 'cd') {
-                return reply(`🎁 Cassa già aperta di recente.\n▸ Riprova tra _${res.remain} min_.`);
+                return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`🎁 Cassa già aperta di recente.\n▸ Riprova tra _${res.remain} min_.`)}\n${boxEnd()}`);
             }
             const u = getUser(sender, from);
             if (res.badge) {
@@ -79,7 +69,7 @@ module.exports = {
             u.money = (u.money || 0) + res.money;
             saveDB();
             const badgeLine = res.badge ? '\n▸ 🏅 Pregio: *Fortunato della Cassa*' : '';
-            return reply(`🎁 *CASSA MISTERIOSA* 🎁\n\n▸ @${sender.split('@')[0]} ha trovato\n  _+${res.money}€_${badgeLine}\n▸ Saldo: _${u.money}€_\n▸ Prossima cassa: _60 min_\n\n`);
+            return reply(`${sec('CASSA MISTERIOSA')}\n${boxOpen()}\n${line(`🎁 *CASSA MISTERIOSA* 🎁\n\n▸ @${sender.split('@')[0]} ha trovato\n  _+${res.money}€_${badgeLine}\n▸ Saldo: _${u.money}€_\n▸ Prossima cassa: _60 min_\n\n`)}\n${boxEnd()}`);
         }
 
         // ── GESTIONE (solo owner/admin) 
@@ -111,11 +101,7 @@ ${boxEnd()}`);
 
                 const meta = res.meta;
                 return reply(
-`🎲 *EVENTO CASUALE!* 🎲
-▸ ${meta.emoji} _${meta.label}_
-▸ ⏱️ Durata: _${res.dur} minuti_
-▸ 📋 ${meta.desc}${extra}
-`);
+`${sec('EVENTO CASUALE')}\n${boxOpen()}\n${line(`${meta.emoji} _${meta.label}_`)}\n${line(`⏱️ Durata: _${res.dur} minuti_`)}\n${line(`📋 ${meta.desc}${extra}`)}\n${boxEnd()}`);
             }
 
             if (sub === 'stop') {
@@ -157,11 +143,7 @@ ${boxEnd()}`);
 
             const meta = res.meta;
             return reply(
-`${meta.emoji} *EVENTO ATTIVATO!*
-▸ ${meta.emoji} _${meta.label}_
-▸ ⏱️ Durata: _${res.dur} minuti_
-▸ 📋 ${meta.desc}${extra}
-`);
+`${sec('EVENTO ATTIVATO')}\n${boxOpen()}\n${line(`${meta.emoji} *EVENTO ATTIVATO!*`)}\n${line(`${meta.emoji} _${meta.label}_`)}\n${line(`⏱️ Durata: _${res.dur} minuti_`)}\n${line(`📋 ${meta.desc}${extra}`)}\n${boxEnd()}`);
         }
 
         // ── STATO EVENTI 

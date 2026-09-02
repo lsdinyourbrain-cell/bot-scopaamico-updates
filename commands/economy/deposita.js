@@ -27,10 +27,6 @@ ${boxEnd()}`);
             saveDB();
 
             await reply(
-`🏦 *_DEPOSITO_*
-▸ 📥 Depositato: _${amount}€_
-▸ 💰 Contante: _${userData.money}€_
-▸ 🏦 Banca: _${userData.bank}€_
-`);
+`${sec('DEPOSITO')}\n${boxOpen()}\n${line(`📥 Depositato: _${amount}€_`)}\n${line(`💰 Contante: _${userData.money}€_`)}\n${line(`🏦 Banca: _${userData.bank}€_`)}\n${boxEnd()}`);
     },
 };

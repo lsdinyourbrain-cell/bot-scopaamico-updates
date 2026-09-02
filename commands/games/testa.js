@@ -62,13 +62,7 @@ ${boxEnd()}`);
             saveDB();
 
             const resultText =
-`🪙 *_TESTA O CROCE_*
-▸ *Hai scelto:* _${picked}_
-▸ *Risultato:* _${flip}_
-
-${esito}
-▸ *Saldo attuale:* _${formatMoney(uDB.money)}_
-`;
+`${sec('TESTA O CROCE')}\n${boxOpen()}\n${line(`*Hai scelto:* _${picked}_`)}\n${line(`*Risultato:* _${flip}_`)}\n${line(`${esito}`)}\n${line(`*Saldo attuale:* _${formatMoney(uDB.money)}_`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);
