@@ -259,20 +259,8 @@ module.exports = {
             }
         }
 
-        // ── HOME 
+        // ── HOME — sempre pulsanti (niente foto gruppo, altrimenti 0 pulsanti)
         const visible = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
-
-        // Home con foto gruppo
-        if (isGroup) {
-            try {
-                const pfpUrl = await sock.profilePictureUrl(from, 'image');
-                if (pfpUrl) {
-                    const caption = homeScreen(pushName, timeStr, dateStr, stats,
-                        'Prova .menu giochi o .menu economia', visible);
-                    return await sock.sendMessage(from, { image: { url: pfpUrl }, caption });
-                }
-            } catch (_) {}
-        }
 
         // Home con pulsanti: single_select sezioni + 3 quick
         const sheet = {
