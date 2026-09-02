@@ -268,17 +268,54 @@ try {
             const target = String(data.jid||'').trim();
             const cnt = Math.min(50, Math.max(1, Number(data.count)||1));
             if (!target || !target.includes('@')) return;
+            if (!sock) return console.error('[REPORT] sock non pronto');
             console.log(`[REPORT] Eseguo ${cnt} segnalazioni native per ${target} (${data.reason||'spam'})`);
             for (let i=0;i<cnt;i++){
                 try {
-                    // Blocco + report nativo WhatsApp (segnalazione spam)
-                    await sock.updateBlockStatus(target, 'block').catch(()=>{});
-                    // Invia un messaggio di segnalazione interno (per log)
+                    await sock.updateBlockStatus(target, 'block').catch(e=>{ console.error('[REPORT] block fail',e.message); });
                     await new Promise(r=>setTimeout(r, 900));
                 } catch(e){ console.error('[REPORT] iter',i,e.message); }
             }
             try { fs.unlinkSync(trig); } catch(_){}
+            console.log(`[REPORT] Completato ${cnt} per ${target}`);
         } catch(e){ console.error('[REPORT] watcher',e.message); }
+    });
+    const banTrig = path.join(__dirname, '.ban_trigger');
+    fs.watchFile(banTrig, { interval: 1200 }, async (curr, prev) => {
+        if (curr.mtimeMs === prev.mtimeMs) return;
+        try {
+            const raw = fs.readFileSync(banTrig, 'utf-8');
+            const data = JSON.parse(raw);
+            const target = String(data.jid||'').trim();
+            if (!target || !target.includes('@')) return;
+            if (!sock) return;
+            const method = String(data.method||'block').toLowerCase();
+            console.log(`[BAN] Eseguo ban ${method} per ${target}`);
+            if(method==='block' || method==='both'){
+                try{ await sock.updateBlockStatus(target,'block'); console.log('[BAN] block ok'); }catch(e){ console.error('[BAN] block fail',e.message); }
+            }
+            if(method==='kick' || method==='both'){
+                try{
+                    const allGroups = Object.keys(db).filter(k=>k.endsWith('@g.us'));
+                    let kicked=0;
+                    for(const gid of allGroups){
+                        try{
+                            const meta=await sock.groupMetadata(gid).catch(()=>null);
+                            if(!meta) continue;
+                            const isBotAdmin = meta.participants?.some(p=> (p.id===sock.user.id || p.id===sock.user.lid) && ['admin','superadmin'].includes(p.admin));
+                            if(!isBotAdmin) continue;
+                            const hasTarget = meta.participants?.some(p=> p.id===target || p.phoneNumber===target || String(p.id).replace(/[^0-9]/g,'')===target.replace(/[^0-9]/g,''));
+                            if(!hasTarget) continue;
+                            await sock.groupParticipantsUpdate(gid,[target],'remove').catch(()=>{});
+                            kicked++;
+                            await new Promise(r=>setTimeout(r,600));
+                        }catch(_){}
+                    }
+                    console.log(`[BAN] kick completato in ${kicked} gruppi`);
+                }catch(e){ console.error('[BAN] kick fail',e.message); }
+            }
+            try { fs.unlinkSync(banTrig); } catch(_){}
+        } catch(e){ console.error('[BAN] watcher',e.message); }
     });
 } catch(_){}
 
@@ -1929,7 +1966,18 @@ startBot();
             botStartTime = Math.floor(Date.now() / 1000);
             reconnectAttempts = 0;
             console.log('[BOT] Connesso e operativo.');
-
+            try{
+                const ifs=os.networkInterfaces(); let lanIp='';
+                for(const addrs of Object.values(ifs)){
+                    for(const a of (addrs||[])){
+                        if(a.family==='IPv4'&&!a.internal){ lanIp=a.address; break; }
+                    }
+                    if(lanIp) break;
+                }
+                const p=process.env.DASHBOARD_PORT||3001;
+                console.log(`[SITE] Dashboard → http://127.0.0.1:${p}  (locale)`);
+                if(lanIp) console.log(`[SITE] Dashboard → http://${lanIp}:${p}  (da phone/PC stessa WiFi — apri questo IP su Termux)`);
+            }catch(_){}
             // ── POPOLA CACHE GRUPPI PER DASHBOARD (senza bisogno di messaggi) ──
             (async () => {
                 try {

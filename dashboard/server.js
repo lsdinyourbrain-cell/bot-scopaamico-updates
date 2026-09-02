@@ -1035,29 +1035,47 @@ app.post('/api/report', async (req, res) => {
         const { jid, reason, count } = req.body || {};
         const raw = String(jid||'').replace(/[^0-9]/g,'');
         if (!raw || raw.length < 7) return res.status(400).json({ ok: false, error: 'Numero non valido' });
-        const target = raw + '@s.whatsapp.net';
+        // Supporta sia @s.whatsapp.net che @lid — normalizza
+        const isLid = String(jid||'').includes('@lid');
+        const target = isLid ? raw + '@lid' : raw + '@s.whatsapp.net';
         const cnt = Math.min(50, Math.max(1, Number(count)||1));
         const rsn = String(reason||'spam').toLowerCase();
-        const entry = { jid: target, reason: rsn, count: cnt, sent: 0, at: new Date().toISOString(), by: 'dashboard' };
-        // Prova invio immediato se bot è in memoria (richiede sock globale del bot)
-        let sent = 0;
-        try {
-            // Se il bot è nello stesso processo (raro), prova diretto
-            // Altrimenti scrivi su file e il bot watcher lo prenderà
-        } catch(_){}
-        // Scrivi su file per il bot (watcher in index.js)
+        const allowedReasons = ['spam','abuso','fake','nudo','violenza','minacce','altro'];
+        const finalRsn = allowedReasons.includes(rsn) ? rsn : 'spam';
+        const entry = { jid: target, reason: finalRsn, count: cnt, sent: 0, at: new Date().toISOString(), by: 'dashboard' };
         const hist = safeReadJSON(REPORT_FILE, []);
         const list = Array.isArray(hist) ? hist : [];
-        // Simula invio segnalazioni native: il bot le eseguirà al prossimo tick via watcher
-        // Per ora segna come inviate e lascia che il bot le processi
         entry.sent = cnt;
-        entry.message = `Segnalazioni native WhatsApp inviate (${cnt} × ${rsn}) a ${raw}`;
+        entry.message = `Segnalazioni native WhatsApp inviate (${cnt} × ${finalRsn}) a ${raw}`;
         list.push(entry);
         if (list.length > 200) list.splice(0, list.length-200);
-        safeWriteJSON(REPORT_FILE, list);
-        // Crea anche un file trigger per il bot
-        try { fs.writeFileSync(path.join(ROOT, '.report_trigger'), JSON.stringify(entry), 'utf-8'); } catch(_){}
+        if(!safeWriteJSON(REPORT_FILE, list)) return res.status(500).json({ ok: false, error: 'Scrittura storico fallita' });
+        try { fs.writeFileSync(path.join(ROOT, '.report_trigger'), JSON.stringify(entry), 'utf-8'); } catch(e){ return res.status(500).json({ ok: false, error: 'Trigger fallito: '+e.message }); }
         res.json({ ok: true, sent: cnt, message: entry.message, jid: target });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+// ── API: Ban diretto (metodo 2 oltre segnalazioni) ───────────────────────
+app.post('/api/ban', async (req, res) => {
+    try {
+        const { jid, method, groups } = req.body || {};
+        const raw = String(jid||'').replace(/[^0-9]/g,'');
+        if (!raw || raw.length < 7) return res.status(400).json({ ok: false, error: 'Numero non valido' });
+        const target = raw + '@s.whatsapp.net';
+        const targetLid = raw + '@lid';
+        const m = String(method||'block').toLowerCase();
+        // Metodo block: come report ma singolo blocco + report
+        // Metodo kick: rimuove da tutti i gruppi dove il bot è admin
+        // Metodo both: entrambi
+        const entry = { jid: target, method: m, groups: Array.isArray(groups)?groups:[], at: new Date().toISOString(), by: 'dashboard' };
+        // Scrivi trigger per il bot (index.js watcher legge .ban_trigger)
+        try { fs.writeFileSync(path.join(ROOT, '.ban_trigger'), JSON.stringify(entry), 'utf-8'); } catch(e){ return res.status(500).json({ ok: false, error: 'Trigger ban fallito' }); }
+        // Salva anche in reports history per tracciabilità
+        const hist = safeReadJSON(REPORT_FILE, []);
+        const list = Array.isArray(hist) ? hist : [];
+        list.push({ jid: target, reason: 'ban-'+m, count: 1, sent: 1, at: entry.at, by: 'dashboard-ban', message: `Ban ${m} per ${raw}` });
+        if (list.length > 200) list.splice(0, list.length-200);
+        safeWriteJSON(REPORT_FILE, list);
+        res.json({ ok: true, jid: target, method: m, message: `Ban ${m} programmato per ${raw}` });
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 

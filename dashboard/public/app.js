@@ -1389,6 +1389,22 @@ async function clearReportHistory(){
     if (!(await customConfirm('Pulire storico segnalazioni?', 'Pulisci'))) return;
     try{ await fetchJSON('/api/report/history', { method:'DELETE' }); toast('Storico pulito'); loadReportHistory(); }catch(e){ toast(e.message,'err'); }
 }
+async function sendBan(){
+    const numEl=$('#banNumber'), methodEl=$('#banMethod'), statusEl=$('#banStatus');
+    const raw=String(numEl?.value||'').replace(/[^0-9]/g,'');
+    const method=methodEl?.value||'block';
+    if(!raw || raw.length<7) return toast('Numero non valido','err');
+    const jid=raw+'@s.whatsapp.net';
+    if(statusEl){ statusEl.classList.remove('hidden'); statusEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;display:inline-block;animation:spin 0.8s linear infinite"></span> Eseguo ban ${method} per ${esc(formatPhone(jid))}…</div>`; }
+    try{
+        const r=await fetchJSON('/api/ban', { method:'POST', body: JSON.stringify({ jid, method }) });
+        if(statusEl) statusEl.innerHTML=`<div style="color:var(--green)">✅ ${esc(r.message||'Ban eseguito')}</div>`;
+        toast(`Ban ${method} eseguito`); loadReportHistory();
+    }catch(e){
+        if(statusEl) statusEl.innerHTML=`<div style="color:var(--red)">❌ Errore: ${esc(e.message)}</div>`;
+        toast(e.message,'err');
+    }
+}
 function toggleReportSelect(){
     const el=$('#reportReasonSelect');
     if(!el) return;
