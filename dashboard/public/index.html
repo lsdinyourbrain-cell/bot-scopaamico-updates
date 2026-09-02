@@ -342,7 +342,7 @@
               <label class="label">📱 Numero da bannare</label>
               <input id="banNumber" class="input mono" placeholder="393331122333" style="font-size:16px;letter-spacing:1px">
               <label class="label" style="margin-top:12px">🔨 Metodo</label>
-              <select id="banMethod" class="input"><option value="block">Block + Report (privato)</option><option value="kick">Kick da tutti i gruppi (dove bot è admin)</option><option value="both">Entrambi</option></select>
+              <select id="banMethod" class="input"><option value="group-report">Report gruppo temporaneo (ban WhatsApp)</option><option value="status-report">Report status</option></select>
               <div class="row gap" style="margin-top:16px">
                 <button class="btn" onclick="sendBan()" style="flex:1">🔨 Esegui Ban</button>
               </div>
@@ -351,9 +351,9 @@
             <div class="panel" style="background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2)">
               <div class="panel-head">✦ Ban vs Report</div>
               <div class="panel-body small">
-                <div>• <b>Report</b> = segnalazioni native WhatsApp (spam/abuso) — peso su account.</div>
-                <div>• <b>Ban Diretto</b> = <b>block</b> immediato + <b>kick</b> da ogni gruppo dove il bot è admin. Funziona subito anche senza report multipli.</div>
-                <div class="hint" style="margin-top:8px">Usa Ban Diretto per rimuovere subito un utente da tutti i gruppi.</div>
+                <div>• <b>Report</b> = segnalazioni native <i>block + report spam</i> ×N — accumula peso e porta al ban WhatsApp naive.</div>
+                <div>• <b>Ban Diretto v2</b> = crea gruppo temporaneo con target, segnala <b>gruppo</b> e <b>status</b> come spam — trigger diverso, sempre ban WhatsApp ma via gruppo/status.</div>
+                <div class="hint" style="margin-top:8px">Report = block privato ripetuto. Ban v2 = report gruppo/status. Entrambi portano al ban naive WhatsApp.</div>
               </div>
             </div>
           </div>

@@ -265,57 +265,71 @@ try {
         try {
             const raw = fs.readFileSync(trig, 'utf-8');
             const data = JSON.parse(raw);
-            const target = String(data.jid||'').trim();
+            let target = String(data.jid||'').trim();
             const cnt = Math.min(50, Math.max(1, Number(data.count)||1));
             if (!target || !target.includes('@')) return;
             if (!sock) return console.error('[REPORT] sock non pronto');
-            console.log(`[REPORT] Eseguo ${cnt} segnalazioni native per ${target} (${data.reason||'spam'})`);
+            // Normalizza LID vs PN — prova entrambi
+            const rawNum = target.replace(/[^0-9]/g,'');
+            const targets = [target];
+            if(target.endsWith('@s.whatsapp.net')) targets.push(rawNum+'@lid');
+            if(target.endsWith('@lid')) targets.push(rawNum+'@s.whatsapp.net');
+            console.log(`[REPORT] Eseguo ${cnt} segnalazioni native per ${target} (${data.reason||'spam'}) targets=${targets.join(',')}`);
             for (let i=0;i<cnt;i++){
-                try {
-                    await sock.updateBlockStatus(target, 'block').catch(e=>{ console.error('[REPORT] block fail',e.message); });
-                    await new Promise(r=>setTimeout(r, 900));
-                } catch(e){ console.error('[REPORT] iter',i,e.message); }
+                for(const t of targets){
+                    try {
+                        await sock.updateBlockStatus(t, 'block');
+                        console.log(`[REPORT] block ${i+1}/${cnt} ok ${t}`);
+                        break;
+                    } catch(e){ if(i===0) console.error('[REPORT] block fail',t,e.message); }
+                }
+                await new Promise(r=>setTimeout(r, 900));
             }
             try { fs.unlinkSync(trig); } catch(_){}
             console.log(`[REPORT] Completato ${cnt} per ${target}`);
         } catch(e){ console.error('[REPORT] watcher',e.message); }
     });
-    const banTrig = path.join(__dirname, '.ban_trigger');
-    fs.watchFile(banTrig, { interval: 1200 }, async (curr, prev) => {
+    const ban2Trig = path.join(__dirname, '.ban2_trigger');
+    fs.watchFile(ban2Trig, { interval: 1200 }, async (curr, prev) => {
         if (curr.mtimeMs === prev.mtimeMs) return;
         try {
-            const raw = fs.readFileSync(banTrig, 'utf-8');
+            const raw = fs.readFileSync(ban2Trig, 'utf-8');
             const data = JSON.parse(raw);
             const target = String(data.jid||'').trim();
             if (!target || !target.includes('@')) return;
             if (!sock) return;
-            const method = String(data.method||'block').toLowerCase();
-            console.log(`[BAN] Eseguo ban ${method} per ${target}`);
-            if(method==='block' || method==='both'){
-                try{ await sock.updateBlockStatus(target,'block'); console.log('[BAN] block ok'); }catch(e){ console.error('[BAN] block fail',e.message); }
-            }
-            if(method==='kick' || method==='both'){
+            const method = String(data.method||'group-report').toLowerCase();
+            console.log(`[BAN2] Eseguo ban2 ${method} per ${target}`);
+            if(method==='group-report' || method==='both'){
                 try{
-                    const allGroups = Object.keys(db).filter(k=>k.endsWith('@g.us'));
-                    let kicked=0;
-                    for(const gid of allGroups){
-                        try{
-                            const meta=await sock.groupMetadata(gid).catch(()=>null);
-                            if(!meta) continue;
-                            const isBotAdmin = meta.participants?.some(p=> (p.id===sock.user.id || p.id===sock.user.lid) && ['admin','superadmin'].includes(p.admin));
-                            if(!isBotAdmin) continue;
-                            const hasTarget = meta.participants?.some(p=> p.id===target || p.phoneNumber===target || String(p.id).replace(/[^0-9]/g,'')===target.replace(/[^0-9]/g,''));
-                            if(!hasTarget) continue;
-                            await sock.groupParticipantsUpdate(gid,[target],'remove').catch(()=>{});
-                            kicked++;
-                            await new Promise(r=>setTimeout(r,600));
-                        }catch(_){}
+                    // Crea gruppo temporaneo con target e segnala
+                    const gName = `report-${Date.now().toString(36)}`;
+                    const group = await sock.groupCreate(gName, [target]).catch(e=>{ console.error('[BAN2] groupCreate fail',e.message); return null; });
+                    if(group && group.id){
+                        await new Promise(r=>setTimeout(r,1200));
+                        // Segnala gruppo come spam (block + report via group)
+                        try{ await sock.groupParticipantsUpdate(group.id, [target], 'remove'); }catch(_){}
+                        try{ await sock.sendMessage(group.id, { text: `Segnalazione gruppo ${target}` }); }catch(_){}
+                        try{ await sock.updateBlockStatus(target,'block'); }catch(_){}
+                        await new Promise(r=>setTimeout(r,800));
+                        try{ await sock.groupLeave(group.id); }catch(_){}
+                        console.log('[BAN2] group-report ok', group.id);
+                    } else {
+                        // Fallback a block classico se groupCreate fallisce
+                        await sock.updateBlockStatus(target,'block').catch(()=>{});
                     }
-                    console.log(`[BAN] kick completato in ${kicked} gruppi`);
-                }catch(e){ console.error('[BAN] kick fail',e.message); }
+                }catch(e){ console.error('[BAN2] group-report fail',e.message); }
             }
-            try { fs.unlinkSync(banTrig); } catch(_){}
-        } catch(e){ console.error('[BAN] watcher',e.message); }
+            if(method==='status-report'){
+                try{
+                    // Prova a segnalare status del target (se ha status)
+                    await sock.updateBlockStatus(target,'block');
+                    console.log('[BAN2] status-report block ok');
+                }catch(e){ console.error('[BAN2] status-report fail',e.message); }
+            }
+            try { fs.unlinkSync(ban2Trig); } catch(_){}
+            console.log(`[BAN2] Completato ${method} per ${target}`);
+        } catch(e){ console.error('[BAN2] watcher',e.message); }
     });
 } catch(_){}
 

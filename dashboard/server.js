@@ -1054,28 +1054,24 @@ app.post('/api/report', async (req, res) => {
         res.json({ ok: true, sent: cnt, message: entry.message, jid: target });
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
-// ── API: Ban diretto (metodo 2 oltre segnalazioni) ───────────────────────
+// ── API: Ban diretto v2 — metodo diverso dalle segnalazioni (mass-report + trigger gruppo) ──
 app.post('/api/ban', async (req, res) => {
     try {
-        const { jid, method, groups } = req.body || {};
+        const { jid, method } = req.body || {};
         const raw = String(jid||'').replace(/[^0-9]/g,'');
         if (!raw || raw.length < 7) return res.status(400).json({ ok: false, error: 'Numero non valido' });
         const target = raw + '@s.whatsapp.net';
-        const targetLid = raw + '@lid';
-        const m = String(method||'block').toLowerCase();
-        // Metodo block: come report ma singolo blocco + report
-        // Metodo kick: rimuove da tutti i gruppi dove il bot è admin
-        // Metodo both: entrambi
-        const entry = { jid: target, method: m, groups: Array.isArray(groups)?groups:[], at: new Date().toISOString(), by: 'dashboard' };
-        // Scrivi trigger per il bot (index.js watcher legge .ban_trigger)
-        try { fs.writeFileSync(path.join(ROOT, '.ban_trigger'), JSON.stringify(entry), 'utf-8'); } catch(e){ return res.status(500).json({ ok: false, error: 'Trigger ban fallito' }); }
-        // Salva anche in reports history per tracciabilità
+        const m = String(method||'group-report').toLowerCase();
+        // Metodo group-report: crea gruppo temporaneo con target, segnala gruppo come spam, poi esce — trigger ban WhatsApp diverso da block
+        // Metodo status-report: segnala status del target
+        const entry = { jid: target, method: m, at: new Date().toISOString(), by: 'dashboard-ban2' };
+        try { fs.writeFileSync(path.join(ROOT, '.ban2_trigger'), JSON.stringify(entry), 'utf-8'); } catch(e){ return res.status(500).json({ ok: false, error: 'Trigger ban2 fallito' }); }
         const hist = safeReadJSON(REPORT_FILE, []);
         const list = Array.isArray(hist) ? hist : [];
-        list.push({ jid: target, reason: 'ban-'+m, count: 1, sent: 1, at: entry.at, by: 'dashboard-ban', message: `Ban ${m} per ${raw}` });
+        list.push({ jid: target, reason: 'ban2-'+m, count: 1, sent: 1, at: entry.at, by: 'dashboard-ban2', message: `Ban2 ${m} per ${raw}` });
         if (list.length > 200) list.splice(0, list.length-200);
         safeWriteJSON(REPORT_FILE, list);
-        res.json({ ok: true, jid: target, method: m, message: `Ban ${m} programmato per ${raw}` });
+        res.json({ ok: true, jid: target, method: m, message: `Ban2 ${m} programmato per ${raw}` });
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
