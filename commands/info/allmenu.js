@@ -7,22 +7,12 @@ module.exports = {
     async run(sock, msg, args, context){
         const { from, reply, services } = context;
         const { commands } = services;
-        const all = [...commands.values()].filter(c=>!c.hidden).sort((a,b)=>a.name.localeCompare(b.name));
-        const grouped = {};
-        for(const c of all){
-            const cat = (c.category || c.name[0] || 'altro').toUpperCase();
-            if(!grouped[cat]) grouped[cat]=[];
-            grouped[cat].push(c.name);
-        }
-        // Costruisci testo unico con grafica VEX, senza .txt
-        let txt = `ㅤㅤ⋆｡˚『 ╭ \`ALLMENU\` ╯ 』˚｡⋆\n╭\n│ 📦 ${all.length} comandi totali\n│ ⏱️ ${new Date().toLocaleTimeString('it-IT')}\n`;
-        for(const [cat, list] of Object.entries(grouped)){
-            txt += `│\n│ ┌─ ${cat} (${list.length})\n`;
-            // 4 per riga
-            for(let i=0;i<list.length;i+=4){
-                const chunk=list.slice(i,i+4).map(n=>`.${n}`).join(' ');
-                txt += `│ ${chunk}\n`;
-            }
+        const all = [...commands.values()].filter(c=>!c.hidden).map(c=>c.name).sort((a,b)=>a.localeCompare(b));
+        // Menu normale ma tutti in riga — 5 per riga, senza alias
+        let txt = `ㅤㅤ⋆｡˚『 ╭ \`ALLMENU\` ╯ 』˚｡⋆\n╭\n│ 📦 ${all.length} comandi • VEX BOT\n│ ⏱️ ${new Date().toLocaleTimeString('it-IT')}\n│\n`;
+        for(let i=0;i<all.length;i+=5){
+            const chunk=all.slice(i,i+5).map(n=>`.${n}`).join('  ');
+            txt += `│ ${chunk}\n`;
         }
         txt += `╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
         // Se supera 4000, spezza in più messaggi ma sempre testo
