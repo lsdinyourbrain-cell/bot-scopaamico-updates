@@ -29,7 +29,7 @@ const SECTIONS = [
             ['🔫', 'spara'], ['🎟️', 'lotteria'], ['🏆', 'top'], ['🤑', 'ricchi'],
             ['💝', 'famiglia'], ['🎁', 'dona'], ['📈', 'investi'], ['💼', 'work'],
             ['🔥', 'streak'], ['📦', 'cassaforte'], ['⭐', 'reputazione'], ['💪', 'lavoro2'],
-            ['🎁', 'regalo'], ['🏷️', 'titolo'], ['🎴', 'carte'],
+            ['🎁', 'regalo'], ['🏷️', 'titolo'], ['🎴', 'carte'], ['💣', 'rapina'], ['💊', 'spacci'],
         ],
     },
     {
@@ -41,7 +41,7 @@ const SECTIONS = [
             ['🎡', 'ruota'], ['🎟️', 'gratta'], ['⚡', 'reazione'], ['🧩', 'parola'],
             ['🧠', 'memoria'], ['🧩', 'enigma'], ['🃏', 'poker'], ['🔫', 'russia'],
             ['🎱', 'tombola'], ['🎯', 'impiccato'], ['⭕', 'tris'], ['🔴', 'forza4'],
-            ['🟩', 'wordle'], ['🌀', 'labirinto'], ['🏆', 'trivia2'], ['🎭', 'akinator'],
+            ['🟩', 'wordle'], ['🌀', 'labirinto'], ['🏆', 'trivia2'], ['🎭', 'akinator'], ['🎰', 'slot2'], ['🎲', 'dado2'],
         ],
     },
     {
@@ -69,6 +69,17 @@ const SECTIONS = [
             ['🤖', 'pick'], ['🙏', 'scusa'], ['😏', 'pervertometro'], ['💋', 'puttanometro'],
             ['💦', 'sborrometro'], ['🔞', 'scopometro'], ['🍆', 'segaiometro'], ['👄', 'troiometro'],
             ['👠', 'zoccolometro'],
+            ['👅', 'lecca'], ['🦷', 'mordi'], ['🤲', 'palpa'], ['😏', 'stuzzica'], ['👄', 'succhia'],
+            ['🍑', 'monta'], ['🏇', 'cavalca'], ['💃', 'struscia'], ['👃', 'annusa'], ['😆', 'solletica'],
+            ['🤏', 'pizzica'], ['🤗', 'accarezza'], ['🥰', 'coccola'], ['👑', 'vizia'], ['👄', 'pompin'],
+            ['🐕', 'pecorina'], ['❤️', 'missionario'], ['🍑', 'anale'], ['💋', 'preliminare'], ['💆', 'massaggio'],
+            ['💋', 'baciocoll'], ['😘', 'succhiotto'], ['👅', 'lingua'], ['😬', 'mordicchia'], ['💅', 'graffia'],
+            ['🍑', 'sculaccia'], ['⛓️', 'lega'], ['🤐', 'bavaglio'], ['🔨', 'frustata'], ['👅', 'cunnilingus'],
+            ['👄', 'fellatio'], ['6️⃣', 'sessantnove'], ['💥', 'orgasmo'], ['💦', 'eiacula'], ['✋', 'masturba'],
+            ['☝️', 'dito'], ['🍆', 'penetra'], ['🔥', 'tromba'], ['🍑', 'inculata'], ['💦', 'sborrata2'],
+            ['💦', 'squirting'], ['🥛', 'creampie'], ['👥', 'gangbang'], ['3️⃣', 'threesome'], ['👗', 'spoglia'],
+            ['🤚', 'strangola'], ['👠', 'dominas'], ['🙇', 'sottomessa'], ['💦', 'venuta'], ['👉', 'ditalino2'],
+            ['💦', 'pompa'],
         ],
     },
     {
@@ -82,7 +93,7 @@ const SECTIONS = [
             ['🌙', 'afk'], ['📄', 'readmore'], ['👑', 'owner'], ['🐛', 'report'],
             ['🌟', 'sponsor'], ['🛡️', 'admin'], ['⏰', 'promemoria'], ['📊', 'sondaggio'],
             ['🔄', 'converti'], ['⏳', 'timer'], ['🌙', 'afklist'], ['📜', 'registro'],
-            ['📘', 'aiuto'],
+            ['📘', 'aiuto'], ['🔮', 'oracolo'], ['🍀', 'sorte'], ['🌟', 'destino'],
         ],
     },
     {
@@ -107,7 +118,7 @@ const SECTIONS = [
             ['💀', 'wasted'], ['📖', 'pokedex'], ['🤡', 'clown'], ['🖼️', 'toimg'],
             ['📹', 'vv'], ['🎨', 'sticker'], ['🏃', 'rubato'], ['💻', 'hack'],
             ['👥', 'clona'], ['✨', 'attp'], ['🧹', 'removebg'], ['🎨', 'mememaker'],
-            ['😜', 'emojimix'], ['🔣', 'ascii'], ['💧', 'wm'],
+            ['😜', 'emojimix'], ['🔣', 'ascii'], ['💧', 'wm'], ['🤡', 'trigger'], ['🔍', 'wanted'], ['💖', 'beautiful'],
         ],
     },
     {
