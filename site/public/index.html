@@ -2,120 +2,542 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#7c5cff">
 <title>VEX BOT — WhatsApp Automation</title>
-<meta name="description" content="VEX BOT — 360 comandi, gruppi, economia, AI. Online 24/7.">
+<meta name="description" content="VEX BOT — 360 comandi, gestione gruppi, economia, giochi, AI. Online 24/7 con statistiche reali da database.json, anti-DDOS e anti-bot.">
+<meta property="og:title" content="VEX BOT — WhatsApp Automation">
+<meta property="og:description" content="360 comandi • Grafica ultra curata • Anti-DDOS + Anti-Bot • Statistiche reali">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vex.bot">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
+/* ── Reset & Vars ─────────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a0f;--panel:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.08);--accent:#7c5cff;--accent2:#ff4ecd;--text:#f0f0f5;--muted:#9aa0b5}
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+:root{
+  --bg:#0a0a0f;
+  --bg-2:#0f0f1a;
+  --panel:rgba(255,255,255,0.06);
+  --panel-2:rgba(255,255,255,0.045);
+  --border:rgba(255,255,255,0.08);
+  --border-2:rgba(255,255,255,0.12);
+  --accent:#7c5cff;
+  --accent2:#ff4ecd;
+  --accent3:#36e2ff;
+  --text:#f0f0f5;
+  --muted:#9aa0b5;
+  --muted-2:#7a8196;
+  --success:#22c55e;
+  --danger:#ef4444;
+  --radius:18px;
+  --radius-sm:12px;
+  --shadow:0 10px 40px rgba(0,0,0,.4), 0 2px 10px rgba(124,92,255,.12);
+  --blur:16px;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-family:'Outfit',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.5}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(900px 600px at 18% 8%, rgba(124,92,255,.18), transparent 60%),
+    radial-gradient(800px 600px at 88% 72%, rgba(255,78,205,.12), transparent 60%),
+    radial-gradient(600px 500px at 50% 100%, rgba(54,226,255,.06), transparent 70%),
+    linear-gradient(180deg, var(--bg) 0%, #0b0b13 100%);
+  pointer-events:none;
+}
 a{color:inherit;text-decoration:none}
-.hero{position:relative;min-height:88vh;display:grid;place-items:center;padding:40px 20px;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:-40%;background:radial-gradient(ellipse at 30% 20%,rgba(124,92,255,0.25),transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(255,78,205,0.18),transparent 60%);filter:blur(40px);animation:float 12s ease-in-out infinite}
-.hero-inner{position:relative;z-index:1;max-width:1100px;width:100%;display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}
-@media(max-width:900px){.hero-inner{grid-template-columns:1fr}}
-.badge{display:inline-flex;gap:8px;align-items:center;padding:6px 12px;border-radius:999px;background:rgba(124,92,255,0.12);border:1px solid rgba(124,92,255,0.22);font-size:12px;letter-spacing:.6px}
-h1{font-size:52px;line-height:.95;font-weight:800;letter-spacing:-1px}
-h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.lead{color:var(--muted);margin-top:14px;line-height:1.6}
-.cta{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
-.btn{padding:12px 18px;border-radius:12px;border:1px solid var(--border);background:var(--panel);backdrop-filter:blur(12px);font-weight:700;cursor:pointer;transition:.2s}
-.btn:hover{transform:translateY(-1px);border-color:rgba(124,92,255,0.4)}
-.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;box-shadow:0 10px 30px rgba(124,92,255,0.35)}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(16px)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
-@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{padding:14px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);text-align:center}
-.stat b{font-size:22px}
-.section{max-width:1100px;margin:0 auto;padding:40px 20px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-@media(max-width:900px){.grid3{grid-template-columns:1fr}}
-.h2{font-size:22px;font-weight:800;margin-bottom:12px}
-.muted{color:var(--muted)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+::selection{background:rgba(124,92,255,.35)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#0a0a0f}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--accent),var(--accent2));border-radius:999px;border:2px solid #0a0a0f}
 .mono{font-family:'JetBrains Mono',monospace}
-.owner{display:flex;gap:14px;align-items:center;padding:14px;border-radius:14px;background:linear-gradient(135deg,rgba(124,92,255,0.14),rgba(255,78,205,0.08));border:1px solid rgba(124,92,255,0.22)}
-@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,-10px)}}
+.muted{color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ── Nav ──────────────────────────────────────────────────── */
+.nav{
+  position:sticky;top:0;z-index:20;
+  backdrop-filter:blur(var(--blur)) saturate(1.2);
+  -webkit-backdrop-filter:blur(var(--blur)) saturate(1.2);
+  background:rgba(10,10,15,.55);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:-.5px}
+.brand i{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));font-style:normal;box-shadow:0 6px 20px rgba(124,92,255,.35)}
+.brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.8px;margin-top:-2px}
+.nav-links{display:flex;gap:10px;align-items:center}
+@media(max-width:700px){.nav-links{display:none}}
+.nav-links a{font-size:13px;font-weight:700;padding:8px 12px;border-radius:999px;border:1px solid transparent;transition:.2s}
+.nav-links a:hover{background:var(--panel);border-color:var(--border);transform:translateY(-1px)}
+.nav-cta{padding:9px 14px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:800;font-size:13px;border:none;box-shadow:0 8px 24px rgba(124,92,255,.35);transition:.2s;cursor:pointer}
+.nav-cta:hover{transform:translateY(-1px);filter:brightness(1.07)}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.hero{
+  position:relative;isolation:isolate;
+  min-height:86vh;display:grid;place-items:center;
+  padding:36px 20px 28px;overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;inset:-40%;z-index:-1;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(124,92,255,.28), transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(255,78,205,.18), transparent 60%),
+    radial-gradient(ellipse at 50% 0%, rgba(54,226,255,.10), transparent 55%);
+  filter:blur(38px);
+  will-change:transform;
+  animation:float 14s ease-in-out infinite;
+  pointer-events:none;
+}
+.hero::after{
+  content:"";position:absolute;inset:0;z-index:-1;opacity:.35;
+  background:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size:38px 38px;
+  mask:radial-gradient(ellipse at 50% 20%, black 45%, transparent 82%);
+  pointer-events:none;
+}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-16px,-10px) scale(1.02)}}
+@media(prefers-reduced-motion:reduce){.hero::before{animation:none}}
+.hero-inner{max-width:1100px;width:100%;display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:center}
+@media(max-width:900px){.hero-inner{grid-template-columns:1fr;gap:22px}}
+.badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 12px;border-radius:999px;
+  background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.22);
+  font-size:12px;letter-spacing:.6px;font-weight:700;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 10px var(--success);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.9)}}
+h1{font-size:clamp(36px, 6vw, 56px);line-height:.9;font-weight:900;letter-spacing:-1.6px;margin-top:14px}
+h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2) 55%, var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.lead{color:var(--muted);margin-top:14px;line-height:1.65;font-size:clamp(14px,2.2vw,16px);max-width:56ch}
+.cta{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{
+  padding:12px 18px;border-radius:12px;border:1px solid var(--border);
+  background:var(--panel);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  font-weight:800;font-size:14px;cursor:pointer;transition:.2s;
+  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+}
+.btn:hover{transform:translateY(-1px);border-color:rgba(124,92,255,.36);background:rgba(255,255,255,.08)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;box-shadow:0 10px 30px rgba(124,92,255,.35)}
+.btn.primary:hover{filter:brightness(1.06);box-shadow:0 14px 36px rgba(124,92,255,.42)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* ── Cards & Glass ────────────────────────────────────────── */
+.card{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));
+  box-shadow:var(--shadow);
+}
+.card h3{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:380px){.stats{grid-template-columns:1fr 1fr}}
+.stat{
+  padding:14px 12px;border-radius:14px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  text-align:center;position:relative;overflow:hidden;
+  transition:.2s;
+}
+.stat::before{
+  content:"";position:absolute;inset:0;opacity:0;
+  background:linear-gradient(135deg, rgba(124,92,255,.14), rgba(255,78,205,.08));
+  transition:.2s;
+}
+.stat:hover{transform:translateY(-2px);border-color:rgba(124,92,255,.22)}
+.stat:hover::before{opacity:1}
+.stat b{font-size:clamp(18px,3vw,22px);position:relative}
+.stat div{font-size:12px;letter-spacing:.5px;position:relative}
+.stat.skeleton b{color:transparent;background:rgba(255,255,255,.08);border-radius:8px;animation:shimmer 1.2s infinite}
+@keyframes shimmer{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}
+.mini{font-size:11px;color:var(--muted-2);margin-top:8px;text-align:center}
+
+/* ── Sections ─────────────────────────────────────────────── */
+.section{max-width:1100px;margin:0 auto;padding:28px 20px}
+.h2{font-size:clamp(18px,3vw,22px);font-weight:900;letter-spacing:-.6px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.h2 i{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:rgba(124,92,255,.14);border:1px solid rgba(124,92,255,.2);font-style:normal;font-size:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.grid3{grid-template-columns:1fr}}
+.feature{
+  padding:16px;border-radius:16px;background:var(--panel-2);border:1px solid var(--border);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:.2s;position:relative;overflow:hidden;
+}
+.feature::after{
+  content:"";position:absolute;inset:0;opacity:0;
+  background:radial-gradient(400px 180px at 0% 0%, rgba(124,92,255,.16), transparent 60%);
+  transition:.25s;
+}
+.feature:hover{transform:translateY(-2px);border-color:rgba(124,92,255,.22);background:rgba(255,255,255,.06)}
+.feature:hover::after{opacity:1}
+.feature b{display:flex;gap:8px;align-items:center;font-size:14px}
+.feature .muted{font-size:13px;line-height:1.5;margin-top:6px;position:relative}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.2);font-size:11px;font-weight:700;letter-spacing:.4px}
+
+/* ── Owner ────────────────────────────────────────────────── */
+.owner{
+  display:flex;gap:14px;align-items:center;
+  padding:16px;border-radius:16px;
+  background:linear-gradient(135deg, rgba(124,92,255,.16), rgba(255,78,205,.08));
+  border:1px solid rgba(124,92,255,.24);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 10px 30px rgba(124,92,255,.12);
+  flex-wrap:wrap;
+}
+.owner-avatar{
+  width:56px;height:56px;border-radius:14px;
+  background:linear-gradient(135deg,#7c5cff,#ff4ecd);display:grid;place-items:center;
+  font-weight:900;font-size:18px;flex-shrink:0;
+  box-shadow:0 8px 22px rgba(124,92,255,.35);
+}
+.owner-meta{flex:1;min-width:180px}
+.owner-meta b{font-size:15px}
+.owner-meta .mono{font-size:13px;word-break:break-all}
+.owner-actions{display:flex;gap:10px;align-items:center;margin-left:auto;flex-wrap:wrap}
+@media(max-width:640px){
+  .owner{flex-direction:column;align-items:flex-start}
+  .owner-actions{margin-left:0;width:100%}
+  .owner-actions .btn{flex:1;justify-content:center}
+}
+.icon-btn{
+  width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);cursor:pointer;transition:.2s;
+}
+.icon-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(124,92,255,.3);transform:translateY(-1px)}
+
+/* ── Alerts & Toast ───────────────────────────────────────── */
+.alert{
+  padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);font-size:13px;display:none;align-items:center;gap:10px;
+}
+.alert.show{display:flex}
+.alert.error{border-color:rgba(239,68,68,.28);background:rgba(239,68,68,.08)}
+.alert.success{border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.08)}
+.toast{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(80px);
+  background:rgba(16,16,22,.9);color:var(--text);border:1px solid var(--border);
+  padding:12px 14px;border-radius:12px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:var(--shadow);font-size:13px;font-weight:700;display:flex;gap:10px;align-items:center;
+  opacity:0;transition:.35s cubic-bezier(.2,.8,.2,1);z-index:50;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── Honeypot ─────────────────────────────────────────────── */
+.honeypot{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+
+/* ── Footer ───────────────────────────────────────────────── */
+footer{border-top:1px solid var(--border);margin-top:10px}
+.footer-inner{max-width:1100px;margin:0 auto;padding:18px 20px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+.footer-inner a{text-decoration:underline;text-underline-offset:3px}
 </style>
 </head>
 <body>
+
+<nav class="nav" aria-label="Navigazione principale">
+  <div class="nav-inner">
+    <a class="brand" href="#" aria-label="VEX BOT home">
+      <i aria-hidden="true">✦</i>
+      <span>VEX BOT<small>WhatsApp Automation • 24/7</small></span>
+    </a>
+    <div class="nav-links" role="navigation">
+      <a href="#stats">Statistiche</a>
+      <a href="#features">Funzioni</a>
+      <a href="#owner">Owner</a>
+    </div>
+    <a class="nav-cta" href="#owner" aria-label="Contatta owner su WhatsApp">Contatta Owner</a>
+  </div>
+</nav>
+
 <section class="hero">
- <div class="hero-inner">
-  <div>
-   <div class="badge">⬥ VEX BOT • Online 24/7 • 360 comandi</div>
-   <h1>VEX BOT<br><span>WhatsApp Automation</span></h1>
-   <p class="lead">Economia, giochi, interazioni NSFW, utility, media, AI e gestione gruppi. Grafica VEX <span class="mono">⋆｡˚</span> ultra curata, singolo messaggio, anti-spam e dashboard con statistiche reali.</p>
-   <div class="cta">
-    <a class="btn primary" href="#stats">📊 Vedi statistiche reali</a>
-    <a class="btn" href="https://wa.me/393475112233" id="ownerWa" target="_blank">💬 Contatta Owner</a>
-   </div>
-   <div class="stats" id="stats">
-    <div class="stat"><b id="sGroups">—</b><div class="muted">Gruppi</div></div>
-    <div class="stat"><b id="sUsers">—</b><div class="muted">Utenti</div></div>
-    <div class="stat"><b id="sCmds">360</b><div class="muted">Comandi</div></div>
-    <div class="stat"><b id="sUptime">—</b><div class="muted">Uptime</div></div>
-   </div>
+  <div class="hero-inner">
+    <div>
+      <div class="badge" role="status" aria-live="polite"><i aria-hidden="true"></i> VEX BOT • Online 24/7 • 360 comandi</div>
+      <h1>VEX BOT<br><span>WhatsApp Automation</span></h1>
+      <p class="lead">Economia, giochi, interazioni, utility, media, AI e gestione gruppi. Grafica VEX <span class="mono">⋆｡˚</span> ultra curata, singolo messaggio, anti-spam e dashboard con <strong style="color:var(--text)">statistiche reali</strong> da <span class="mono" style="color:var(--text)">database.json</span> via <span class="mono" style="color:var(--text)">/api/stats</span>.</p>
+      <div class="cta">
+        <a class="btn primary" href="#stats" aria-label="Vedi statistiche reali">📊 Vedi statistiche reali</a>
+        <a class="btn" href="https://wa.me/573194999005" id="ownerWa" target="_blank" rel="noopener noreferrer" aria-label="Contatta owner su WhatsApp">💬 Contatta Owner</a>
+        <button class="btn ghost" id="retryStats" type="button" aria-label="Aggiorna statistiche">↻ Aggiorna</button>
+      </div>
+
+      <div class="stats" id="stats" aria-live="polite" aria-busy="true">
+        <div class="stat" aria-label="Gruppi"><b id="sGroups" class="skeleton">—</b><div class="muted">Gruppi</div></div>
+        <div class="stat" aria-label="Utenti"><b id="sUsers" class="skeleton">—</b><div class="muted">Utenti</div></div>
+        <div class="stat" aria-label="Comandi"><b id="sCmds">360</b><div class="muted">Comandi</div></div>
+        <div class="stat" aria-label="Uptime"><b id="sUptime" class="skeleton">—</b><div class="muted">Uptime</div></div>
+      </div>
+      <div id="statsError" class="alert error" role="alert" style="margin-top:10px">
+        <span aria-hidden="true">⚠️</span><span id="statsErrorMsg">Errore caricamento statistiche.</span>
+        <button class="btn" style="margin-left:auto;padding:6px 10px;font-size:12px" onclick="loadStats()" type="button">Riprova</button>
+      </div>
+      <div class="mini" id="statsMeta">Dati live da <span class="mono">/api/stats</span> • aggiornamento ogni 15s • anti-DDOS + helmet attivi</div>
+    </div>
+
+    <div class="card" aria-label="Perché VEX">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div class="h2" style="margin:0"><i aria-hidden="true">✦</i> Perché VEX</div>
+        <span class="chip">Glass • Blur • Gradient</span>
+      </div>
+      <div class="grid3" style="grid-template-columns:1fr;gap:12px;margin-top:14px">
+        <div class="feature" style="padding:14px"><b>🛡️ Anti DDOS</b><div class="muted" style="font-size:13px">Rate limit 100/15min su <span class="mono">/api</span> + 300/15min global + Helmet + trust proxy. Headers HSTS, CSP, noSniff.</div></div>
+        <div class="feature" style="padding:14px"><b>🤖 Anti Bot</b><div class="muted" style="font-size:13px">UA check (≥10 char) + honeypot (body/query/header) + endpoint <span class="mono">/api/report</span> con 403. Cloudflare ready.</div></div>
+        <div class="feature" style="padding:14px"><b>🎨 Grafica Ultra</b><div class="muted" style="font-size:13px">Vetro, blur 16px, gradienti, ombre, animazioni, responsive 320→1440, focus-visible, reduced-motion.</div></div>
+        <div class="feature" style="padding:14px"><b>📈 Statistiche Reali</b><div class="muted" style="font-size:13px">Da <span class="mono">database.json</span> live: gruppi deduplicati, utenti unici, comandi contati, owner normalizzato.</div></div>
+      </div>
+      <div class="alert success show" style="margin-top:14px"><span aria-hidden="true">✓</span> <span><strong>Zero glitch:</strong> griglia adattiva, overflow controllato, `will-change`, `isolation`, `backdrop-filter` con fallback.</span></div>
+    </div>
   </div>
-  <div class="card">
-   <div class="h2">✦ Perché VEX</div>
-   <div class="grid3" style="grid-template-columns:1fr;gap:12px">
-    <div class="card" style="padding:14px"><b>🛡️ Anti DDOS</b><div class="muted" style="font-size:13px">Rate limit 100/15min + Helmet headers</div></div>
-    <div class="card" style="padding:14px"><b>🤖 Anti Bot</b><div class="muted" style="font-size:13px">UA check + honeypot + Cloudflare ready</div></div>
-    <div class="card" style="padding:14px"><b>🎨 Grafica Ultra</b><div class="muted" style="font-size:13px">Vetro, blur, gradient, responsive</div></div>
-    <div class="card" style="padding:14px"><b>📈 Statistiche Reali</b><div class="muted" style="font-size:13px">Da <span class="mono">database.json</span> live via <span class="mono">/api/stats</span></div></div>
-   </div>
-  </div>
- </div>
 </section>
 
-<section class="section">
- <div class="h2">📦 Cosa fa</div>
- <div class="grid3">
-  <div class="card"><b>💰 Economia</b><div class="muted">shop, mine, casino, slot, banca, streak</div></div>
-  <div class="card"><b>🎮 Giochi</b><div class="muted">tris, wordle, impiccato, poker, trivia</div></div>
-  <div class="card"><b>🔥 Interazioni</b><div class="muted">50+ NSFW, bacia, sculaccia, 69...</div></div>
-  <div class="card"><b>🛠️ Utility</b><div class="muted">meteo, nastro, profilo, ping</div></div>
-  <div class="card"><b>📥 Media</b><div class="muted">sticker, toimg, removebg, attp</div></div>
-  <div class="card"><b>🛡️ Sicurezza</b><div class="muted">antilink, antinuke, antivoip</div></div>
- </div>
-</section>
-
-<section class="section">
- <div class="h2">👑 Owner Principale</div>
- <div class="owner" id="ownerCard">
-  <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#7c5cff,#ff4ecd);display:grid;place-items:center;font-weight:800">VX</div>
-  <div>
-   <div style="font-weight:800" id="ownerName">VEX Owner</div>
-   <div class="muted mono" id="ownerNum">+393475112233</div>
-   <div class="muted" style="font-size:12px">Contattami per supporto, partnership o sblocco.</div>
+<section class="section" id="features">
+  <div class="h2"><i aria-hidden="true">📦</i> Cosa fa</div>
+  <div class="grid3">
+    <div class="feature"><b>💰 Economia</b><div class="muted">shop, mine, casino, slot, banca, streak, livelli</div></div>
+    <div class="feature"><b>🎮 Giochi</b><div class="muted">tris, wordle, impiccato, poker, trivia, lotteria</div></div>
+    <div class="feature"><b>🔥 Interazioni</b><div class="muted">50+ comandi NSFW e social — bacia, sculaccia, 69…</div></div>
+    <div class="feature"><b>🛠️ Utility</b><div class="muted">meteo, nastro, profilo, ping, AI, traduzione</div></div>
+    <div class="feature"><b>📥 Media</b><div class="muted">sticker, toimg, removebg, attp, download</div></div>
+    <div class="feature"><b>🛡️ Sicurezza</b><div class="muted">antilink, antinuke, antivoip, antibot, antiflood</div></div>
   </div>
-  <a class="btn primary" id="ownerBtn" href="https://wa.me/393475112233" target="_blank" style="margin-left:auto">Apri WhatsApp</a>
- </div>
+  <div class="feature" style="margin-top:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <div style="flex:1;min-width:240px"><b>⚡ Deploy pronto</b><div class="muted">Cloudflare Tunnel / Vercel / Railway. CORS abilitato, 404 JSON per <span class="mono">/api</span>, SPA fallback <span class="mono">/{*splat}</span> (Express 5).</div></div>
+    <a class="btn primary" href="#owner">Inizia ora →</a>
+  </div>
 </section>
 
-<footer class="section" style="text-align:center;opacity:.7">
- <div class="muted">© VEX BOT — made with ⋆｡˚ • <span class="mono">site anti-DDOS + anti-bot</span> • Deploy online con Cloudflare Tunnel / Vercel</div>
+<section class="section" id="owner">
+  <div class="h2"><i aria-hidden="true">👑</i> Owner Principale</div>
+  <div class="owner" id="ownerCard" role="region" aria-label="Owner principale">
+    <div class="owner-avatar" aria-hidden="true">VX</div>
+    <div class="owner-meta">
+      <div style="font-weight:900;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span id="ownerName">VEX Owner</span>
+        <span class="chip" style="background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.25);color:#bbf7d0">● Verificato</span>
+      </div>
+      <div class="mono" id="ownerNum" style="color:var(--text);font-weight:800">+573194999005</div>
+      <div class="muted" style="font-size:12px">Contattami per supporto, partnership o sblocco. Risposta rapida 9–24 CET.</div>
+      <div class="muted mono" id="ownerJid" style="font-size:11px;opacity:.8;margin-top:4px"></div>
+    </div>
+    <div class="owner-actions">
+      <button class="icon-btn" id="copyOwner" type="button" aria-label="Copia numero" title="Copia numero">⎘</button>
+      <a class="btn primary" id="ownerBtn" href="https://wa.me/573194999005" target="_blank" rel="noopener noreferrer" aria-label="Apri WhatsApp">Apri WhatsApp</a>
+    </div>
+  </div>
+  <div class="muted" style="font-size:12px;margin-top:8px">Numero mostrato è normalizzato dal DB: <span class="mono">_owners</span> → rimozione <span class="mono">@lid / :0 / @s.whatsapp.net</span> → validazione E.164 (9–14 cifre). Cliccabile via <span class="mono">https://wa.me/&lt;digits&gt;</span>.</div>
+
+  <!-- Honeypot demo: invisible to humans, bots fill it → 403 -->
+  <form id="reportForm" class="card" style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+    <div style="flex:1;min-width:220px">
+      <label for="reportMsg" class="muted" style="font-size:12px;font-weight:700;letter-spacing:.5px">Segnala un problema (demo anti-bot)</label>
+      <input id="reportMsg" class="mono" placeholder="Descrivi il problema…" style="width:100%;margin-top:6px;padding:12px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);outline:none">
+    </div>
+    <div class="honeypot" aria-hidden="true">
+      <label for="website">Non compilare</label>
+      <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+      <input name="honeypot" type="text" tabindex="-1" autocomplete="off">
+    </div>
+    <button class="btn primary" type="submit">Invia segnalazione</button>
+    <span class="muted" style="font-size:11px">Protezione: honeypot + UA check lato server.</span>
+  </form>
+  <div id="reportRes" class="alert" style="margin-top:10px"></div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>© <span id="year"></span> VEX BOT — made with ⋆｡˚ • <span class="mono">site anti-DDOS + anti-bot</span></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <a href="#stats">Statistiche</a>
+      <a href="https://wa.me/573194999005" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      <span class="mono">v<span id="footerVer">1.0.0</span></span>
+    </div>
+  </div>
 </footer>
 
+<div id="toast" class="toast" role="status" aria-live="polite"><span id="toastIcon">✓</span><span id="toastMsg">Fatto</span></div>
+
 <script>
-async function loadStats(){
- try{
-  const r=await fetch('/api/stats'); const j=await r.json();
-  if(j.ok){
-   document.getElementById('sGroups').textContent=j.stats.groups;
-   document.getElementById('sUsers').textContent=j.stats.users;
-   document.getElementById('sUptime').textContent=j.bot.uptime;
-   if(j.owner && j.owner.display){
-    document.getElementById('ownerNum').textContent=j.owner.display;
-    document.getElementById('ownerBtn').href=j.owner.waLink||`https://wa.me/${j.owner.display.replace(/[^0-9]/g,'')}`;
-    document.getElementById('ownerWa').href=j.owner.waLink||`https://wa.me/${j.owner.display.replace(/[^0-9]/g,'')}`;
-    document.getElementById('ownerName').textContent='Owner • '+j.owner.display;
-   }
-  }
- }catch(e){}
+'use strict';
+
+// — utilities
+const $ = (s)=>document.getElementById(s);
+function showToast(msg, icon='✓', ms=2600){
+  const t=$('toast'), m=$('toastMsg'), ic=$('toastIcon');
+  if(!t||!m) return;
+  m.textContent=msg; if(ic) ic.textContent=icon;
+  t.classList.add('show');
+  clearTimeout(showToast._tid);
+  showToast._tid=setTimeout(()=>t.classList.remove('show'), ms);
 }
-loadStats(); setInterval(loadStats, 15000);
+function safeSetText(id, val){
+  const el=document.getElementById(id);
+  if(el) el.textContent = val;
+}
+function safeSetHref(id, href){
+  const el=document.getElementById(id);
+  if(el && href) el.href = href;
+}
+
+// — footer year
+try{ const y=$('year'); if(y) y.textContent=new Date().getFullYear(); }catch{}
+
+// — loadStats (robust)
+let loadStatsAbort=null;
+async function loadStats(){
+  const errBox=$('statsError'), errMsg=$('statsErrorMsg');
+  const statsEl=$('stats');
+  try{
+    if(loadStatsAbort) loadStatsAbort.abort();
+    loadStatsAbort=new AbortController();
+    if(statsEl) statsEl.setAttribute('aria-busy','true');
+    if(errBox) errBox.classList.remove('show');
+
+    const r=await fetch('/api/stats', {
+      headers:{'Accept':'application/json'},
+      signal: loadStatsAbort.signal,
+      cache:'no-store'
+    });
+    if(!r.ok){
+      let body=''; try{ body=await r.text(); }catch{}
+      throw new Error('HTTP '+r.status+' '+body.slice(0,200));
+    }
+    let j;
+    try{ j=await r.json(); }catch(e){ throw new Error('Risposta non JSON'); }
+    if(!j || j.ok!==true) throw new Error((j&&j.error)||'Risposta non ok');
+
+    // update stats with null checks
+    safeSetText('sGroups', String(j.stats.groups ?? '—'));
+    safeSetText('sUsers', String(j.stats.users ?? '—'));
+    safeSetText('sUptime', String(j.bot.uptime ?? '—'));
+    // commands is now dynamic from filesystem
+    if(j.stats.commands!=null) safeSetText('sCmds', String(j.stats.commands));
+    // meta version
+    if(j.bot.version) safeSetText('footerVer', String(j.bot.version));
+
+    // owner – ultra accurate: display + waLink from server (already normalized)
+    if(j.owner && j.owner.display){
+      const display = String(j.owner.display);
+      const waLink = j.owner.waLink || ('https://wa.me/'+ display.replace(/[^0-9]/g,''));
+      safeSetText('ownerNum', display);
+      safeSetText('ownerName', 'Owner • '+display);
+      safeSetHref('ownerBtn', waLink);
+      safeSetHref('ownerWa', waLink);
+      const jidEl=$('ownerJid');
+      if(jidEl) jidEl.textContent = j.owner.jid ? ('jid: '+j.owner.jid) : '';
+      // remove skeleton
+      ['sGroups','sUsers','sUptime'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el) el.classList.remove('skeleton');
+      });
+    }
+    // also clear skeleton on success even if owner missing
+    ['sGroups','sUsers','sUptime'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.classList.remove('skeleton');
+    });
+  }catch(e){
+    if(e && e.name==='AbortError') return;
+    console.error('[stats]', e);
+    if(errBox){
+      errBox.classList.add('show');
+      if(errMsg) errMsg.textContent = 'Errore: '+(e.message||'rete non disponibile');
+    }
+    // keep skeleton but add error style
+    showToast('Errore statistiche', '⚠️', 2800);
+  }finally{
+    if(statsEl) statsEl.setAttribute('aria-busy','false');
+  }
+}
+
+// initial + interval + retry button
+loadStats();
+const retryBtn=$('retryStats');
+if(retryBtn) retryBtn.addEventListener('click', loadStats);
+setInterval(loadStats, 15000);
+
+// copy owner
+const copyBtn=$('copyOwner');
+if(copyBtn){
+  copyBtn.addEventListener('click', async ()=>{
+    const txt = ($('ownerNum') && $('ownerNum').textContent || '').trim();
+    if(!txt || txt==='—') return showToast('Nessun numero', '⚠️');
+    try{
+      await navigator.clipboard.writeText(txt);
+      showToast('Copiato '+txt);
+    }catch{
+      const ta=document.createElement('textarea');
+      ta.value=txt; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); showToast('Copiato '+txt); }catch{ showToast('Copia fallita','⚠️'); }
+      ta.remove();
+    }
+  });
+}
+
+// report form – demonstrates honeypot + UA flow
+const reportForm=$('reportForm');
+if(reportForm){
+  reportForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const resEl=$('reportRes');
+    const input=$('reportMsg');
+    const honeypot = reportForm.querySelector('[name=\"honeypot\"]');
+    const website = document.getElementById('website');
+    const msg = input ? input.value.trim() : '';
+    if(!msg){ showToast('Scrivi un messaggio','⚠️'); return; }
+    try{
+      const r=await fetch('/api/report', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ message: msg, honeypot: honeypot?honeypot.value:'', website: website?website.value:'' })
+      });
+      const j=await r.json().catch(()=>({ok:false,error:'Risposta non JSON'}));
+      if(resEl){
+        resEl.classList.add('show');
+        resEl.classList.toggle('success', !!j.ok);
+        resEl.classList.toggle('error', !j.ok);
+        resEl.textContent = j.ok ? (j.message||'Inviato!') : ('Errore: '+(j.error||r.status));
+      }
+      if(j.ok){
+        showToast('Segnalazione inviata');
+        if(input) input.value='';
+      } else {
+        showToast(j.error||'Bloccato','⚠️');
+      }
+    }catch(err){
+      if(resEl){ resEl.classList.add('show'); resEl.classList.remove('success'); resEl.classList.add('error'); resEl.textContent='Errore rete: '+err.message; }
+      showToast('Errore rete','⚠️');
+    }
+  });
+}
+
+// global error handling – prevents silent JS errors
+window.addEventListener('error', (e)=>{ console.error('[window.error]', e.message); });
+window.addEventListener('unhandledrejection', (e)=>{ console.error('[unhandledrejection]', e.reason); });
+
+// smooth scroll offset for sticky nav (optional)
+document.querySelectorAll('a[href^=\"#\"]').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    const href=a.getAttribute('href');
+    if(!href || href==='#') return;
+    const target=document.querySelector(href);
+    if(target){
+      e.preventDefault();
+      target.scrollIntoView({behavior:'smooth', block:'start'});
+      history.pushState(null,'',href);
+    }
+  });
+});
 </script>
 </body>
 </html>
