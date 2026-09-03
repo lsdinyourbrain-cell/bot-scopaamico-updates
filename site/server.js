@@ -54,7 +54,7 @@ app.get('/api/stats', (req,res)=>{
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('*', (req,res)=> res.sendFile(path.join(__dirname,'public','index.html')));
+app.get('/*splat', (req,res)=> res.sendFile(path.join(__dirname,'public','index.html')));
 
 const PORT=process.env.SITE_PORT||3000;
 const HOST=process.env.SITE_HOST||'0.0.0.0';
