@@ -13,10 +13,14 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { sharp, db, saveDB, sameJid, getCachedGroupMeta } = services;
 
-        if (!isGroup) return reply("Il tris si gioca solo nei gruppi.");
+        if (!isGroup) {
+            const t = `${sec('👥 SOLO GRUPPI')}\n${boxOpen()}\n${line('🎮 Il tris si gioca solo nei gruppi 💎✨')}\n${boxEnd()}`;
+            return sock.sendMessage(from, { text: t }, { quoted: msg });
+        }
 
         if (db[from]?.trisGame?.active) {
-            return reply("C'è già una partita di tris in corso! Giocate o attendete che finisca.");
+            const t = `${sec('🎮 TRIS ATTIVO')}\n${boxOpen()}\n${line('💎 C\'è già una partita di tris in corso ✨')}\n${line('🔮 _Completala prima di crearne un\'altra_ 💫')}\n${boxEnd()}`;
+            return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
         // Determina l'avversario: menzione, risposta, o tag nell'argomento
@@ -25,10 +29,12 @@ module.exports = {
             opponent = contextInfo?.participant || null;
         }
         if (!opponent) {
-            return reply("Tagga l'avversario con @ oppure rispondi a un suo messaggio. Esempio: `.tris @marco`");
+            const t = `${sec('🎮 TRIS GLASS')}\n${boxOpen()}\n${line('💎 Tagga l\'avversario ✨')}\n${line('📌 Esempio: *.tris @marco* 🔮')}\n${boxEnd()}`;
+            return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         if (sameJid(opponent, sender)) {
-            return reply("Non puoi giocare contro te stesso!");
+            const t = `${sec('🎮 TRIS')}\n${boxOpen()}\n${line('✨ Non sfidare te stesso, leggenda! 💫')}\n${boxEnd()}`;
+            return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
         // Risolve eventuali @lid in numeri di telefono reali (per menzioni e testo)
@@ -65,12 +71,13 @@ module.exports = {
             console.error('[tris] render iniziale:', e.message);
             delete db[from].trisGame;
             saveDB();
-            return reply("❌ Errore nella generazione della board.");
+            const t = `${sec('❌ ERRORE TRIS')}\n${boxOpen()}\n${line('💎 Errore generazione board ✨')}\n${boxEnd()}`;
+            return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🎮 *TRIS*\n\n🎉 Dai, si parte!\nChe figata 🔥\n❌ Sfidante: @${senderPn.split('@')[0]}\n⭕ Sfidato: @${opponentPn.split('@')[0]}\n\nTocca a ❌ (@${senderPn.split('@')[0]}).\nScrivi un numero *1-9*\nper mettere la X.\n`,
+            caption: `${sec('🎮 TRIS GLASS')}\n${boxOpen()}\n${line(`💎 Sfida vetro: @${senderPn.split('@')[0]} ❌ vs @${opponentPn.split('@')[0]} ⭕ ✨`)}\n${line(`🔮 Tocca a ❌ @${senderPn.split('@')[0]} — scrivi *1-9* 💫`)}\n${boxEnd()}`,
             mentions: players,
         }, { quoted: msg });
 

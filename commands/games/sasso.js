@@ -15,10 +15,10 @@ module.exports = {
             const choices = ['sasso', 'carta', 'forbici'];
             const userChoice = (args[0] || '').toString().toLowerCase() || command;
             if (!choices.includes(userChoice)) {
-                return await sendButtons(sock, from, `${sec('SASSO CARTA FORBICI')}\n${boxOpen()}\n${line('Scegli la tua mossa:')}\n${boxEnd()}`, [
-                    { label: '.sasso', id: 'sasso' },
-                    { label: '.carta', id: 'carta' },
-                    { label: '.forbici', id: 'forbici' },
+                return await sendButtons(sock, from, `${sec('✊ SASSO CARTA FORBICI')}\n${boxOpen()}\n${line('💎 Scegli la tua mossa nel vetro ✨🔮')}\n${line('')}\n${line('💫 _Tocca un pulsante e sfida il bot_')}\n${boxEnd()}`, [
+                    { label: '✊ Sasso 💎', id: 'sasso' },
+                    { label: '✋ Carta ✨', id: 'carta' },
+                    { label: '✌️ Forbici 🔮', id: 'forbici' },
                 ], msg);
             }
             const botChoice = randomChoice(choices);
@@ -28,10 +28,10 @@ module.exports = {
                 : beats[userChoice] === botChoice
                     ? '🥳 Hai vinto, easy.'
                     : '😅 Stavolta vince il bot.';
-            await sendButtons(sock, from, `${sec('SASSO CARTA FORBICI')}\n${boxOpen()}\n${line(`*Tu:* _${userChoice}_`)}\n${line(`*Bot:* _${botChoice}_`)}\n${line('')}\n${line(result)}\n${boxEnd()}`, [
-                { label: '.sasso', id: 'sasso' },
-                { label: '.carta', id: 'carta' },
-                { label: '.forbici', id: 'forbici' },
+            await sendButtons(sock, from, `${sec('✊ SASSO CARTA FORBICI')}\n${boxOpen()}\n${line(`💎 Tu: _${userChoice}_ ✨`)}\n${line(`🔮 Bot: _${botChoice}_ 💫`)}\n${line('')}\n${line(result + ' 💎')}\n${boxEnd()}`, [
+                { label: '✊ Sasso 💎', id: 'sasso' },
+                { label: '✋ Carta ✨', id: 'carta' },
+                { label: '✌️ Forbici 🔮', id: 'forbici' },
             ], msg);
     },
 };

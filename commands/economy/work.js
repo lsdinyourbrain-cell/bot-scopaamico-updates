@@ -20,10 +20,10 @@ module.exports = {
         const last = userData.cooldowns[cooldownKey] || 0;
         const now = Date.now();
         const cdMs = 20 * 60 * 1000;
-        // Il pulsante "Nuovo turno" NON bypassa il cooldown (niente farming).
         if (now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 60000);
-            return reply(`${sec('ATTESA')}\n${boxOpen()}\n${line(`⏳ Hai appena finito un turno!`)}\n${line(`😴 Riposa per ancora _${remain} minuti_.`)}\n${boxEnd()}`);
+            const txt = `${sec('⏳ WORK COOLDOWN')}\n${boxOpen()}\n${line(`💼 @${sender.split('@')[0]} — turno in pausa ✨`)}\n${line(`🔮 _Vetro in ricarica, riposa..._`)}\n${line('')}\n${line(`⏰ Torna tra _${remain} minuti_ 💫`)}\n${boxEnd()}`;
+            return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
         }
         userData.cooldowns[cooldownKey] = now;
 
@@ -57,14 +57,14 @@ module.exports = {
         userData.money += taxed.net;
         saveDB();
 
-        const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
-        const eventLine = event ? line(`${event.emoji} _${event.label}_`) : '';
-        const evLine = evMult > 1 ? line(`💰 _Evento: guadagno x${evMult}_`) : '';
+        const taxLine = taxed.tax > 0 ? ` • _tassa ${taxed.tax}€_ 🔹` : '';
+        const eventLine = event ? line(`${event.emoji} _${event.label}_ 💫`) : '';
+        const evLine = evMult > 1 ? line(`💰 Evento attivo _x${evMult}_ ✨`) : '';
 
-        const resultText = `${sec('WORK')}\n${boxOpen()}\n${line(`💼 _${lavoro.emoji} ${lavoro.nome}_`)}\n${line(`Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${event ? eventLine : ''}\n${evMult > 1 ? evLine : ''}\n${line(`Saldo: _${formatMoney(userData.money)}€_ | Prossimo turno: _20 minuti_` )}\n${boxEnd()}`;
+        const resultText = `${sec('💼 WORK GLASS')}\n${boxOpen()}\n${line(`✨ @${sender.split('@')[0]} — _${lavoro.emoji} ${lavoro.nome}_ 💎`)}\n${line(`🔮 _Turno vetro diamantato completato_`)}\n${line('')}\n${line(`💸 Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${event ? eventLine : line(`✨ Turno standard • ben fatto!`)}\n${evMult > 1 ? evLine : ''}\n${line(`💳 Saldo: _${formatMoney(userData.money)}€_ • ⏳ prossimo tra _20m_`)}\n${boxEnd()}`;
 
         await sendButtons(sock, from, toDarkFont(resultText), [
-            { label: `💼 Nuovo turno`, id: `.${command}` },
+            { label: `💼 Nuovo turno ✨`, id: `.${command}` },
         ], msg);
     },
 };

@@ -20,12 +20,14 @@ module.exports = {
             const cdMs = 10000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`${sec('ATTESA')}\n${boxOpen()}\n${line(`⏳ Calma! Puoi giocare tra *${remain}s*.`)}\n${boxEnd()}`);
+                const t = `${sec('⏳ MEMORIA COOLDOWN')}\n${boxOpen()}\n${line(`🧠 @${sender.split('@')[0]} — memoria in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_ 🔮`)}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
             userData.cooldowns[cooldownKey] = now;
 
             if (db[from]?.memGame?.active) {
-                return reply(`${sec('MEMORIA')}\n${boxOpen()}\n${line("⏳ C'è già una sequenza da ripetere in corso!")}\n${boxEnd()}`);
+                const t = `${sec('🧠 MEMORIA ATTIVA')}\n${boxOpen()}\n${line('💎 C\'è già una sequenza in corso ✨')}\n${line('🔮 _Completa quella prima di crearne un\'altra_ 💫')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
 
             const COLOR_MAP = { R: '🔴', G: '🟢', B: '🔵', Y: '🟡' };
@@ -43,14 +45,15 @@ module.exports = {
 
             const display = sequence.map(k => `${COLOR_MAP[k]} ${k}`).join(' ');
 
-            await reply(`${sec('MEMORIA')}\n${boxOpen()}\n${line('Memorizza questa sequenza:')}\n${line(display)}\n${line('')}\n${line('✏️ Ripetila scrivendo le *lettere* (es: `R G B Y`)')}\n${line('⏳ Hai 60 secondi.')}\n${boxEnd()}`);
+            const txt = `${sec('🧠 MEMORIA GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — memorizza nel vetro ✨🔮`)}\n${line('')}\n${line(`🎨 Sequenza: _${display}_ 💫`)}\n${line('')}\n${line('✏️ Ripeti le *lettere* (es: `R G B Y`) ✨')}\n${line('⏳ Hai _60 secondi_ • vetro cromato 💎')}\n${boxEnd()}`;
+            await sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
 
             setTimeout(() => {
                 const mg = db[from]?.memGame;
                 if (mg?.active && Date.now() - mg.timestamp >= 60000) {
                     mg.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `${sec('TEMPO SCADUTO')}\n${boxOpen()}\n${line(`La sequenza era *${mg.sequence.join(' ')}*.`)}\n${boxEnd()}` }).catch(() => {});
+                    sock.sendMessage(from, { text: `${sec('⏰ TEMPO SCADUTO')}\n${boxOpen()}\n${line(`💎 Sequenza: _${mg.sequence.join(' ')}_ ✨`)}\n${line('🔮 _Vetro dissolto..._ 💫')}\n${boxEnd()}` }).catch(() => {});
                 }
             }, 60000);
     },

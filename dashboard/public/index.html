@@ -65,6 +65,86 @@
       </div>
     </section>
 
+    <!-- PRESENTAZIONE BOT — hero + features + live stats + owner -->
+    <section id="page-presentazione" class="page">
+      <div class="present-hero">
+        <div class="hero-badge"><span class="live-pulse"><i></i> LIVE</span> · VEX BOT · WhatsApp Automation</div>
+        <div class="hero-title">Il bot che fa esplodere<br>i tuoi gruppi WhatsApp — <span class="gradient-text" style="background:linear-gradient(135deg,#7c5cff,#ff4ecd);-webkit-background-clip:text;background-clip:text;color:transparent">veloce, bello, inarrestabile.</span></div>
+        <div class="hero-sub">Glassmorphism ultra, gradienti animati, protezione anti-DDOS & anti-bot, statistiche real-time ogni 5s da <code>/api/overview</code> (polling + SSE <code>/api/events</code>), gestione gruppi, welcome, antilink, economy e tanto altro — tutto dal tuo browser.</div>
+        <div class="hero-cta">
+          <button class="btn btn-hero" onclick="navigate('overview')">✦ Apri Dashboard</button>
+          <button class="btn btn-hero--ghost" onclick="document.getElementById('presentFeatures').scrollIntoView({behavior:'smooth'})">⬢ Scopri Features</button>
+          <a class="btn btn-hero--ghost" id="presentWaLink" href="#" target="_blank" rel="noopener">💬 Contatta Owner</a>
+          <!-- Honeypot demo (invisibile) + Turnstile placeholder -->
+          <input type="text" name="website" class="honeypot-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div id="turnstilePlaceholder" style="display:none" data-sitekey="PLACEHOLDER_CLOUDFLARE_TURNSTILE">Turnstile placeholder — sostituisci con sitekey reale Cloudflare</div>
+        </div>
+        <div class="hero-grid">
+          <div class="panel" style="margin:0;background:rgba(255,255,255,0.10)">
+            <div class="panel-head">⬥ Live — aggiornato ogni 5s</div>
+            <div class="panel-body">
+              <div class="stats-live-grid" id="presentStats">
+                <div class="stat-live live"><b id="pStatGroups">—</b><span>Gruppi</span></div>
+                <div class="stat-live live"><b id="pStatUsers">—</b><span>Utenti</span></div>
+                <div class="stat-live live"><b id="pStatPhrases">—</b><span>Frasi</span></div>
+                <div class="stat-live live"><b id="pStatOwners">—</b><span>Owner</span></div>
+              </div>
+              <div class="hint" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <span class="badge on" style="border-radius:999px">● polling 5s</span>
+                <span class="badge on" style="border-radius:999px">● SSE /api/events</span>
+                <span class="muted">rate-limit 100/15min · helmet · honeypot · UA · Turnstile</span>
+              </div>
+              <div id="presentSys" class="mono small muted" style="margin-top:10px;font-size:11px"></div>
+            </div>
+          </div>
+          <div class="hero-visual glass-shine" aria-hidden="true">
+            <div class="orb"></div>
+            <div style="position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <span class="badge on" style="backdrop-filter:blur(10px)">✦ VEX BOT</span>
+              <span class="mono" style="font-size:10px;background:rgba(0,0,0,0.35);padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.18)">glassmorphism · gradients · 60fps</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="presentFeatures" class="panel" style="margin-top:14px">
+        <div class="panel-head">✧ Cosa fa — 6 superpoteri</div>
+        <div class="panel-body">
+          <div class="features-grid">
+            <div class="feature-card"><div class="feature-icon">◆</div><div class="feature-title">Welcome & Goodbye</div><div class="feature-desc">Messaggi custom con <code>@user @group @desc</code>, on/off per gruppo, editor vetro con anteprima.</div></div>
+            <div class="feature-card"><div class="feature-icon">⬡</div><div class="feature-title">Antilink chirurgico</div><div class="feature-desc">Blocca whatsapp / ig / tg / tiktok / fb / yt / x / altri, con whitelist e toggle istantaneo.</div></div>
+            <div class="feature-card"><div class="feature-icon">◇</div><div class="feature-title">Economy & Moderazione</div><div class="feature-desc">Money, warn, mute, bio, nickname, spouse — modifica per-gruppo, ricerca globale istantanea.</div></div>
+            <div class="feature-card"><div class="feature-icon">✧</div><div class="feature-title">Frasi & File Editor</div><div class="feature-desc"><code>phrases/*.txt</code> + file browser con upload, drag&drop, editor monaco-like vetro.</div></div>
+            <div class="feature-card"><div class="feature-icon">⚑</div><div class="feature-title">Report nativi WA</div><div class="feature-desc">Segnalazioni native via <code>.report_trigger</code>, storico, motivo e conteggio con vetro iOS.</div></div>
+            <div class="feature-card"><div class="feature-icon">⬥</div><div class="feature-title">Sicurezza Hard</div><div class="feature-desc">Helmet, rate-limit 100/15min, honeypot, UA check, Cloudflare Turnstile placeholder, atomic writes.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">★ Owner — contatto diretto</div>
+        <div class="panel-body">
+          <div id="presentOwnerCard" class="owner-contact">
+            <div class="muted" style="padding:12px">Caricamento owner...</div>
+          </div>
+          <div class="hint">Owner principale da <code>database.json → _mainOwner</code> (fallback primo in <code>_owners</code>). Se assente, mostra tutti gli owner disponibili.</div>
+        </div>
+      </div>
+
+      <div class="panel" style="background:linear-gradient(135deg, rgba(var(--accent-rgb),0.14), rgba(var(--accent2-rgb),0.10));border:1px solid rgba(var(--accent-rgb),0.22)">
+        <div class="panel-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between">
+          <div>
+            <div style="font-weight:900;font-size:15px">Pronto a dominare WhatsApp?</div>
+            <div class="muted" style="font-size:12px">Apri la dashboard, scegli il gruppo, attiva ciò che vuoi — tutto vetro, zero lag.</div>
+          </div>
+          <div class="row gap">
+            <button class="btn" onclick="navigate('groups')">◆ Gestisci Gruppi</button>
+            <button class="btn btn-ghost" onclick="navigate('settings')">⚙ Tema Vetri</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- GROUPS -->
     <section id="page-groups" class="page">
       <div class="toolbar">
@@ -435,10 +515,13 @@
   </main>
 
    <!-- Bottom pill — vetro Apple puro, slide fluido con indicator -->
-  <nav class="bottom-pill" id="bottomPill">
+   <nav class="bottom-pill" id="bottomPill">
     <div class="pill-indicator" id="pillIndicator"></div>
     <button class="pill-btn active" data-page="overview" onclick="navigate('overview')">
       <span class="pill-icon">⌂</span><span class="pill-label">Home</span>
+    </button>
+    <button class="pill-btn" data-page="presentazione" onclick="navigate('presentazione')">
+      <span class="pill-icon">◈</span><span class="pill-label">Vex</span>
     </button>
     <button class="pill-btn" data-page="groups" onclick="navigate('groups')">
       <span class="pill-icon">▦</span><span class="pill-label">Gruppi</span>

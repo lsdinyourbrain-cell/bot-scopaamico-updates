@@ -12,28 +12,30 @@ module.exports = {
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, showProgress } = services;
 
 
-            if (!textArgs) return reply("Fammi una domanda! Esempio: `.ai Qual è la capitale della Francia?`");
+            if (!textArgs) {
+                const t = `${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line('💎 Fammi una domanda nel vetro ✨🔮')}\n${line('📌 Esempio: *.ai Qual è la capitale d\'Italia?* 💫')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
+            }
 
-            // ── SALVA LA API KEY (.ai set "sk-or-v1-...") 
-            // La key viene conservata nel database del bot (persistente, e
-            // sincronizzata col backup Gist), quindi non serve modificare .env.
             const setMatch = textArgs.trim().match(/^set\s+(.+)$/i);
             if (setMatch) {
                 const rawKey = setMatch[1].trim();
                 const apiKey = rawKey.replace(/^["']|["']$/g, '');
                 if (!apiKey || apiKey.length < 10) {
-                    return reply("❌ Chiave non valida. Usa: `.ai set \"sk-or-v1-...\"`");
+                    const t = `${sec('❌ AI ERRORE')}\n${boxOpen()}\n${line('💎 Chiave non valida ✨')}\n${line('📌 Usa: *.ai set "sk-or-v1-..."* 💫')}\n${boxEnd()}`;
+                    return sock.sendMessage(from, { text: t }, { quoted: msg });
                 }
                 if (!db._ai) db._ai = {};
                 db._ai.apiKey = apiKey;
                 saveDB();
-                return reply("✅ API Key salvata! Ora puoi usare `.ai <domanda>`. Per cambiarla, usa di nuovo `.ai set \"...\"`.");
+                const t2 = `${sec('✅ AI GLASS')}\n${boxOpen()}\n${line('💎 API Key salvata nel vetro ✨🔮')}\n${line('💫 Ora usa *.ai <domanda>* 💎')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t2 }, { quoted: msg });
             }
 
-            // La key effettiva: quella salvata con .ai set, altrimenti .env
             const activeKey = (db?._ai?.apiKey) || AI_API_KEY;
             if (!activeKey || activeKey === 'INSERISCI_QUI_LA_TUA_API_KEY') {
-                return reply("❌ API Key non configurata. Usa `.ai set \"sk-or-v1-...\"` (chiave di openrouter.ai) oppure aggiungi `AI_API_KEY=...` nel file *.env*.");
+                const t = `${sec('🔑 AI CONFIG')}\n${boxOpen()}\n${line('💎 API Key mancante nel vetro ✨')}\n${line('📌 Usa: *.ai set "sk-or-v1-..."* 🔮')}\n${line('💫 Oppure imposta *AI_API_KEY* in .env')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
             try {
                 const prog = await showProgress(sock, from, { label: 'INTELLIGENZA ARTIFICIALE', duration: 5000, quoted: msg });
@@ -54,12 +56,16 @@ module.exports = {
                     timeout: 30000,
                 });
                 const replyText = response.data?.choices?.[0]?.message?.content?.trim();
-                if (!replyText) return reply("❌ L'IA non ha prodotto una risposta valida.");
-                await prog.done(`🤖 *AI*\n\n${replyText}`);
+                if (!replyText) {
+                    const t = `${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line('💎 L\'IA non ha risposto ✨')}\n${line('🔮 _Riprova più tardi_ 💫')}\n${boxEnd()}`;
+                    return sock.sendMessage(from, { text: t }, { quoted: msg });
+                }
+                await prog.done(`${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line(`💎 Risposta vetro per @${sender.split('@')[0]} ✨🔮`)}\n${line('')}\n${line(replyText.slice(0,1200))}\n${boxEnd()}`);
             } catch (e) {
                 const errMsg = e.response?.data?.error?.message || e.response?.data?.error || e.message;
                 console.error('[ai]', errMsg);
-                await reply(`❌ Errore AI: ${errMsg}`);
+                const t = `${sec('❌ AI ERRORE')}\n${boxOpen()}\n${line(`💎 Errore vetro: _${String(errMsg).slice(0,120)}_ ✨`)}\n${boxEnd()}`;
+                await sock.sendMessage(from, { text: t }, { quoted: msg });
             }
     },
 };

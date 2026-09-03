@@ -1,0 +1,12 @@
+{
+  "accent": "#7c5cff",
+  "accent2": "#ff4ecd",
+  "bg": "#08080c",
+  "panel": "#15151d",
+  "blur": "22",
+  "opacity": "55",
+  "indicator": "#ff4ecd",
+  "liquid": false,
+  "bgPreset": "",
+  "bgUrl": ""
+}

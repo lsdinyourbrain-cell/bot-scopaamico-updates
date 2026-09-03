@@ -54,17 +54,17 @@ module.exports = {
                 }, 0)
                 : 0;
 
-            const portLines = linee.length ? linee.map(l => line(l)).join('\n') : `${line('📭 Portafoglio vuoto.')}\n${line('Compra azioni con: _*.investi compra GOOG*_')}`;
-            const text = `${sec('BORSA')}\n${boxOpen()}\n${portLines}\n${line(`💶 Valore azioni: _${tot}€_`)}\n${line(`💳 Contante: _${uDB.money}€_`)}\n${boxEnd()}`;
+            const portLines = linee.length ? linee.map(l => line(l)).join('\n') : `${line('📭 Portafoglio vuoto.')}\n${line('💎 Compra con: _*.investi compra GOOG*_ ✨')}`;
+            const text = `${sec('💹 BORSA GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *PORTAFOGLIO* ✨🔮`)}\n${line('')}\n${portLines}\n${line('')}\n${line(`💶 Valore azioni: _${tot}€_ • 💎 vetro cromato`)}\n${line(`💳 Contante: _${uDB.money}€_`)}\n${boxEnd()}`;
             return await sendButtons(sock, from, text, [
-                { label: '📝 Listino', id: 'investi listino' },
+                { label: '📝 Listino ✨', id: 'investi listino' },
             ], msg);
         }
 
         if (azione === 'LISTINO') {
-            const listino = `${sec('LISTINO AZIONI')}\n${boxOpen()}\n${AZIENDE.map(a => line(`${a.code.padEnd(6)} ${a.name.padEnd(12)} ${a.price}€`)).join('\n')}\n${line('*.investi compra <CODICE> [n]*')}\n${boxEnd()}`;
+            const listino = `${sec('📊 LISTINO GLASS')}\n${boxOpen()}\n${line(`💎 Mercato *VEX* — prezzi in vetro 💫`)}\n${line('')}\n${AZIENDE.map(a => line(`🔹 ${a.code.padEnd(6)} ${a.name.padEnd(12)} _${a.price}€_ 💎`)).join('\n')}\n${line('')}\n${line('📌 *.investi compra <CODICE> [n]* ✨')}\n${boxEnd()}`;
             return await sendButtons(sock, from, listino, [
-                { label: '📊 Il tuo portafoglio', id: 'investi' },
+                { label: '📊 Portafoglio 💎', id: 'investi' },
             ], msg);
         }
 
@@ -75,29 +75,29 @@ module.exports = {
 
             if (azione === 'COMPRA') {
                 const qty = Math.floor(parseInt(parts[2], 10));
-                if (parts[2] !== undefined && (isNaN(qty) || qty < 1)) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Quantità non valida.')}\n${boxEnd()}`);
+                if (parts[2] !== undefined && (isNaN(qty) || qty < 1)) return reply(`${sec('❌ ERRORE')}\n${boxOpen()}\n${line('💎 Quantità non valida ✨')}\n${boxEnd()}`);
                 const n = (isNaN(qty) || qty < 1) ? 1 : qty;
                 const costo = azienda.price * n;
-                if (uDB.money < costo) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Non ti bastano i soldi.')}\n${line(`Servono *${costo}€*.`)}\n${boxEnd()}`);
+                if (uDB.money < costo) return reply(`${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — servono _${costo}€_ 💫`)}\n${line(`💳 Hai _${uDB.money}€_ • ricarica con *.daily* ✨`)}\n${boxEnd()}`);
                 uDB.money -= costo;
                 uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + n;
                 saveDB();
-                return reply(`${sec('COMPRATE')}\n${boxOpen()}\n${line(`📈 Azioni: _${n}_`)}\n${line(`🏢 _${azienda.name}_`)}\n${line(`💰 Costo: _${costo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_`)}\n${boxEnd()}`);
+                return sock.sendMessage(from, { text: `${sec('✅ AZIONI COMPRATE')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *ACQUISTO* 📈✨`)}\n${line(`🏢 _${azienda.name}_ (${target})`)}\n${line(`📈 Quantità: _${n}_ • 💰 Costo: _${costo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_ • 🔮 vetro confermato`)}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
             }
 
             const q = Math.floor(parseInt(parts[2], 10));
-            if (parts[2] !== undefined && (isNaN(q) || q < 1)) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Quantità non valida.')}\n${boxEnd()}`);
+            if (parts[2] !== undefined && (isNaN(q) || q < 1)) return reply(`${sec('❌ ERRORE')}\n${boxOpen()}\n${line('💎 Quantità non valida ✨')}\n${boxEnd()}`);
             const qty2 = (isNaN(q) || q < 1) ? (uDB.azioni[target.toUpperCase()] || 1) : q;
-            if (qty2 <= 0 || (uDB.azioni[target.toUpperCase()] || 0) < 1) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(`Non possiedi azioni di *${azienda.name}*.`)}\n${boxEnd()}`);
-            if (qty2 > uDB.azioni[target.toUpperCase()]) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(`Ne possiedi solo *${uDB.azioni[target.toUpperCase()]}*.`)}\n${boxEnd()}`);
+            if (qty2 <= 0 || (uDB.azioni[target.toUpperCase()] || 0) < 1) return reply(`${sec('📭 NESSUN POSSESSO')}\n${boxOpen()}\n${line(`💎 Non possiedi azioni di *${azienda.name}* ✨`)}\n${boxEnd()}`);
+            if (qty2 > uDB.azioni[target.toUpperCase()]) return reply(`${sec('❌ ERRORE')}\n${boxOpen()}\n${line(`💎 Ne possiedi solo _${uDB.azioni[target.toUpperCase()]}_ ✨`)}\n${boxEnd()}`);
             const ricavo = azienda.price * qty2;
             uDB.azioni[target.toUpperCase()] -= qty2;
             if (uDB.azioni[target.toUpperCase()] <= 0) delete uDB.azioni[target.toUpperCase()];
             uDB.money += ricavo;
             saveDB();
-            return reply(`${sec('VENDUTE')}\n${boxOpen()}\n${line(`📉 Azioni: _${qty2}_`)}\n${line(`🏢 _${azienda.name}_`)}\n${line(`💵 Ricavo: _${ricavo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_`)}\n${boxEnd()}`);
+            return sock.sendMessage(from, { text: `${sec('💸 AZIONI VENDUTE')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *VENDITA* 📉✨`)}\n${line(`🏢 _${azienda.name}_ (${target})`)}\n${line(`📉 Quantità: _${qty2}_ • 💵 Ricavo: _${ricavo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_ • 🔮 profitto vetro`)}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
         }
 
-        return reply(`${sec('USO INVESTI')}\n${boxOpen()}\n${line('*.investi* — portafoglio')}\n${line('*.investi listino* — prezzi')}\n${line('*.investi compra <codice> [n]*')}\n${line('*.investi vendi <codice> [n]*')}\n${boxEnd()}`);
+        return reply(`${sec('💹 USO INVESTI GLASS')}\n${boxOpen()}\n${line(`💎 *.investi* — portafoglio ✨`)}\n${line(`📊 *.investi listino* — prezzi vetro`)}\n${line(`📈 *.investi compra <codice> [n]* 🔮`)}\n${line(`📉 *.investi vendi <codice> [n]* 💫`)}\n${boxEnd()}`);
     },
 };

@@ -20,7 +20,7 @@ module.exports = {
             try {
                 questions = JSON.parse(fs.readFileSync(quizFile, 'utf-8'));
             } catch (e) {
-                return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Errore nel caricamento del quiz. File non trovato o corrotto.')}\n${boxEnd()}`);
+                return sock.sendMessage(from, { text: `${sec('❌ ERRORE QUIZ')}\n${boxOpen()}\n${line('💎 Quiz non disponibile — file corrotto ✨')}\n${boxEnd()}` }, { quoted: msg });
             }
 
             const pick = questions[Math.floor(Math.random() * questions.length)];
@@ -35,17 +35,17 @@ module.exports = {
             saveDB();
 
             const optLetters = ['A', 'B', 'C', 'D'];
-            const optionsText = pick.a.map((opt, i) => line(`${optLetters[i]}) ${opt}`)).join('\n');
+            const optionsText = pick.a.map((opt, i) => line(`${optLetters[i]} ⦁ ${opt} 💎`)).join('\n');
 
             await sock.sendMessage(from, {
-                text: `${sec('QUIZ TIME')}\n${boxOpen()}\n${line(`❓ ${pick.q}`)}\n${line('')}\n${optionsText}\n${line('')}\n${line('⚡ Rispondi A/B/C/D')}\n${line('⏳ Hai 30 secondi!')}\n${boxEnd()}`,
+                text: `${sec('🧠 QUIZ GLASS')}\n${boxOpen()}\n${line(`💎 Domanda vetro ✨🔮`)}\n${line(`❓ _${pick.q}_ 💫`)}\n${line('')}\n${optionsText}\n${line('')}\n${line('⚡ Rispondi _A/B/C/D_ ✨')}\n${line('⏳ _30 secondi_ • vetro diamantato 💎')}\n${boxEnd()}`,
             }, { quoted: msg });
 
             setTimeout(() => {
                 if (db[from]?.quizGame?.active) {
                     db[from].quizGame.active = false;
                     saveDB();
-                    sock.sendMessage(from, { text: `${sec('TEMPO SCADUTO')}\n${boxOpen()}\n${line(`La risposta giusta era:`)}\n${line(`*${pick.a[pick.c]}*`)}\n${boxEnd()}` }).catch(() => {});
+                    sock.sendMessage(from, { text: `${sec('⏰ TEMPO SCADUTO')}\n${boxOpen()}\n${line(`💎 Risposta: _*${pick.a[pick.c]}*_ ✨`)}\n${line('🔮 _Vetro dissolto..._ 💫')}\n${boxEnd()}` }).catch(() => {});
                 }
             }, 30000);
     },

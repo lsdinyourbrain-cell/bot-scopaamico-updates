@@ -19,24 +19,28 @@ module.exports = {
             if (!userData.cooldowns) userData.cooldowns = {};
 
             const puntata = parseInt(args[0]);
-            if (isNaN(puntata) || puntata <= 0) return reply(`${sec('ERRORE')}
-${boxOpen()}
-${line('[uso]: .dadi <importo>_ — es. _.dadi 50')}
-${boxEnd()}`);
-            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
-${boxOpen()}
-${line('Puntata massima: *1.000.000€*.')}
-${boxEnd()}`);
+            if (isNaN(puntata) || puntata <= 0) {
+                const t = `${sec('🎲 DADI GLASS')}\n${boxOpen()}\n${line('💎 Uso: *.dadi <importo>* ✨')}\n${line('💫 Esempio: _.dadi 50_ 🔮')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
+            }
+            if (puntata > 1_000_000) {
+                const t = `${sec('🎲 DADI')}\n${boxOpen()}\n${line('💎 Puntata max _1.000.000€_ ✨')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
+            }
 
             const uDB = getUser(sender, from);
-            if (uDB.money < puntata) return reply("❌ Saldo insufficiente.");
+            if (uDB.money < puntata) {
+                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — hai _${uDB.money}€_ 💫`)}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
+            }
 
             const last = userData.cooldowns[cooldownKey] || 0;
             const now = Date.now();
             const cdMs = 5000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                return reply(`⏳ Calma! Puoi lanciare i dadi tra _${remain}s_.`);
+                const t = `${sec('⏳ DADI COOLDOWN')}\n${boxOpen()}\n${line(`🎲 @${sender.split('@')[0]} — dadi in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_ 🔮`)}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
             userData.cooldowns[cooldownKey] = now;
 
@@ -66,12 +70,11 @@ ${boxEnd()}`);
                 "Hai più soldi di Paperone, ma continui a lanciare dadi come un ragazzino 🦆💸",
                 "Attento, con tutto quel malloppo la Finanza ti sta già cercando 🕵️‍♂️"
             ];
-            const extraRiccoDadi = uDB.money > 5000 ? `\n▸ _${frasiIronicheDadi[Math.floor(Math.random()*frasiIronicheDadi.length)]}_` : '';
+            const extraRiccoDadi = uDB.money > 5000 ? line(`💫 _${frasiIronicheDadi[Math.floor(Math.random()*frasiIronicheDadi.length)]}_`) : '';
 
-            const resultText =
-`${sec('LANCIO DADI')}\n${boxOpen()}\n${line(`🧑 Tu: _${userRoll}_`)}\n${line(`🤖 Bot: _${botRoll}_`)}\n${line(`${esito}${extraRiccoDadi}`)}\n${line(`💰 Saldo attuale: _${uDB.money}€_`)}\n${boxEnd()}`;
+            const resultText = `${sec('🎲 DADI GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — lancio vetro ✨🔮`)}\n${line(`🧑 Tu: _${userRoll}_ 🎲  •  🤖 Bot: _${botRoll}_ 💎`)}\n${line(`${esito} 💫`)}\n${extraRiccoDadi ? extraRiccoDadi+'\n' : ''}${line(`💳 Saldo: _${uDB.money}€_ • 🎲 glass roll`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
-                { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
+                { label: `🎲 Rilancia ${puntata} ✨`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);
     },
 };

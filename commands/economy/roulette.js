@@ -16,28 +16,27 @@ module.exports = {
 
             const puntata = Number.parseInt(args[0], 10);
             if (!Number.isInteger(puntata) || puntata <= 0) {
-                return reply(`${sec('ERRORE')}
-${boxOpen()}
-${line('[uso]: .roulette <importo>_ — es. _.roulette 50')}
-${boxEnd()}`);
+                const t = `${sec('🎰 ROULETTE GLASS')}\n${boxOpen()}\n${line('💎 Uso: *.roulette <importo>* ✨')}\n${line('💫 Esempio: _.roulette 50_ 🔮')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
-            if (puntata > 1_000_000) return reply(`${sec('ERRORE')}
-${boxOpen()}
-${line('Puntata massima: *1.000.000€*.')}
-${boxEnd()}`);
+            if (puntata > 1_000_000) {
+                const t = `${sec('🎰 ROULETTE')}\n${boxOpen()}\n${line('💎 Puntata max _1.000.000€_ ✨')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
+            }
             const uDB = getUser(sender, from);
-            if (uDB.money < puntata) return reply(`❌ Ti mancano soldi: hai _${formatMoney(uDB.money)}_.`);
+            if (uDB.money < puntata) {
+                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — hai _${formatMoney(uDB.money)}_ 💫`)}\n${line('🔮 _Servono più fondi per girare_')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
+            }
 
             const win = Math.random() < 0.47;
             const evMult = EV.isActive(db, from, 'slotoro') ? 3 : 1;
             uDB.money += win ? puntata * evMult : -puntata;
             saveDB();
 
-            const evLine = evMult > 1 && win ? `\n▸ 🎰 _Evento: vincita x${evMult}_` : '';
-            const resultText =
-`${sec('ROULETTE')}\n${boxOpen()}\n${line(`💸 Puntata: _${formatMoney(puntata)}_`)}\n${line(`${win ? '✨ È uscito il tuo numero!' : '🫠 Giro storto, andata male.'}${evLine}`)}\n${line(`💰 Saldo: _${formatMoney(uDB.money)}_`)}\n${boxEnd()}`;
+            const resultText = `${sec(win ? '🎰 ROULETTE WIN' : '🎰 ROULETTE GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — _${formatMoney(puntata)}_ puntati ✨`)}\n${line(win ? `✨ _È uscito il tuo numero!_ 💫` : `🫠 _Giro storto, riprova_ 💎`)}\n${evMult>1 && win ? line(`🎰 Evento _x${evMult}_ 🔮`) : ''}\n${line(`💳 Saldo: _${formatMoney(uDB.money)}_ • 🎰 glass spin`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
-                { label: `.${command}${textArgs ? ' ' + textArgs : ''}`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
+                { label: `🎰 Rigioca ${puntata} ✨`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);
     },
 };

@@ -35,9 +35,7 @@ ${boxEnd()}`);
         targetData.money += amount;
         saveDB();
 
-        await sock.sendMessage(from, {
-            text: `${sec('DONAZIONE')}\n${boxOpen()}\n${line(`${sec('DONAZIONE')}\n${boxOpen()}\n${line(`🎁 *_DONAZIONE!_*\n\n▸ @${disp(sender)} ha donato _${amount}€_ a @${disp(targetJid)}! 🫶\n\n▸ 💰 Il tuo saldo: _${formatMoney(senderData.money)}_\n`)}\n${boxEnd()}`)}\n${boxEnd()}`,
-            mentions: [sender, targetJid],
-        });
+        const txt = `${sec('🎁 DONAZIONE GLASS')}\n${boxOpen()}\n${line(`💎 @${disp(sender)} → @${disp(targetJid)} ✨`)}\n${line(`🔮 _Gesto diamantato nel vetro_`)}\n${line('')}\n${line(`🎁 Donato: _${formatMoney(amount)}€_ 🫶`)}\n${line(`💳 Il tuo saldo: _${formatMoney(senderData.money)}€_`)}\n${line(`💰 Saldo @${disp(targetJid)}: _${formatMoney(targetData.money)}€_`)}\n${line('')}\n${line(`✨ Generosità ricompensata, leggenda! 💫`)}\n${boxEnd()}`;
+        await sock.sendMessage(from, { text: txt, mentions: [sender, targetJid] }, { quoted: msg });
     },
 };

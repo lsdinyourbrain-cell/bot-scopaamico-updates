@@ -11,10 +11,10 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { sameJid, getCachedGroupMeta } = services;
 
-            if (!targetJid) return reply(`${sec('ERRORE')}
-${boxOpen()}
-${line('[uso]: tagga una persona: è solo una scenetta, promesso.')}
-${boxEnd()}`);
+            if (!targetJid) {
+                const t = `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line('💎 Tagga qualcuno per la scenetta ✨🔮')}\n${line('📌 Uso: *.hack @utente* 💫')}\n${line('😏 _È solo per finta, promesso_')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
+            }
 
             // Risolve eventuali @lid nel numero di telefono reale
             let tgtPn = targetJid;
@@ -29,21 +29,22 @@ ${boxEnd()}`);
             const pause = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             try {
                 const fake = await sock.sendMessage(from, {
-                    text: `💻 Avvio la scenetta su @${tgtPn.split('@')[0]}…`,
+                    text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Avvio scenetta su @${tgtPn.split('@')[0]} ✨🔮`)}\n${line('🔍 _Inizializzo vetro..._ 💫')}\n${boxEnd()}`,
                     mentions: [tgtPn],
                 }, { quoted: msg });
                 await pause(700);
-                await sock.sendMessage(from, { text: '🔎 Cerco meme compromettenti…', edit: fake.key });
+                await sock.sendMessage(from, { text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Target: @${tgtPn.split('@')[0]} ✨`)}\n${line('🔎 _Cerco meme compromettenti..._ 💫')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
                 await pause(700);
-                await sock.sendMessage(from, { text: '📦 Recupero un sacco di figuracce…', edit: fake.key });
+                await sock.sendMessage(from, { text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Target: @${tgtPn.split('@')[0]} ✨`)}\n${line('📦 _Recupero figuracce nel vetro..._ 🔮')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
                 await pause(700);
                 await sock.sendMessage(from, {
-                    text: `✅ Fatto. @${tgtPn.split('@')[0]} è stato/a hackerato/a… per finta 😭`,
+                    text: `${sec('✅ HACK COMPLETATO')}\n${boxOpen()}\n${line(`💎 @${tgtPn.split('@')[0]} hackerato — per finta 😭✨`)}\n${line('🔮 _Vetro cromato: missione scenetta_ 💫')}\n${line('💫 _Tutto fake, stai tranquillo_ 💎')}\n${boxEnd()}`,
                     edit: fake.key,
                     mentions: [tgtPn],
                 });
             } catch (_) {
-                await reply("❌ La scenetta si è impallata, riprova.");
+                const t = `${sec('❌ ERRORE HACK')}\n${boxOpen()}\n${line('💎 Scenetta impallata ✨')}\n${line('🔮 _Riprova tra poco_ 💫')}\n${boxEnd()}`;
+                await sock.sendMessage(from, { text: t }, { quoted: msg });
             }
     },
 };

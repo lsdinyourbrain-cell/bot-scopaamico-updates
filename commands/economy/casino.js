@@ -13,11 +13,11 @@ module.exports = {
 
 
             await sendButtons(sock, from,
-                `${sec('CASINÒ')}\n${boxOpen()}\n${line('🎲 Premi un pulsante per giocare.')}\n${line('🍀 Buona fortuna, ma senza vendere il divano 😭')}\n${boxEnd()}`,
+                `${sec('🎰 CASINÒ GLASS')}\n${boxOpen()}\n${line('💎 Benvenuto nel *Casino VEX* ✨🔮')}\n${line('🎲 Premi un pulsante e tenta la sorte 💫')}\n${line('🍀 _Vetro cromato, fortuna diamantata_')}\n${boxEnd()}`,
                 [
-                    { label: '.dadi', id: 'dadi 100' },
-                    { label: '.slot', id: 'slot 100' },
-                    { label: '.roulette', id: 'roulette 100' },
+                    { label: '🎲 Dadi 100 ✨', id: 'dadi 100' },
+                    { label: '🎰 Slot 100 💎', id: 'slot 100' },
+                    { label: '🎡 Roulette 100 🔮', id: 'roulette 100' },
                 ],
                 msg);
     },

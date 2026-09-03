@@ -26,7 +26,8 @@ module.exports = {
 
             const media = directMedia || quotedMedia;
             if (!media) {
-                return await reply("⚠️ _[uso]: invia o rispondi a un'immagine o a un video per creare lo sticker._");
+                const t = `${sec('🖼️ STICKER GLASS')}\n${boxOpen()}\n${line('💎 Invia o rispondi a immagine/video ✨🔮')}\n${line('📌 Uso: *.sticker* / *.s* 💫')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
 
             try {
@@ -63,7 +64,8 @@ module.exports = {
                 }
 
                 if (!buffer || buffer.length === 0) {
-                    return await reply("❌ Il media non è più disponibile sui server di WhatsApp.");
+                    const t = `${sec('❌ STICKER ERRORE')}\n${boxOpen()}\n${line('💎 Media non disponibile ✨')}\n${line('🔮 _Reinvia il file, vetro scaduto_ 💫')}\n${boxEnd()}`;
+                    return sock.sendMessage(from, { text: t }, { quoted: msg });
                 }
 
                 const stamp = Date.now();
@@ -124,7 +126,8 @@ module.exports = {
 
             } catch (err) {
                 console.error('[sticker]', err.message);
-                await reply("❌ Errore durante la creazione dello sticker. Verifica che il file non sia corrotto.");
+                const t = `${sec('❌ STICKER ERRORE')}\n${boxOpen()}\n${line('💎 Errore vetro sticker ✨')}\n${line('🔮 _File forse corrotto, riprova_ 💫')}\n${boxEnd()}`;
+                await sock.sendMessage(from, { text: t }, { quoted: msg });
             }
     },
 };
