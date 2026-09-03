@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VEX BOT — WhatsApp Automation</title>
+<meta name="description" content="VEX BOT — 360 comandi, gruppi, economia, AI. Online 24/7.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--panel:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.08);--accent:#7c5cff;--accent2:#ff4ecd;--text:#f0f0f5;--muted:#9aa0b5}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.hero{position:relative;min-height:88vh;display:grid;place-items:center;padding:40px 20px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-40%;background:radial-gradient(ellipse at 30% 20%,rgba(124,92,255,0.25),transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(255,78,205,0.18),transparent 60%);filter:blur(40px);animation:float 12s ease-in-out infinite}
+.hero-inner{position:relative;z-index:1;max-width:1100px;width:100%;display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}
+@media(max-width:900px){.hero-inner{grid-template-columns:1fr}}
+.badge{display:inline-flex;gap:8px;align-items:center;padding:6px 12px;border-radius:999px;background:rgba(124,92,255,0.12);border:1px solid rgba(124,92,255,0.22);font-size:12px;letter-spacing:.6px}
+h1{font-size:52px;line-height:.95;font-weight:800;letter-spacing:-1px}
+h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lead{color:var(--muted);margin-top:14px;line-height:1.6}
+.cta{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{padding:12px 18px;border-radius:12px;border:1px solid var(--border);background:var(--panel);backdrop-filter:blur(12px);font-weight:700;cursor:pointer;transition:.2s}
+.btn:hover{transform:translateY(-1px);border-color:rgba(124,92,255,0.4)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;box-shadow:0 10px 30px rgba(124,92,255,0.35)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(16px)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:14px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);text-align:center}
+.stat b{font-size:22px}
+.section{max-width:1100px;margin:0 auto;padding:40px 20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.grid3{grid-template-columns:1fr}}
+.h2{font-size:22px;font-weight:800;margin-bottom:12px}
+.muted{color:var(--muted)}
+.mono{font-family:'JetBrains Mono',monospace}
+.owner{display:flex;gap:14px;align-items:center;padding:14px;border-radius:14px;background:linear-gradient(135deg,rgba(124,92,255,0.14),rgba(255,78,205,0.08));border:1px solid rgba(124,92,255,0.22)}
+@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,-10px)}}
+</style>
+</head>
+<body>
+<section class="hero">
+ <div class="hero-inner">
+  <div>
+   <div class="badge">⬥ VEX BOT • Online 24/7 • 360 comandi</div>
+   <h1>VEX BOT<br><span>WhatsApp Automation</span></h1>
+   <p class="lead">Economia, giochi, interazioni NSFW, utility, media, AI e gestione gruppi. Grafica VEX <span class="mono">⋆｡˚</span> ultra curata, singolo messaggio, anti-spam e dashboard con statistiche reali.</p>
+   <div class="cta">
+    <a class="btn primary" href="#stats">📊 Vedi statistiche reali</a>
+    <a class="btn" href="https://wa.me/393475112233" id="ownerWa" target="_blank">💬 Contatta Owner</a>
+   </div>
+   <div class="stats" id="stats">
+    <div class="stat"><b id="sGroups">—</b><div class="muted">Gruppi</div></div>
+    <div class="stat"><b id="sUsers">—</b><div class="muted">Utenti</div></div>
+    <div class="stat"><b id="sCmds">360</b><div class="muted">Comandi</div></div>
+    <div class="stat"><b id="sUptime">—</b><div class="muted">Uptime</div></div>
+   </div>
+  </div>
+  <div class="card">
+   <div class="h2">✦ Perché VEX</div>
+   <div class="grid3" style="grid-template-columns:1fr;gap:12px">
+    <div class="card" style="padding:14px"><b>🛡️ Anti DDOS</b><div class="muted" style="font-size:13px">Rate limit 100/15min + Helmet headers</div></div>
+    <div class="card" style="padding:14px"><b>🤖 Anti Bot</b><div class="muted" style="font-size:13px">UA check + honeypot + Cloudflare ready</div></div>
+    <div class="card" style="padding:14px"><b>🎨 Grafica Ultra</b><div class="muted" style="font-size:13px">Vetro, blur, gradient, responsive</div></div>
+    <div class="card" style="padding:14px"><b>📈 Statistiche Reali</b><div class="muted" style="font-size:13px">Da <span class="mono">database.json</span> live via <span class="mono">/api/stats</span></div></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="section">
+ <div class="h2">📦 Cosa fa</div>
+ <div class="grid3">
+  <div class="card"><b>💰 Economia</b><div class="muted">shop, mine, casino, slot, banca, streak</div></div>
+  <div class="card"><b>🎮 Giochi</b><div class="muted">tris, wordle, impiccato, poker, trivia</div></div>
+  <div class="card"><b>🔥 Interazioni</b><div class="muted">50+ NSFW, bacia, sculaccia, 69...</div></div>
+  <div class="card"><b>🛠️ Utility</b><div class="muted">meteo, nastro, profilo, ping</div></div>
+  <div class="card"><b>📥 Media</b><div class="muted">sticker, toimg, removebg, attp</div></div>
+  <div class="card"><b>🛡️ Sicurezza</b><div class="muted">antilink, antinuke, antivoip</div></div>
+ </div>
+</section>
+
+<section class="section">
+ <div class="h2">👑 Owner Principale</div>
+ <div class="owner" id="ownerCard">
+  <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#7c5cff,#ff4ecd);display:grid;place-items:center;font-weight:800">VX</div>
+  <div>
+   <div style="font-weight:800" id="ownerName">VEX Owner</div>
+   <div class="muted mono" id="ownerNum">+393475112233</div>
+   <div class="muted" style="font-size:12px">Contattami per supporto, partnership o sblocco.</div>
+  </div>
+  <a class="btn primary" id="ownerBtn" href="https://wa.me/393475112233" target="_blank" style="margin-left:auto">Apri WhatsApp</a>
+ </div>
+</section>
+
+<footer class="section" style="text-align:center;opacity:.7">
+ <div class="muted">© VEX BOT — made with ⋆｡˚ • <span class="mono">site anti-DDOS + anti-bot</span> • Deploy online con Cloudflare Tunnel / Vercel</div>
+</footer>
+
+<script>
+async function loadStats(){
+ try{
+  const r=await fetch('/api/stats'); const j=await r.json();
+  if(j.ok){
+   document.getElementById('sGroups').textContent=j.stats.groups;
+   document.getElementById('sUsers').textContent=j.stats.users;
+   document.getElementById('sUptime').textContent=j.bot.uptime;
+   if(j.owner && j.owner.display){
+    document.getElementById('ownerNum').textContent=j.owner.display;
+    document.getElementById('ownerBtn').href=j.owner.waLink||`https://wa.me/${j.owner.display.replace(/[^0-9]/g,'')}`;
+    document.getElementById('ownerWa').href=j.owner.waLink||`https://wa.me/${j.owner.display.replace(/[^0-9]/g,'')}`;
+    document.getElementById('ownerName').textContent='Owner • '+j.owner.display;
+   }
+  }
+ }catch(e){}
+}
+loadStats(); setInterval(loadStats, 15000);
+</script>
+</body>
+</html>
