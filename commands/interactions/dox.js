@@ -1,7 +1,7 @@
 'use strict';
 
 const { toStyle, toDecorated } = require('../../lib/font');
-const { S, SEP, header, footer, bullet, section, box, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const NAMES = [
     'Giovanni Batterista', 'Maria Pina', 'Giuseppe', 'Concetta', 'Antonio',
@@ -124,7 +124,6 @@ module.exports = {
         const target = targetJid || sender;
         const displayName = target.split('@')[0];
 
-        // Genera dati dox completamente casuali
         const fakeName = `${randomFrom(NAMES)} ${randomFrom(SURNAMES)}`;
         const fakeIP = randomFrom(FAKE_IPS);
         const fakeJob = randomFrom(FAKE_JOBS);
@@ -143,45 +142,31 @@ module.exports = {
         const fakeWifiPass = randomDigits(1000, 9999);
 
         const doxText =
-`✦·✧·✦  *DOX COMPLETO*  ✦·✧·✦
-${SEP.line}
-
-👤 *Identità:*
-${bullet(`Nome: _${fakeName}_`)}
-${bullet(`@${displayName} — _${fakeCity}_`)}
-${bullet(`Età: _${fakeAge} anni (dichiarati)_`)}
-${bullet(`Altezza: _${fakeHeight}_`)}
-${bullet(`Gruppo sanguigno: _${fakeBlood}_`)}
-
-${S.dia} ${S.star}  *DATI TECNICI*  ${S.star} ${S.dia}
-${SEP.lineL}
-
-${bullet(`IP Pubblico: \`${fakeIP}:${fakeIPPort}\``)}
-${bullet(`WiFi Password: \`WIFI_${fakeWifiPass}\``)}
-${bullet(`Telefono: _${fakePhone}_`)}
-${bullet(`Lavoro: _${fakeJob}_`)}
-${bullet(`Zodiaco: _${fakeZodiac}_`)}
-${bullet(`Stato: _${fakeStatus}_`)}
-
-${S.star} ${S.dia}  *ATTIVITÀ ONLINE*  ${S.dia} ${S.star}
-${SEP.lineL}
-
-${bullet(`Cerca su Google:`)}
-_${fakeHistory}_
-
-${bullet(`Ultimo acquisto online:`)}
-_${fakeAd}_
-
-
-${S.star} ${S.dia} ${S.star}  *RECORD PENALE*  ${S.star} ${S.dia} ${S.star}
-${SEP.lineL}
-
-⚖️ _${fakeCrime}_
-
-
-⚠️ *_TUTTI I DATI SONO COMPLETAMENTE INVENTATI_*
-${S.star} ${S.starW} ${S.dia} ${S.starW} ${S.star}
-`;
+`${sec('DOX COMPLETO')}
+${boxOpen()}
+${line(`👤 Nome: _${fakeName}_`)}
+${line(`@${displayName} — _${fakeCity}_`)}
+${line(`Età: _${fakeAge} anni (dichiarati)_`)}
+${line(`Altezza: _${fakeHeight}_`)}
+${line(`Gruppo sanguigno: _${fakeBlood}_`)}
+${line('')}
+${line(`📡 DATI TECNICI`)}
+${line(`IP Pubblico: \`${fakeIP}:${fakeIPPort}\``)}
+${line(`WiFi Password: \`WIFI_${fakeWifiPass}\``)}
+${line(`Telefono: _${fakePhone}_`)}
+${line(`Lavoro: _${fakeJob}_`)}
+${line(`Zodiaco: _${fakeZodiac}_`)}
+${line(`Stato: _${fakeStatus}_`)}
+${line('')}
+${line(`🌐 ATTIVITÀ ONLINE`)}
+${line(`Cerca su Google: _${fakeHistory}_`)}
+${line(`Ultimo acquisto: _${fakeAd}_`)}
+${line('')}
+${line(`⚖️ RECORD PENALE`)}
+${line(`_${fakeCrime}_`)}
+${line('')}
+${line(`⚠️ _TUTTI I DATI SONO COMPLETAMENTE INVENTATI_`)}
+${boxEnd()}`;
 
         await sock.sendMessage(from, {
             text: doxText,

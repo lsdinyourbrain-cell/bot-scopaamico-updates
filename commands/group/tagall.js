@@ -1,11 +1,8 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const { flagForJid } = require('../../lib/flag');
-
-const SEP = '';
-
 module.exports = {
     name: 'tagall',
     aliases: ['tutti', 'menzionatutti'],
@@ -17,9 +14,9 @@ module.exports = {
         if (!isGroup) {
             return reply(
 `📢 *TAGALL*
-${SEP}
+
 Funziona solo nei *gruppi* 👥
-${SEP}`
+`
             );
         }
         if (!isSenderAdmin) {
@@ -40,11 +37,11 @@ ${boxEnd()}`);
             await sock.sendMessage(from, {
                 text:
 `📢 *ANNUNCIO DI GRUPPO*
-${SEP}
+
 ${header}
-${SEP}
+
 ${lines.join('\n')}
-${SEP}
+
 `,
                 mentions: allJids,
             }, { quoted: msg });

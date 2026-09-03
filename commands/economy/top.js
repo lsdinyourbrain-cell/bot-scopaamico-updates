@@ -1,9 +1,7 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
-
-const SEP = '';
-const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
+const DOT = '';
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 
 module.exports = {
@@ -18,7 +16,7 @@ module.exports = {
         if (!isGroup) return reply("❌ Comando solo nei gruppi.");
         if (db._escludi?.[from]) {
             return reply(
-`${sec('INFO')}\n${boxOpen()}\n${line(`🚫  ${toBold('CLASSIFICA DISATTIVATA')}`)}\n${line(`${SEP}`)}\n${line(`Gruppo escluso con ${toBold('.escludi')}`)}\n${line('Un admin può riammettere con')}\n${line(`${toBold('.escludi off')}`)}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`);
+`${sec('INFO')}\n${boxOpen()}\n${line(`🚫  ${toBold('CLASSIFICA DISATTIVATA')}`)}\n${line(``)}\n${line(`Gruppo escluso con ${toBold('.escludi')}`)}\n${line('Un admin può riammettere con')}\n${line(`${toBold('.escludi off')}`)}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`);
         }
 
         const want = parseInt(String(textArgs || '').trim(), 10);
@@ -55,13 +53,13 @@ ${boxEnd()}`);
             const tag = dispOf(jid);
             const txt =
 `${toBold('PROFILO ATTIVITA')}  ·  #${idx}
-${SEP}
+
 👤  @${tag} (${nick})
 💬  ${toBold(String(data.msgCount||0))} messaggi
 ⭐  Livello ${toBold(String(lvl))}  ·  XP ${xp}
 ${bar}
-${SEP}
-◈ Vex Bot`;
+
+ Vex Bot`;
             const btns = [
                 { label: '📊 Classifica', id: 'top' },
                 { label: '🏠 Menu', id: 'menu' },
@@ -71,7 +69,7 @@ ${SEP}
         }
 
         if (!allSorted.length) return reply(
-`${sec('TOBOLDNESSUNA ATTIVI')}\n${boxOpen()}\n${line(`📭  ${toBold('NESSUNA ATTIVITA')}`)}\n${line(`${SEP}`)}\n${line('Nessun dato disponibile.')}\n${line('Scrivi in chat e torna qui!')}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`);
+`${sec('TOBOLDNESSUNA ATTIVI')}\n${boxOpen()}\n${line(`📭  ${toBold('NESSUNA ATTIVITA')}`)}\n${line(``)}\n${line('Nessun dato disponibile.')}\n${line('Scrivi in chat e torna qui!')}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`);
 
         const sorted = allSorted.slice(0, limit);
         const mentions = sorted.map(([jid]) => jid);
@@ -85,10 +83,10 @@ ${SEP}
 
         const txt =
 `${toBold('TOP ' + limit + ' ATTIVI')}  ·  ${sorted.length}/${allSorted.length}
-${SEP}
+
 ${lines}
-${SEP}
-◈ Vex Bot`;
+
+ Vex Bot`;
 
         const secondJid = allSorted[1]?.[0];
         const leaderNick = getNick(allSorted[0][0]);

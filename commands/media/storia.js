@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  STORIA — Vex Bot
@@ -10,9 +10,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 // 
 
 const { askAI, needKey } = require('../../lib/ai');
-
-const SEP = '';
-
 const TEMPLATES = [
     'tre amici si perdono in un bosco incantato dove gli alberi parlano',
     'un gatto grasso e un piccione progettano di conquistare la città',
@@ -48,13 +45,13 @@ module.exports = {
         if (t === 'uso' || t === 'help') {
             return sendButtons(sock, from,
 `📖 *_STORIA_*
-${SEP}
+
 ▸ _Racconto una mini-storia dell'IA!_
-${SEP}
+
 ▸ \`.storia\` → _protagonisti a caso_
 ▸ \`.storia @amico @amica\` → _i taggati_
 ▸ \`.storia cavalieri dello zodiaco\` → _tema a scelta_
-${SEP}
+
 `,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
@@ -98,6 +95,6 @@ ${SEP}
             await prog.done(needKey());
             return;
         }
-        await prog.done(`📖 *_STORIA_*\n${SEP}\n${content}\n`);
+        await prog.done(`📖 *_STORIA_*\n\n${content}\n`);
     },
 };

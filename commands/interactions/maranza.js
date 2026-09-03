@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, header, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
     name: 'maranza',
@@ -11,7 +11,6 @@ module.exports = {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
-
             const target = targetJid || sender;
             const pct    = Math.floor(Math.random() * 101);
             const frase  = pct <= 20 ? 'Praticamente un cittadino modello 😇'
@@ -20,7 +19,7 @@ module.exports = {
                          : pct <= 80 ? 'Tuta in acetato e AirPods a palla 🎧'
                          : 'Borsello falso, cassa Bluetooth sulla metro, codice penale aperto 🚔';
             await sock.sendMessage(from, {
-                text: `${S.star} ${S.dia}  *MARANZA TEST*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`👤 @${target.split('@')[0]}`)}\n${bullet(`📊 *Percentuale:* _*${pct}%*_`)}\n${SEP.lineL}\n${bullet(`💬 _${frase}_`)}\n${SEP.stars}\n${footer()}`,
+                text: `   *MARANZA TEST*   \n\n${line(`👤 @${target.split('@')[0]}`)}\n${line(`📊 *Percentuale:* _*${pct}%*_`)}\n\n${line(`💬 _${frase}_`)}\n\n`,
                 mentions: [target],
             });
     },

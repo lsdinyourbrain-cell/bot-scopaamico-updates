@@ -1,9 +1,7 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
-
-const SEP = '';
-const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
+const DOT = '';
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 
 module.exports = {
@@ -23,7 +21,7 @@ module.exports = {
             .slice(0, 10);
 
         if (!list.length) {
-            return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`🏆  ${toBold('TOP GRUPPI')}\n${SEP}\n▸ Nessun dato ancora.\n${SEP}\n◈ Vex Bot`)}\n${boxEnd()}`);
+            return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`🏆  ${toBold('TOP GRUPPI')}\n\n▸ Nessun dato ancora.\n\n Vex Bot`)}\n${boxEnd()}`);
         }
 
         if (String(args[0] || '').toLowerCase() === 'info') {
@@ -36,7 +34,7 @@ ${boxEnd()}`);
             const [gid, data] = entry;
             let meta=null; try{ meta=await getCachedGroupMeta(sock,gid); }catch(_){}
             const name = meta?.subject || gid.split('@')[0];
-            const txt = `${toBold('INFO GRUPPO')}  ·  #${idx}\n${SEP}\n📛  ${name}\n💬  ${toBold(String(data.n||0))} messaggi\n🆔  ${gid.split('@')[0]}\n${SEP}\n◈ Vex Bot`;
+            const txt = `${toBold('INFO GRUPPO')}  ·  #${idx}\n\n📛  ${name}\n💬  ${toBold(String(data.n||0))} messaggi\n🆔  ${gid.split('@')[0]}\n\n Vex Bot`;
             await sendButtons(sock, from, txt, [{label:'📊 Tabella', id:'topgruppi'}, {label:'🏠 Menu', id:'menu'}], msg, null, { headerTitle:'🏆 Info Gruppo', footerText:'⬇️' });
             return;
         }
@@ -62,10 +60,10 @@ ${boxEnd()}`);
 
         const txt =
 `${toBold('TOP GRUPPI')}  ·  ${list.length} gruppi
-${SEP}
+
 ${lines}
-${SEP}
-◈ Vex Bot`;
+
+ Vex Bot`;
 
         const btns = [
             { label: `🥇 ${String(names.get(list[0]?.[0])||'').slice(0,12)}`, id:'topgruppi info 1' },

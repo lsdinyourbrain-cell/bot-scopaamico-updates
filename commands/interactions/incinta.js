@@ -1,6 +1,6 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 module.exports = {
@@ -11,9 +11,7 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, targetJid, reply, services } = context;
         const { randomInt, sendButtons } = services;
-
-        const SEP = '';
-        const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
+        const DOT = '';
 
         if (!targetJid) return reply(`Tagga una persona o rispondi a un suo messaggio. Esempio: ${toBold('.incinta @nome')}`);
 
@@ -24,15 +22,15 @@ module.exports = {
         const level = percent < 30 ? 'Basso' : percent < 70 ? 'Medio' : 'Alto';
         const txt =
 `🍼  ${toBold('TEST FANTASIA')}
-${SEP}
+
 👤  @${targetJid.split('@')[0]}
 📊  ${toBold(percent + '%')}  ·  ${level}
 ${DOT}
 ${b}
 ${DOT}
 Solo un gioco.
-${SEP}
-◈ Vex Bot`;
+
+ Vex Bot`;
 
         await sock.sendMessage(from, { text: txt, mentions: [targetJid] }, { quoted: msg });
 
@@ -42,7 +40,7 @@ ${SEP}
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍼 ${toBold('INCINTA')}`)}\n${line(`${SEP}`)}\n${line(`@${targetJid.split('@')[0]}  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍼 ${toBold('INCINTA')}`)}\n${line(``)}\n${line(`@${targetJid.split('@')[0]}  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [targetJid], { headerTitle: '🍼 INCINTA', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

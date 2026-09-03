@@ -4,8 +4,6 @@ const xpLib = require('../../lib/xp');
 const { dispOf, resolveJid } = require('../../lib/jid');
 const { toStyle, STYLES } = require('../../lib/font');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
-
-const SEP = '✦ ✦ ✦';
 // Stili disponibili per la personalizzazione del profilo
 const STILE_ALIASES = {
     gothic: 'gothic', gotico: 'gothic',
@@ -54,7 +52,11 @@ module.exports = {
             const raw = String(textArgs || '').replace(/^stile\s+/i, '').replace(/^style\s+/i, '').trim().toLowerCase();
             if (!raw || raw === 'lista') {
                 const lista = [...new Set(Object.values(STILE_ALIASES))];
-                return reply(`${sec('STILI DISPONIBILI')}\n${boxOpen()}\n${line(lista.join(', '))}\n${boxEnd()}\n▸ .profilo stile <nome>`);
+                return reply(`${sec('STILI DISPONIBILI')}
+${boxOpen()}
+${line(lista.join(', '))}
+${line('.profilo stile <nome>')}
+${boxEnd()}`);
             }
             const styleKey = STILE_ALIASES[raw];
             if (!styleKey) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line(`Stile sconosciuto: ${raw}`)}\n${line('Vedi: .profilo stile lista')}\n${boxEnd()}`);
@@ -94,7 +96,7 @@ module.exports = {
         const xp = uDB.xp || 0;
         const xpNeed = xpLib.xpForNext(level);
         const pregi = Array.isArray(uDB.pregi) ? uDB.pregi : [];
-        const lastPregi = pregi.slice(-3).map(p => (p && p.rank) || '☆').join(' · ');
+        const lastPregi = pregi.slice(-3).map(p => (p && p.rank) || '').join(' · ');
         const bestemmie = uDB.bestemmie || 0;
 
         let pfpUrl;

@@ -1,6 +1,6 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const { toStyle } = require('../../lib/font');
 const antibotLib = require('../../lib/antibot');
@@ -31,7 +31,7 @@ module.exports = {
         if (sub === 'on' || sub === 'true' || sub === '1' || sub === 'attiva') {
             cfg.enabled = true;
             saveDB();
-            const txt = `✅ ${B('ANTIBOT ATTIVATO')}\n\n▸ Stato: ✅ ${B('ATTIVO')}\n▸ Finestra: ${antibotLib.WATCH_WINDOW_MS / 1000}s dopo ogni comando\n▸ Soglia: ${antibotLib.THRESHOLD || 4} punti\n\n🤖 Gli altri bot che rispondono\ncon pulsanti/box/header\nverranno rimossi.\n\n◈ ${B('Vex Bot')}`;
+            const txt = `✅ ${B('ANTIBOT ATTIVATO')}\n\n▸ Stato: ✅ ${B('ATTIVO')}\n▸ Finestra: ${antibotLib.WATCH_WINDOW_MS / 1000}s dopo ogni comando\n▸ Soglia: ${antibotLib.THRESHOLD || 4} punti\n\n🤖 Gli altri bot che rispondono\ncon pulsanti/box/header\nverranno rimossi.\n\n ${B('Vex Bot')}`;
             try {
                 await sendButtons(sock, from, txt, [
                     { label: '❌ Disattiva', id: 'antibot off' },
@@ -43,7 +43,7 @@ module.exports = {
         if (sub === 'off' || sub === 'false' || sub === '0' || sub === 'disattiva') {
             cfg.enabled = false;
             saveDB();
-            const txt = `❌ ${B('ANTIBOT DISATTIVATO')}\n\n▸ Stato: ❌ ${B('DISATTIVO')}\n▸ Finestra: ${antibotLib.WATCH_WINDOW_MS / 1000}s\n▸ Soglia: ${antibotLib.THRESHOLD || 4} punti\n\n◈ ${B('Vex Bot')}`;
+            const txt = `❌ ${B('ANTIBOT DISATTIVATO')}\n\n▸ Stato: ❌ ${B('DISATTIVO')}\n▸ Finestra: ${antibotLib.WATCH_WINDOW_MS / 1000}s\n▸ Soglia: ${antibotLib.THRESHOLD || 4} punti\n\n ${B('Vex Bot')}`;
             try {
                 await sendButtons(sock, from, txt, [
                     { label: '✅ Attiva', id: 'antibot on' },
@@ -87,7 +87,7 @@ module.exports = {
 `📋 ${B('Whitelist')}\n` +
 `${wl}\n` +
 `\n` +
-`◈ ${B('Vex Bot')}`;
+` ${B('Vex Bot')}`;
             try {
                 await sendButtons(sock, from, txt, [
                     { label: '✅ Attiva', id: 'antibot on' },
@@ -117,7 +117,7 @@ ${boxEnd()}`);
         }
         if (sub === 'whitelist' || sub === 'wl' || sub === 'whitelist list' || sub === 'wl list') {
             const wlList = cfg.whitelist?.length ? cfg.whitelist.map(w => `▸ _${w}_`).join('\n') : '▸ _Nessuno_';
-            return reply(`${B('ANTIBOT')} — ${B('WHITELIST')}\n\n${wlList}\n\n▸ Uso: \`.antibot whitelist <n>\`\n◈ ${B('Vex Bot')}`);
+            return reply(`${B('ANTIBOT')} — ${B('WHITELIST')}\n\n${wlList}\n\n▸ Uso: \`.antibot whitelist <n>\`\n ${B('Vex Bot')}`);
         }
         if (sub === 'clear' && isOwner) {
             try { antibotLib.clear(); } catch (_) {}
@@ -168,7 +168,7 @@ ${boxEnd()}`);
 `  \`.antibot stats\`\n` +
 `  \`.antibot whitelist <n>\`\n` +
 `\n` +
-`◈ ${B('Vex Bot')}`;
+` ${B('Vex Bot')}`;
 
         try {
             await sendButtons(sock, from, txt, [

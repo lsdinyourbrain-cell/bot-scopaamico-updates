@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  INDOVINA_EMOJI — Vex Bot
@@ -61,9 +61,6 @@ const cleanAnswers = (arr) => arr.filter(p => {
     const clean = String(p.answer || '').trim();
     return Boolean(clean);
 });
-
-const SEP = '';
-
 const LEVELS = {
     facile:    { emoji: '🟢', label: 'FACILE',    color: '🟢' },
     media:     { emoji: '🟡', label: 'MEDIA',     color: '🟡' },
@@ -110,10 +107,10 @@ module.exports = {
                     saveDB();
                     return sendButtons(sock, from,
 `✅ *ESATTO!* 🎉
-${SEP}
+
 🛑 Era: *${g.answer}*!
 💰 Premio: *+${reward}€*
-${SEP}`,
+`,
                         [
                             { label: `🔁 Nuova (${LEVELS[g.level]?.label || ''})`, id: `indovina_emoji ${g.level}` },
                             { label: '🏠 Menu', id: 'menu' },
@@ -121,7 +118,7 @@ ${SEP}`,
                 }
                 return sendButtons(sock, from,
 `❌ *SBAGLIATO!*
-${SEP}
+
 Ancora: *${g.emoji}*
 💡 Continua a provare!`,
                     [
@@ -142,7 +139,7 @@ Ancora: *${g.emoji}*
             saveDB();
             return sendButtons(sock, from,
 `🏳️ Passo! Era: *${g.answer}*
-${SEP}`,
+`,
                 [
                     { label: '🔁 Nuova', id: 'indovina_emoji' },
                     { label: '🏠 Menu', id: 'menu' },
@@ -157,7 +154,7 @@ ${SEP}`,
             }
             return sendButtons(sock, from,
 `🔮 *INDOVINA L'EMOJI*
-${SEP}
+
 Ti lancio un rebus a emoji:
 indovina film, serie o canzone!
 Scegli la difficoltà:
@@ -165,7 +162,7 @@ Scegli la difficoltà:
 🟢 Facile · molto noti
 🟡 Media · un po' di testa
 🔴 Difficile · vero culto!
-${SEP}`,
+`,
                 [
                     { label: '🟢 Facile', id: 'indovina_emoji facile' },
                     { label: '🟡 Media', id: 'indovina_emoji media' },
@@ -195,9 +192,9 @@ ${SEP}`,
 
         return sendButtons(sock, from,
 `${level.emoji} *EMOJI QUIZ* · ${level.label}
-${SEP}
+
 🌠 ${pick.emoji}
-${SEP}
+
 Indovina cosa rappresento!
 Premi la risposta giusta 👇`,
             options.map(o => ({ label: o.slice(0, 28), id: `indovina_emoji risp ${encodeURIComponent(o)}` })),

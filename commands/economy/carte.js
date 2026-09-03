@@ -1,8 +1,8 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
-// 
+//
 //  CARTE — Vex Bot
 //  Bustine collezionabili stile Pokémon:
 //   .carte              → menu principale
@@ -12,25 +12,24 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //   .carte guida        → come funziona
 //  L'apertura mostra la busta, poi le 5 carte in un carosello nativo con le
 //  card renderizzate come PNG (lib/cards). I duplicati vengono rimborsati in
-//  automatico; le ✦ shiny hanno il bordo dorato e il doppio rimborso.
-// 
+//  automatico; le  shiny hanno il bordo dorato e il doppio rimborso.
+//
 
 const cards = require('../../lib/cards');
 
-const SEP = '';
-
-const MAIN_MENU_TEXT = `🎴 *CARTE VEX*
-${SEP}
-Apri le *buste* e colleziona
-*${cards.TOTAL_CARDS} carte* su 3 set!
-
-🎁 Busta · ${cards.PACK_COST}€ · 5 carte
-⭐ Da Comune a Leggendaria
-✦ Shiny rare · bordo dorato!
-
-💰 I duplicati vengono
-rimborsati in automatico.
-${SEP}`;
+const MAIN_MENU_TEXT =
+`${sec('CARTE VEX')}
+${boxOpen()}
+${line('Apri le *buste* e colleziona')}
+${line(`*${cards.TOTAL_CARDS} carte* su 3 set!`)}
+${line('')}
+${line(`🎁 Busta · ${cards.PACK_COST}€ · 5 carte`)}
+${line('⭐ Da Comune a Leggendaria')}
+${line('✨ Shiny rare · bordo dorato!')}
+${line('')}
+${line('💰 I duplicati vengono')}
+${line('rimborsati in automatico.')}
+${boxEnd()}`;
 
 const MENU_BTNS = [
     { label: `🎁 Apri busta · ${cards.PACK_COST}€`, id: 'carte apri' },
@@ -63,20 +62,20 @@ module.exports = {
         const u = getUser(sender, from);
         cards.initUserCards(u);
 
-        // ── APRI BUSTA 
         if (w1 === 'apri') {
             if (u.money < cards.PACK_COST) {
                 return reply(
-`❌ Servono *${cards.PACK_COST}€* in contante.
-Hai ${fmtEuro(u.money, formatMoney)}€ (in banca: ${fmtEuro(u.bank || 0, formatMoney)}€).
-
-👉 Usa \`.daily\`, \`.work\` o
-\`.preleva\` per procurarteli!`);
+`${sec('CARTE')}
+${boxOpen()}
+${line(`Servono *${cards.PACK_COST}€* in contante.`)}
+${line(`Hai ${fmtEuro(u.money, formatMoney)}€ (banca: ${fmtEuro(u.bank || 0, formatMoney)}€).`)}
+${line('')}
+${line('Usa `.daily`, `.work` o `.preleva`!')}
+${boxEnd()}`);
             }
             u.money -= cards.PACK_COST;
             u.cardsOpened = (u.cardsOpened || 0) + 1;
 
-            // Pescaggio + aggiornamento collezione (duplicati → rimborso).
             const pulls = cards.openPack();
             const results = pulls.map(pull => ({ pull, res: cards.addCard(u, pull) }));
             const refundTotal = results.reduce((s, r) => s + (r.res.isNew ? 0 : r.res.refund), 0);
@@ -86,12 +85,17 @@ Hai ${fmtEuro(u.money, formatMoney)}€ (in banca: ${fmtEuro(u.bank || 0, format
             const countNew = results.filter(r => r.res.isNew).length;
             const countShiny = pulls.filter(p => p.shiny).length;
 
-            // 1) La busta (immagine) + "apertura in corso".
             try {
                 const packBuf = await cards.renderPack(sharp);
                 await sock.sendMessage(from, {
                     image: packBuf,
-                    caption: `🎁 *BUSTA VEX*\n${SEP}\nStrappo la pellicola...\n⭐ ${cards.PACK_COST}€ · n°${u.cardsOpened}\n${SEP}\nApertura in corso...`,
+                    caption:
+`${sec('BUSTA VEX')}
+${boxOpen()}
+${line('Strappo la pellicola...')}
+${line(`⭐ ${cards.PACK_COST}€ · n°${u.cardsOpened}`)}
+${line('Apertura in corso...')}
+${boxEnd()}`,
                 }, { quoted: msg });
                 if (typeof sleep === 'function') await sleep(900);
             } catch (e) {
@@ -99,7 +103,6 @@ Hai ${fmtEuro(u.money, formatMoney)}€ (in banca: ${fmtEuro(u.bank || 0, format
                 if (typeof sleep === 'function') await sleep(300);
             }
 
-            // 2) Le 5 carte in carosello nativo.
             const images = [];
             for (const r of results) {
                 try {
@@ -115,20 +118,18 @@ Hai ${fmtEuro(u.money, formatMoney)}€ (in banca: ${fmtEuro(u.bank || 0, format
             }
 
             const summary =
-`🎁 *BUSTA APERTA* · n°${u.cardsOpened}
-${SEP}
-🆕 Nuove carte: *${countNew}*
-👥 Duplicati: *${results.length - countNew}*
-${refundTotal > 0 ? `💰 Rimborso duplicati: +${fmtEuro(refundTotal, formatMoney)}€` : ''}
-${countShiny ? `✦ SHINY trovate: *${countShiny}*!` : ''}
-${SEP}
-Scorri per vedere le carte 👇`;
+`${sec(`BUSTA APERTA · n°${u.cardsOpened}`)}
+${boxOpen()}
+${line(`🆕 Nuove carte: *${countNew}*`)}
+${line(`👥 Duplicati: *${results.length - countNew}*`)}
+${refundTotal > 0 ? line(`💰 Rimborso duplicati: +${fmtEuro(refundTotal, formatMoney)}€`) + '\n' : ''}${countShiny ? line(`✨ SHINY trovate: *${countShiny}*!`) + '\n' : ''}${line('Scorri per vedere le carte 👇')}
+${boxEnd()}`;
 
             if (images.length) {
                 const sent = await sendCarousel(sock, from, {
                     text: summary,
                     cards: images.map(({ pull, buf, res }) => ({
-                        title: `${pull.shiny ? '✦ ' : ''}${pull.card.id}`,
+                        title: `${pull.shiny ? '✨ ' : ''}${pull.card.id}`,
                         subtitle: `${pull.rarity.emoji} ${pull.rarity.label}`,
                         body: res.isNew ? '🆕 Nuova carta!' : `👥 Duplicato · +${fmtEuro(res.refund, formatMoney)}€`,
                         footer: `${pull.set.name}`,
@@ -136,10 +137,9 @@ Scorri per vedere le carte 👇`;
                     })),
                 }, msg);
                 if (!sent) {
-                    // Fallback: elenco testuale se il carosello non parte.
                     await sock.sendMessage(from, {
                         text: summary + '\n\n' + results.map(r =>
-                            `${r.res.isNew ? '🆕' : '👥'} ${r.pull.rarity.emoji} ${r.pull.card.id} ${r.pull.card.name}${r.pull.shiny ? ' ✦' : ''}`
+                            `${r.res.isNew ? '🆕' : '👥'} ${r.pull.rarity.emoji} ${r.pull.card.id} ${r.pull.card.name}${r.pull.shiny ? ' ✨' : ''}`
                         ).join('\n'),
                     }, { quoted: msg });
                 }
@@ -149,21 +149,20 @@ Scorri per vedere le carte 👇`;
                 }, { quoted: msg });
             }
 
-            await sendButtons(sock, from, '🎴 Cosa facciamo ora?', AFTER_PULL_BTNS, msg);
+            await sendButtons(sock, from, `${sec('CARTE')}\n${boxOpen()}\n${line('Cosa facciamo ora?')}\n${boxEnd()}`, AFTER_PULL_BTNS, msg);
             return;
         }
 
-        // ── COLLEZIONE (carosello) 
         if (w1 === 'coll' || w1 === 'collezione') {
             const stats = cards.collectionStats(u);
             const owned = cards.sortOwned(u);
             if (!owned.length) {
                 return sendButtons(sock, from,
-`📚 *COLLEZIONE*
-${SEP}
-Non hai ancora nessuna carta!
-Apri la tua prima busta 🎁
-${SEP}`,
+`${sec('COLLEZIONE')}
+${boxOpen()}
+${line('Non hai ancora nessuna carta!')}
+${line('Apri la tua prima busta 🎁')}
+${boxEnd()}`,
                     [
                         { label: `🎁 Apri busta · ${cards.PACK_COST}€`, id: 'carte apri' },
                         { label: '📖 Guida', id: 'carte guida' },
@@ -191,22 +190,23 @@ ${SEP}`,
                 .join('\n');
 
             const header =
-`📚 *COLLEZIONE*
-${SEP}
-🎴 Carte: *${stats.owned}*/${stats.total}
-👥 Duplicati totali: *${stats.dupes}*
-🎁 Buste aperte: *${stats.opened}*
-${SEP}
-${setProgress}
-${SEP}
-Prime 10 per rarità 👇`;
+`${sec('COLLEZIONE')}
+${boxOpen()}
+${line(`🎴 Carte: *${stats.owned}*/${stats.total}`)}
+${line(`👥 Duplicati totali: *${stats.dupes}*`)}
+${line(`🎁 Buste aperte: *${stats.opened}*`)}
+${line('')}
+${line(setProgress)}
+${line('')}
+${line('Prime 10 per rarità 👇')}
+${boxEnd()}`;
 
             if (images.length) {
                 const sent = await sendCarousel(sock, from, {
                     text: header,
                     cards: images.map(({ card, entry, set, buf }) => ({
-                        title: `${entry.shiny ? '✦ ' : ''}${card.id}`,
-                        subtitle: `${cards.RARITY[card.rarity].emoji} ${cards.RARITY[card.rarity].label}${entry.shiny ? ' ✦' : ''}`,
+                        title: `${entry.shiny ? '✨ ' : ''}${card.id}`,
+                        subtitle: `${cards.RARITY[card.rarity].emoji} ${cards.RARITY[card.rarity].label}${entry.shiny ? ' ✨' : ''}`,
                         body: entry.dupes ? `Posseduta ×1 · ${entry.dupes} duplicato/i` : 'Posseduta',
                         footer: `${set.name}`,
                         imageBuffer: buf,
@@ -219,7 +219,7 @@ Prime 10 per rarità 👇`;
                 await sock.sendMessage(from, { text: header }, { quoted: msg });
             }
 
-            await sendButtons(sock, from, '📚 Altre opzioni 👇', [
+            await sendButtons(sock, from, `${sec('COLLEZIONE')}\n${boxOpen()}\n${line('Altre opzioni 👇')}\n${boxEnd()}`, [
                 { label: '🎁 Apri busta', id: 'carte apri' },
                 { label: '🏠 Menu carte', id: 'carte' },
                 { label: '📖 Guida', id: 'carte guida' },
@@ -227,30 +227,32 @@ Prime 10 per rarità 👇`;
             return;
         }
 
-        // ── ELENCO DI UN SET 
         if (w1 === 'set') {
             const set = cards.SET_BY_KEY[String(w2 || '').toUpperCase()];
             if (!set) {
                 const lines = cards.SETS.map(s => `${s.emoji} ${s.key} — ${s.name} (${s.cards.length} carte)`);
-                return reply(`ℹ️ Set disponibili:\n${lines.join('\n')}`);
+                return reply(
+`${sec('SET DISPONIBILI')}
+${boxOpen()}
+${line(lines.join('\n'))}
+${boxEnd()}`);
             }
             const rows = set.cards.map(c => {
                 const entry = u.cards[`${set.key}:${c.id}`];
                 const r = cards.RARITY[c.rarity];
                 const mark = entry
-                    ? `${entry.shiny ? '✦' : '✔'}${entry.dupes ? ' ×' + entry.dupes : ''}`
+                    ? `${entry.shiny ? '✨' : '✔'}${entry.dupes ? ' ×' + entry.dupes : ''}`
                     : '·';
-                return `${mark} ${r.emoji} ${c.id} ${c.name}`;
+                return line(`${mark} ${r.emoji} ${c.id} ${c.name}`);
             }).join('\n');
 
             return sendButtons(sock, from,
-`${set.emoji} *${set.name.toUpperCase()}*
-${SEP}
-${set.cards.length} carte · ✔ posseduta
-· mancante · ✦ shiny
-${SEP}
+`${sec(set.name.toUpperCase())}
+${boxOpen()}
+${line(`${set.cards.length} carte · ✔ posseduta · · mancante · ✨ shiny`)}
+${line('')}
 ${rows}
-${SEP}`,
+${boxEnd()}`,
                 [
                     { label: '🏠 Menu carte', id: 'carte' },
                     { label: '📚 Collezione', id: 'carte coll' },
@@ -258,30 +260,25 @@ ${SEP}`,
                 ], msg);
         }
 
-        // ── GUIDA 
         if (w1 === 'guida') {
             return sendButtons(sock, from,
-`📖 *COME FUNZIONA*
-${SEP}
-🎁 \`.carte apri\` compra una
-busta da ${cards.PACK_COST}€ con 5 carte.
-
-⭐ Rarità (da più comune):
-⚪ Comune · 🟢 Non comune
-🔵 Rara · 🟣 Epica
-🟡 Leggendaria
-
-✦ Le *shiny* (5%) hanno il
-bordo dorato e il doppio
-rimborso da duplicato.
-
-👥 Una carta già posseduta
-diventa un duplicato e
-viene rimborsata in €.
-
-📚 \`.carte coll\` mostra la
-tua collezione.
-${SEP}`,
+`${sec('COME FUNZIONA')}
+${boxOpen()}
+${line(`🎁 \`.carte apri\` compra una busta da ${cards.PACK_COST}€ con 5 carte.`)}
+${line('')}
+${line('⭐ Rarità (da più comune):')}
+${line('⚪ Comune · 🟢 Non comune')}
+${line('🔵 Rara · 🟣 Epica')}
+${line('🟡 Leggendaria')}
+${line('')}
+${line('✨ Le *shiny* (5%) hanno il bordo dorato')}
+${line('e il doppio rimborso da duplicato.')}
+${line('')}
+${line('👥 Una carta già posseduta diventa')}
+${line('un duplicato e viene rimborsata in €.')}
+${line('')}
+${line('📚 `.carte coll` mostra la collezione.')}
+${boxEnd()}`,
                 [
                     { label: `🎁 Apri busta · ${cards.PACK_COST}€`, id: 'carte apri' },
                     { label: '📚 Collezione', id: 'carte coll' },
@@ -289,7 +286,6 @@ ${SEP}`,
                 ], msg);
         }
 
-        // ── MENU PRINCIPALE (default) 
         return sendButtons(sock, from, MAIN_MENU_TEXT, MENU_BTNS, msg);
     },
 };

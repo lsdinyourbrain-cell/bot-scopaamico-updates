@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  FAKENEWS — Vex Bot
@@ -9,9 +9,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 // 
 
 const { askAI, needKey } = require('../../lib/ai');
-
-const SEP = '';
-
 const FORMATS = [
     'titolo + breve articolo da telegiornale',
     'titolo scandalistico + due righe da tabloid',
@@ -41,13 +38,13 @@ module.exports = {
         if (t === 'uso' || t === 'help') {
             return sendButtons(sock, from,
 `📰 *_FAKENEWS_*
-${SEP}
+
 ▸ _Una notizia finta e satirica_
   _sul gruppo, in stile tg._
-${SEP}
+
 ▸ \`.fakenews\` → _a caso_
 ▸ \`.fakenews @amico vende finti NFT\` → _con dettagli_
-${SEP}
+
 `,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
@@ -103,6 +100,6 @@ ${SEP}
             await prog.done(needKey());
             return;
         }
-        await prog.done(`📰 *_FAKENEWS_* · _${groupName}_\n${SEP}\n${content}\n${SEP}\n☝️ _Notizia evidentemente falsa_ 😄\n`);
+        await prog.done(`📰 *_FAKENEWS_* · _${groupName}_\n\n${content}\n\n☝️ _Notizia evidentemente falsa_ 😄\n`);
     },
 };

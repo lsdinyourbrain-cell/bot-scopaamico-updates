@@ -1,6 +1,6 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 module.exports = {
@@ -11,9 +11,7 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, sender, targetJid, services } = context;
         const { ARRAYS, randomChoice, sendButtons } = services;
-
-        const SEP = '';
-        const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
+        const DOT = '';
 
         const target = targetJid || sender;
         const valore = Math.floor(Math.random() * 30) + 1;
@@ -24,15 +22,15 @@ module.exports = {
 
         const txt =
 `🍆  ${toBold('MISURAZIONE')}
-${SEP}
+
 👤  @${target.split('@')[0]}
 📏  ${toBold(valore + ' cm')}  ·  ${tipo}
 ${DOT}
 ${b}
 ${DOT}
 💬  ${randomChoice(ARRAYS.cazzo)}
-${SEP}
-◈ Vex Bot`;
+
+ Vex Bot`;
 
         await sock.sendMessage(from, { text: txt, mentions: [target] }, { quoted: msg });
 
@@ -42,7 +40,7 @@ ${SEP}
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍆 ${toBold('CAZZO')}`)}\n${line(`${SEP}`)}\n${line(`@${target.split('@')[0]}  ·  ${valore}cm  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍆 ${toBold('CAZZO')}`)}\n${line(``)}\n${line(`@${target.split('@')[0]}  ·  ${valore}cm  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [target], { headerTitle: '🍆 CAZZO', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

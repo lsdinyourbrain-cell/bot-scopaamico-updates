@@ -1,15 +1,12 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  METEO7 — Vex Bot
 //  Estensione di .weather: previsioni su 7 giorni (API gratuita wttr.in),
 //  una card al giorno con icona, temp max/min e pioggia.
 // 
-
-const SEP = '';
-
 // Emoji per il codice/descrizione meteo di ogni fascia oraria.
 const iconFor = (desc, isDay) => {
     const d = String(desc || '').toLowerCase();
@@ -62,7 +59,7 @@ module.exports = {
         if (!city) {
             return sendButtons(sock, from,
 `⚠️ _[uso]: scrivi una città per le previsioni a 7 giorni._
-${SEP}
+
 ▸ Esempio: \`.meteo7 Milano\``,
                 [{ label: '.meteo7 Roma', id: 'meteo7 Roma' }], msg);
         }
@@ -118,14 +115,14 @@ ${SEP}
             }
 
             const sent = await sendCarousel(sock, from, {
-                text: `${sec('PREVISIONI 7 GIORNI')}\n${boxOpen()}\n${line(`🌤️ *_PREVISIONI 7 GIORNI_*\n${SEP}\n▸ 📍 _${cityName}_\n${SEP}\n▸ _Scorri per vedere la_\n  _settimana giorno per giorno_ 👇\n${SEP}\n`)}\n${boxEnd()}`,
+                text: `${sec('PREVISIONI 7 GIORNI')}\n${boxOpen()}\n${line(`🌤️ *_PREVISIONI 7 GIORNI_*\n\n▸ 📍 _${cityName}_\n\n▸ _Scorri per vedere la_\n  _settimana giorno per giorno_ 👇\n\n`)}\n${boxEnd()}`,
                 cards,
             }, msg);
             if (!sent) {
                 const lines = consolidated.map((day, i) =>
                     `${day.icon} *${day.dow}* (${day.dateStr})\n   ${day.desc} · ${day.max}°/${day.min}° · pioggia ${day.rain}%`
                 ).join('\n');
-                await reply(`🌤️ *_METEO_* _${cityName} — 7 GIORNI_\n${SEP}\n${lines}\n${SEP}\n`);
+                await reply(`🌤️ *_METEO_* _${cityName} — 7 GIORNI_\n\n${lines}\n\n`);
             }
         } catch (_) {
             await reply('❌ Non trovo il meteo di questa città. Riprova con un nome più preciso.');

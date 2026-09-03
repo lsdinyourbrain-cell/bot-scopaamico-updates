@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  BANDA (MAFIA) — Vex Bot
@@ -10,8 +10,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //  Lo stato vive in db[from].bandaGame; la mappa giocatore→gruppo in
 //  db._bandaMap per rispondere dalle chat private.
 // 
-
-const SEP = '';
 const NIGHT_TIME_MS = 45000;   // finestra azioni notturne
 const DAY_TIME_MS = 60000;     // finestra votazioni
 
@@ -111,14 +109,14 @@ module.exports = {
                     saveDB();
                     return sendButtons(sock, from,
 `🔫 *BANDA* — gioco a ruoli
-${SEP}
+
 La Banda elimina di notte,
 il villaggio vota di giorno.
-${SEP}
+
 *${pushName || fmtJid(sender)}* ha creato la lobby!
 Ruoli: 🔫 Banda · 🕵️ Detective
 🩺 Medico · 😀 Civili
-${SEP}
+
 Min 4 giocatori per iniziare.`,
                         [
                             { label: '🔫 Unisciti', id: 'banda unisciti' },
@@ -128,10 +126,10 @@ Min 4 giocatori per iniziare.`,
                 if (g.players.some(p => p.jid === sender)) {
                     return sendButtons(sock, from,
 `🔫 *LOBBY BANDA*
-${SEP}
+
 Giocatori (${g.players.length}):
 ${g.players.map((p, i) => `${i + 1}. ${p.name}`).join('\n')}
-${SEP}
+
 Sei già dentro! Premi ▶️ quando
 siete in almeno 4.`,
                         [
@@ -146,10 +144,10 @@ siete in almeno 4.`,
                 saveDB();
                 return sendButtons(sock, from,
 `🔫 *${pushName || fmtJid(sender)}* si è unito!
-${SEP}
+
 Giocatori (${g.players.length}):
 ${g.players.map((p, i) => `${i + 1}. ${p.name}`).join('\n')}
-${SEP}
+
 Premi ▶️ per iniziare (min 4).`,
                     [
                         { label: '🔫 Unisciti', id: 'banda unisciti' },
@@ -171,10 +169,10 @@ Premi ▶️ per iniziare (min 4).`,
                 const alive = g.players.filter(p => p.alive);
                 return sendButtons(sock, from,
 `🔫 *STATO BANDA*
-${SEP}
+
 Fase: ${g.phase === 'lobby' ? 'lobby' : g.phase === 'night' ? '🌙 notte' : '☀️ giorno'}
 Vivi: ${alive.map(p => p.name).join(', ')}
-${SEP}`,
+`,
                     [
                         { label: '🔫 Unisciti', id: 'banda unisciti' },
                         { label: '🏠 Menu', id: 'menu' },
@@ -234,19 +232,19 @@ function startGame(sock, from, services) {
 
         let txt;
         if (p.role === 'banda') {
-            txt = `🌙 *NOTTE 1 — BANDA*\n${SEP}\nSei *${roleInfo.emoji} ${roleInfo.name}*.\nScegli chi eliminare stanotte:\n(azioni via pulsante)`;
+            txt = `🌙 *NOTTE 1 — BANDA*\n\nSei *${roleInfo.emoji} ${roleInfo.name}*.\nScegli chi eliminare stanotte:\n(azioni via pulsante)`;
         } else if (p.role === 'detective') {
-            txt = `🌙 *NOTTE 1 — DETECTIVE*\n${SEP}\nSei *${roleInfo.emoji} Detective*.\nScegli chi indagare:\n(azioni via pulsante)`;
+            txt = `🌙 *NOTTE 1 — DETECTIVE*\n\nSei *${roleInfo.emoji} Detective*.\nScegli chi indagare:\n(azioni via pulsante)`;
         } else if (p.role === 'medico') {
-            txt = `🌙 *NOTTE 1 — MEDICO*\n${SEP}\nSei *${roleInfo.emoji} Medico*.\nScegli chi salvare:\n(azioni via pulsante)`;
+            txt = `🌙 *NOTTE 1 — MEDICO*\n\nSei *${roleInfo.emoji} Medico*.\nScegli chi salvare:\n(azioni via pulsante)`;
         } else {
-            txt = `🌙 *NOTTE 1 — CIVILE*\n${SEP}\nSei *${roleInfo.emoji} Civile*.\nDormi, domani vota.\n`;
+            txt = `🌙 *NOTTE 1 — CIVILE*\n\nSei *${roleInfo.emoji} Civile*.\nDormi, domani vota.\n`;
         }
         sendButtons(sock, p.jid, txt, p.role === 'civile' ? [{ label: '😴 Dormo', id: 'banda stato' }] : [sheet], msg).catch(() => {});
     }
 
     sock.sendMessage(from, {
-        text: `${sec('LA NOTTE È CALATA')}\n${boxOpen()}\n${line(`🌙 *LA NOTTE È CALATA* (n°1)\n${SEP}\nI ruoli sono stati inviati in\nprivato. La banda decide, il\ndetective indaga, il medico cura.\n${SEP}⏳ Azioni: 45 secondi...`)}\n${boxEnd()}`,
+        text: `${sec('LA NOTTE È CALATA')}\n${boxOpen()}\n${line(`🌙 *LA NOTTE È CALATA* (n°1)\n\nI ruoli sono stati inviati in\nprivato. La banda decide, il\ndetective indaga, il medico cura.\n⏳ Azioni: 45 secondi...`)}\n${boxEnd()}`,
     }).catch(() => {});
 
     // Risoluzione notte dopo il timer.
@@ -289,11 +287,11 @@ function resolveNight(sock, from, services) {
     g.day += 1;
     if (dead) {
         sock.sendMessage(from, {
-            text: `☀️ *ALBA* (giorno ${g.day})\n${SEP}\n📢 Stanotte è morto:\n*${dead.name}* ${dead.role === 'banda' ? '🔫 era della Banda!' : `(${ROLES[dead.role].name})`}\n${SEP}Ora votate chi eliminare: invia la tua scelta in PRIVATO al bot, oppure usa \`.banda stato\`.`,
+            text: `☀️ *ALBA* (giorno ${g.day})\n\n📢 Stanotte è morto:\n*${dead.name}* ${dead.role === 'banda' ? '🔫 era della Banda!' : `(${ROLES[dead.role].name})`}\nOra votate chi eliminare: invia la tua scelta in PRIVATO al bot, oppure usa \`.banda stato\`.`,
         }).catch(() => {});
     } else {
         sock.sendMessage(from, {
-            text: `☀️ *ALBA* (giorno ${g.day})\n${SEP}\n📢 Nessun morto stanotte\n(il medico ha salvato!)\n${SEP}Ora votate chi eliminare.`,
+            text: `☀️ *ALBA* (giorno ${g.day})\n\n📢 Nessun morto stanotte\n(il medico ha salvato!)\nOra votate chi eliminare.`,
         }).catch(() => {});
     }
 
@@ -319,7 +317,7 @@ function resolveNight(sock, from, services) {
     for (const p of alive) {
         const targets = alive.filter(x => x.jid !== p.jid);
         sendButtons(sock, p.jid,
-            `🗳️ *VOTO* (giorno ${g.day})\n${SEP}Chi vuoi eliminare?`,
+            `🗳️ *VOTO* (giorno ${g.day})\nChi vuoi eliminare?`,
             [{
                 type: 'single_select',
                 label: '🗳️ Vota',

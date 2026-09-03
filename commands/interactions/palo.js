@@ -1,6 +1,6 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 const bar = (pct) => '█'.repeat(Math.round(pct/10)) + '░'.repeat(10-Math.round(pct/10)) + ` ${pct}%`;
@@ -13,9 +13,6 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { from, sender, targetJid, reply, services } = context;
         const { ARRAYS, randomChoice, randomInt, sendButtons } = services;
-
-        const SEP = '';
-
         if (!targetJid) return reply(`Tagga chi ti ha dato palo. Esempio: ${toBold('.palo @nome')}`);
 
         const pct = randomInt(55, 100);
@@ -23,13 +20,13 @@ module.exports = {
 
         const txt =
 `🪵  ${toBold('PALO')}
-${SEP}
+
 💔  @${sender.split('@')[0]}  →  @${targetJid.split('@')[0]}
 ${b}  ·  rifiuto ${pct}%
-${SEP}
+
 💬  ${randomChoice(ARRAYS.palo)}
-${SEP}
-◈ Vex Bot`;
+
+ Vex Bot`;
 
         await sock.sendMessage(from, { text: txt, mentions: [sender, targetJid] }, { quoted: msg });
 
@@ -39,7 +36,7 @@ ${SEP}
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🪵 ${toBold('PALO')}`)}\n${line(`${SEP}`)}\n${line(`@${sender.split('@')[0]} ↔ @${targetJid.split('@')[0]}`)}\n${line(`${b}`)}\n${line(`${SEP}`)}\n${line('Scegli sotto')}\n${line('◈ Vex Bot')}\n${boxEnd()}`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🪵 ${toBold('PALO')}`)}\n${line(``)}\n${line(`@${sender.split('@')[0]} ↔ @${targetJid.split('@')[0]}`)}\n${line(`${b}`)}\n${line(``)}\n${line('Scegli sotto')}\n${line(' Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [sender, targetJid], { headerTitle: '🪵 PALO', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

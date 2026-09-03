@@ -1,6 +1,6 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const { parseDuration, humanizeMs } = require('../../lib/timeparse');
 
@@ -14,7 +14,7 @@ module.exports = {
 
         const parsed = parseDuration(textArgs);
         if (!parsed) {
-            return reply(`${sec('COME SI USA')}\n${boxOpen()}\n${line('.promemoria <testo> in <tempo>')}\n${line('*Esempi:*')}\n${line('✦ .promemoria compra il latte in 10 minuti')}\n${line('✦ .promemoria pausa caffè tra 2 ore')}\n${line('✦ .promemoria 30s')}\n${boxEnd()}`);
+            return reply(`${sec('COME SI USA')}\n${boxOpen()}\n${line('.promemoria <testo> in <tempo>')}\n${line('*Esempi:*')}\n${line(' .promemoria compra il latte in 10 minuti')}\n${line(' .promemoria pausa caffè tra 2 ore')}\n${line(' .promemoria 30s')}\n${boxEnd()}`);
         }
 
         const clean = String(textArgs)

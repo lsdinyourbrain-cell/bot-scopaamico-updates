@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  NASTRO — Vex Bot
@@ -8,9 +8,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //  messaggi, top XP e i soldi. Come la "carrellata di fine settimana" di
 //  un gruppo di amici. Solo nei gruppi.
 // 
-
-const SEP = '';
-
 const fmtMoney = (n) => Number(n || 0).toLocaleString('it-IT');
 
 module.exports = {
@@ -35,11 +32,11 @@ module.exports = {
         if (!users.length) {
             return sendButtons(sock, from,
 `📊 *_NASTRO_*
-${SEP}
+
 ▸ Nessun dato per questo gruppo.
 ▸ I contatori partono quando i
   membri scrivono in chat.
-${SEP}
+
 `,
                 [{ label: '🏠 Menu', id: 'menu' }], msg);
         }
@@ -73,7 +70,7 @@ ${SEP}
 
         const header = `📊 *_NASTRO DEL GRUPPO_*`;
         const txt =
-`${sec('HEADER')}\n${boxOpen()}\n${line(`${header}`)}\n${line(`${SEP}`)}\n${line(`🤬 Bestemmie totali: _${fmtMoney(totalBestemmie)}_`)}\n${line(`💬 Messaggi totali: _${fmtMoney(totalMsg)}_`)}\n${line(`💰 Soldi in circolo: _${fmtMoney(totalMoney)}€_`)}\n${line(`${SEP}`)}\n${line('⚡ *Più attivo*')}\n${line(`_@${dispOf(topMsg.jid)}_ · _${topMsg.msgCount} messaggi_`)}\n${line('🎮 *Top livelli*')}\n${line(`_@${dispOf(topXp.jid)}_ · _liv. ${topXp.level} · ${topXp.xp} XP_`)}\n${line('💵 *Più ricco*')}\n${line(`_@${dispOf(topMoney.jid)}_ · _${fmtMoney(topMoney.money)}€_`)}\n${line(`${SEP}`)}\n${line('🏆 *TOP 5 XP*')}\n${line(`${topXpList}`)}\n${line(`${SEP}`)}\n${boxEnd()}`;
+`${sec('HEADER')}\n${boxOpen()}\n${line(`${header}`)}\n${line(``)}\n${line(`🤬 Bestemmie totali: _${fmtMoney(totalBestemmie)}_`)}\n${line(`💬 Messaggi totali: _${fmtMoney(totalMsg)}_`)}\n${line(`💰 Soldi in circolo: _${fmtMoney(totalMoney)}€_`)}\n${line(``)}\n${line('⚡ *Più attivo*')}\n${line(`_@${dispOf(topMsg.jid)}_ · _${topMsg.msgCount} messaggi_`)}\n${line('🎮 *Top livelli*')}\n${line(`_@${dispOf(topXp.jid)}_ · _liv. ${topXp.level} · ${topXp.xp} XP_`)}\n${line('💵 *Più ricco*')}\n${line(`_@${dispOf(topMoney.jid)}_ · _${fmtMoney(topMoney.money)}€_`)}\n${line(``)}\n${line('🏆 *TOP 5 XP*')}\n${line(`${topXpList}`)}\n${line(``)}\n${boxEnd()}`;
 
         // Tagga chi compare nel nastro: mostra i PN reali (dispOf) e passa le
         // mentions risolte, così i tag evidenziano anche nei pulsanti nativi.

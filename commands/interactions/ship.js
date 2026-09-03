@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
     name: 'ship',
@@ -10,7 +10,6 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
-
 
             let user1, user2;
 
@@ -49,7 +48,7 @@ ${boxEnd()}`);
                 : '🫶 Meglio amici.';
 
             await sock.sendMessage(from, {
-                text: `${S.star} ${S.dia}  *SHIP!*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`💘 @${user1.split('@')[0]} + @${user2.split('@')[0]}`)}\n${bullet(`*Compatibilità:* _*${percent}%*_`)}\n${bullet(`${mood}`)}\n${SEP.stars}\n${footer()}`,
+                text: `   *SHIP!*   \n\n${line(`💘 @${user1.split('@')[0]} + @${user2.split('@')[0]}`)}\n${line(`*Compatibilità:* _*${percent}%*_`)}\n${line(`${mood}`)}\n\n`,
                 mentions: [user1, user2],
             }, { quoted: msg });
     },

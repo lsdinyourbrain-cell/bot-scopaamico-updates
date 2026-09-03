@@ -1,15 +1,12 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  RICETTE — Vex Bot
 //  10 ricette random dall'API gratuita TheMealDB, una per card del carosello
 //  con foto e pulsante 👨🍳 Preparazione (ingredienti + passi).
 // 
-
-const SEP = '';
-
 module.exports = {
     name: 'ricette',
     aliases: ['recipe', 'ricetta', 'cucina'],
@@ -52,19 +49,19 @@ ${boxEnd()}`);
 
                 const title = `👨🍳 *_${meal.strMeal}_*`;
                 const area = meal.strArea ? ` · 📍 _${meal.strArea}_` : '';
-                const head = `${title}${area}\n${SEP}\n🧂 *_INGREDIENTI_* (_${ingr.length}_):\n${ingr.join('\n')}`;
+                const head = `${title}${area}\n\n🧂 *_INGREDIENTI_* (_${ingr.length}_):\n${ingr.join('\n')}`;
 
                 if (steps.length) {
                     const chunkSize = 12;
                     const pages = Math.ceil(steps.length / chunkSize);
                     for (let p = 0; p < pages; p++) {
                         const chunk = steps.slice(p * chunkSize, (p + 1) * chunkSize);
-                        const body = `${p === 0 ? head + '\n\n' : ''}👨‍🍳 *_PASSI_* (_${chunkSize * p + 1}_-_${chunkSize * p + chunk.length}_):\n${chunk.map((s, i) => `${chunkSize * p + i + 1}. ${s}`).join('\n')}\n${SEP}\n`;
+                        const body = `${p === 0 ? head + '\n\n' : ''}👨‍🍳 *_PASSI_* (_${chunkSize * p + 1}_-_${chunkSize * p + chunk.length}_):\n${chunk.map((s, i) => `${chunkSize * p + i + 1}. ${s}`).join('\n')}\n\n`;
                         if (p === 0) await reply(body);
                         else await sock.sendMessage(from, { text: body }, { quoted: msg }).catch(() => {});
                     }
                 } else {
-                    await reply(`${sec('INFO')}\n${boxOpen()}\n${line(`${head}\n${SEP}\n▸ _Istruzioni non disponibili_\n`)}\n${boxEnd()}`);
+                    await reply(`${sec('INFO')}\n${boxOpen()}\n${line(`${head}\n\n▸ _Istruzioni non disponibili_\n`)}\n${boxEnd()}`);
                 }
             } catch (_) {
                 await reply('❌ Non trovo questa ricetta. Riprova.');
@@ -103,15 +100,15 @@ ${boxEnd()}`);
             }));
 
             const sent = await sendCarousel(sock, from, {
-                text: `${sec('RICETTE CASUALI')}\n${boxOpen()}\n${line(`${SEP}`)}\n${line('_10 ricette da tutto il mondo._')}\n${line('_Scorri le card e premi_')}\n${line('*👨🍳 Preparazione* per')}\n${line('_ingredienti e passi!_')}\n${line(`${SEP}`)}\n${boxEnd()}`,
+                text: `${sec('RICETTE CASUALI')}\n${boxOpen()}\n${line(``)}\n${line('_10 ricette da tutto il mondo._')}\n${line('_Scorri le card e premi_')}\n${line('*👨🍳 Preparazione* per')}\n${line('_ingredienti e passi!_')}\n${line(``)}\n${boxEnd()}`,
                 cards,
             }, msg);
             if (!sent) {
                 await sendButtons(sock, from,
 `👨🍳 *_RICETTE_*
-${SEP}
+
 ${results.map((m, i) => `${i + 1}. ${m.strMeal}${m.strArea ? ' (_' + m.strArea + '_)' : ''} — \`.ricette prep ${m.idMeal}\``).join('\n')}
-${SEP}
+
 `,
                     [{ label: '🔁 Altre ricette', id: 'ricette' }], msg);
             }

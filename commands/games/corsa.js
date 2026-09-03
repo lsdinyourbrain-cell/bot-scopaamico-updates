@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  CORSA — Vex Bot
@@ -8,8 +8,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //  multipla (pulsanti). Chi arriva prima al traguardo (3 risposte giuste)
 //  vince il montepremi. Lo stato vive in db[from].corsaGame.
 // 
-
-const SEP = '';
 const ROUNDS_TO_WIN = 3;
 const MAX_PLAYERS = 8;
 const JOIN_TIME_MS = 60000; // finestra di iscrizione
@@ -72,12 +70,12 @@ module.exports = {
             if (!g || !g.active || g.phase !== 'join') {
                 return sendButtons(sock, from,
 `🏁 *CORSA DI GRUPPO*
-${SEP}
+
 Creo la gara! Premi
 *Partecipa* per entrare
 (altri amici possono unirsi),
 poi *Inizia* per partire.
-${SEP}
+
 Obiettivo: *${ROUNDS_TO_WIN} risposte
 giuste*, il primo vince!`,
                     [
@@ -91,10 +89,10 @@ giuste*, il primo vince!`,
             saveDB();
             return sendButtons(sock, from,
 `🙋 *@${show(sender, senderAlt)}* è in gara! 🏁
-${SEP}
+
 Giocatori (${g.players.length}/${MAX_PLAYERS}):
 ${g.players.map((p, i) => `${i + 1}. ${p.name}`).join('\n')}
-${SEP}
+
 Quando siete pronti, premi
 *🏁 Inizia* (min 2 giocatori)`,
                 [
@@ -144,9 +142,9 @@ ${boxEnd()}`);
                     saveDB();
                     return sendButtons(sock, from,
 `🏁 *@${show(sender, senderAlt)} HA VINTO LA CORSA!* 🏆
-${SEP}
+
 ${g.players.map((p, i) => `${medal(i + 1)} ${p.name} · ${p.points} pt`).join('\n')}
-${SEP}
+
 💰 Premio: *${prize}€* a ${show(sender, senderAlt).slice(0, 12)}!`,
                         [{ label: '🔁 Nuova gara', id: 'corsa partecipa' }, { label: '🏠 Menu', id: 'menu' }], msg, [sender]);
                 }
@@ -157,9 +155,9 @@ ${SEP}
                 saveDB();
                 return sendButtons(sock, from,
 `✅ *RISPOSTA GIUSTA* @${show(sender, senderAlt)}!
-${SEP}
+
 ${g.players.map((p, i) => `${medal(i + 1)} ${p.name} · ${p.points} pt`).join('\n')}
-${SEP}
+
 Prossima sfida 👇`,
                     [], msg, [sender]).then(() => askTurn(sock, from, msg, services));
             }
@@ -174,10 +172,10 @@ Prossima sfida 👇`,
             if (!g || !g.active) return reply('Nessuna gara attiva.');
             return sendButtons(sock, from,
 `🏁 *STATO GARA*
-${SEP}
+
 Fase: ${g.phase === 'join' ? 'iscrizione' : 'in corso'}
 ${g.players.map((p, i) => `${medal(i + 1)} ${p.name} · ${p.points} pt`).join('\n')}
-${SEP}`,
+`,
                 [
                     { label: '🙋 Partecipa', id: 'corsa partecipa' },
                     { label: '🏠 Menu', id: 'menu' },
@@ -199,11 +197,11 @@ ${SEP}`,
             saveDB();
             return sendButtons(sock, from,
 `🏁 *CORSA DI GRUPPO* 🏁
-${SEP}
+
 @${show(sender, senderAlt)} ha creato la gara!
 Premi *🙋 Partecipa* per entrare,
 poi *🏁 Inizia* (min 2 giocatori).
-${SEP}
+
 🎯 Obiettivo: *${ROUNDS_TO_WIN}* risposte giuste.
 Primo arrivato, primo vince!`,
                 [
@@ -231,9 +229,9 @@ async function askTurn(sock, from, msg, services) {
 
     await sendButtons(sock, from,
 `🧠 *PROSSIMA SFIDA*
-${SEP}
+
 ${g.question.q}
-${SEP}
+
 Premi la risposta giusta!
 (chi risponde per primo guadagna punti)`,
         buttons, msg);

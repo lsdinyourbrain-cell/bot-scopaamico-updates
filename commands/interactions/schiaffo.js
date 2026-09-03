@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
     name: 'schiaffo',
@@ -12,7 +12,6 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
-
 
             if (!targetJid) return reply(`${sec('ERRORE')}
 ${boxOpen()}
@@ -39,20 +38,20 @@ ${boxEnd()}`);
             }
 
             const lines = [
-                `${S.star} ${S.dia}  *${title}*  ${S.dia} ${S.star}`,
-                SEP.line,
+                `   *${title}*   `,
+                ''.line,
             ];
 
             if (command === 'insulta') {
-                lines.push(bullet(`@${targetJid.split('@')[0]}:`));
-                lines.push(bullet(extra));
+                lines.push(line(`@${targetJid.split('@')[0]}:`));
+                lines.push(line(extra));
             } else if (action) {
-                lines.push(bullet(`@${sender.split('@')[0]} ${action} @${targetJid.split('@')[0]}`));
-                if (extra) lines.push(bullet(extra));
+                lines.push(line(`@${sender.split('@')[0]} ${action} @${targetJid.split('@')[0]}`));
+                if (extra) lines.push(line(extra));
             }
 
-            lines.push(SEP.stars);
-            lines.push(footer());
+            lines.push(''.stars);
+            lines.push('');
 
             await sock.sendMessage(from, { text: lines.join('\n'), mentions: [sender, targetJid] });
     },

@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  GENIO — Vex Bot
@@ -9,9 +9,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 // 
 
 const { askAI, needKey } = require('../../lib/ai');
-
-const SEP = '';
-
 const STYLES = {
     saggezza: 'rispondi con profonda saggezza zen, breve ma illuminante.',
     ironia: 'rispondi con ironia e sarcasmo brillante, da vero genio dispettoso.',
@@ -35,14 +32,14 @@ module.exports = {
         if (!t) {
             return sendButtons(sock, from,
 `🧞 *_GENIO DELLA LAMPADA_*
-${SEP}
+
 ▸ _Chiedimi qualcosa e rispondo!_
-${SEP}
+
 ▸ \`.genio Sarò ricco?\` → _stile a caso_
 ▸ \`.genio ironia Devo studiare?\` → _stile scelto_
-${SEP}
+
 ▸ _Stili:_ saggezza · ironia · poesia · profezia
-${SEP}
+
 `,
                 [
                     { label: '🐉 Saperi (sagg.)', id: 'genio saggezza Chi sono io?' },
@@ -85,6 +82,6 @@ ${SEP}
             return;
         }
         const emoji = style === 'ironia' ? '😏' : style === 'poesia' ? '📜' : style === 'profezia' ? '🔮' : '🧞';
-        await prog.done(`${emoji} *_GENIO_* · _stile ${style}_\n${SEP}\n${content}\n`);
+        await prog.done(`${emoji} *_GENIO_* · _stile ${style}_\n\n${content}\n`);
     },
 };

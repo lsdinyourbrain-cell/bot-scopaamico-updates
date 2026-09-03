@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  FILM — Vex Bot
@@ -9,9 +9,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //  Serve una chiave TMDB gratuita (https://www.themoviedb.org/settings/api):
 //    .film set "la-tua-chiave"   (o variabile TMDB_API_KEY)
 // 
-
-const SEP = '';
-
 const BASE = 'https://api.themoviedb.org/3';
 const IMG = 'https://image.tmdb.org/t/p/w500';
 
@@ -43,20 +40,20 @@ module.exports = {
         if (!apiKey) {
             return sendButtons(sock, from,
 `🎬 *_FILM_* · _serve la chiave TMDB_
-${SEP}
+
 ▸ TMDB è _gratuito_: registrati su
   themoviedb.org/settings/api e
   ottieni una _chiave_, poi salvala:
-${SEP}
+
 ▸ \`.film set "la-tua-chiave"\`
-${SEP}
+
 `,
                 [{ label: 'ℹ️ Guida TMDB', id: 'film guida' }], msg);
         }
 
         // ── GUIDA CHIAVE 
         if (w1 === 'guida') {
-            return reply(`🎬 *_CHIAVE TMDB (GRATUITA)_*\n${SEP}\n▸ 1. _Vai su themoviedb.org_\n▸ 2. _Registrati (gratis)_\n▸ 3. _Impostazioni → API_\n▸ 4. _Crea una chiave_\n▸ 5. _Salvala qui:_\n${SEP}\n▸ \`.film set "la-tua-chiave"\`\n${SEP}\n▸ Poi \`.film\` per _i film!_\n`);
+            return reply(`🎬 *_CHIAVE TMDB (GRATUITA)_*\n\n▸ 1. _Vai su themoviedb.org_\n▸ 2. _Registrati (gratis)_\n▸ 3. _Impostazioni → API_\n▸ 4. _Crea una chiave_\n▸ 5. _Salvala qui:_\n\n▸ \`.film set "la-tua-chiave"\`\n\n▸ Poi \`.film\` per _i film!_\n`);
         }
 
         // ── TRAILER SU YOUTUBE 
@@ -73,10 +70,10 @@ ${boxEnd()}`);
                 if (!first) return reply('❌ Nessun trailer trovato su YouTube.');
                 return sendButtons(sock, from,
 `🎬 *_TRAILER_* — _${title}_
-${SEP}
+
 ▸ 🏷️ _${first.title?.slice(0, 80)}_
 ▸ 📺 _${first.channel || ''}_
-${SEP}
+
 ▸ 👉 ${first.url}
 `,
                     [{ label: '🔁 Altri film', id: 'film' }, { label: '🎬 Cerca altro', id: `film trailer ${title}` }], msg);
@@ -109,11 +106,11 @@ ${SEP}
 
             const sent = await sendCarousel(sock, from, {
                 text: `🎬 *_FILM DEL MOMENTO_*
-${SEP}
+
 ▸ _10 film trending da TMDB._
 ▸ Premi *🎬 Trailer* per la
   _ricerca su YouTube._
-${SEP}
+
 `,
                 cards,
             }, msg);
@@ -123,9 +120,9 @@ ${SEP}
                 ).join('\n');
                 await sendButtons(sock, from,
 `🎬 *_FILM DEL MOMENTO_*
-${SEP}
+
 ${lines}
-${SEP}
+
 ▸ Trailer: \`.film trailer <titolo>\`
 `,
                     [{ label: '🔁 Altri film', id: 'film' }], msg);

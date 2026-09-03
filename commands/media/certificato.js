@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  CERTIFICATO — Vex Bot
@@ -9,9 +9,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //       .certificato @amico  → per il taggato
 //       .certificato [titolo/descrizione]
 // 
-
-const SEP = '';
-
 // Sfugge il testo per l'SVG (non deve rompere l'XML).
 const esc = (s) => String(s)
     .replace(/&/g, '&amp;')
@@ -90,10 +87,10 @@ module.exports = {
         const prog = await showProgress(sock, from, { label: 'STAMPO IL CERTIFICATO', duration: 2500, quoted: msg });
         try {
             const png = await buildCert(sharp, name, title);
-            await prog.done(`${sec('CERTIFICATO')}\n${boxOpen()}\n${line(`🏅 *_CERTIFICATO_*\n${SEP}\n▸ _Certificato pronto!_\n`)}\n${boxEnd()}`);
+            await prog.done(`${sec('CERTIFICATO')}\n${boxOpen()}\n${line(`🏅 *_CERTIFICATO_*\n\n▸ _Certificato pronto!_\n`)}\n${boxEnd()}`);
             await sock.sendMessage(from, {
                 image: png,
-                caption: `${sec('CERTIFICATO')}\n${boxOpen()}\n${line(`🏅 *_CERTIFICATO_*\n${SEP}\n▸ *Concesso a:* _${name}_\n▸ *Motivo:* _${title}_\n${SEP}\n`)}\n${boxEnd()}`,
+                caption: `${sec('CERTIFICATO')}\n${boxOpen()}\n${line(`🏅 *_CERTIFICATO_*\n\n▸ *Concesso a:* _${name}_\n▸ *Motivo:* _${title}_\n\n`)}\n${boxEnd()}`,
             }, { quoted: msg });
         } catch (e) {
             console.error('[certificato]', e.message);

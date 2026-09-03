@@ -1,9 +1,7 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
-
-const SEP = '';
-const DOT = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
+const DOT = '';
 const toBold = (s) => '*' + String(s||'').trim() + '*';
 
 module.exports = {
@@ -18,7 +16,7 @@ module.exports = {
         if (!isGroup) return reply("❌ Comando solo nei gruppi.");
         if (db._escludi?.[from]) {
             return reply(
-`${sec('INFO')}\n${boxOpen()}\n${line(`🚫  ${toBold('CLASSIFICA DISATTIVATA')}`)}\n${line(`${SEP}`)}\n${line(`Gruppo escluso con ${toBold('.escludi')}`)}\n${line(`${SEP}`)}\n${line('◈ Vex Bot')}\n${boxEnd()}`);
+`${sec('INFO')}\n${boxOpen()}\n${line(`🚫  ${toBold('CLASSIFICA DISATTIVATA')}`)}\n${line(``)}\n${line(`Gruppo escluso con ${toBold('.escludi')}`)}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`);
         }
 
         const want = parseInt(String(textArgs || '').trim(), 10);
@@ -46,17 +44,17 @@ ${boxEnd()}`);
             const [jid, data] = entry;
             const txt =
 `${toBold('PROFILO RICCHEZZA')}  ·  #${idx}
-${SEP}
+
 👤  @${dispOf(jid)} (${getNick(jid)})
 💰  Contanti: ${toBold(formatMoney(data.money||0))}
 🏦  Banca: ${toBold(formatMoney(data.bank||0))}
-${SEP}
-◈ Vex Bot`;
+
+ Vex Bot`;
             await sendButtons(sock, from, txt, [{label:'📊 Classifica', id:'ricchi'}, {label:'🏠 Menu', id:'menu'}], msg, [jid], { headerTitle:'💎 Profilo', footerText:'⬇️' });
             return;
         }
 
-        if (!allSorted.length) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`📭  ${toBold('NESSUNA RICCHEZZA')}\n${SEP}\n▸ Nessun dato.\n${SEP}\n◈ Vex Bot`)}\n${boxEnd()}`);
+        if (!allSorted.length) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`📭  ${toBold('NESSUNA RICCHEZZA')}\n\n▸ Nessun dato.\n\n Vex Bot`)}\n${boxEnd()}`);
 
         const sorted = allSorted.slice(0, limit);
         const mentions = sorted.map(([jid])=>jid);
@@ -68,10 +66,10 @@ ${SEP}
 
         const txt =
 `${toBold('TOP ' + limit + ' RICCHI')}  ·  ${sorted.length}/${allSorted.length}
-${SEP}
+
 ${lines}
-${SEP}
-◈ Vex Bot`;
+
+ Vex Bot`;
 
         const secondJid = allSorted[1]?.[0];
         const btns = [

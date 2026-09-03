@@ -7,7 +7,7 @@
 // 
 
 const { toStyle } = require('../../lib/font');
-const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const T = (s) => toStyle(String(s).toUpperCase(), 'scriptBold');
 
@@ -49,12 +49,12 @@ module.exports = {
         targets = [...new Set(targets)].slice(0, 4);
         if (targets.length < 2) return reply(`😅 In questo gruppo non c'è abbastanza gente coraggiosa.`);
 
-        const lines = targets.map((t, i) => bullet(`@${String(t).split('@')[0]} — ${randomChoice(ROLES)}`));
+        const lines = targets.map((t, i) => line(`@${String(t).split('@')[0]} — ${randomChoice(ROLES)}`));
         const valutazione = randomInt(60, 100);
         const bar = '█'.repeat(Math.round(valutazione / 10)) + '░'.repeat(10 - Math.round(valutazione / 10));
 
         await sock.sendMessage(from, {
-            text: `${S.star} ${S.dia}  *ORGIA*  ${S.dia} ${S.star}\n${SEP.line}\n_${randomChoice(SCENE)}_\n\n${lines.join('\n')}\n\n${S.star} ${S.dia}  *Caosometro*  ${S.dia} ${S.star}\n${bar} *${valutazione}%*\n🔒 _La porta è stata chiusa a chiave._\n${SEP.stars}\n${footer()}`,
+            text: `   *ORGIA*   \n\n_${randomChoice(SCENE)}_\n\n${lines.join('\n')}\n\n   *Caosometro*   \n${bar} *${valutazione}%*\n🔒 _La porta è stata chiusa a chiave._\n\n`,
             mentions: targets,
         });
     },

@@ -1,6 +1,6 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
     name: 'link',
@@ -18,7 +18,6 @@ ${boxEnd()}`);
 
         const arg = String(textArgs || '').trim().toLowerCase();
 
-        // ── Amministrazione: l'admin decide se i normali possono usare .link ──
         if (['on', 'attiva', 'si', '1', 'true', 'yes', 'off', 'disattiva', 'no', '0', 'false'].includes(arg)) {
             if (!isOwner && !isSenderAdmin) {
                 return reply(`${sec('ERRORE')}
@@ -31,12 +30,12 @@ ${boxEnd()}`);
             db[from]._linkOpen = enable;
             saveDB();
             const state = enable ? 'ATTIVO' : 'DISATTIVO';
-            const text = `🔗 *_LINK_*
-▸ *Accesso al link:* ${state}
-${enable
-    ? '▸ Ora tutti i membri del gruppo possono usare *\.link*.'
-    : '▸ Da ora solo gli *admin* possono usare *\.link*.'}
-`;
+            const text =
+`${sec('LINK')}
+${boxOpen()}
+${line(`Accesso al link: *${state}*`)}
+${line(enable ? 'Ora tutti i membri possono usare *.link*.' : 'Da ora solo gli *admin* possono usare *.link*.')}
+${boxEnd()}`;
             return sendButtons(sock, from, text, [
                 { label: enable ? '.link off' : '.link on', id: enable ? 'link off' : 'link on' },
             ], msg);
@@ -53,12 +52,20 @@ ${boxEnd()}`);
         try {
             const inviteCode = await sock.groupInviteCode(from);
             const link = `https://chat.whatsapp.com/${inviteCode}`;
-            const linkText = `✦ ◆ ✦  *LINK DEL GRUPPO*  ✦ ◆ ✦\n\n✦ e pigliate sto link down 👇\n✦ \`${link}\`\n\n✦ ✧ ◆ ✧ ✦\n`;
+            const linkText =
+`${sec('LINK DEL GRUPPO')}
+${boxOpen()}
+${line('e pigliate sto link down 👇')}
+${line(`\`${link}\``)}
+${boxEnd()}`;
             await sendButtons(sock, from, linkText, [
                 { type: 'copy', label: '📋 Copia link', copy: link },
             ], msg);
         } catch (_) {
-            await reply("⚠️ _[uso]:_ non riesco a generare il link. Assicurati che il bot sia admin del gruppo.");
+            await reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('non riesco a generare il link. Assicurati che il bot sia admin del gruppo.')}
+${boxEnd()}`);
         }
     },
 };

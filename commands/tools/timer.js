@@ -1,6 +1,6 @@
 'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const { parseDuration, humanizeMs, formatCountdown } = require('../../lib/timeparse');
 
@@ -14,7 +14,7 @@ module.exports = {
 
         const parsed = parseDuration(textArgs);
         if (!parsed) {
-            return reply(`${sec('TIMER')}\n${boxOpen()}\n${line('.timer <durata>')}\n${line('Esempi:')}\n${line('✦ .timer 5 minuti')}\n${line('✦ .timer 1 ora')}\n${line('✦ .timer 90s')}\n${boxEnd()}`);
+            return reply(`${sec('TIMER')}\n${boxOpen()}\n${line('.timer <durata>')}\n${line('Esempi:')}\n${line(' .timer 5 minuti')}\n${line(' .timer 1 ora')}\n${line(' .timer 90s')}\n${boxEnd()}`);
         }
 
         const total = parsed.ms;

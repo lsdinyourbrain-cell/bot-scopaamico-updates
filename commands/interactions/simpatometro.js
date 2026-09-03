@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
     name: 'simpatometro',
@@ -14,7 +14,7 @@ module.exports = {
         const percent = randomInt(1, 100);
         const note = percent >= 80 ? '⭐ spacca davvero' : percent >= 50 ? '👍 promosso/a' : '💬 può fare di meglio';
         await sock.sendMessage(from, {
-            text: `${S.star} ${S.dia}  *SIMPATOMETRO*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`@${person.split('@')[0]}`)}\n${bullet(`*Simpatia:* _*${percent}%*_`)}\n${bullet(`${note}`)}\n${SEP.stars}\n${footer()}`,
+            text: `   *SIMPATOMETRO*   \n\n${line(`@${person.split('@')[0]}`)}\n${line(`*Simpatia:* _*${percent}%*_`)}\n${line(`${note}`)}\n\n`,
             mentions: [person],
         });
     },

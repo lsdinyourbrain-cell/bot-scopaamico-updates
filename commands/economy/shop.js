@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  SHOP — Vex Bot
@@ -45,9 +45,6 @@ const ITEMS = [
         effect: '💰 +120€ · 🏅 pregio VIP',
     },
 ];
-
-const SEP = '';
-
 // Renderizza la card di un oggetto come immagine SVG → PNG (le card del
 // carosello WhatsApp DEVONO avere un'immagine, altrimenti il messaggio
 // viene rifiutato con "versione non supportata").
@@ -92,10 +89,10 @@ module.exports = {
             if (!owned.length) {
                 return sendButtons(sock, from,
 `🎒 *ZAINO*
-${SEP}
+
 Non hai ancora oggetti.
 Compra qualcosa al negozio!
-${SEP}`,
+`,
                     [{ label: '🛍️ Vai al negozio', id: 'shop' }, { label: '🏠 Menu', id: 'menu' }], msg);
             }
             const lines = owned.map(([id, n]) => {
@@ -105,9 +102,9 @@ ${SEP}`,
             }).filter(Boolean).join('\n');
             return sendButtons(sock, from,
 `🎒 *ZAINO*
-${SEP}
+
 ${lines}
-${SEP}
+
 Usa: \`.shop usa <oggetto>\``,
                 [
                     { label: '🛍️ Negozio', id: 'shop' },
@@ -147,7 +144,7 @@ Usa: \`.shop usa <oggetto>\``,
                 out.push('💰 +120€!', '🏅 Pregio *👑 VIP del gruppo* aggiunto!');
             }
             saveDB();
-            return reply(`${it.emoji} *${it.name}* usato!\n${out.join('\n')}\n${SEP}\n💰 Saldo: *${formatMoney(u.money)}*`);
+            return reply(`${it.emoji} *${it.name}* usato!\n${out.join('\n')}\n\n💰 Saldo: *${formatMoney(u.money)}*`);
         }
 
         // ── INFO OGGETTO 
@@ -155,7 +152,7 @@ Usa: \`.shop usa <oggetto>\``,
             const id = (w2 || '').trim();
             const it = ITEMS.find(x => x.id === id || x.name.toLowerCase() === id);
             if (!it) return reply(`❓ Oggetto non trovato.\nElenco: ${ITEMS.map(x => x.id).join(', ')}`);
-            return reply(`${it.emoji} *${it.name}*\n${SEP}\n💰 Prezzo: *${formatMoney(it.price)}*\n\n${it.desc}\n\n✨ Effetto:\n${it.effect}\n${SEP}\nCompra: \`.shop\`\nUsa: \`.shop usa ${it.id}\``);
+            return reply(`${it.emoji} *${it.name}*\n\n💰 Prezzo: *${formatMoney(it.price)}*\n\n${it.desc}\n\n✨ Effetto:\n${it.effect}\n\nCompra: \`.shop\`\nUsa: \`.shop usa ${it.id}\``);
         }
 
         // ── COMPRA (da pulsante) 
@@ -176,11 +173,11 @@ Hai ${formatMoney(u.money)}€.
             saveDB();
             return sendButtons(sock, from,
 `✅ *${it.emoji} ${it.name}* comprato!
-${SEP}
+
 💰 -${formatMoney(it.price)}€
 🎒 Zaino: ${Object.values(u.shopInv).reduce((s, n) => s + n, 0)} oggetti
 Saldo: *${formatMoney(u.money)}€*
-${SEP}
+
 Usalo subito: \`.shop usa ${it.id}\``,
                 [
                     { label: '🎒 Zaino', id: 'shop inv' },
@@ -212,14 +209,14 @@ Usalo subito: \`.shop usa ${it.id}\``,
 
         const sent = await sendCarousel(sock, from, {
             text: `🛍️ *NEGOZIO VEX*
-${SEP}
+
 Compra con i soldi in *contante*.
 Poi usa gli oggetti con
 \`.shop usa <oggetto>\`.
 
 🎒 Il tuo zaino: *${Object.values(u.shopInv).reduce((s, n) => s + n, 0)}* oggetti
 💰 Saldo: *${formatMoney(u.money)}€*
-${SEP}
+
 Scorri per vedere gli oggetti 👇`,
             cards,
         }, msg);
@@ -227,9 +224,9 @@ Scorri per vedere gli oggetti 👇`,
         if (!sent) {
             return sendButtons(sock, from,
 `🛍️ *NEGOZIO*
-${SEP}
+
 ${ITEMS.map(it => `${it.emoji} ${it.name} · ${formatMoney(it.price)}€`).join('\n')}
-${SEP}
+
 Compra: \`.shop compra <id>\`
 Info: \`.shop info <id>\``,
                 [

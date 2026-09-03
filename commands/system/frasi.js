@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 const phrasesLib = require('../../lib/phrases');
 
 module.exports = {
@@ -14,7 +14,7 @@ module.exports = {
 
         // Permessi: solo admin o owner
         if (isGroup && !isOwner && !isSenderAdmin) {
-            return reply(`❌ ${S.star} Solo gli *admin* possono modificare le frasi.`);
+            return reply(`❌  Solo gli *admin* possono modificare le frasi.`);
         }
         if (!isGroup && !isOwner) {
             return reply(`❌ Solo l'owner può usare questo comando in privato.`);
@@ -30,23 +30,23 @@ module.exports = {
             const lines = allKeys.map(k => {
                 const hasFile = phrasesLib.exists(k);
                 const count = hasFile ? (phrasesLib.getPhrases(k) || []).length : (ARRAYS[k] || COPY[k.replace(/^copy_/, '')] || []).length;
-                const icon = hasFile ? '✦' : '▫';
+                const icon = hasFile ? '' : '▫';
                 return `${icon} \`${k}\` — ${count} frasi ${hasFile ? '(custom)' : '(default)'}`;
             }).join('\n');
 
             return reply(
-`${S.star} ${S.dia}  *FRASI — LISTA*  ${S.dia} ${S.star}
-${SEP.line}
+`   *FRASI — LISTA*   
+
 ${lines || '_Nessuna frase trovata._'}
-${SEP.lineL}
-${bullet('Uso:')}
-${bullet('`.frasi mostra <nome>` — vedi le frasi')}
-${bullet('`.frasi aggiungi <nome> <frase>` — aggiungi')}
-${bullet('`.frasi set <nome> frase1 | frase2 | ...` — sovrascrivi')}
-${bullet('`.frasi rimuovi <nome> <numero>` — elimina')}
-${bullet('`.frasi reset <nome>` — ripristina default')}
-${SEP.stars}
-${footer()}`
+
+${line('Uso:')}
+${line('`.frasi mostra <nome>` — vedi le frasi')}
+${line('`.frasi aggiungi <nome> <frase>` — aggiungi')}
+${line('`.frasi set <nome> frase1 | frase2 | ...` — sovrascrivi')}
+${line('`.frasi rimuovi <nome> <numero>` — elimina')}
+${line('`.frasi reset <nome>` — ripristina default')}
+
+`
             );
         }
 
@@ -55,14 +55,14 @@ ${footer()}`
             const key = String(args[1] || '').toLowerCase().trim();
             if (!key) return reply(`⚠️ Uso: _.frasi mostra <nome>_\nEs: _.frasi mostra schiaffi_`);
             const phrases = phrasesLib.getPhrases(key) || ARRAYS[key] || COPY[key.replace(/^copy_/, '')] || null;
-            if (!phrases) return reply(`❌ Nessuna frase trovata per \`${key}\`.\n${bullet('Prova _.frasi lista_')}`);
+            if (!phrases) return reply(`❌ Nessuna frase trovata per \`${key}\`.\n${line('Prova _.frasi lista_')}`);
             const list = phrases.map((p, i) => `${String(i + 1).padStart(2, '0')}. ${p}`).join('\n');
             // Se troppo lungo, spezza
-            const header = `${S.star} ${S.dia}  *FRASI — ${key.toUpperCase()}*  ${S.dia} ${S.star}\n${SEP.line}\n`;
-            const txt = header + list + `\n${SEP.lineL}\n${bullet(`Totale: ${phrases.length} frasi`)}\n${SEP.stars}\n${footer()}`;
+            const header = `   *FRASI — ${key.toUpperCase()}*   \n\n`;
+            const txt = header + list + `\n\n${line(`Totale: ${phrases.length} frasi`)}\n\n`;
             if (txt.length > 3500) {
                 // Invia come documento se troppo lungo
-                return reply(`${S.star} ${S.dia}  *FRASI — ${key.toUpperCase()}*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`Totale: ${phrases.length} frasi — invio prime 20:`)}\n${phrases.slice(0, 20).map((p, i) => `${i + 1}. ${p}`).join('\n')}\n${SEP.stars}\n${footer()}`);
+                return reply(`   *FRASI — ${key.toUpperCase()}*   \n\n${line(`Totale: ${phrases.length} frasi — invio prime 20:`)}\n${phrases.slice(0, 20).map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\n`);
             }
             return reply(txt);
         }
@@ -90,13 +90,13 @@ ${footer()}`
             } catch (_) {}
 
             return reply(
-`${S.star} ${S.dia}  *FRASE AGGIUNTA*  ${S.dia} ${S.star}
-${SEP.line}
-${bullet(`File: \`${key}.txt\``)}
-${bullet(`Totale: ${updated.length} frasi`)}
-${bullet(`Nuova: _${frase.slice(0, 80)}${frase.length > 80 ? '…' : ''}_`)}
-${SEP.stars}
-${footer()}`
+`   *FRASE AGGIUNTA*   
+
+${line(`File: \`${key}.txt\``)}
+${line(`Totale: ${updated.length} frasi`)}
+${line(`Nuova: _${frase.slice(0, 80)}${frase.length > 80 ? '…' : ''}_`)}
+
+`
             );
         }
 
@@ -104,7 +104,7 @@ ${footer()}`
         if (sub === 'set' || sub === 'imposta' || sub === 'sovrascrivi') {
             const key = String(args[1] || '').toLowerCase().trim();
             const rest = args.slice(2).join(' ').trim();
-            if (!key || !rest) return reply(`⚠️ Uso: _.frasi set <nome> frase1 | frase2 | frase3_\nEs: _.frasi set schiaffi frase uno | frase due_\n${bullet('Separa le frasi con `|`')}`);
+            if (!key || !rest) return reply(`⚠️ Uso: _.frasi set <nome> frase1 | frase2 | frase3_\nEs: _.frasi set schiaffi frase uno | frase due_\n${line('Separa le frasi con `|`')}`);
             const phrases = rest.split('|').map(s => s.trim()).filter(Boolean);
             if (!phrases.length) return reply(`❌ Nessuna frase valida.`);
             if (phrases.some(p => p.length > 400)) return reply(`❌ Una frase supera i 400 caratteri.`);
@@ -120,12 +120,12 @@ ${footer()}`
             } catch (_) {}
 
             return reply(
-`${S.star} ${S.dia}  *FRASI IMPOSTATE*  ${S.dia} ${S.star}
-${SEP.line}
-${bullet(`File: \`${key}.txt\``)}
-${bullet(`Totale: ${phrases.length} frasi sovrascritte`)}
-${SEP.stars}
-${footer()}`
+`   *FRASI IMPOSTATE*   
+
+${line(`File: \`${key}.txt\``)}
+${line(`Totale: ${phrases.length} frasi sovrascritte`)}
+
+`
             );
         }
 
@@ -137,7 +137,7 @@ ${footer()}`
             const idx = parseInt(idxStr, 10) - 1;
             if (isNaN(idx)) return reply(`❌ Numero non valido.`);
             const updated = phrasesLib.removePhrase(key, idx);
-            if (!updated) return reply(`❌ Indice fuori range o file inesistente.\n${bullet('Vedi _.frasi mostra ' + key + '_')}`);
+            if (!updated) return reply(`❌ Indice fuori range o file inesistente.\n${line('Vedi _.frasi mostra ' + key + '_')}`);
             if (ARRAYS && ARRAYS[key]) ARRAYS[key] = updated;
             if (COPY && key.startsWith('copy_') && COPY[key.slice(5)]) COPY[key.slice(5)] = updated;
             try {
@@ -147,12 +147,12 @@ ${footer()}`
             } catch (_) {}
 
             return reply(
-`${S.star} ${S.dia}  *FRASE RIMOSSA*  ${S.dia} ${S.star}
-${SEP.line}
-${bullet(`File: \`${key}.txt\``)}
-${bullet(`Rimossa #${idx + 1}, rimaste ${updated.length}`)}
-${SEP.stars}
-${footer()}`
+`   *FRASE RIMOSSA*   
+
+${line(`File: \`${key}.txt\``)}
+${line(`Rimossa #${idx + 1}, rimaste ${updated.length}`)}
+
+`
             );
         }
 
@@ -166,32 +166,32 @@ ${footer()}`
             fs.unlinkSync(f);
             // Ricarica da ARRAYS/COPY originali? Serve riavvio per ripristinare, ma avvisiamo
             return reply(
-`${S.star} ${S.dia}  *FRASI RESETTATE*  ${S.dia} ${S.star}
-${SEP.line}
-${bullet(`File \`${key}.txt\` eliminato`)}
-${bullet(`Al prossimo riavvio tornerà il default`)}
-${bullet(`Oppure usa _.frasi set ${key} ..._ per reimpostare subito`)}
-${SEP.stars}
-${footer()}`
+`   *FRASI RESETTATE*   
+
+${line(`File \`${key}.txt\` eliminato`)}
+${line(`Al prossimo riavvio tornerà il default`)}
+${line(`Oppure usa _.frasi set ${key} ..._ per reimpostare subito`)}
+
+`
             );
         }
 
         return reply(
-`${S.star} ${S.dia}  *FRASI — AIUTO*  ${S.dia} ${S.star}
-${SEP.line}
-${bullet('`.frasi lista` — tutti i file')}
-${bullet('`.frasi mostra <nome>` — vedi frasi')}
-${bullet('`.frasi aggiungi <nome> <frase>` — aggiungi')}
-${bullet('`.frasi set <nome> f1 | f2 | f3` — sovrascrivi')}
-${bullet('`.frasi rimuovi <nome> <n>` — elimina n°')}
-${bullet('`.frasi reset <nome>` — torna al default')}
-${SEP.lineL}
-${bullet('Esempi:')}
-${bullet('`.frasi mostra schiaffi`')}
-${bullet('`.frasi aggiungi verita Hai mai ...?`')}
-${bullet('`.frasi set rissa X ha vinto! | Y ha perso`')}
-${SEP.stars}
-${footer()}`
+`   *FRASI — AIUTO*   
+
+${line('`.frasi lista` — tutti i file')}
+${line('`.frasi mostra <nome>` — vedi frasi')}
+${line('`.frasi aggiungi <nome> <frase>` — aggiungi')}
+${line('`.frasi set <nome> f1 | f2 | f3` — sovrascrivi')}
+${line('`.frasi rimuovi <nome> <n>` — elimina n°')}
+${line('`.frasi reset <nome>` — torna al default')}
+
+${line('Esempi:')}
+${line('`.frasi mostra schiaffi`')}
+${line('`.frasi aggiungi verita Hai mai ...?`')}
+${line('`.frasi set rissa X ha vinto! | Y ha perso`')}
+
+`
         );
     },
 };

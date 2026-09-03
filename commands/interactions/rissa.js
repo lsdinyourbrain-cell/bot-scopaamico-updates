@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
     name: 'rissa',
@@ -10,7 +10,6 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
         const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
-
 
             if (!targetJid) return reply(`${sec('ERRORE')}
 ${boxOpen()}
@@ -22,7 +21,7 @@ ${boxEnd()}`);
                 .replace(/X/g, `@${vincitore.split('@')[0]}`)
                 .replace(/Y/g, `@${perdente.split('@')[0]}`);
             await sock.sendMessage(from, {
-                text: `${S.star} ${S.dia}  *RISSA*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`⚔️ @${sender.split('@')[0]} vs @${targetJid.split('@')[0]}`)}\n${bullet(`💬 _${frase}_`)}\n${SEP.lineL}\n${bullet(`🏆 *Vincitore:* @${vincitore.split('@')[0]}`)}\n${SEP.stars}\n${footer()}`,
+                text: `   *RISSA*   \n\n${line(`⚔️ @${sender.split('@')[0]} vs @${targetJid.split('@')[0]}`)}\n${line(`💬 _${frase}_`)}\n\n${line(`🏆 *Vincitore:* @${vincitore.split('@')[0]}`)}\n\n`,
                 mentions: [sender, targetJid],
             });
     },

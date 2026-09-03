@@ -1,6 +1,6 @@
 'use strict';
 
-const { S, SEP, footer, bullet, sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
     name: 'obbligo',
@@ -10,6 +10,6 @@ module.exports = {
     async run(sock, msg, args, context) {
         const { reply, services } = context;
         const { ARRAYS, randomChoice } = services;
-        await reply(`${S.star} ${S.dia}  *OBBLIGO*  ${S.dia} ${S.star}\n${SEP.line}\n${bullet(`🎯 _${randomChoice(ARRAYS.obbligo)}_`)}\n${SEP.stars}\n${footer()}`);
+        await reply(`   *OBBLIGO*   \n\n${line(`🎯 _${randomChoice(ARRAYS.obbligo)}_`)}\n\n`);
     },
 };

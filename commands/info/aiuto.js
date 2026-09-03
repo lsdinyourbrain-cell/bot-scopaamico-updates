@@ -1,23 +1,18 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
-// 
+//
 //  AIUTO — Vex Bot
 //  .aiuto            → invia un file .txt con TUTTI i comandi spiegati
 //  .aiuto <comando>  → spiega un singolo comando (uso, alias, descrizione)
 //  .aiuto <sezione>  → elenca tutti i comandi di una sezione con le descrizioni
 //  Le descrizioni sono prese direttamente dai moduli: sempre aggiornate.
-// 
+//
 
 const { SECTIONS } = require('./menu');
 const pkg = require('../../package.json');
 
-const SEP = '';
-
-// Raccoglie i comandi unici dal registro (la Map include alias → stesso modulo).
-// I comandi marcati hidden:true restano utilizzabili ma NON appaiono né nella
-// guida né nel menu: sono "nascosti" di proposito (es. .estorsione).
 const uniqueCommands = (commands) =>
     [...new Set(commands.values())]
         .filter(m => !m.hidden)
@@ -25,7 +20,6 @@ const uniqueCommands = (commands) =>
 
 const cleanDesc = (m) => String(m.description || '').replace(/\s+/g, ' ').trim();
 
-// Crea il file .txt con la guida completa, raggruppata per sezione.
 const buildGuideTxt = (commands) => {
     const nameSection = new Map();
     for (const s of SECTIONS) {
@@ -40,7 +34,7 @@ const buildGuideTxt = (commands) => {
     }
 
     let out = '';
-    out += `✧ GUIDE COMPLETA — Vex Bot v${pkg.version} ✧\n`;
+    out += ` GUIDE COMPLETA — Vex Bot v${pkg.version} \n`;
     out += `In chat usa "." davanti a ogni comando.\n`;
     out += `Menu interattivo: .menu  ·  Dettaglio comando: .aiuto <comando>\n\n`;
 
@@ -58,37 +52,40 @@ const buildGuideTxt = (commands) => {
         }
     }
 
-    // Solo i comandi con la spiegazione: nessuna riga finale decorativa.
     return out;
 };
 
-// Spiegazione di un singolo comando.
 const explain = (mod) => {
     const aliases = (mod.aliases && mod.aliases.length)
-        ? `\n📎 Alias: ${mod.aliases.map(a => '.' + a).join(', ')}`
+        ? mod.aliases.map(a => '.' + a).join(', ')
         : '';
-    return (
-`📘 *_AIUTO — .${mod.name}_*${aliases}
-${SEP}
-▸ 📝 ${cleanDesc(mod)}
-${SEP}
-▸ 💡 Scrivi \`.aiuto\` per la guida completa,
-  o \`.menu\` per navigare le sezioni.`);
+    const lines = [
+        line(`Comando: .${mod.name}`),
+        ...(aliases ? [line(`Alias: ${aliases}`)] : []),
+        line(''),
+        line(cleanDesc(mod)),
+        line(''),
+        line('Scrivi `.aiuto` per la guida completa,'),
+        line('o `.menu` per navigare le sezioni.'),
+    ];
+    return `${sec(`AIUTO — .${mod.name.toUpperCase()}`)}\n${boxOpen()}\n${lines.join('\n')}\n${boxEnd()}`;
 };
 
-// Elenco dei comandi di una sezione con le descrizioni complete.
 const sectionDump = (section, commands) => {
     const rows = section.items.map(([emoji, cmd]) => {
         const mod = commands.get(cmd);
         const desc = mod ? cleanDesc(mod) : '';
-        return `${emoji} \`.${cmd}\` — ${desc}`;
+        return line(`${emoji} \`.${cmd}\` — ${desc}`);
     });
     return (
-`${section.emoji} *_SEZIONE ${section.title}_* · _${section.items.length} comandi_
-${SEP}
+`${sec(`SEZIONE ${section.title}`)}
+${boxOpen()}
+${line(`${section.emoji} ${section.title} · ${section.items.length} comandi`)}
+${line('')}
 ${rows.join('\n')}
-${SEP}
-💡 Per il dettaglio: \`.aiuto <comando>\``);
+${line('')}
+${line('Per il dettaglio: `.aiuto <comando>`')}
+${boxEnd()}`);
 };
 
 module.exports = {
@@ -101,41 +98,46 @@ module.exports = {
         const { commands } = services;
 
         if (!commands) {
-            return reply("❌ Guida non disponibile in questo momento. Riprova tra poco.");
+            return reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Guida non disponibile in questo momento. Riprova tra poco.')}
+${boxEnd()}`);
         }
 
         const q = String(textArgs || '').trim().toLowerCase();
 
-        // ".aiuto" / ".guida" (o il pulsante 📖 Guida del menu) SENZA
-        // argomenti: invia il file .txt con TUTTI i comandi spiegati.
         if (!q) {
             const txt = buildGuideTxt(commands);
             return sock.sendMessage(from, {
                 document: Buffer.from(txt, 'utf-8'),
                 mimetype: 'text/plain',
                 fileName: 'Guida Vex Bot.txt',
-            }, { quoted: msg }).catch(() => reply("📄 Guida pronta ma il file non è stato inviato. Riprova tra poco."));
+            }, { quoted: msg }).catch(() => reply(`${sec('ERRORE')}
+${boxOpen()}
+${line('Guida pronta ma il file non è stato inviato. Riprova tra poco.')}
+${boxEnd()}`));
         }
 
-        // ── COMANDO (priorità: un comando può avere lo stesso nome di una sezione) ─
         const mod = commands.get(q);
         if (mod) return reply(explain(mod));
 
-        // ── SEZIONE 
-        const sec = SECTIONS.find(s => s.key === q)
+        const foundSec = SECTIONS.find(s => s.key === q)
             || SECTIONS.find((s, i) => String(i + 1) === q);
-        if (sec) return reply(sectionDump(sec, commands));
+        if (foundSec) return reply(sectionDump(foundSec, commands));
 
-        // ── NON TROVATO: suggerisci i comandi più simili 
         const near = uniqueCommands(commands)
             .map(m => m.name)
             .filter(n => n.includes(q) || q.includes(n))
             .slice(0, 5);
-        const sug = near.length ? `\n\nForse cercavi: ${near.map(n => '.' + n).join(', ')}` : '';
+        const sug = near.length ? near.map(n => '.' + n).join(', ') : '';
+        const sugLines = sug ? [line(`Forse cercavi: ${sug}`), line('')] : [];
         return reply(
-`❓ Comando o sezione *${q}* non trovato.${sug}
-
-💡 Usa \`.aiuto\` per la guida completa,
-   o \`.menu\` per vedere tutte le sezioni.`);
+`${sec('NON TROVATO')}
+${boxOpen()}
+${line(`Comando o sezione *${q}* non trovato.`)}
+${sugLines.join('\n')}${sugLines.length ? '' : ''}
+${line('Usa `.aiuto` per la guida completa,')}
+${line('o `.menu` per vedere tutte le sezioni.')}
+${boxEnd()}`);
     },
 };

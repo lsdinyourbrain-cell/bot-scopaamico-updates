@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
+const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
 //  MINE — Vex Bot
@@ -10,8 +10,6 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 //  Lo stato vive in db[from].mineGame (una partita alla volta per gruppo).
 //  Pulsanti "Scava <riga><colonna>" (es. 12 = riga 1 colonna 2).
 // 
-
-const SEP = '';
 const TICKET = 20;      // costo biglietto
 const CELL_REWARD = 15; // premio per cella sicura (EV casa ~ -6%: il bot incassa nel lungo periodo)
 const BOMBS = 2;        // bombe nel campo
@@ -91,9 +89,9 @@ module.exports = {
             saveDB();
             return sendButtons(sock, from,
 `✅ *MONTE CASSATO!*
-${SEP}
+
 🎌 Hai incassato *${winnings}€*!
-${SEP}
+
 💰 Nuovo saldo: *${u.money}€*`,
                 [{ label: '🔁 Nuova partita', id: 'mine' }, { label: '🏠 Menu', id: 'menu' }], msg);
         }
@@ -120,9 +118,9 @@ ${boxEnd()}`);
                 saveDB();
                 return sendButtons(sock, from,
 `💥 *BOOM!* Hai trovato una bomba!
-${SEP}
+
 ${renderBoard(g, true)}
-${SEP}
+
 Montepremi azzerato. 💸
 La bomba era in ${key}...`,
                     [{ label: '🔁 Nuova partita', id: 'mine' }, { label: '🏠 Menu', id: 'menu' }], msg);
@@ -141,12 +139,12 @@ La bomba era in ${key}...`,
 
             return sendButtons(sock, from,
 `✅ *CELLA SICURA!* +${CELL_REWARD}€
-${SEP}
+
 ${renderBoard(g)}
-${SEP}
+
 🎌 Montepremi: *${g.pot}€*
 🕳️ Celle sicure rimaste: ${safeLeft.length}
-${SEP}
+
 Continua a scavare o incassa 👇`,
                 btns, msg);
         }
@@ -156,9 +154,9 @@ Continua a scavare o incassa 👇`,
             return sendButtons(sock, from,
 `⛏️ C'è già una partita attiva
 di *${disp(g.sender)}*!
-${SEP}
+
 ${renderBoard(g)}
-${SEP}
+
 🎌 Montepremi: *${g.pot}€*`,
                 [
                     { label: '🟩 Scava', id: `mine scava ${remainingSafeCells(g)[0] || '11'}` },
@@ -185,15 +183,15 @@ ${SEP}
         const first = remainingSafeCells(db[from].mineGame).slice(0, 3);
         return sendButtons(sock, from,
 `💣 *CAMPO MINATO*
-${SEP}
+
 ${renderBoard(db[from].mineGame)}
-${SEP}
+
 ${BOMBS} bombe nascoste 💥 in 9 celle.
 Scava le celle sicure per
 accumulare il montepremi
 (+${CELL_REWARD}€ a cella), ma se
 trovi una bomba perdi tutto!
-${SEP}
+
 🎟️ Biglietto: ${TICKET}€ (pagato)
 🎌 Montepremi: 0€`,
             first.map(cell => ({ label: `🟩 Scava ${cell.slice(0, 1)}-${cell.slice(1)}`, id: `mine scava ${cell}` })),
