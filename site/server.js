@@ -60,7 +60,15 @@ const PORT=process.env.SITE_PORT||3000;
 const HOST=process.env.SITE_HOST||'0.0.0.0';
 app.listen(PORT, HOST, ()=>{
   let lanIp='';
-  try{ const ifs=os.networkInterfaces(); for(const addrs of Object.values(ifs)) for(const a of (addrs||[])) if(a.family==='IPv4'&&!a.internal){ lanIp=a.address; break; } if(lanIp) break; }catch{}
+  try{
+    const ifs=os.networkInterfaces();
+    for(const addrs of Object.values(ifs)){
+      for(const a of (addrs||[])){
+        if(a.family==='IPv4'&&!a.internal){ lanIp=a.address; break; }
+      }
+      if(lanIp) break;
+    }
+  }catch{}
   console.log(`\n✦ VEX SITE online → http://127.0.0.1:${PORT}`);
   if(lanIp) console.log(`✦ VEX SITE rete → http://${lanIp}:${PORT}`);
   console.log(`✦ Anti-DDOS: 100 req/15min + Helmet`);
