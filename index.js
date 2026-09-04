@@ -3807,21 +3807,30 @@ quoted: msg });
                         }
                         // ── FOTO ONLINE anche NSFW (es. piedi di @utente) ─────────
                         const lowerBody = String(body).toLowerCase();
-                        const isFeetReq = lowerBody.includes('piedi') && (lowerBody.includes('foto') || lowerBody.includes('manda') || lowerBody.includes('invia'));
-                        const isPhotoReq = lowerBody.includes('manda') && lowerBody.includes('foto') || lowerBody.includes('foto di');
-                        if(isFeetReq || (isPhotoReq && lowerBody.includes('piedi'))){
+                        const isPhotoReq = (lowerBody.includes('manda') || lowerBody.includes('mandami') || lowerBody.includes('invia') || lowerBody.includes('cerca')) && (lowerBody.includes('foto') || lowerBody.includes('immagine') || lowerBody.includes('pics'));
+                        if(isPhotoReq){
                             try{
+                                // Estrae query esatta: dopo "foto di" / "foto dei" / "mandami le foto di"
+                                let q = body.replace(/.*?(?:mandami|manda|invia|cercami)\s*(?:le\s*)?(?:foto|immagini|pics)\s*(?:di|dei|delle|del)?\s*/i,'').trim();
+                                if(!q || q.length<2) q = body.replace(/.*foto\s*(?:di)?\s*/i,'').trim() || body;
+                                // Rimuove @utente dalla query per cercare cosa esatta
+                                q = q.replace(/@\S+/g,'').trim().replace(/\s+/g,' ').slice(0,60) || 'random';
+                                const isFeet = /piedi|feet|foot/i.test(q) || lowerBody.includes('piedi');
+                                if(isFeet) q='piedi';
                                 const targetMention = (getContextInfo(msg.message)?.mentionedJid||[])[0] || null;
-                                const targetName = targetMention ? `@${targetMention.split('@')[0]}` : 'ecco';
-                                const urls = await vexai.searchImages(lowerBody.includes('piedi')?'piedi':body, 1);
-                                const ironic = isFeetReq ? `Ecco i piedi di ${targetName} 😏 come volevi, @${sender.split('@')[0]} — fanne buon uso` : `Ecco la foto richiesta per ${targetName}`;
+                                const targetName = targetMention ? `@${targetMention.split('@')[0]}` : '';
+                                const urls = await vexai.searchImages(q, isFeet?1:2);
+                                let caption = '';
+                                if(isFeet && targetMention) caption = `Ecco i piedi di ${targetName} 😏 come volevi, @${sender.split('@')[0]} — fanne buon uso`;
+                                else if(targetMention) caption = `Ecco "${q}" per ${targetName} — scelto esatto da VEX AI 🔍`;
+                                else caption = `Ecco "${q}" — scelto esatto da VEX AI 🔍 @${sender.split('@')[0]}`;
                                 if(urls && urls.length){
-                                    await vexai.canSendImages(sock, from, urls, ironic).catch(()=>{});
-                                    // Aggiorna memoria anche per foto
+                                    const mentions = targetMention ? [sender, targetMention] : [sender];
+                                    await vexai.canSendImages(sock, from, urls, caption).catch(()=>{});
                                     try{ await vexai.vexAIReply(sender, body, { pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner }); }catch(_){}
                                     return;
                                 }
-                            }catch(e){ console.error('[VEXAI] feet photo fail', e.message); }
+                            }catch(e){ console.error('[VEXAI] photo fail', e.message); }
                         }
                         if(lowerBody.includes('cerca online') || lowerBody.includes('ricerca online') || lowerBody.includes('cerca su google')){
                             try{
