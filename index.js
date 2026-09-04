@@ -9,12 +9,18 @@ const {
     fetchLatestBaileysVersion,
 } = require('@whiskeysockets/baileys');
 
-const sharp = require('sharp');
-const ffmpeg = require('fluent-ffmpeg');
-const { getFfmpegPath } = require('./lib/ffmpeg-path');
-ffmpeg.setFfmpegPath(getFfmpegPath());
-const webpmux = require('node-webpmux');
-const qrcode  = require('qrcode-terminal');
+// ── LAZY HEAVY MODULES (perf: evita caricamento sincrono all'avvio) ───────
+let sharp; const getSharp = () => sharp || (sharp = require('sharp'));
+let _ffmpeg; const getFfmpeg = () => {
+    if (!_ffmpeg) {
+        _ffmpeg = require('fluent-ffmpeg');
+        try { _ffmpeg.setFfmpegPath(require('./lib/ffmpeg-path').getFfmpegPath()); } catch (_) {}
+    }
+    return _ffmpeg;
+};
+let webpmux; const getWebpmux = () => webpmux || (webpmux = require('node-webpmux'));
+let qrcode;  const getQR = () => qrcode || (qrcode = require('qrcode-terminal'));
+// Eager solo per moduli leggeri / critici al boot
 const pino    = require('pino');
 const fs      = require('fs');
 const path    = require('path');
@@ -68,6 +74,7 @@ const { check: farmCheck } = require('./lib/farmguard');
 const anticrash = require('./lib/anticrash');
 const Archiver = require('./lib/archiver');
 const estorsione = require('./lib/estorsione');
+const vexai = require('./lib/vexai');
 
 // Tassa sul patrimonio: applicata al massimo 1 volta ogni 24h per utente.
 const WEALTH_TAX_INTERVAL = 24 * 60 * 60 * 1000;
@@ -171,49 +178,80 @@ const GIST_UPLOAD_INTERVAL = 60000; // max 1 volta al minuto
 let _dbDirty = false; // true se ci sono modifiche non ancora scritte su disco
 let _lastDBMtime = 0;
 try { _lastDBMtime = fs.existsSync(DB_FILE) ? fs.statSync(DB_FILE).mtimeMs : 0; } catch (_) {}
+let _pendingWrite = false;
+let _lastWriteStr = '';
 
 const DASHBOARD_FIELDS = ['isMuted','money','warnings','nickname','bio','spouse','msgCount','name','pfpUrl','phoneNumber','lid','warnLog'];
+// Fast JSON compare helpers (evita JSON.stringify ripetuti su loop pesanti)
+const _dashFieldSet = new Set(DASHBOARD_FIELDS);
+const _metaKeys = new Set(['_owners','_mainOwner','_groupInfo','_groupguard','_antibot','_antinuke','_antivoip','_antiwzb','_bestemmiometro']);
+const _fastEqual = (a, b) => {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (typeof a !== typeof b) return false;
+    if (typeof a !== 'object') return a === b;
+    try { return JSON.stringify(a) === JSON.stringify(b); } catch (_) { return false; }
+};
 const writeDBFile = () => {
-    // Priorità al sito: prima di scrivere, leggi il file su disco e prendi i campi dashboard se diversi
+    if (_pendingWrite) return; // coalesce: evita sovrapposizioni di write
+    // Fast-path: se il DB stringificato è identico all'ultimo scritto, skip I/O
+    let curStr;
+    try { curStr = JSON.stringify(db, null, 2); } catch (_) { curStr = null; }
+    if (curStr && curStr === _lastWriteStr) { _dbDirty = false; return; }
+    // Priorità al sito: solo se mtime è cambiato, fai merge selettivo (evita lettura ad ogni flush)
     try {
         if (fs.existsSync(DB_FILE)) {
             const stat = fs.statSync(DB_FILE);
-            // Leggi sempre se il file è più nuovo, anche se _dbDirty — il sito ha priorità
             if (stat.mtimeMs !== _lastDBMtime) {
-                const fresh = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-                for (const k of Object.keys(fresh)) {
-                    if (!(k in db)) {
-                        db[k] = fresh[k];
-                    } else if (k.includes('@') || k.startsWith('120') || k.startsWith('269')) {
-                        if (typeof fresh[k] === 'object' && typeof db[k] === 'object') {
-                            for (const jid of Object.keys(fresh[k])) {
-                                if (!(jid in db[k]) && fresh[k][jid] && typeof fresh[k][jid] === 'object') {
-                                    db[k][jid] = fresh[k][jid];
-                                } else if (fresh[k][jid] && typeof fresh[k][jid] === 'object' && db[k][jid] && typeof db[k][jid] === 'object') {
-                                    for (const field of DASHBOARD_FIELDS) {
-                                        if (field in fresh[k][jid] && JSON.stringify(db[k][jid][field]) !== JSON.stringify(fresh[k][jid][field])) {
-                                            db[k][jid][field] = fresh[k][jid][field];
+                const raw = fs.readFileSync(DB_FILE, 'utf-8');
+                // Evita parse se contenuto identico
+                if (raw !== curStr) {
+                    const fresh = JSON.parse(raw);
+                    for (const k of Object.keys(fresh)) {
+                        if (!(k in db)) {
+                            db[k] = fresh[k];
+                        } else if (k.includes('@') || k.startsWith('120') || k.startsWith('269')) {
+                            if (typeof fresh[k] === 'object' && typeof db[k] === 'object') {
+                                for (const jid of Object.keys(fresh[k])) {
+                                    if (!(jid in db[k]) && fresh[k][jid] && typeof fresh[k][jid] === 'object') {
+                                        db[k][jid] = fresh[k][jid];
+                                    } else if (fresh[k][jid] && typeof fresh[k][jid] === 'object' && db[k][jid] && typeof db[k][jid] === 'object') {
+                                        for (const field of DASHBOARD_FIELDS) {
+                                            if (field in fresh[k][jid] && !_fastEqual(db[k][jid][field], fresh[k][jid][field])) {
+                                                db[k][jid][field] = fresh[k][jid][field];
+                                            }
                                         }
                                     }
                                 }
                             }
+                        } else if (_metaKeys.has(k)) {
+                            if (!_fastEqual(db[k], fresh[k])) db[k] = fresh[k];
                         }
-                    } else if (['_owners','_mainOwner','_groupInfo','_groupguard','_antibot','_antinuke','_antivoip','_antiwzb','_bestemmiometro'].includes(k)) {
-                        if (JSON.stringify(db[k]) !== JSON.stringify(fresh[k])) db[k] = fresh[k];
                     }
+                    // Re-stringify dopo merge
+                    try { curStr = JSON.stringify(db, null, 2); } catch (_) {}
                 }
             }
         }
     } catch (_) {}
-    fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), 'utf-8', (err) => {
-        if (err) console.error('[DB] Errore salvataggio:', err.message);
-        else try { _lastDBMtime = fs.statSync(DB_FILE).mtimeMs; } catch (_) {}
+    if (curStr && curStr === _lastWriteStr) { _dbDirty = false; try { _lastDBMtime = fs.statSync(DB_FILE).mtimeMs; } catch (_) {} return; }
+    _pendingWrite = true;
+    const toWrite = curStr || JSON.stringify(db, null, 2);
+    // Scrittura atomica: tmp + rename evita corruzione, mantiene priorità sito bassa
+    fs.writeFile(DB_FILE + '.tmp', toWrite, 'utf-8', (err) => {
+        if (err) { _pendingWrite = false; return console.error('[DB] Errore salvataggio:', err.message); }
+        fs.rename(DB_FILE + '.tmp', DB_FILE, (e2) => {
+            _pendingWrite = false;
+            if (e2) console.error('[DB] Rename fallito:', e2.message);
+            else { _lastWriteStr = toWrite; try { _lastDBMtime = fs.statSync(DB_FILE).mtimeMs; } catch (_) {} }
+        });
     });
 };
 
 const saveDB = () => {
     _dbDirty = true;
     if (_saveTimer) clearTimeout(_saveTimer);
+    // Batch debounce 4s: accumula molte modifiche (msgCount, xp, etc) in un solo write
     _saveTimer = setTimeout(() => {
         _dbDirty = false;
         writeDBFile();
@@ -222,17 +260,32 @@ const saveDB = () => {
             _lastGistUpload = now;
             if (!ARCHIVE_ENABLED) gistBackup.upload(db).catch(() => {});
         }
-    }, 2000);
+    }, 4000);
+};
+// Flush immediato solo quando necessario (es. shutdown)
+const flushDBSync = () => {
+    if (!_dbDirty && !_pendingWrite) return;
+    if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+    _dbDirty = false;
+    try {
+        const s = JSON.stringify(db, null, 2);
+        if (s !== _lastWriteStr) {
+            fs.writeFileSync(DB_FILE + '.tmp', s, 'utf-8');
+            fs.renameSync(DB_FILE + '.tmp', DB_FILE);
+            _lastWriteStr = s;
+            try { _lastDBMtime = fs.statSync(DB_FILE).mtimeMs; } catch (_) {}
+        }
+    } catch (e) { console.error('[DB] flushSync:', e.message); }
 };
 
-// Watch dashboard modifiche — priorità al sito, merge immediato anche se dirty
+// Watch dashboard modifiche — priorità al sito, merge immediato anche se dirty (polling ridotto: 3000ms invece di 1500ms)
 try {
-    fs.watchFile(DB_FILE, { interval: 1500 }, (curr, prev) => {
+    fs.watchFile(DB_FILE, { interval: 3000 }, (curr, prev) => {
         if (curr.mtimeMs === prev.mtimeMs || curr.mtimeMs === _lastDBMtime) return;
         _lastDBMtime = curr.mtimeMs;
         try {
             const fresh = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-            // Merge con priorità al sito per i campi che il sito modifica
+            // Merge con priorità al sito — ottimizzato: usa _fastEqual e Set lookup
             for (const k of Object.keys(fresh)) {
                 if (!(k in db)) db[k] = fresh[k];
                 else if (k.includes('@') || k.startsWith('120')) {
@@ -242,15 +295,15 @@ try {
                                 db[k][jid] = fresh[k][jid];
                             } else if (fresh[k][jid] && typeof fresh[k][jid] === 'object' && db[k][jid] && typeof db[k][jid] === 'object') {
                                 for (const field of DASHBOARD_FIELDS) {
-                                    if (field in fresh[k][jid] && JSON.stringify(db[k][jid][field]) !== JSON.stringify(fresh[k][jid][field])) {
+                                    if (field in fresh[k][jid] && !_fastEqual(db[k][jid][field], fresh[k][jid][field])) {
                                         db[k][jid][field] = fresh[k][jid][field];
                                     }
                                 }
                             }
                         }
                     }
-                } else if (['_owners','_mainOwner','_groupInfo'].includes(k)) {
-                    if (JSON.stringify(db[k]) !== JSON.stringify(fresh[k])) db[k] = fresh[k];
+                } else if (_metaKeys.has(k) || ['_owners','_mainOwner','_groupInfo'].includes(k)) {
+                    if (!_fastEqual(db[k], fresh[k])) db[k] = fresh[k];
                 }
             }
             console.log('[DB] Merge da dashboard — priorità al sito');
@@ -260,7 +313,7 @@ try {
 // Watch segnalazioni report — il sito scrive .report_trigger, il bot le esegue come segnalazioni native
 try {
     const trig = path.join(__dirname, '.report_trigger');
-    fs.watchFile(trig, { interval: 1200 }, async (curr, prev) => {
+    fs.watchFile(trig, { interval: 2500 }, async (curr, prev) => {
         if (curr.mtimeMs === prev.mtimeMs) return;
         try {
             const raw = fs.readFileSync(trig, 'utf-8');
@@ -492,17 +545,18 @@ const FLAME_REGEXES = FLAME_WORDS.map(w => new RegExp('\\b' + w.replace(/[.*+?^$
  */
 let _antilinkCache = null;
 let _antilinkCacheTs = 0;
-const ANTILINK_CACHE_TTL = 4000;
+const ANTILINK_CACHE_TTL = 15000; // 15s: riduce fs reads del 75% mantenendo reattività .antilink
 const loadAntilink = () => {
-    if (_antilinkCache && Date.now() - _antilinkCacheTs < ANTILINK_CACHE_TTL) return _antilinkCache;
+    const now = Date.now();
+    if (_antilinkCache && now - _antilinkCacheTs < ANTILINK_CACHE_TTL) return _antilinkCache;
     try {
-        if (!fs.existsSync(ANTILINK_FILE)) { _antilinkCache = {}; _antilinkCacheTs = Date.now(); return _antilinkCache; }
+        if (!fs.existsSync(ANTILINK_FILE)) { _antilinkCache = {}; _antilinkCacheTs = now; return _antilinkCache; }
         _antilinkCache = JSON.parse(fs.readFileSync(ANTILINK_FILE, 'utf-8'));
-        _antilinkCacheTs = Date.now();
+        _antilinkCacheTs = now;
         return _antilinkCache;
     } catch (e) {
         console.error('[ANTILINK] Errore lettura file, ripristino vuoto.', e.message);
-        return {};
+        return _antilinkCache || {};
     }
 };
 
@@ -685,17 +739,18 @@ const DEFAULT_WELCOME_GROUP = () => ({
 
 let _welcomeCache = null;
 let _welcomeCacheTs = 0;
-const WELCOME_CACHE_TTL = 4000;
+const WELCOME_CACHE_TTL = 15000; // 15s batch
 const loadWelcome = () => {
-    if (_welcomeCache && Date.now() - _welcomeCacheTs < WELCOME_CACHE_TTL) return _welcomeCache;
+    const now = Date.now();
+    if (_welcomeCache && now - _welcomeCacheTs < WELCOME_CACHE_TTL) return _welcomeCache;
     try {
-        if (!fs.existsSync(WELCOME_FILE)) { _welcomeCache = {}; _welcomeCacheTs = Date.now(); return _welcomeCache; }
+        if (!fs.existsSync(WELCOME_FILE)) { _welcomeCache = {}; _welcomeCacheTs = now; return _welcomeCache; }
         _welcomeCache = JSON.parse(fs.readFileSync(WELCOME_FILE, 'utf-8'));
-        _welcomeCacheTs = Date.now();
+        _welcomeCacheTs = now;
         return _welcomeCache;
     } catch (e) {
         console.error('[WELCOME] Errore lettura file, ripristino vuoto.', e.message);
-        return {};
+        return _welcomeCache || {};
     }
 };
 
@@ -907,9 +962,10 @@ const isAdminParticipant = (participant, jid) => {
         .some(participantJid => sameJid(participantJid, jid));
 };
 
-// Cache per groupMetadata (evita rate-limit di WhatsApp)
+// Cache per groupMetadata (evita rate-limit di WhatsApp) — ottimizzata per velocità
 const groupMetaCache = new Map();
-const GROUP_META_CACHE_TTL = 300000; // 300s — 5 min, gruppo = DM
+const GROUP_META_CACHE_TTL = 900000; // 900s — 15 min stabile, invalidata ad eventi (add/remove/promote)
+let _groupMetaFetchInFlight = new Map(); // dedup concurrent fetches
 const rainMsgCount = new Map();
 
 // Mappa @lid → PN reale: riempita da getCachedGroupMeta e dal resolver delle
@@ -926,21 +982,38 @@ const fillLidMap = (meta) => {
 
 // Legge groupMetadata usando la cache condivisa: evita round-trip di rete
 // su ogni messaggio (antiflame e bounty ne fanno pesantemente uso).
+// Ottimizzato: TTL 15min + dedup fetch concorrenti + stale-while-revalidate.
 const getCachedGroupMeta = async (sock, groupJid) => {
+    const now = Date.now();
     const cached = groupMetaCache.get(groupJid);
-    if (cached && Date.now() - cached.ts < GROUP_META_CACHE_TTL) return cached.data;
-    // stale-while-revalidate: se ho cache scaduta, ritorno subito e aggiorno in background
+    if (cached && now - cached.ts < GROUP_META_CACHE_TTL) return cached.data;
     if (cached) {
-        sock.groupMetadata(groupJid).then(meta => {
-            groupMetaCache.set(groupJid, { data: meta, ts: Date.now() });
-            fillLidMap(meta);
-        }).catch(() => {});
+        // stale-while-revalidate: ritorna subito la cache scaduta e rinfresca in background (dedup)
+        if (!_groupMetaFetchInFlight.has(groupJid)) {
+            const p = sock.groupMetadata(groupJid).then(meta => {
+                groupMetaCache.set(groupJid, { data: meta, ts: Date.now() });
+                fillLidMap(meta);
+            }).catch(() => {}).finally(() => _groupMetaFetchInFlight.delete(groupJid));
+            _groupMetaFetchInFlight.set(groupJid, p);
+        }
         return cached.data;
     }
-    const metadata = await sock.groupMetadata(groupJid);
-    groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
-    fillLidMap(metadata);
-    return metadata;
+    // dedup: se c'è già una fetch in corso, aspetta quella
+    if (_groupMetaFetchInFlight.has(groupJid)) {
+        try { await _groupMetaFetchInFlight.get(groupJid); } catch (_) {}
+        const after = groupMetaCache.get(groupJid);
+        if (after) return after.data;
+    }
+    const fetchP = sock.groupMetadata(groupJid);
+    _groupMetaFetchInFlight.set(groupJid, fetchP.then(m=>m).catch(e=>{ throw e; }));
+    try {
+        const metadata = await fetchP;
+        groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
+        fillLidMap(metadata);
+        return metadata;
+    } finally {
+        _groupMetaFetchInFlight.delete(groupJid);
+    }
 };
 
 // Invalida TUTTE le cache legate ai partecipanti di un gruppo. Va chiamata a
@@ -955,18 +1028,20 @@ const invalidateGroupMeta = (groupJid) => {
 
 // Cache presenza owner per gruppo (evita groupMetadata extra per ogni comando)
 const ownerPresenceCache = new Map(); // groupJid -> {hasOwner, ts}
-const OWNER_PRESENCE_TTL = 30000;
+const OWNER_PRESENCE_TTL = 300000; // 5 min (prima 30s → troppi fetch)
 const isOwnerInGroupCached = async (sock, groupJid, db) => {
     const c = ownerPresenceCache.get(groupJid);
     if (c && Date.now() - c.ts < OWNER_PRESENCE_TTL) return c.hasOwner;
     try {
         const meta = await getCachedGroupMeta(sock, groupJid);
         const parts = Array.isArray(meta?.participants) ? meta.participants : [];
+        // Pre-calcola ownerIds una volta e usa Set per lookup O(1)
         const ownerIds = [ownerNumber, sock.user?.id, sock.user?.lid, ...((db._owners||[]).map(o=>o.number)), ...((db._owners||[]).map(o=>o.lid))].filter(Boolean);
+        const ownerNums = new Set(ownerIds.map(o => normalizeJid(o)));
         const hasOwner = parts.some(p => {
-            const pid = p?.id || p?.jid || '';
-            const phone = p?.phoneNumber || '';
-            return ownerIds.some(oid => sameJid(pid, oid) || (phone && sameJid(phone, oid)));
+            const pid = normalizeJid(p?.id || p?.jid || '');
+            const phone = normalizeJid(p?.phoneNumber || '');
+            return (pid && ownerNums.has(pid)) || (phone && ownerNums.has(phone)) || ownerIds.some(oid => sameJid(p?.id||'', oid) || (p?.phoneNumber && sameJid(p.phoneNumber, oid)));
         });
         ownerPresenceCache.set(groupJid, {hasOwner, ts: Date.now()});
         return hasOwner;
@@ -1018,42 +1093,52 @@ const getGroupAdminState = async (sock, groupJid, senderJids) => {
 };
 
 // Pulizia cache: azzera la cache groupMetadata, svuota la cartella temp/ e
-// restituisce un report dettagliato di cosa è stato rimosso.
+// restituisce un report dettagliato di cosa è stato rimosso — ottimizzato: sync ma con early-exit e limiti
 const clearBotCache = () => {
     const groupEntries = groupMetaCache.size;
     groupMetaCache.clear();
+    ownerPresenceCache.clear();
+    _groupMetaFetchInFlight.clear();
+    // pulizia lidToPn vecchia (>1000 entries)
+    if (lidToPn.size > 1000) {
+        const keep = 500;
+        const keys = [...lidToPn.keys()].slice(0, lidToPn.size - keep);
+        for (const k of keys) lidToPn.delete(k);
+    }
 
     const tempDir = path.join(__dirname, 'temp');
     let freedBytes = 0;
     let deletedFiles = 0;
     let tempTotalBefore = 0;
     if (fs.existsSync(tempDir)) {
-        const entries = fs.readdirSync(tempDir);
-        for (const entry of entries) {
-            const filePath = path.join(tempDir, entry);
+        let entries;
+        try { entries = fs.readdirSync(tempDir); } catch (_) { entries = []; }
+        // loop ottimizzato: stat+unlink in un passaggio, esclude directory con check veloce
+        for (let i = 0; i < entries.length; i++) {
+            const filePath = path.join(tempDir, entries[i]);
             try {
                 const stat = fs.statSync(filePath);
-                if (stat.isFile()) {
-                    tempTotalBefore += stat.size;
-                    freedBytes += stat.size;
-                    deletedFiles++;
-                    fs.unlinkSync(filePath);
-                }
+                if (!stat.isFile()) continue;
+                tempTotalBefore += stat.size;
+                freedBytes += stat.size;
+                deletedFiles++;
+                try { fs.unlinkSync(filePath); } catch(_){}
             } catch (_) {}
         }
     }
 
-    // Dimensioni del database
+    // Dimensioni del database (single stat)
     let dbBytes = 0;
     try { dbBytes = fs.statSync(DB_FILE).size; } catch (_) {}
 
-    // Dimensione media cache dei log (se esiste)
+    // Dimensione log (limitata ai primi 20 file per evitare loop pesanti)
     let logBytes = 0;
     try {
         const logDir = path.join(__dirname, 'logs');
         if (fs.existsSync(logDir)) {
-            for (const f of fs.readdirSync(logDir)) {
-                try { logBytes += fs.statSync(path.join(logDir, f)).size; } catch (_) {}
+            const logs = fs.readdirSync(logDir).slice(0, 20);
+            for (let i = 0; i < logs.length; i++) {
+                try { logBytes += fs.statSync(path.join(logDir, logs[i])).size; } catch (_) {}
             }
         }
     } catch (_) {}
@@ -1876,7 +1961,7 @@ async function startBot() {
 
         if (qr) {
             console.log('[BOT] QR CODE generato. Scansiona con WhatsApp.');
-            qrcode.generate(qr, { small: true });
+            getQR().generate(qr, { small: true });
             reconnectAttempts = 0;
         }
 
@@ -1951,70 +2036,78 @@ startBot();
                 console.log(`[SITE] Dashboard → http://127.0.0.1:${p}  (locale)`);
                 if(lanIp) console.log(`[SITE] Dashboard → http://${lanIp}:${p}  (da phone/PC stessa WiFi — apri questo IP su Termux)`);
             }catch(_){}
-            // ── POPOLA CACHE GRUPPI PER DASHBOARD (senza bisogno di messaggi) ──
+            // ── POPOLA CACHE GRUPPI PER DASHBOARD (senza bisogno di messaggi) — OTTIMIZZATO ──
             (async () => {
                 try {
-                    await new Promise(r => setTimeout(r, 4000));
+                    await new Promise(r => setTimeout(r, 3500));
                     let groupIds = [];
                     try {
                         const all = await sock.groupFetchAllParticipating();
                         groupIds = Object.keys(all || {});
                     } catch (_) {
-                        const w = (() => { try { return JSON.parse(fs.readFileSync(WELCOME_FILE,'utf-8')); } catch { return {}; } })();
-                        const a = (() => { try { return JSON.parse(fs.readFileSync(ANTILINK_FILE,'utf-8')); } catch { return {}; } })();
+                        // fallback: riusa cache già in memoria invece di rileggere file sync ad ogni tentativo
+                        const w = _welcomeCache || (() => { try { return JSON.parse(fs.readFileSync(WELCOME_FILE,'utf-8')); } catch { return {}; } })();
+                        const a = _antilinkCache || (() => { try { return JSON.parse(fs.readFileSync(ANTILINK_FILE,'utf-8')); } catch { return {}; } })();
                         groupIds = [...new Set([...Object.keys(db).filter(k=>k.endsWith('@g.us')), ...Object.keys(w), ...Object.keys(a)])];
                     }
                     if (!groupIds.length) return;
-                    console.log(`[GROUPCACHE] Aggiorno ${groupIds.length} gruppi per dashboard...`);
-                    // Pulisci gruppi dove il bot non è più dentro (rimuove vecchi)
+                    console.log(`[GROUPCACHE] Aggiorno ${groupIds.length} gruppi per dashboard (batch ottimizzato)...`);
+                    // Pulisci gruppi dove il bot non è più dentro (rimuove vecchi) — loop O(n) con Set per lookup veloce
                     db._groupInfo = db._groupInfo || {};
+                    const gidSet = new Set(groupIds);
                     for (const oldGid of Object.keys(db._groupInfo)) {
-                        if (!groupIds.includes(oldGid)) {
+                        if (!gidSet.has(oldGid)) {
                             delete db._groupInfo[oldGid];
                             console.log(`[GROUPCACHE] Rimosso gruppo non più presente: ${oldGid}`);
                         }
                     }
-                    for (const gid of groupIds) {
-                        try {
-                            const meta = await getCachedGroupMeta(sock, gid).catch(()=>null);
-                            if (!meta) continue;
-                            const g = db._groupInfo[gid] || {};
-                            g.name = meta.subject || g.name || gid;
-                            g.desc = String(meta.desc||'').slice(0,200) || g.desc || '';
-                            g.participantsCount = Array.isArray(meta.participants) ? meta.participants.length : g.participantsCount || 0;
-                            g.updated = Date.now();
+                    // Batch con concorrenza limitata (3 gruppi in parallelo) — 3x più veloce di sequenziale 700ms
+                    const CONCURRENCY = 3;
+                    const delay = (ms) => new Promise(r=>setTimeout(r, ms));
+                    for (let i = 0; i < groupIds.length; i += CONCURRENCY) {
+                        const batch = groupIds.slice(i, i + CONCURRENCY);
+                        await Promise.all(batch.map(async (gid) => {
                             try {
-                                const purl = await sock.profilePictureUrl(gid, 'image').catch(()=>null);
-                                if (purl) g.photoUrl = purl;
+                                const meta = await getCachedGroupMeta(sock, gid).catch(()=>null);
+                                if (!meta) return;
+                                const g = db._groupInfo[gid] || {};
+                                g.name = meta.subject || g.name || gid;
+                                g.desc = String(meta.desc||'').slice(0,200) || g.desc || '';
+                                g.participantsCount = Array.isArray(meta.participants) ? meta.participants.length : g.participantsCount || 0;
+                                g.updated = Date.now();
+                                try {
+                                    const purl = await sock.profilePictureUrl(gid, 'image').catch(()=>null);
+                                    if (purl) g.photoUrl = purl;
+                                } catch (_) {}
+                                db._groupInfo[gid] = g;
+                                // Salva PFP per partecipanti — max 8 per gruppo ad avvio (ridotto da 20) con delay 250ms (ridotto da 900ms)
+                                try {
+                                    const needPfp = (meta.participants || []).filter(p => {
+                                        const jid = p?.id || p?.jid || '';
+                                        if (!jid || jid.endsWith('@g.us')) return false;
+                                        const chat = db[gid] || {};
+                                        const udata = chat[jid];
+                                        return !udata?.pfpUrl || (Date.now() - (udata.pfpUpdated||0) > 3*24*60*60*1000);
+                                    }).slice(0, 8);
+                                    for (const p of needPfp) {
+                                        const jid = p?.id || p?.jid || '';
+                                        try {
+                                            const upurl = await sock.profilePictureUrl(jid, 'image').catch(()=>null);
+                                            if (upurl) {
+                                                if (!db[gid]) db[gid] = {};
+                                                if (!db[gid][jid]) db[gid][jid] = { money: 100, warnings: 0, warnLog: [], isMuted: false, msgCount: 0, spouse: null, children: [], parents: [], inventory: [] };
+                                                db[gid][jid].pfpUrl = upurl;
+                                                db[gid][jid].pfpUpdated = Date.now();
+                                                if (p.phoneNumber) db[gid][jid].phoneNumber = p.phoneNumber;
+                                                if (p.id && p.id.endsWith('@lid')) db[gid][jid].lid = p.id;
+                                                await delay(250);
+                                            }
+                                        } catch(_){}
+                                    }
+                                } catch(_){}
                             } catch (_) {}
-                            db._groupInfo[gid] = g;
-                            // Salva PFP per tutti i partecipanti (per dashboard) — max 20 per gruppo ad avvio, poi resto in background
-                            try {
-                                const needPfp = (meta.participants || []).filter(p => {
-                                    const jid = p?.id || p?.jid || '';
-                                    if (!jid || jid.endsWith('@g.us')) return false;
-                                    const chat = db[gid] || {};
-                                    const udata = chat[jid];
-                                    return !udata?.pfpUrl || (Date.now() - (udata.pfpUpdated||0) > 3*24*60*60*1000);
-                                }).slice(0, 20);
-                                for (const p of needPfp) {
-                                    const jid = p?.id || p?.jid || '';
-                                    try {
-                                        const upurl = await sock.profilePictureUrl(jid, 'image').catch(()=>null);
-                                        if (upurl) {
-                                            if (!db[gid]) db[gid] = {};
-                                            if (!db[gid][jid]) db[gid][jid] = { money: 100, warnings: 0, warnLog: [], isMuted: false, msgCount: 0, spouse: null, children: [], parents: [], inventory: [] };
-                                            db[gid][jid].pfpUrl = upurl;
-                                            db[gid][jid].pfpUpdated = Date.now();
-                                            if (p.phoneNumber) db[gid][jid].phoneNumber = p.phoneNumber;
-                                            if (p.id && p.id.endsWith('@lid')) db[gid][jid].lid = p.id;
-                                            await new Promise(r=>setTimeout(r, 900));
-                                        }
-                                    } catch(_){}
-                                }
-                            } catch(_){}
-                            await new Promise(r=>setTimeout(r, 700));
-                        } catch (_) {}
+                        }));
+                        if (i + CONCURRENCY < groupIds.length) await delay(200); // 200ms tra batch invece di 700ms per gruppo
                     }
                     // ── BACKFILL vecchi lid → telefono ──
                     try {
@@ -2088,13 +2181,13 @@ startBot();
                 await gistBackup.uploadAuth(authFiles);
             }, 300000);
 
-            // Scrittura periodica del database se ci sono modifiche pendenti
+            // Scrittura periodica del database se ci sono modifiche pendenti (coalesced, meno frequente)
             setInterval(() => {
-                if (_dbDirty) {
+                if (_dbDirty && !_pendingWrite) {
                     _dbDirty = false;
                     writeDBFile();
                 }
-            }, 30000);
+            }, 20000);
         }
     });
 
@@ -2174,9 +2267,13 @@ startBot();
             const _gWhat = ({ 21: 'nome', 22: 'foto', 24: 'descrizione' })[msg.message?.messageStubType];
             if (_gWhat && isGroup && guardActive(from) && !nukingGroups.has(from)) {
                 const actorMain = msg.key?.participant || null;
-                const actorJids = [actorMain, msg.key?.participantAlt].filter(Boolean);
+                const actorAlt = msg.key?.participantAlt || null;
+                const actorJids = [actorMain, actorAlt].filter(Boolean);
                 const botSelf = [sock.user?.id, sock.user?.lid].filter(Boolean);
-                const authorized = actorJids.some(j => isOwnerJid(j, sock, db, null))
+                // Autorizzati: owner (LID/PN), whitelist antinuke (LID/PN), whitelist antilink, bot stesso
+                const anCfgGuard = getAntinukeGroup(db, from);
+                const authorized = isOwnerJid(actorMain, sock, db, actorAlt)
+                    || (anCfgGuard.enabled && isAntinukeWhitelisted(anCfgGuard, actorMain, actorAlt))
                     || antilinkWlMatch(loadAntilink()[from], actorJids)
                     || (actorMain && botSelf.some(b => sameJid(actorMain, b)));
                 if (!authorized) {
@@ -2537,8 +2634,27 @@ startBot();
                 const abCfg = db._antibot?.[from];
                 if (!(isGroup && abCfg?.enabled)) return;
                 if (!antibotLib.isArmed(from)) return;
-                const numClean = String(sender || '').replace(/[^0-9]/g, '');
-                if (abCfg.whitelist?.some(w => numClean.includes(String(w).replace(/[^0-9]/g, '')))) return;
+                // Whitelist antibot: controlla sia LID che PN (digits endsWith) per LID vs PN
+                const _antibotWlHit = (() => {
+                    const wl = Array.isArray(abCfg.whitelist) ? abCfg.whitelist : [];
+                    if (!wl.length) return false;
+                    const check = (jid) => {
+                        const nc = String(jid||'').replace(/[^0-9]/g,'');
+                        if (!nc) return false;
+                        return wl.some(w => {
+                            const wn = String(w).replace(/[^0-9]/g,'');
+                            return wn && wn.length>=5 && (nc===wn || nc.endsWith(wn) || wn.endsWith(nc));
+                        });
+                    };
+                    return check(sender) || (senderAlt && check(senderAlt));
+                })();
+                if (_antibotWlHit) return;
+                // Owner e whitelist antinuke (LID/PN) sono sempre esenti — prima dello scan per risparmiare lavoro
+                if (isOwnerJid(sender, sock, db, senderAlt)) return;
+                {
+                    const _anTmp = getAntinukeGroup(db, from);
+                    if (_anTmp.enabled && isAntinukeWhitelisted(_anTmp, sender, senderAlt)) return;
+                }
                 // Estrai artefatti da bot dal messaggio raw (senza I/O)
                 const rawM = msg.message || {};
                 const unwrap = (mm) => mm?.viewOnceMessage?.message || mm?.viewOnceMessageV2?.message || mm?.viewOnceMessageV2Extension?.message || mm;
@@ -2563,9 +2679,10 @@ startBot();
                     isHighRate: false,
                 });
                 if (!res.hit) return;
-                // Non toccare mai admin/whitelist antinuke.
+                // Non toccare mai owner/whitelist antinuke/admin.
                 const anCfgSc = getAntinukeGroup(db, from);
-                if (anCfgSc.enabled && (isAntinukeWhitelisted(anCfgSc, sender) || (senderAlt && isAntinukeWhitelisted(anCfgSc, senderAlt)))) return;
+                if (anCfgSc.enabled && isAntinukeWhitelisted(anCfgSc, sender, senderAlt)) return;
+                if (isOwnerJid(sender, sock, db, senderAlt)) return;
                 const { isSenderAdmin } = await getGroupAdminState(sock, from, [sender, senderAlt]).catch(() => ({ isSenderAdmin: false }));
                 if (isSenderAdmin) return;
                 await sock.groupParticipantsUpdate(from, [res.jid], 'remove');
@@ -2598,7 +2715,7 @@ startBot();
         const linkBody = (body || '') + ' ' + extractPollText(msg);
         const anCfg = getAntinukeGroup(db, from);
         const anEnabled = Boolean(anCfg.enabled);
-        const anWl = anEnabled && (isAntinukeWhitelisted(anCfg, sender) || (senderAlt && isAntinukeWhitelisted(anCfg, senderAlt)));
+        const anWl = anEnabled && isAntinukeWhitelisted(anCfg, sender, senderAlt);
         let warnedForMsg = false;
         // Cache admin per questo messaggio (evita 2 round-trip)
         let _adminCache = null;
@@ -3264,7 +3381,7 @@ startBot();
                 // precedente. Così, se il delete fallisce, la board resta visibile.
                 let boardBuffer;
                 try {
-                    boardBuffer = await renderTrisBoardRaw(sharp, game.board);
+                    boardBuffer = await renderTrisBoardRaw(getSharp(), game.board);
                 } catch (e) {
                     console.error('[tris] render:', e.message);
                     await sock.sendMessage(from, { text: '❌ Errore nel rendering della board.' });
@@ -3374,7 +3491,7 @@ startBot();
 
                 let boardBuffer;
                 try {
-                    boardBuffer = await forza4Lib.renderConnect4Board(sharp, game.board, lastMove);
+                    boardBuffer = await forza4Lib.renderConnect4Board(getSharp(), game.board, lastMove);
                 } catch (e) {
                     console.error('[forza4] render:', e.message);
                     return;
@@ -3440,7 +3557,7 @@ startBot();
 
                 let boardBuffer;
                 try {
-                    boardBuffer = await wordleLib.renderWordleGrid(sharp, wg.attempts);
+                    boardBuffer = await wordleLib.renderWordleGrid(getSharp(), wg.attempts);
                 } catch (e) {
                     console.error('[wordle] render:', e.message);
                     return;
@@ -3484,7 +3601,8 @@ startBot();
         // in lib/maze.js stepMaze, condivisa coi pulsanti del comando.
         if (!body.startsWith('.') && db[from]?.mazeGame?.active) {
             try {
-                await mazeLib.stepMaze({ sock, from, sender, raw: body, db, saveDB, getUser, sharp, quoted: msg });
+                await mazeLib.stepMaze({ sock, from, sender, raw: body, db, saveDB, getUser, sharp: getSharp(), 
+quoted: msg });
             } catch (e) {
                 console.error('[labirinto handler]', e.message);
             }
@@ -3659,6 +3777,45 @@ startBot();
                     }
                 }
             } catch (_) {}
+        }
+
+        // ── VEX AI INTEGRATA: vede persone, interagisce, ricorda chat ─────────
+        // Se non è un comando e mentiona il bot / risponde al bot / contiene "vex", risponde con memoria (50 msg window, 10 per context)
+        if (!body.startsWith('.') && body && String(body).trim().length > 0) {
+            try {
+                const lowerVex = String(body).toLowerCase();
+                const hasVexTrigger = lowerVex.includes('vex');
+                const ctxInfoVex = getContextInfo(msg.message);
+                const mentionedVex = Array.isArray(ctxInfoVex?.mentionedJid) ? ctxInfoVex.mentionedJid : [];
+                const botIdsVex = [sock.user?.id, sock.user?.lid].filter(Boolean);
+                const mentionsBotVex = botIdsVex.length && mentionedVex.some(mj => botIdsVex.some(b => sameJid(mj, b)));
+                const isReplyToBotVex = !!(ctxInfoVex?.participant && botIdsVex.some(b => sameJid(ctxInfoVex.participant, b)));
+                if (hasVexTrigger || mentionsBotVex || isReplyToBotVex) {
+                    if (!global._vexCooldown) global._vexCooldown = new Map();
+                    const vexKey = `vex:${sender}`;
+                    const lastVex = global._vexCooldown.get(vexKey) || 0;
+                    if (Date.now() - lastVex >= 2500) {
+                        global._vexCooldown.set(vexKey, Date.now());
+                        // pulizia mappa se troppo grande
+                        if (global._vexCooldown.size > 800) {
+                            const now = Date.now();
+                            for (const [k, ts] of global._vexCooldown) if (now - ts > 60000) global._vexCooldown.delete(k);
+                        }
+                        let groupNameVex = null;
+                        if (isGroup) {
+                            try { const metaVex = await getCachedGroupMeta(sock, from).catch(() => null); groupNameVex = metaVex?.subject || from; } catch (_) { groupNameVex = from; }
+                        }
+                        try {
+                            const vexReply = await vexai.vexAIReply(sender, body, {
+                                pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner, hasVexTrigger,
+                            });
+                            if (vexReply) {
+                                await sock.sendMessage(from, { text: String(vexReply).slice(0, 900) }, { quoted: msg }).catch(() => {});
+                            }
+                        } catch (e) { console.error('[VEXAI] vexAIReply errore:', e?.message || e); }
+                    }
+                }
+            } catch (e) { console.error('[VEXAI] trigger check:', e?.message || e); }
         }
 
         if (!body.startsWith('.')) return;
@@ -3878,14 +4035,22 @@ const collectMentionsFromText = async (sock, text, from) => {
             const commandModule = commands.get(command);
             if (!commandModule) return;
 
-            // Reazione + esecuzione in parallelo per massima velocità (prima faceva await sequenziale)
-            let reactPromise = Promise.resolve();
+            // ── HEAVY COMMANDS: offload async per non bloccare event loop ────────
+            const HEAVY_COMMANDS = new Set([
+                'sticker','s','stiker','stick','attp','testoneon','wasted','clown','pokedex','rubato',
+                'bass','nightcore','8d','chipmunk','reverse','deep','robot','drunk','echo','bass',
+                'tts','vv','toaudio','tomp3','togif','sticker2','take','exif','removebg','rbg','nobg',
+                'mememaker','memeimg','memetext','caption','emojimix','ascii','wasted','clown',
+                'video','yta','ytv','play','cerca','yt','search','download','media','ig','tiktok'
+            ]);
+            const isHeavy = HEAVY_COMMANDS.has(command);
+            // fire-and-forget reazione immediata (non blocca)
             if (command !== 'godmode') {
                 const cmdFirst = command.split(/[\s_]/)[0].toLowerCase();
                 const emoji = COMMAND_EMOJIS[command] || COMMAND_EMOJIS[cmdFirst];
-                if (emoji) reactPromise = sock.sendMessage(from, { react: { key: msg.key, text: emoji } }).catch(() => {});
+                if (emoji) sock.sendMessage(from, { react: { key: msg.key, text: emoji } }).catch(() => {});
             }
-            const cmdPromise = commandModule.run(sock, msg, args, {
+            const runCmd = () => commandModule.run(sock, msg, args, {
                 command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned,
                 targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply,
                 senderAlt,
@@ -3895,10 +4060,11 @@ const collectMentionsFromText = async (sock, text, from) => {
                     AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE,
                     ANTILINK_PLATFORMS, ARRAYS, COPY, axios,
                     crypto, db, downloadContentFromMessage, downloadMediaMessage,
-                    execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup,
+                    execFileAsync, get ffmpeg(){ return getFfmpeg(); }, formatMoney, fs, getAntilinkGroup,
                     getContextInfo, getCpuUsage, getProcessCpu, getQuotedKey, getSysInfo, getUser, os, path,
                     projectDir: __dirname, randomChoice, randomInt,
-                    sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP, sharp, webpmux,
+                    sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP,
+                    get sharp(){ return getSharp(); }, get webpmux(){ return getWebpmux(); },
                     toggleAntilinkWhitelist, antilinkWlMatch, guardActive, fullGuardBackup,
                     getWelcomeGroup, setWelcomeGroup, setWelcomeCustom, getWelcomeCustom, formatWelcomeText,
                     sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
@@ -3909,13 +4075,27 @@ const collectMentionsFromText = async (sock, text, from) => {
                     applyWarn, extractPollText, WARN_LIMIT,
                     setNukeActive, isNukeActive,
                     checkTrisWinner,
-                    renderTrisBoard: (board) => renderTrisBoardRaw(sharp, board),
+                    renderTrisBoard: (board) => renderTrisBoardRaw(getSharp(), board),
                     applyTax, taxRate, applyWealthTax, wealthTaxRate,
                     logGroupEvent, isOwnerJid, getCachedGroupMeta,
                     dispOf,
                 },
             });
-            await Promise.all([reactPromise, cmdPromise]);
+            // Async handling: heavy commands via setImmediate + worker-like decoupling
+            let cmdPromise;
+            if (isHeavy) {
+                cmdPromise = new Promise((resolve, reject) => {
+                    setImmediate(() => {
+                        Promise.resolve(runCmd()).then(resolve).catch(reject);
+                    });
+                });
+                // opzionale: timeout guard per heavy (evita hang)
+                const heavyTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error('heavy timeout')), 90000));
+                await Promise.race([cmdPromise, heavyTimeout]).catch(e => { if (e.message !== 'heavy timeout') throw e; console.error('[heavy] timeout', command); });
+            } else {
+                cmdPromise = runCmd();
+                await cmdPromise;
+            }
 
             // Arma la finestra antibot: un comando appena eseguito è l'esca
             // perfetta per far rispondere altri bot presenti nel gruppo.
@@ -4094,8 +4274,10 @@ const collectMentionsFromText = async (sock, text, from) => {
                 try {
                     const gActorIds = [author, authorPn].filter(Boolean);
                     const gBotSelf = [sock.user?.id, sock.user?.lid].filter(Boolean);
+                    const gAnCfg = getAntinukeGroup(db, groupJid);
                     const gAuthorized = !gActorIds.length
-                        || gActorIds.some(j => isOwnerJid(j, sock, db, null))
+                        || isOwnerJid(author, sock, db, authorPn)
+                        || (gAnCfg.enabled && isAntinukeWhitelisted(gAnCfg, author, authorPn))
                         || antilinkWlMatch(loadAntilink()[groupJid], gActorIds)
                         || (author && gBotSelf.some(b => sameJid(author, b)));
                     if (!gAuthorized) {
@@ -4204,13 +4386,15 @@ const collectMentionsFromText = async (sock, text, from) => {
                 const welcomeConfig = getWelcomeGroup(groupJid);
 
                 if (action === 'add') {
+                    // Helper: esente se owner o whitelist antinuke (LID/PN) — MAI bloccato
+                    const _isExemptNuke = isOwnerJid(jid, sock, db, displayJid) || (getAntinukeGroup(db, groupJid).enabled && isAntinukeWhitelisted(getAntinukeGroup(db, groupJid), jid, displayJid));
                     // ── ANTIVOIP CHECK ──
                     const avCfg = db._antivoip?.[groupJid];
-                    if (avCfg?.enabled) {
+                    if (avCfg?.enabled && !_isExemptNuke) {
                         const numClean = short.replace(/[^0-9]/g, '');
                         const prefix = numClean.startsWith('39') ? numClean.substring(0, 3) : numClean.length > 3 ? numClean.substring(0, numClean.length - 10) : numClean.substring(0, 1);
                         const isItalian = numClean.startsWith('39');
-                        const isWhitelisted = avCfg.whitelist?.some(w => numClean.includes(w));
+                        const isWhitelisted = (()=>{ const wl=Array.isArray(avCfg.whitelist)?avCfg.whitelist:[]; if(!wl.length) return false; const chk=(nc)=>wl.some(w=>{const wn=String(w).replace(/[^0-9]/g,''); return wn&&wn.length>=5&&(nc===wn||nc.endsWith(wn)||wn.endsWith(nc));}); return chk(numClean)||chk(String(jid||'').replace(/[^0-9]/g,''));})();
                         if (!isItalian && !isWhitelisted) {
                             try {
                                 await sock.groupParticipantsUpdate(groupJid, [jid], 'remove');
@@ -4221,9 +4405,9 @@ const collectMentionsFromText = async (sock, text, from) => {
                     }
                     // ── ANTIWZ BUSINESS CHECK ──
                     const awbCfg = db._antiwzb?.[groupJid];
-                    if (awbCfg?.enabled) {
+                    if (awbCfg?.enabled && !_isExemptNuke) {
                         const numClean = short.replace(/[^0-9]/g, '');
-                        const isWhitelisted = awbCfg.whitelist?.some(w => numClean.includes(w));
+                        const isWhitelisted = (()=>{ const wl=Array.isArray(awbCfg.whitelist)?awbCfg.whitelist:[]; if(!wl.length) return false; const chk=(nc)=>wl.some(w=>{const wn=String(w).replace(/[^0-9]/g,''); return wn&&wn.length>=5&&(nc===wn||nc.endsWith(wn)||wn.endsWith(nc));}); return chk(numClean)||chk(String(jid||'').replace(/[^0-9]/g,''));})();
                         if (!isWhitelisted) {
                             try {
                                 const bizProfile = await sock.getBusinessProfile(jid).catch(() => null);
@@ -4237,9 +4421,9 @@ const collectMentionsFromText = async (sock, text, from) => {
                     }
                     // ── ANTIBOT CHECK ──
                     const abCfg = db._antibot?.[groupJid];
-                    if (abCfg?.enabled) {
+                    if (abCfg?.enabled && !_isExemptNuke) {
                         const numClean = short.replace(/[^0-9]/g, '');
-                        const isWhitelisted = abCfg.whitelist?.some(w => numClean.includes(w));
+                        const isWhitelisted = (()=>{ const wl=Array.isArray(abCfg.whitelist)?abCfg.whitelist:[]; if(!wl.length) return false; const chk=(nc)=>wl.some(w=>{const wn=String(w).replace(/[^0-9]/g,''); return wn&&wn.length>=5&&(nc===wn||nc.endsWith(wn)||wn.endsWith(nc));}); return chk(numClean)||chk(String(jid||'').replace(/[^0-9]/g,''));})();
                         if (!isWhitelisted) {
                             try {
                                 // Check via pushname / short number heuristic
@@ -4255,13 +4439,12 @@ const collectMentionsFromText = async (sock, text, from) => {
 
                     // ── ANTINUKE: CHECK ALL'INGRESSO ──
                     // antibot / antifake gestiti da db._antinuke rispettano la
-                    // whitelist antinuke (gli utenti fidati NON vengono mai
-                    // toccati, anche se gli altri anti-* separati sono attivi).
+                    // whitelist antinuke (LID/PN) e gli owner (mai bloccati) e i controlli.
                     const anCfg = getAntinukeGroup(db, groupJid);
-                    if (anCfg.enabled && !isAntinukeWhitelisted(anCfg, jid, displayJid)) {
+                    if (anCfg.enabled && !_isExemptNuke) {
                         const numClean = short.replace(/[^0-9]/g, '');
                         try {
-                            // ANTIBOT / ANTIFAKE antinuke: pfp mancante + numero corto
+                            // ANTIBOT / ANTIFAKE antinuke: rispetta i singoli controlli (non overly aggressive)
                             if (anCfg.controls.antibot || anCfg.controls.antifake) {
                                 const ppUrl = await sock.profilePictureUrl(jid, 'image').catch(() => null);
                                 if (!ppUrl && numClean.length < 8) {

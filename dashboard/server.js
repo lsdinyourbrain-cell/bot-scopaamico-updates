@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 
 const ROOT = path.join(__dirname, '..');
 const DB_FILE = path.join(ROOT, 'database.json');
@@ -40,28 +39,7 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// ── Anti-DDOS: Rate limit 500 req / 15 min per IP (API only) ─────────
-const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 500,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { ok: false, error: 'Troppe richieste — limite 500 ogni 15 minuti. Riprova più tardi.' },
-    keyGenerator: (req) => req.ip || req.headers['x-forwarded-for'] || 'unknown',
-    handler: (req, res, next, options) => {
-        res.status(429).json(options.message);
-    }
-});
-app.use('/api/', apiLimiter);
 
-// Stricter limiter for write-heavy endpoints (optional secondary)
-const writeLimiter = rateLimit({
-    windowMs: 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { ok: false, error: 'Troppe scritture — rallenta (max 100/min).' }
-});
 
 // ── Anti-Bot: UA check ────────────────────────────────────────────────
 app.use((req, res, next) => {
@@ -353,7 +331,7 @@ app.get('/api/owners', (req, res) => {
     }
 });
 
-app.put('/api/owners/main', writeLimiter, (req, res) => {
+app.put('/api/owners/main', (req, res) => {
     try {
         const { jid, number } = req.body || {};
         const target = String(jid || number || '').trim();
@@ -380,7 +358,7 @@ app.put('/api/owners/main', writeLimiter, (req, res) => {
     }
 });
 
-app.post('/api/owners', writeLimiter, (req, res) => {
+app.post('/api/owners', (req, res) => {
     try {
         const { action, jid, number } = req.body || {};
         if (!action) return res.status(400).json({ ok: false, error: 'action mancante (add/remove)' });
@@ -518,7 +496,7 @@ app.get('/api/groups/:jid', (req, res) => {
     }
 });
 
-app.put('/api/groups/:jid/welcome', writeLimiter, (req, res) => {
+app.put('/api/groups/:jid/welcome', (req, res) => {
     try {
         const gid = req.params.jid;
         if (!gid.endsWith('@g.us')) return res.status(400).json({ ok: false, error: 'JID non valido' });
@@ -545,7 +523,7 @@ app.put('/api/groups/:jid/welcome', writeLimiter, (req, res) => {
     }
 });
 
-app.put('/api/groups/:jid/antilink', writeLimiter, (req, res) => {
+app.put('/api/groups/:jid/antilink', (req, res) => {
     try {
         const gid = req.params.jid;
         if (!gid.endsWith('@g.us')) return res.status(400).json({ ok: false, error: 'JID non valido' });
@@ -574,7 +552,7 @@ app.put('/api/groups/:jid/antilink', writeLimiter, (req, res) => {
     }
 });
 
-app.put('/api/groups/:jid/settings', writeLimiter, (req, res) => {
+app.put('/api/groups/:jid/settings', (req, res) => {
     try {
         const gid = req.params.jid;
         if (!gid.endsWith('@g.us')) return res.status(400).json({ ok: false, error: 'JID non valido' });
@@ -594,7 +572,7 @@ app.put('/api/groups/:jid/settings', writeLimiter, (req, res) => {
     }
 });
 
-app.delete('/api/groups/:jid', writeLimiter, (req, res) => {
+app.delete('/api/groups/:jid', (req, res) => {
     try {
         const gid = req.params.jid;
         const db = safeReadJSON(DB_FILE, {});
@@ -644,7 +622,7 @@ app.get('/api/phrases/:key', (req, res) => {
     }
 });
 
-app.put('/api/phrases/:key', writeLimiter, (req, res) => {
+app.put('/api/phrases/:key', (req, res) => {
     try {
         const key = String(req.params.key || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
         if (!key) return res.status(400).json({ ok: false, error: 'key non valida' });
@@ -668,7 +646,7 @@ app.put('/api/phrases/:key', writeLimiter, (req, res) => {
     }
 });
 
-app.post('/api/phrases/:key/add', writeLimiter, (req, res) => {
+app.post('/api/phrases/:key/add', (req, res) => {
     try {
         const key = String(req.params.key || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
         const { phrase } = req.body || {};
@@ -687,7 +665,7 @@ app.post('/api/phrases/:key/add', writeLimiter, (req, res) => {
     }
 });
 
-app.delete('/api/phrases/:key/:index', writeLimiter, (req, res) => {
+app.delete('/api/phrases/:key/:index', (req, res) => {
     try {
         const key = String(req.params.key || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
         const idx = Number(req.params.index);
@@ -783,7 +761,7 @@ app.get('/api/users/:gid', (req, res) => {
     }
 });
 
-app.put('/api/users/:gid/:jid', writeLimiter, (req, res) => {
+app.put('/api/users/:gid/:jid', (req, res) => {
     try {
         const gid = req.params.gid;
         const jid = req.params.jid;
@@ -810,7 +788,7 @@ app.put('/api/users/:gid/:jid', writeLimiter, (req, res) => {
     }
 });
 
-app.delete('/api/users/:gid/:jid', writeLimiter, (req, res) => {
+app.delete('/api/users/:gid/:jid', (req, res) => {
     try {
         const gid = req.params.gid;
         const jid = req.params.jid;
@@ -1008,7 +986,7 @@ app.get('/api/files/read', (req, res) => {
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-app.put('/api/files/write', writeLimiter, (req, res) => {
+app.put('/api/files/write', (req, res) => {
     try {
         const { path: rel, content } = req.body || {};
         if (!rel) return res.status(400).json({ ok: false, error: 'path mancante' });
@@ -1024,7 +1002,7 @@ app.put('/api/files/write', writeLimiter, (req, res) => {
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-app.delete('/api/files', writeLimiter, (req, res) => {
+app.delete('/api/files', (req, res) => {
     try {
         const rel = String(req.query.path || '');
         if (!rel) return res.status(400).json({ ok: false, error: 'path mancante' });
@@ -1039,7 +1017,7 @@ app.delete('/api/files', writeLimiter, (req, res) => {
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-app.post('/api/files/mkdir', writeLimiter, (req, res) => {
+app.post('/api/files/mkdir', (req, res) => {
     try {
         const { path: rel } = req.body || {};
         if (!rel) return res.status(400).json({ ok: false, error: 'path mancante' });
@@ -1060,7 +1038,7 @@ app.get('/api/db', (req, res) => {
     }
 });
 
-app.post('/api/update', writeLimiter, async (req, res) => {
+app.post('/api/update', async (req, res) => {
     try {
         const { execFile } = require('child_process');
         const { promisify } = require('util');
@@ -1119,13 +1097,13 @@ app.get('/api/report/history', (req, res) => {
         res.json({ ok: true, history: Array.isArray(h) ? h : [] });
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
-app.delete('/api/report/history', writeLimiter, (req, res) => {
+app.delete('/api/report/history', (req, res) => {
     try {
         if (fs.existsSync(REPORT_FILE)) fs.unlinkSync(REPORT_FILE);
         res.json({ ok: true });
     } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
-app.post('/api/report', writeLimiter, async (req, res) => {
+app.post('/api/report', async (req, res) => {
     try {
         const { jid, reason, count } = req.body || {};
         const raw = String(jid||'').replace(/[^0-9]/g,'');
