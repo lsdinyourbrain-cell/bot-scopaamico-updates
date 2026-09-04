@@ -3805,6 +3805,34 @@ quoted: msg });
                         if (isGroup) {
                             try { const metaVex = await getCachedGroupMeta(sock, from).catch(() => null); groupNameVex = metaVex?.subject || from; } catch (_) { groupNameVex = from; }
                         }
+                        // ── FOTO ONLINE anche NSFW (es. piedi di @utente) ─────────
+                        const lowerBody = String(body).toLowerCase();
+                        const isFeetReq = lowerBody.includes('piedi') && (lowerBody.includes('foto') || lowerBody.includes('manda') || lowerBody.includes('invia'));
+                        const isPhotoReq = lowerBody.includes('manda') && lowerBody.includes('foto') || lowerBody.includes('foto di');
+                        if(isFeetReq || (isPhotoReq && lowerBody.includes('piedi'))){
+                            try{
+                                const targetMention = (getContextInfo(msg.message)?.mentionedJid||[])[0] || null;
+                                const targetName = targetMention ? `@${targetMention.split('@')[0]}` : 'ecco';
+                                const urls = await vexai.searchImages(lowerBody.includes('piedi')?'piedi':body, 1);
+                                const ironic = isFeetReq ? `Ecco i piedi di ${targetName} 😏 come volevi, @${sender.split('@')[0]} — fanne buon uso` : `Ecco la foto richiesta per ${targetName}`;
+                                if(urls && urls.length){
+                                    await vexai.canSendImages(sock, from, urls, ironic).catch(()=>{});
+                                    // Aggiorna memoria anche per foto
+                                    try{ await vexai.vexAIReply(sender, body, { pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner }); }catch(_){}
+                                    return;
+                                }
+                            }catch(e){ console.error('[VEXAI] feet photo fail', e.message); }
+                        }
+                        if(lowerBody.includes('cerca online') || lowerBody.includes('ricerca online') || lowerBody.includes('cerca su google')){
+                            try{
+                                const q = body.replace(/.*cerca (online|su google)\s*/i,'').trim() || body;
+                                const searchRes = await vexai.searchImages(q, 1);
+                                if(searchRes && searchRes.length){
+                                    await vexai.canSendImages(sock, from, searchRes, `Risultato per "${q.slice(0,40)}" — VEX AI 🔍`);
+                                    return;
+                                }
+                            }catch(_){}
+                        }
                         try {
                             const vexReply = await vexai.vexAIReply(sender, body, {
                                 pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner, hasVexTrigger,
