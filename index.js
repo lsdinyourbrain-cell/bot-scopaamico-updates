@@ -3827,7 +3827,7 @@ quoted: msg });
                                 if(urls && urls.length){
                                     const mentions = targetMention ? [sender, targetMention] : [sender];
                                     await vexai.canSendImages(sock, from, urls, caption).catch(()=>{});
-                                    try{ await vexai.vexAIReply(sender, body, { pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner }); }catch(_){}
+                                    try{ await vexai.vexAIReply(sender, body, { pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner, db }); }catch(_){}
                                     return;
                                 }
                             }catch(e){ console.error('[VEXAI] photo fail', e.message); }
@@ -3844,7 +3844,7 @@ quoted: msg });
                         }
                         try {
                             const vexReply = await vexai.vexAIReply(sender, body, {
-                                pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner, hasVexTrigger,
+                                pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner, hasVexTrigger, db,
                             });
                             if (vexReply) {
                                 await sock.sendMessage(from, { text: String(vexReply).slice(0, 900) }, { quoted: msg }).catch(() => {});
