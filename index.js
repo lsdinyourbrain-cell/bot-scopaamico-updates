@@ -2470,15 +2470,20 @@ startBot();
             fromButton = true;
             body = '.' + stripEmoji(String(btnCmd)).replace(/^\./, '').trim();
         } else if (body && !body.startsWith('.')) {
-            const stripped = stripEmoji(body).trim();
-            if (stripped) {
-                const entry = buttonRegistry.get(`${from}|${normalizeBtnText(stripped)}`);
-                if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) {
-                    fromButton = true;
-                    body = '.' + String(entry.id).replace(/^\./, '').trim();
+            // Solo se è risposta a un messaggio del bot con pulsanti (evita che "s" a caso diventi ".s" sticker)
+            const qInfo = msg.message?.extendedTextMessage?.contextInfo || msg.message?.conversationContextInfo || {};
+            const isReplyToBot = !!(qInfo.quotedMessage && qInfo.stanzaId);
+            if (isReplyToBot) {
+                const stripped = stripEmoji(body).trim();
+                if (stripped) {
+                    const entry = buttonRegistry.get(`${from}|${normalizeBtnText(stripped)}`);
+                    if (entry && Date.now() - entry.ts < BTN_REGISTER_TTL) {
+                        fromButton = true;
+                        body = '.' + String(entry.id).replace(/^\./, '').trim();
+                    }
                 }
-                // Nessun fallback: i comandi richiedono sempre il ".".
             }
+            // Altrimenti: i comandi richiedono sempre il "." — niente fallback.
         }
 
         if (msg.message?.interactiveResponseMessage || msg.message?.buttonsResponseMessage || msg.message?.templateButtonReplyMessage) {
