@@ -40,13 +40,13 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// ── Anti-DDOS: Rate limit 100 req / 15 min per IP (API only) ─────────
+// ── Anti-DDOS: Rate limit 500 req / 15 min per IP (API only) ─────────
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { ok: false, error: 'Troppe richieste — limite 100 ogni 15 minuti. Riprova più tardi.' },
+    message: { ok: false, error: 'Troppe richieste — limite 500 ogni 15 minuti. Riprova più tardi.' },
     keyGenerator: (req) => req.ip || req.headers['x-forwarded-for'] || 'unknown',
     handler: (req, res, next, options) => {
         res.status(429).json(options.message);
@@ -57,10 +57,10 @@ app.use('/api/', apiLimiter);
 // Stricter limiter for write-heavy endpoints (optional secondary)
 const writeLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 30,
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { ok: false, error: 'Troppe scritture — rallenta (max 30/min).' }
+    message: { ok: false, error: 'Troppe scritture — rallenta (max 100/min).' }
 });
 
 // ── Anti-Bot: UA check ────────────────────────────────────────────────
