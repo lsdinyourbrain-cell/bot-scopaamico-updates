@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 const prem = require('../../lib/premium');
 
@@ -21,7 +22,7 @@ module.exports = {
         const last = u.cooldowns.boostxp || 0;
         if (now - last < cd) {
             const remain = Math.ceil((cd - (now-last))/60000);
-            const txt = `${sec('⏳ BOOSTXP COOLDOWN')}\n${boxOpen()}\n${line(`⚡ @${sender.split('@')[0]} — XP in ricarica ✨`)}\n${line(`⏳ Tra _${remain} minuti_ 🔮`)}\n${boxEnd()}`;
+            const txt = `${sec('⏳ BOOSTXP COOLDOWN')}\n${boxOpen()}\n${line(`⚡ @${dispOf(sender)} — XP in ricarica ✨`)}\n${line(`⏳ Tra _${remain} minuti_ 🔮`)}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
         }
         u.cooldowns.boostxp = now;
@@ -30,7 +31,7 @@ module.exports = {
         // tentativo level up semplice
         const need = 1000; // placeholder, reale calcolato da xp lib altrove
         saveDB();
-        const txt = `${sec('⚡ BOOST XP')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *TURBO XP* ✨`)}\n${line(`🔮 _Cristallo XP sprigionato!_`)}\n${line('')}\n${line(`⚡ +${gain} XP • ⭐ Totale: _${u.xp}_`)}\n${line(`🌟 Continua così, leggenda!`)}\n${line('')}\n${line(`⏳ Prossimo tra _8 ore_ 💎`)}\n${boxEnd()}`;
+        const txt = `${sec('⚡ BOOST XP')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *TURBO XP* ✨`)}\n${line(`🔮 _Cristallo XP sprigionato!_`)}\n${line('')}\n${line(`⚡ +${gain} XP • ⭐ Totale: _${u.xp}_`)}\n${line(`🌟 Continua così, leggenda!`)}\n${line('')}\n${line(`⏳ Prossimo tra _8 ore_ 💎`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },
 };

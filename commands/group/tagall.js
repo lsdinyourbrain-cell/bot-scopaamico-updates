@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const { flagForJid } = require('../../lib/flag');
@@ -32,7 +33,7 @@ ${boxEnd()}`);
             const participants = Array.isArray(meta.participants) ? meta.participants : [];
             const allJids = participants.map(p => p.phoneNumber || p.id || p.jid).filter(Boolean);
             const header = textArgs.trim() || '👀 Attenzione a tutti!';
-            const lines = allJids.map(id => `${flagForJid(id)} @${id.split('@')[0]}`);
+            const lines = allJids.map(id => `${flagForJid(id)} @${dispOf(id)}`);
 
             await sock.sendMessage(from, {
                 text:

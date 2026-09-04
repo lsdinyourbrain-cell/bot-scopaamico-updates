@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -60,7 +61,7 @@ module.exports = {
                     const t = `${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line('💎 L\'IA non ha risposto ✨')}\n${line('🔮 _Riprova più tardi_ 💫')}\n${boxEnd()}`;
                     return sock.sendMessage(from, { text: t }, { quoted: msg });
                 }
-                await prog.done(`${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line(`💎 Risposta vetro per @${sender.split('@')[0]} ✨🔮`)}\n${line('')}\n${line(replyText.slice(0,1200))}\n${boxEnd()}`);
+                await prog.done(`${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line(`💎 Risposta vetro per @${dispOf(sender)} ✨🔮`)}\n${line('')}\n${line(replyText.slice(0,1200))}\n${boxEnd()}`);
             } catch (e) {
                 const errMsg = e.response?.data?.error?.message || e.response?.data?.error || e.message;
                 console.error('[ai]', errMsg);

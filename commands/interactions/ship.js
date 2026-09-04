@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
@@ -48,7 +49,7 @@ ${boxEnd()}`);
                 : '🫶 Meglio amici.';
 
             await sock.sendMessage(from, {
-                text: `   *SHIP!*   \n\n${line(`💘 @${user1.split('@')[0]} + @${user2.split('@')[0]}`)}\n${line(`*Compatibilità:* _*${percent}%*_`)}\n${line(`${mood}`)}\n\n`,
+                text: `   *SHIP!*   \n\n${line(`💘 @${dispOf(user1)} + @${dispOf(user2)}`)}\n${line(`*Compatibilità:* _*${percent}%*_`)}\n${line(`${mood}`)}\n\n`,
                 mentions: [user1, user2],
             }, { quoted: msg });
     },

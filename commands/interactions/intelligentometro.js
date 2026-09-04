@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 const crypto = require('crypto');
 
@@ -54,7 +55,7 @@ module.exports = {
         const percent = hashPercent(targetJid, 'intelligentometro');
         const bar = buildBar(percent);
         const verdict = getVerdict(percent);
-        const tag = '@' + targetJid.split('@')[0];
+        const tag = '@' + dispOf(targetJid);
         const title = sec('INTELLIGENTOMETRO');
         const emoji = '🧠';
         const line = '\u2501'.repeat(18);

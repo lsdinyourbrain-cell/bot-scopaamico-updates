@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const { toDarkFont } = require('../../lib/font');
@@ -24,7 +25,7 @@ module.exports = {
 
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                const txt = `${sec('⛏️ SCAVA COOLDOWN')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — piccone in ricarica ✨`)}\n${line(`🔮 _Vetro minerario in pausa..._`)}\n${line('')}\n${line(`⏳ Riposa _${remain}s_ poi riscava 💫`)}\n${boxEnd()}`;
+                const txt = `${sec('⛏️ SCAVA COOLDOWN')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — piccone in ricarica ✨`)}\n${line(`🔮 _Vetro minerario in pausa..._`)}\n${line('')}\n${line(`⏳ Riposa _${remain}s_ poi riscava 💫`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
             }
 
@@ -37,7 +38,7 @@ module.exports = {
 
             const taxLine = taxed.tax > 0 ? ` • _tassa ${taxed.tax}€_ 🔹` : '';
             const gems = ['💎','🔮','✨','⛏️','🌟'][Math.floor(Math.random()*5)];
-            const txt2 = `${sec('⛏️ MINIERA GLASS')}\n${boxOpen()}\n${line(`${gems} @${sender.split('@')[0]} — *SCAVO RIUSCITO* 💎`)}\n${line(`🔮 _Cristalli estratti nel vetro_`)}\n${line('')}\n${line(`⛏️ Lordo: _+${gross}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult>1 ? line(`💰 Evento _x${evMult}_ 💫`) : line(`✨ Scavo brillante!`)}\n${line(`💳 Saldo: _${userData.money}€_ • ⛏️ continua!`)}\n${boxEnd()}`;
+            const txt2 = `${sec('⛏️ MINIERA GLASS')}\n${boxOpen()}\n${line(`${gems} @${dispOf(sender)} — *SCAVO RIUSCITO* 💎`)}\n${line(`🔮 _Cristalli estratti nel vetro_`)}\n${line('')}\n${line(`⛏️ Lordo: _+${gross}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult>1 ? line(`💰 Evento _x${evMult}_ 💫`) : line(`✨ Scavo brillante!`)}\n${line(`💳 Saldo: _${userData.money}€_ • ⛏️ continua!`)}\n${boxEnd()}`;
             await sendButtons(sock, from, toDarkFont(txt2), [
                 { label: `⛏️ Scava ancora ✨`, id: `${command}` },
             ], msg);

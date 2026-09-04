@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -24,7 +25,7 @@ ${boxEnd()}`);
         const targetData = getUser(targetJid, from);
         if ((targetData.warnings || 0) <= 0) {
             return await sock.sendMessage(from, {
-                text: `${sec('UNWARN')}\n${boxOpen()}\n${line(`@${targetJid.split('@')[0]} non ha *avvisi* da rimuovere.`)}\n${boxEnd()}`,
+                text: `${sec('UNWARN')}\n${boxOpen()}\n${line(`@${dispOf(targetJid)} non ha *avvisi* da rimuovere.`)}\n${boxEnd()}`,
                 mentions: [targetJid],
             });
         }
@@ -35,7 +36,7 @@ ${boxEnd()}`);
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `${sec('UNWARN')}\n${boxOpen()}\n${line(`@${targetJid.split('@')[0]} ha ricevuto un *perdono*!`)}\n${line(`*Avvisi:* _${targetData.warnings}/3_`)}\n${boxEnd()}`,
+            text: `${sec('UNWARN')}\n${boxOpen()}\n${line(`@${dispOf(targetJid)} ha ricevuto un *perdono*!`)}\n${line(`*Avvisi:* _${targetData.warnings}/3_`)}\n${boxEnd()}`,
             mentions: [targetJid],
         });
     },

@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const toBold = (s) => '*' + String(s||'').trim() + '*';
@@ -21,7 +22,7 @@ module.exports = {
         const txt =
 `🪵  ${toBold('PALO')}
 
-💔  @${sender.split('@')[0]}  →  @${targetJid.split('@')[0]}
+💔  @${dispOf(sender)}  →  @${dispOf(targetJid)}
 ${b}  ·  rifiuto ${pct}%
 
 💬  ${randomChoice(ARRAYS.palo)}
@@ -31,12 +32,12 @@ ${b}  ·  rifiuto ${pct}%
         await sock.sendMessage(from, { text: txt, mentions: [sender, targetJid] }, { quoted: msg });
 
         const btns = [
-            { label: '🔄 Ancora', id: `palo @${targetJid.split('@')[0]}` },
+            { label: '🔄 Ancora', id: `palo @${dispOf(targetJid)}` },
             { label: '👤 Altra vittima', id: `palo` },
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🪵 ${toBold('PALO')}`)}\n${line(``)}\n${line(`@${sender.split('@')[0]} ↔ @${targetJid.split('@')[0]}`)}\n${line(`${b}`)}\n${line(``)}\n${line('Scegli sotto')}\n${line(' Vex Bot')}\n${boxEnd()}`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🪵 ${toBold('PALO')}`)}\n${line(``)}\n${line(`@${dispOf(sender)} ↔ @${dispOf(targetJid)}`)}\n${line(`${b}`)}\n${line(``)}\n${line('Scegli sotto')}\n${line(' Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [sender, targetJid], { headerTitle: '🪵 PALO', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

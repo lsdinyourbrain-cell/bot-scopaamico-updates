@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
 
             const anime = randomChoice(['protagonista shōnen', 'villain col passato triste', 'sensei rilassatissimo', 'salvatore in ritardo', 'friend che ruba la scena']);
             await sock.sendMessage(from, {
-                text: `${sec('ANIME')}\n${boxOpen()}\n${line(`✨ *_ANIME_*\n\n▸ @${sender.split('@')[0]} in un anime sarebbe: _*${anime}*_\n\n🎶 _Opening già in playlist, ovvio._\n`)}\n${boxEnd()}`,
+                text: `${sec('ANIME')}\n${boxOpen()}\n${line(`✨ *_ANIME_*\n\n▸ @${dispOf(sender)} in un anime sarebbe: _*${anime}*_\n\n🎶 _Opening già in playlist, ovvio._\n`)}\n${boxEnd()}`,
                 mentions: [sender],
             });
     },

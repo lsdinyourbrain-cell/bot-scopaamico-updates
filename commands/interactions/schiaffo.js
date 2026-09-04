@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const fs = require('fs');
 const path = require('path');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
@@ -43,10 +44,10 @@ ${boxEnd()}`);
             ];
 
             if (command === 'insulta') {
-                lines.push(line(`@${targetJid.split('@')[0]}:`));
+                lines.push(line(`@${dispOf(targetJid)}:`));
                 lines.push(line(extra));
             } else if (action) {
-                lines.push(line(`@${sender.split('@')[0]} ${action} @${targetJid.split('@')[0]}`));
+                lines.push(line(`@${dispOf(sender)} ${action} @${dispOf(targetJid)}`));
                 if (extra) lines.push(line(extra));
             }
 

@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -29,16 +30,16 @@ module.exports = {
             const pause = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             try {
                 const fake = await sock.sendMessage(from, {
-                    text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Avvio scenetta su @${tgtPn.split('@')[0]} ✨🔮`)}\n${line('🔍 _Inizializzo vetro..._ 💫')}\n${boxEnd()}`,
+                    text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Avvio scenetta su @${dispOf(tgtPn)} ✨🔮`)}\n${line('🔍 _Inizializzo vetro..._ 💫')}\n${boxEnd()}`,
                     mentions: [tgtPn],
                 }, { quoted: msg });
                 await pause(700);
-                await sock.sendMessage(from, { text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Target: @${tgtPn.split('@')[0]} ✨`)}\n${line('🔎 _Cerco meme compromettenti..._ 💫')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
+                await sock.sendMessage(from, { text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Target: @${dispOf(tgtPn)} ✨`)}\n${line('🔎 _Cerco meme compromettenti..._ 💫')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
                 await pause(700);
-                await sock.sendMessage(from, { text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Target: @${tgtPn.split('@')[0]} ✨`)}\n${line('📦 _Recupero figuracce nel vetro..._ 🔮')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
+                await sock.sendMessage(from, { text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Target: @${dispOf(tgtPn)} ✨`)}\n${line('📦 _Recupero figuracce nel vetro..._ 🔮')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
                 await pause(700);
                 await sock.sendMessage(from, {
-                    text: `${sec('✅ HACK COMPLETATO')}\n${boxOpen()}\n${line(`💎 @${tgtPn.split('@')[0]} hackerato — per finta 😭✨`)}\n${line('🔮 _Vetro cromato: missione scenetta_ 💫')}\n${line('💫 _Tutto fake, stai tranquillo_ 💎')}\n${boxEnd()}`,
+                    text: `${sec('✅ HACK COMPLETATO')}\n${boxOpen()}\n${line(`💎 @${dispOf(tgtPn)} hackerato — per finta 😭✨`)}\n${line('🔮 _Vetro cromato: missione scenetta_ 💫')}\n${line('💫 _Tutto fake, stai tranquillo_ 💎')}\n${boxEnd()}`,
                     edit: fake.key,
                     mentions: [tgtPn],
                 });

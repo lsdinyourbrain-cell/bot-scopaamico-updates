@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -35,7 +36,7 @@ ${boxEnd()}`);
         saveDB();
 
         await sock.sendMessage(from, {
-            text: `${sec('RESET WARN')}\n${boxOpen()}\n${line(`@${tgt.split('@')[0]} — *warn resettati*.`)}\n${boxEnd()}`,
+            text: `${sec('RESET WARN')}\n${boxOpen()}\n${line(`@${dispOf(tgt)} — *warn resettati*.`)}\n${boxEnd()}`,
             mentions: [tgt],
         });
     },

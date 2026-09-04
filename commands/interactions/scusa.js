@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -17,7 +18,7 @@ ${boxOpen()}
 ${line('Tagga chi vuoi chiedere scusa. Esempio: .scusa @nome')}
 ${boxEnd()}`);
             await sock.sendMessage(from, {
-                text: `${sec('SCUSE')}\n${boxOpen()}\n${line(`🙏 *_SCUSE_*\n\n▸ @${sender.split('@')[0]} chiede scusa a @${targetJid.split('@')[0]}\n▸ _💬 ${randomChoice(ARRAYS.scusa)}_\n\n`)}\n${boxEnd()}`,
+                text: `${sec('SCUSE')}\n${boxOpen()}\n${line(`🙏 *_SCUSE_*\n\n▸ @${dispOf(sender)} chiede scusa a @${dispOf(targetJid)}\n▸ _💬 ${randomChoice(ARRAYS.scusa)}_\n\n`)}\n${boxEnd()}`,
                 mentions: [sender, targetJid],
             });
     },

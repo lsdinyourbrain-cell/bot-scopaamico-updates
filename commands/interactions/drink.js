@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
@@ -16,7 +17,7 @@ module.exports = {
         const text =
 `${sec('DRINK')}
 ${boxOpen()}
-${line(`🍹 @${sender.split('@')[0]} offre a @${target.split('@')[0]}:`)}
+${line(`🍹 @${dispOf(sender)} offre a @${dispOf(target)}:`)}
 ${line(`🥂 _*${drink}*_`)}
 ${line(`_Cin cin! 🎉_`)}
 ${boxEnd()}`;

@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
@@ -18,10 +19,10 @@ ${boxEnd()}`);
             const vincitore  = Math.random() > 0.5 ? sender : targetJid;
             const perdente   = vincitore === sender ? targetJid : sender;
             const frase = randomChoice(ARRAYS.rissa)
-                .replace(/X/g, `@${vincitore.split('@')[0]}`)
-                .replace(/Y/g, `@${perdente.split('@')[0]}`);
+                .replace(/X/g, `@${dispOf(vincitore)}`)
+                .replace(/Y/g, `@${dispOf(perdente)}`);
             await sock.sendMessage(from, {
-                text: `   *RISSA*   \n\n${line(`⚔️ @${sender.split('@')[0]} vs @${targetJid.split('@')[0]}`)}\n${line(`💬 _${frase}_`)}\n\n${line(`🏆 *Vincitore:* @${vincitore.split('@')[0]}`)}\n\n`,
+                text: `   *RISSA*   \n\n${line(`⚔️ @${dispOf(sender)} vs @${dispOf(targetJid)}`)}\n${line(`💬 _${frase}_`)}\n\n${line(`🏆 *Vincitore:* @${dispOf(vincitore)}`)}\n\n`,
                 mentions: [sender, targetJid],
             });
     },

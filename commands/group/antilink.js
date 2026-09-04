@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
@@ -76,7 +77,7 @@ ${boxEnd()}
                 toggleAntilinkWhitelist(from, targetWl, isAdd);
                 const wlAfter = getAntilinkGroup(from).whitelist || [];
                 await sock.sendMessage(from, {
-                    text: `${sec(`WHITELIST ${isAdd ? '+' : '−'}`)}\n${boxOpen()}\n${line(`@${String(targetWl).split('@')[0]} ${isAdd ? 'ora è autorizzato/a.' : 'rimosso/a dalla whitelist.'}`)}\n${line(`Membri in lista: ${wlAfter.length}`)}\n${boxEnd()}`,
+                    text: `${sec(`WHITELIST ${isAdd ? '+' : '−'}`)}\n${boxOpen()}\n${line(`@${dispOf(targetWl)} ${isAdd ? 'ora è autorizzato/a.' : 'rimosso/a dalla whitelist.'}`)}\n${line(`Membri in lista: ${wlAfter.length}`)}\n${boxEnd()}`,
                     mentions: [targetWl],
                 });
                 return;

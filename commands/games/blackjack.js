@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const EV = require('../../lib/events');
@@ -22,7 +23,7 @@ module.exports = {
             const cdMs = 8000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                const t = `${sec('⏳ BLACKJACK COOLDOWN')}\n${boxOpen()}\n${line(`🃏 @${sender.split('@')[0]} — mazzo in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_ 🔮`)}\n${boxEnd()}`;
+                const t = `${sec('⏳ BLACKJACK COOLDOWN')}\n${boxOpen()}\n${line(`🃏 @${dispOf(sender)} — mazzo in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_ 🔮`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
             userData.cooldowns[cooldownKey] = now;
@@ -38,7 +39,7 @@ module.exports = {
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
             if (uDB.money < puntata) {
-                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — hai _${uDB.money}€_ 💫`)}\n${boxEnd()}`;
+                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — hai _${uDB.money}€_ 💫`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
 
@@ -88,7 +89,7 @@ module.exports = {
 
             saveDB();
 
-            const resultText = `${sec('🃏 BLACKJACK GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *TAVOLO VETRO* ✨🔮`)}\n${line(`🃏 Tue: _${playerCards.join(' • ')}_ → _${playerTotal}_ 💫`)}\n${line(`🤖 Bot: _${dealerCards.join(' • ')}_ → _${dealerTotal}_ 💎`)}\n${line('')}\n${line(`${esito} ✨`)}\n${line(`💳 Saldo: _${formatMoney(uDB.money)}_ • 🃏 glass`)}\n${boxEnd()}`;
+            const resultText = `${sec('🃏 BLACKJACK GLASS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *TAVOLO VETRO* ✨🔮`)}\n${line(`🃏 Tue: _${playerCards.join(' • ')}_ → _${playerTotal}_ 💫`)}\n${line(`🤖 Bot: _${dealerCards.join(' • ')}_ → _${dealerTotal}_ 💎`)}\n${line('')}\n${line(`${esito} ✨`)}\n${line(`💳 Saldo: _${formatMoney(uDB.money)}_ • 🃏 glass`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `🃏 Rigioca ${puntata} ✨`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

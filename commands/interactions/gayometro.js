@@ -1,4 +1,5 @@
 'use strict';
+const { dispOf, resolveJid } = require('../../lib/jid');
 const crypto = require('crypto');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
@@ -53,7 +54,7 @@ module.exports = {
         const percent = hashPercent(targetJid, 'gayometro');
         const bar = buildBar(percent);
         const verdict = getVerdict(percent);
-        const tag = '@' + targetJid.split('@')[0];
+        const tag = '@' + dispOf(targetJid);
         const text = `   *GAYOMETRO*   \n\n${line(`👤 Utente: ${tag}`)}\n${line(`📊 *Valore:* _*${percent}%*_`)}\n${line(`${bar} ${percent}%`)}\n\n${line(verdict)}\n\n`;
         const buttons = [
             { label: '\uD83D\uDD04 Ricalcola', id: 'gayometro' },

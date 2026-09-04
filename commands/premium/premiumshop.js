@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 const prem = require('../../lib/premium');
 
@@ -49,7 +50,7 @@ module.exports = {
         }
 
         const list = ITEMS.map(it=> line(`${it.emoji} *${it.name}* — _${it.price}€_ • ${it.desc}`)).join('\n');
-        const txt = `${sec('💎 PREMIUM SHOP')}\n${boxOpen()}\n${line(`✨ Esclusiva *VETRO DIAMANTATO* per @${sender.split('@')[0]} 🔮`)}\n${line(`💰 Saldo: _${u.money}€_`)}\n${line('')}\n${list}\n${line('')}\n${line('📌 Compra: *.premiumshop compra <id>*')}\n${line(`📦 IDs: _${ITEMS.map(i=>i.id).join(', ')}_`)}\n${boxEnd()}`;
+        const txt = `${sec('💎 PREMIUM SHOP')}\n${boxOpen()}\n${line(`✨ Esclusiva *VETRO DIAMANTATO* per @${dispOf(sender)} 🔮`)}\n${line(`💰 Saldo: _${u.money}€_`)}\n${line('')}\n${list}\n${line('')}\n${line('📌 Compra: *.premiumshop compra <id>*')}\n${line(`📦 IDs: _${ITEMS.map(i=>i.id).join(', ')}_`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },
 };

@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const toBold = (s) => '*' + String(s||'').trim() + '*';
@@ -23,7 +24,7 @@ module.exports = {
         const txt =
 `🍼  ${toBold('TEST FANTASIA')}
 
-👤  @${targetJid.split('@')[0]}
+👤  @${dispOf(targetJid)}
 📊  ${toBold(percent + '%')}  ·  ${level}
 ${DOT}
 ${b}
@@ -35,12 +36,12 @@ Solo un gioco.
         await sock.sendMessage(from, { text: txt, mentions: [targetJid] }, { quoted: msg });
 
         const btns = [
-            { label: '🔄 Ancora', id: `incinta @${targetJid.split('@')[0]}` },
+            { label: '🔄 Ancora', id: `incinta @${dispOf(targetJid)}` },
             { label: '👤 Altra vittima', id: `incinta` },
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍼 ${toBold('INCINTA')}`)}\n${line(``)}\n${line(`@${targetJid.split('@')[0]}  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍼 ${toBold('INCINTA')}`)}\n${line(``)}\n${line(`@${dispOf(targetJid)}  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [targetJid], { headerTitle: '🍼 INCINTA', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

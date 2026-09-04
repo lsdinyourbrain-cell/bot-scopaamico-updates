@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
@@ -43,9 +44,9 @@ ${boxEnd()}
                 const sess = { start: Date.now(), history: [], gid: from, host: context.sender };
                 sess.timer = setTimeout(()=>{ global._callSessions.delete(from); }, 5*60*1000);
                 global._callSessions.set(from, sess);
-                return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('🟢 Attivata + Entrato in chiamata!')}\n${line(`Host: @${String(context.sender).split('@')[0]} (solo sua voce)` )}\n${line(`Link: ${invite}`)}\n${line('🎤 Invia vocale 60s, rispondo a voce in chat')}\n${boxEnd()}\n▸ Cronologia attiva 5 min`, { mentions: [context.sender] });
+                return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('🟢 Attivata + Entrato in chiamata!')}\n${line(`Host: @${dispOf(context.sender)} (solo sua voce)` )}\n${line(`Link: ${invite}`)}\n${line('🎤 Invia vocale 60s, rispondo a voce in chat')}\n${boxEnd()}\n▸ Cronologia attiva 5 min`, { mentions: [context.sender] });
             } catch(_){}
-            return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('🟢 Attivata')}\n${line(`Host: @${String(context.sender).split('@')[0]}`)}\n${line('Invia un vocale: lo trascrivo e rispondo con AI')}\n${boxEnd()}`, { mentions: [context.sender] });
+            return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('🟢 Attivata')}\n${line(`Host: @${dispOf(context.sender)}`)}\n${line('Invia un vocale: lo trascrivo e rispondo con AI')}\n${boxEnd()}`, { mentions: [context.sender] });
         }
         if (sub === 'off' || sub === 'disattiva' || sub === 'disable' || sub === 'stop' || sub === 'leave' || sub === 'esci') {
             if (!db._callAI) db._callAI = {};
@@ -86,9 +87,9 @@ ${boxEnd()}
                 sess.timer = setTimeout(()=>{ global._callSessions.delete(from); }, 5*60*1000);
                 global._callSessions.set(from, sess);
                 const extra = joinedExisting ? line('🔗 Entrato nella chiamata già avviata!') : (invite ? line(`Link: ${invite}`) : '');
-                return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('✅ Entrato in voice chat!')}\n${line(`Host filtrato: @${String(context.sender).split('@')[0]} (solo tua voce)` )}\n${extra}\n${line('🎤 Parla in chiamata o invia vocale, ti rispondo a voce')}\n${line('🧠 Cronologia attiva per tutta la durata')}\n${boxEnd()}`, { mentions: [context.sender] });
+                return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('✅ Entrato in voice chat!')}\n${line(`Host filtrato: @${dispOf(context.sender)} (solo tua voce)` )}\n${extra}\n${line('🎤 Parla in chiamata o invia vocale, ti rispondo a voce')}\n${line('🧠 Cronologia attiva per tutta la durata')}\n${boxEnd()}`, { mentions: [context.sender] });
             } catch(e){
-                return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('✅ Modalità chiamata attiva')}\n${line(`Host: @${String(context.sender).split('@')[0]}`)}\n${boxEnd()}`, { mentions: [context.sender] });
+                return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('✅ Modalità chiamata attiva')}\n${line(`Host: @${dispOf(context.sender)}`)}\n${boxEnd()}`, { mentions: [context.sender] });
             }
         }
         return reply(`${sec('CALL AI')}\n${boxOpen()}\n${line('Uso: .call on/off/entra/stato')}\n${line('.call entra — entra e filtra solo te')}\n${boxEnd()}`);

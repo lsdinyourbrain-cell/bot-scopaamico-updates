@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const { parseDuration, humanizeMs } = require('../../lib/timeparse');
@@ -27,7 +28,7 @@ module.exports = {
         await reply(`${sec('PROMEMORIA IMPOSTATO')}\n${boxOpen()}\n${line(`${sec('PROMEMORIA IMPOSTATO')}\n${boxOpen()}\n${line(`⏰ *_Promemoria impostato!_*\n\n▸ 📝 _${reminderText.slice(0, 300)}_\n▸ ⏳ Tra _${humanizeMs(parsed.ms)}_\n▸ Ti avviserò quando sarà\n  il momento.\n\n`)}\n${boxEnd()}`)}\n${boxEnd()}`);
 
         setTimeout(() => {
-            const text = `${sec('PROMEMORIA')}\n${boxOpen()}\n${line(`${sec('PROMEMORIA')}\n${boxOpen()}\n${line(`⏰ *_PROMEMORIA_* @${sender.split('@')[0]}\n\n▸ 📝 _${reminderText}_\n\n`)}\n${boxEnd()}`)}\n${boxEnd()}`;
+            const text = `${sec('PROMEMORIA')}\n${boxOpen()}\n${line(`${sec('PROMEMORIA')}\n${boxOpen()}\n${line(`⏰ *_PROMEMORIA_* @${dispOf(sender)}\n\n▸ 📝 _${reminderText}_\n\n`)}\n${boxEnd()}`)}\n${boxEnd()}`;
             sock.sendMessage(from, { text, mentions: [sender] }).catch(() => {});
         }, parsed.ms);
     },

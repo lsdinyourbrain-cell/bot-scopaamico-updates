@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -22,6 +23,6 @@ ${boxEnd()}`);
         db.afk[sender] = { reason, ts: Date.now(), from };
         saveDB();
 
-        return sock.sendMessage(from, { text: `${sec('AFK')}\n${boxOpen()}\n${line(`@${sender.split('@')[0]} è ora AFK.`)}\n${line(`Motivo: ${reason.slice(0,200)}`)}\n${line('Torna scrivendo un messaggio.')}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
+        return sock.sendMessage(from, { text: `${sec('AFK')}\n${boxOpen()}\n${line(`@${dispOf(sender)} è ora AFK.`)}\n${line(`Motivo: ${reason.slice(0,200)}`)}\n${line('Torna scrivendo un messaggio.')}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
     },
 };

@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 // Estrae il codice di invito da un link del tipo:
@@ -49,7 +50,7 @@ ${boxEnd()}`);
         tgt = tgt + '@s.whatsapp.net';
         try {
             await sock.groupParticipantsUpdate(from, [tgt], 'add');
-            await sock.sendMessage(from, { text: `${sec('ADD')}\n${boxOpen()}\n${line(`@${tgt.split('@')[0]} aggiunto/a al gruppo.`)}\n${boxEnd()}`, mentions: [tgt] }, { quoted: msg });
+            await sock.sendMessage(from, { text: `${sec('ADD')}\n${boxOpen()}\n${line(`@${dispOf(tgt)} aggiunto/a al gruppo.`)}\n${boxEnd()}`, mentions: [tgt] }, { quoted: msg });
         } catch (e) {
             await reply("⚠️ _[uso]:_ impossibile aggiungere. Il numero potrebbe non essere su WhatsApp o ha privacy restrittiva.");
         }

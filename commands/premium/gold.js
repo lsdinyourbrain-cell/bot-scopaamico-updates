@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 const prem = require('../../lib/premium');
 
@@ -16,7 +17,7 @@ module.exports = {
         }
         const u = getUser(sender, from);
         const remain = prem.getPremiumInfo(db, sender) ? prem.formatRemaining(prem.getPremiumInfo(db, sender).expiry) : '∞ Owner';
-        const txt = `${sec('🥇 GOLD TIER')}\n${boxOpen()}\n${line(`✨ @${sender.split('@')[0]} — *GOLD* 🥇💫`)}\n${line(`💛 _Lusso dorato, vetro cromato_`)}\n${line('')}\n${line(`💰 Saldo: _${u.money||0}€_`)}\n${line(`🏦 Banca: _${u.bank||0}€_`)}\n${line(`⏳ Scadenza: _${remain}_`)}\n${line('')}\n${line(`🌟 Vantaggi Gold:`)}\n${line(`  ▸ 🥇 +5% vincite giochi`)}\n${line(`  ▸ 💫 Accesso gold vault`)}\n${line(`  ▸ ✨ Badge oro nel profilo`)}\n${boxEnd()}`;
+        const txt = `${sec('🥇 GOLD TIER')}\n${boxOpen()}\n${line(`✨ @${dispOf(sender)} — *GOLD* 🥇💫`)}\n${line(`💛 _Lusso dorato, vetro cromato_`)}\n${line('')}\n${line(`💰 Saldo: _${u.money||0}€_`)}\n${line(`🏦 Banca: _${u.bank||0}€_`)}\n${line(`⏳ Scadenza: _${remain}_`)}\n${line('')}\n${line(`🌟 Vantaggi Gold:`)}\n${line(`  ▸ 🥇 +5% vincite giochi`)}\n${line(`  ▸ 💫 Accesso gold vault`)}\n${line(`  ▸ ✨ Badge oro nel profilo`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },
 };

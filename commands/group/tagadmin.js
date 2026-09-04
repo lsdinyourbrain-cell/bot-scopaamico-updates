@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -28,7 +29,7 @@ ${boxEnd()}`);
 ${boxOpen()}
 ${line('nessun admin trovato.')}
 ${boxEnd()}`);
-            const tag = admins.map(a => `@${(a.phoneNumber || a.id || a.jid).split('@')[0]}`).join(' ');
+            const tag = admins.map(a => `@${dispOf((a.phoneNumber || a.id || a.jid))}`).join(' ');
             await sock.sendMessage(from, { text: `👑 *_ADMIN DEL GRUPPO_*
 ${tag}
 `, mentions }, { quoted: msg });

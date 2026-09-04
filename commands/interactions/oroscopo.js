@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -13,7 +14,7 @@ module.exports = {
 
 
             await sock.sendMessage(from, {
-                text: `${sec('OROSCOPO')}\n${boxOpen()}\n${line(`🔮 *_OROSCOPO_*\n\n▸ 👤 @${sender.split('@')[0]}\n▸ ✨ _${randomChoice(ARRAYS.oroscopo)}_\n\n`)}\n${boxEnd()}`,
+                text: `${sec('OROSCOPO')}\n${boxOpen()}\n${line(`🔮 *_OROSCOPO_*\n\n▸ 👤 @${dispOf(sender)}\n▸ ✨ _${randomChoice(ARRAYS.oroscopo)}_\n\n`)}\n${boxEnd()}`,
                 mentions: [sender],
             });
     },

@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const { renderTrisBoard } = require('../../lib/tris');
@@ -77,7 +78,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `${sec('🎮 TRIS GLASS')}\n${boxOpen()}\n${line(`💎 Sfida vetro: @${senderPn.split('@')[0]} ❌ vs @${opponentPn.split('@')[0]} ⭕ ✨`)}\n${line(`🔮 Tocca a ❌ @${senderPn.split('@')[0]} — scrivi *1-9* 💫`)}\n${boxEnd()}`,
+            caption: `${sec('🎮 TRIS GLASS')}\n${boxOpen()}\n${line(`💎 Sfida vetro: @${dispOf(senderPn)} ❌ vs @${dispOf(opponentPn)} ⭕ ✨`)}\n${line(`🔮 Tocca a ❌ @${dispOf(senderPn)} — scrivi *1-9* 💫`)}\n${boxEnd()}`,
             mentions: players,
         }, { quoted: msg });
 

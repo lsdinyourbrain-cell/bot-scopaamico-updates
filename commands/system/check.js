@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const { toDecorated } = require('../../lib/font');
@@ -58,7 +59,7 @@ ${boxEnd()}`);
                 delete userData[k];
             }
             saveDB();
-            return reply(`${sec('RESET ESEGUITO')}\n${boxOpen()}\n${line(`🧹 *_RESET ESEGUITO_*\n\n▸ @${target.split('@')[0]} ripristinato ai valori di default.\n▸ Campi rimossi: _${keys.length}_\n\n`)}\n${boxEnd()}`);
+            return reply(`${sec('RESET ESEGUITO')}\n${boxOpen()}\n${line(`🧹 *_RESET ESEGUITO_*\n\n▸ @${dispOf(target)} ripristinato ai valori di default.\n▸ Campi rimossi: _${keys.length}_\n\n`)}\n${boxEnd()}`);
         }
 
         // ── SET / ADD / DEL 
@@ -78,7 +79,7 @@ ${boxEnd()}`);
             const existed = field in userData;
             delete userData[field];
             if (existed) saveDB();
-            return reply(`${sec('CAMPO ELIMINATO')}\n${boxOpen()}\n${line(`🗑️ *_CAMPO ELIMINATO_*\n\n▸ Utente: _@${target.split('@')[0]}_\n▸ Campo: _${field}_\n▸ Stato: _${existed ? 'eliminato ✓' : 'non esisteva'}_\n\n`)}\n${boxEnd()}`);
+            return reply(`${sec('CAMPO ELIMINATO')}\n${boxOpen()}\n${line(`🗑️ *_CAMPO ELIMINATO_*\n\n▸ Utente: _@${dispOf(target)}_\n▸ Campo: _${field}_\n▸ Stato: _${existed ? 'eliminato ✓' : 'non esisteva'}_\n\n`)}\n${boxEnd()}`);
         }
 
         if (action === 'set' || action === 'add') {
@@ -94,7 +95,7 @@ ${boxEnd()}`);
                 userData[field] = cur + delta;
                 saveDB();
                 return reply(
-`${sec('CAMPO AGGIORNATO')}\n${boxOpen()}\n${line(`Utente: _@${target.split('@')[0]}_`)}\n${line(`Campo: _${field}_`)}\n${line(`${cur} → _${userData[field]}_ (${delta >= 0 ? '+' : ''}${delta})`)}\n${boxEnd()}`);
+`${sec('CAMPO AGGIORNATO')}\n${boxOpen()}\n${line(`Utente: _@${dispOf(target)}_`)}\n${line(`Campo: _${field}_`)}\n${line(`${cur} → _${userData[field]}_ (${delta >= 0 ? '+' : ''}${delta})`)}\n${boxEnd()}`);
             }
 
             // SET con parsing automatico del valore
@@ -119,11 +120,11 @@ ${boxEnd()}`);
             const prevStr = prev === undefined ? '—' : (typeof prev === 'object' ? JSON.stringify(prev) : String(prev));
             const newStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
             return reply(
-`${sec('CAMPO IMPOSTATO')}\n${boxOpen()}\n${line(`Utente: _@${target.split('@')[0]}_`)}\n${line(`Campo: _${field}_`)}\n${line(`Da: _${prevStr}_`)}\n${line(`A: _${newStr}_`)}\n${boxEnd()}`);
+`${sec('CAMPO IMPOSTATO')}\n${boxOpen()}\n${line(`Utente: _@${dispOf(target)}_`)}\n${line(`Campo: _${field}_`)}\n${line(`Da: _${prevStr}_`)}\n${line(`A: _${newStr}_`)}\n${boxEnd()}`);
         }
 
         // ── SHOW: dump completo del record 
-        const short = target.split('@')[0];
+        const short = dispOf(target);
         const linee = [];
         for (const [k, v] of Object.entries(userData)) {
             if (v === undefined || v === null) {

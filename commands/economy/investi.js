@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -55,7 +56,7 @@ module.exports = {
                 : 0;
 
             const portLines = linee.length ? linee.map(l => line(l)).join('\n') : `${line('📭 Portafoglio vuoto.')}\n${line('💎 Compra con: _*.investi compra GOOG*_ ✨')}`;
-            const text = `${sec('💹 BORSA GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *PORTAFOGLIO* ✨🔮`)}\n${line('')}\n${portLines}\n${line('')}\n${line(`💶 Valore azioni: _${tot}€_ • 💎 vetro cromato`)}\n${line(`💳 Contante: _${uDB.money}€_`)}\n${boxEnd()}`;
+            const text = `${sec('💹 BORSA GLASS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *PORTAFOGLIO* ✨🔮`)}\n${line('')}\n${portLines}\n${line('')}\n${line(`💶 Valore azioni: _${tot}€_ • 💎 vetro cromato`)}\n${line(`💳 Contante: _${uDB.money}€_`)}\n${boxEnd()}`;
             return await sendButtons(sock, from, text, [
                 { label: '📝 Listino ✨', id: 'investi listino' },
             ], msg);
@@ -78,11 +79,11 @@ module.exports = {
                 if (parts[2] !== undefined && (isNaN(qty) || qty < 1)) return reply(`${sec('❌ ERRORE')}\n${boxOpen()}\n${line('💎 Quantità non valida ✨')}\n${boxEnd()}`);
                 const n = (isNaN(qty) || qty < 1) ? 1 : qty;
                 const costo = azienda.price * n;
-                if (uDB.money < costo) return reply(`${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — servono _${costo}€_ 💫`)}\n${line(`💳 Hai _${uDB.money}€_ • ricarica con *.daily* ✨`)}\n${boxEnd()}`);
+                if (uDB.money < costo) return reply(`${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — servono _${costo}€_ 💫`)}\n${line(`💳 Hai _${uDB.money}€_ • ricarica con *.daily* ✨`)}\n${boxEnd()}`);
                 uDB.money -= costo;
                 uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + n;
                 saveDB();
-                return sock.sendMessage(from, { text: `${sec('✅ AZIONI COMPRATE')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *ACQUISTO* 📈✨`)}\n${line(`🏢 _${azienda.name}_ (${target})`)}\n${line(`📈 Quantità: _${n}_ • 💰 Costo: _${costo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_ • 🔮 vetro confermato`)}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
+                return sock.sendMessage(from, { text: `${sec('✅ AZIONI COMPRATE')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *ACQUISTO* 📈✨`)}\n${line(`🏢 _${azienda.name}_ (${target})`)}\n${line(`📈 Quantità: _${n}_ • 💰 Costo: _${costo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_ • 🔮 vetro confermato`)}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
             }
 
             const q = Math.floor(parseInt(parts[2], 10));
@@ -95,7 +96,7 @@ module.exports = {
             if (uDB.azioni[target.toUpperCase()] <= 0) delete uDB.azioni[target.toUpperCase()];
             uDB.money += ricavo;
             saveDB();
-            return sock.sendMessage(from, { text: `${sec('💸 AZIONI VENDUTE')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *VENDITA* 📉✨`)}\n${line(`🏢 _${azienda.name}_ (${target})`)}\n${line(`📉 Quantità: _${qty2}_ • 💵 Ricavo: _${ricavo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_ • 🔮 profitto vetro`)}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
+            return sock.sendMessage(from, { text: `${sec('💸 AZIONI VENDUTE')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *VENDITA* 📉✨`)}\n${line(`🏢 _${azienda.name}_ (${target})`)}\n${line(`📉 Quantità: _${qty2}_ • 💵 Ricavo: _${ricavo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_ • 🔮 profitto vetro`)}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
         }
 
         return reply(`${sec('💹 USO INVESTI GLASS')}\n${boxOpen()}\n${line(`💎 *.investi* — portafoglio ✨`)}\n${line(`📊 *.investi listino* — prezzi vetro`)}\n${line(`📈 *.investi compra <codice> [n]* 🔮`)}\n${line(`📉 *.investi vendi <codice> [n]* 💫`)}\n${boxEnd()}`);

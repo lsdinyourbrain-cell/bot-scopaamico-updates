@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 // 
 //  ORGIA — Vex Bot
 //  Tagga 3 partecipanti a caso del gruppo (o i taggati nel comando) in una
@@ -49,7 +50,7 @@ module.exports = {
         targets = [...new Set(targets)].slice(0, 4);
         if (targets.length < 2) return reply(`😅 In questo gruppo non c'è abbastanza gente coraggiosa.`);
 
-        const lines = targets.map((t, i) => line(`@${String(t).split('@')[0]} — ${randomChoice(ROLES)}`));
+        const lines = targets.map((t, i) => line(`@${dispOf(t)} — ${randomChoice(ROLES)}`));
         const valutazione = randomInt(60, 100);
         const bar = '█'.repeat(Math.round(valutazione / 10)) + '░'.repeat(10 - Math.round(valutazione / 10));
 

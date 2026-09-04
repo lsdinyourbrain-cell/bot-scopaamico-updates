@@ -1,4 +1,5 @@
 'use strict';
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 module.exports = {
     name: 'dominas',
@@ -10,6 +11,6 @@ module.exports = {
         if(!targetJid) return reply(`${sec('ERRORE')}\n${boxOpen()}\n${line('Tagga qualcuno o rispondi a un messaggio.')}\n${boxEnd()}`);
         const frasi=["con frusta","come schiavo","ai tuoi piedi","con ordini","senza pieta"];
         const txt=frasi[Math.floor(Math.random()*frasi.length)];
-        await sock.sendMessage(from,{ text: `${sec('DOMINA')}\n${boxOpen()}\n${line(`@${sender.split('@')[0]} domina @${targetJid.split('@')[0]} ${txt}`)}\n${boxEnd()}`, mentions:[sender,targetJid] });
+        await sock.sendMessage(from,{ text: `${sec('DOMINA')}\n${boxOpen()}\n${line(`@${dispOf(sender)} domina @${dispOf(targetJid)} ${txt}`)}\n${boxEnd()}`, mentions:[sender,targetJid] });
     }
 };

@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const fs = require('fs');
@@ -56,7 +57,7 @@ ${boxEnd()}`);
             const bar = '█'.repeat(Math.round(percent / 10)) + '░'.repeat(10 - Math.round(percent / 10));
 
             await sock.sendMessage(from, {
-                text: `💘 *_COMPATIBILITÀ_*\n\n@${user1.split('@')[0]} ❤️ @${user2.split('@')[0]}\n\n${bar} *${percent}%*\n\n_${frase}_\n`,
+                text: `💘 *_COMPATIBILITÀ_*\n\n@${dispOf(user1)} ❤️ @${dispOf(user2)}\n\n${bar} *${percent}%*\n\n_${frase}_\n`,
                 mentions: [user1, user2],
             });
     },

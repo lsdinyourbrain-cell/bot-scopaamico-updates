@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 const toBold = (s) => '*' + String(s||'').trim() + '*';
@@ -28,7 +29,7 @@ module.exports = {
         const txt =
 `${title}
 
-👤  @${target.split('@')[0]}${isSelf ? `  ${toBold('(tu)')}` : ''}
+👤  @${dispOf(target)}${isSelf ? `  ${toBold('(tu)')}` : ''}
 ${DOT}
 ${frase}
 ${DOT}
@@ -39,12 +40,12 @@ ${DOT}
         await sock.sendMessage(from, { text: txt, mentions: [target] }, { quoted: msg });
 
         const btns = [
-            { label: '🔄 Ancora', id: `tette @${target.split('@')[0]}` },
+            { label: '🔄 Ancora', id: `tette @${dispOf(target)}` },
             { label: '👤 Altra vittima', id: `tette` },
             { label: '🏠 Menu', id: 'menu' },
         ];
         const after =
-`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍒 ${toBold('TETTE')}`)}\n${line(``)}\n${line(`@${target.split('@')[0]}  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`;
+`${sec('INFO')}\n${boxOpen()}\n${line(`${toBold('ANCORA?')}  ·  🍒 ${toBold('TETTE')}`)}\n${line(``)}\n${line(`@${dispOf(target)}  ·  ${b}`)}\n${line(`${DOT}`)}\n${line('Scegli sotto')}\n${line(``)}\n${line(' Vex Bot')}\n${boxEnd()}`;
         await sendButtons(sock, from, after, btns, msg, [target], { headerTitle: '🍒 TETTE', footerText: '⬇️ Ancora o nuova vittima' });
     },
 };

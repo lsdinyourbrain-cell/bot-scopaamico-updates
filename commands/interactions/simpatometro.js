@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
         const percent = randomInt(1, 100);
         const note = percent >= 80 ? '⭐ spacca davvero' : percent >= 50 ? '👍 promosso/a' : '💬 può fare di meglio';
         await sock.sendMessage(from, {
-            text: `   *SIMPATOMETRO*   \n\n${line(`@${person.split('@')[0]}`)}\n${line(`*Simpatia:* _*${percent}%*_`)}\n${line(`${note}`)}\n\n`,
+            text: `   *SIMPATOMETRO*   \n\n${line(`@${dispOf(person)}`)}\n${line(`*Simpatia:* _*${percent}%*_`)}\n${line(`${note}`)}\n\n`,
             mentions: [person],
         });
     },

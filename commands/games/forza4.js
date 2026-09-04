@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const { createBoard, renderConnect4Board } = require('../../lib/four-in-row');
@@ -68,7 +69,7 @@ module.exports = {
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `🎮 *FORZA 4*\n\n🎉 Dai, si parte!\nChe figata 🔥\n🔴 Sfidante: @${senderPn.split('@')[0]}\n🟡 Sfidato: @${opponentPn.split('@')[0]}\n\nTocca a 🔴 (@${senderPn.split('@')[0]}).\nScrivi un numero *1-7*\nper lanciare il pedino.\n`,
+            caption: `🎮 *FORZA 4*\n\n🎉 Dai, si parte!\nChe figata 🔥\n🔴 Sfidante: @${dispOf(senderPn)}\n🟡 Sfidato: @${dispOf(opponentPn)}\n\nTocca a 🔴 (@${dispOf(senderPn)}).\nScrivi un numero *1-7*\nper lanciare il pedino.\n`,
             mentions: players,
         }, { quoted: msg });
 

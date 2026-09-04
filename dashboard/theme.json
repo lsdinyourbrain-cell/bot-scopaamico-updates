@@ -6,7 +6,7 @@
   "blur": "22",
   "opacity": "55",
   "indicator": "#ff4ecd",
-  "liquid": false,
+  "liquid": true,
   "bgPreset": "",
   "bgUrl": ""
 }

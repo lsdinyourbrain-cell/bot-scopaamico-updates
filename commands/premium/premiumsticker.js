@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 const prem = require('../../lib/premium');
 const { makeSticker } = require('../../lib/sticker-webp');
@@ -19,7 +20,7 @@ module.exports = {
 
         const text = String(args.join(' ') || '').trim();
         if (!text) {
-            const t = `${sec('💎 PREMIUM STICKER')}\n${boxOpen()}\n${line(`✨ @${sender.split('@')[0]} — crea sticker VIP 🔮`)}\n${line('')}\n${line('📌 Uso: *.premiumsticker <testo>*')}\n${line('💎 Esempio: *.premiumsticker VEX VIP*')}\n${boxEnd()}`;
+            const t = `${sec('💎 PREMIUM STICKER')}\n${boxOpen()}\n${line(`✨ @${dispOf(sender)} — crea sticker VIP 🔮`)}\n${line('')}\n${line('📌 Uso: *.premiumsticker <testo>*')}\n${line('💎 Esempio: *.premiumsticker VEX VIP*')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
         }
         if (text.length > 40) {
@@ -44,7 +45,7 @@ module.exports = {
 </svg>`;
             const sticker = await makeSticker(sharp, webpmux, Buffer.from(svg));
             await sock.sendMessage(from, { sticker }, { quoted: msg });
-            const cap = `${sec('💎 STICKER PREMIUM')}\n${boxOpen()}\n${line(`✨ @${sender.split('@')[0]} — sticker VIP inviato 🔮` )}\n${line(`💫 Testo: _${text}_` )}\n${boxEnd()}`;
+            const cap = `${sec('💎 STICKER PREMIUM')}\n${boxOpen()}\n${line(`✨ @${dispOf(sender)} — sticker VIP inviato 🔮` )}\n${line(`💫 Testo: _${text}_` )}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: cap, mentions: [sender] }, { quoted: msg });
         } catch (e) {
             console.error('[premiumsticker]', e.message);

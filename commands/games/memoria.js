@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -20,7 +21,7 @@ module.exports = {
             const cdMs = 10000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                const t = `${sec('⏳ MEMORIA COOLDOWN')}\n${boxOpen()}\n${line(`🧠 @${sender.split('@')[0]} — memoria in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_ 🔮`)}\n${boxEnd()}`;
+                const t = `${sec('⏳ MEMORIA COOLDOWN')}\n${boxOpen()}\n${line(`🧠 @${dispOf(sender)} — memoria in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_ 🔮`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
             userData.cooldowns[cooldownKey] = now;
@@ -45,7 +46,7 @@ module.exports = {
 
             const display = sequence.map(k => `${COLOR_MAP[k]} ${k}`).join(' ');
 
-            const txt = `${sec('🧠 MEMORIA GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — memorizza nel vetro ✨🔮`)}\n${line('')}\n${line(`🎨 Sequenza: _${display}_ 💫`)}\n${line('')}\n${line('✏️ Ripeti le *lettere* (es: `R G B Y`) ✨')}\n${line('⏳ Hai _60 secondi_ • vetro cromato 💎')}\n${boxEnd()}`;
+            const txt = `${sec('🧠 MEMORIA GLASS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — memorizza nel vetro ✨🔮`)}\n${line('')}\n${line(`🎨 Sequenza: _${display}_ 💫`)}\n${line('')}\n${line('✏️ Ripeti le *lettere* (es: `R G B Y`) ✨')}\n${line('⏳ Hai _60 secondi_ • vetro cromato 💎')}\n${boxEnd()}`;
             await sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
 
             setTimeout(() => {

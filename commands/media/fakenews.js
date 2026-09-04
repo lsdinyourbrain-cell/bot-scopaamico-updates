@@ -1,5 +1,6 @@
 ﻿'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
@@ -57,16 +58,16 @@ module.exports = {
         } catch (_) { /* non in gruppo */ }
 
         // Protagonisti dai tag o dal gruppo.
-        let heroes = mentioned.map(jid => '@' + jid.split('@')[0]);
+        let heroes = mentioned.map(jid => '@' + dispOf(jid));
         if (!heroes.length) {
             try {
                 const meta = await sock.groupMetadata(from).catch(() => null);
                 if (meta?.participants?.length) {
-                    heroes = shuffle(meta.participants.map(p => '@' + p.id.split('@')[0])).slice(0, 3);
+                    heroes = shuffle(meta.participants.map(p => '@' + dispOf(p.id))).slice(0, 3);
                 }
             } catch (_) { /* nessun gruppo */ }
         }
-        const cast = heroes.length ? heroes.join(', ') : '@' + (pushName || sender.split('@')[0]);
+        const cast = heroes.length ? heroes.join(', ') : '@' + dispOf((pushName || sender));
 
         const detail = t.replace(/^@\S+\s*/g, '').trim();
         const theme = detail || randomChoice([

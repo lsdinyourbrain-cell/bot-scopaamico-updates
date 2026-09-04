@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -27,7 +28,7 @@ ${boxEnd()}`);
             let txt = `👥 *MEMBRI*\n\n👥 *${total}* partecipanti\n👑 *${admins.length}* admin\n👤 *${normal.length}* utenti\n`;
             if (admins.length > 0) {
                 txt += `👑 *Admin:*\n`;
-                txt += admins.map(a => `@${jidOf(a).split('@')[0]}`).join('\n') + '\n';
+                txt += admins.map(a => `@${dispOf(jidOf(a))}`).join('\n') + '\n';
             }
             txt += `\n`;
 

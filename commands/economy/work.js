@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const { toDarkFont } = require('../../lib/font');
@@ -22,7 +23,7 @@ module.exports = {
         const cdMs = 20 * 60 * 1000;
         if (now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 60000);
-            const txt = `${sec('⏳ WORK COOLDOWN')}\n${boxOpen()}\n${line(`💼 @${sender.split('@')[0]} — turno in pausa ✨`)}\n${line(`🔮 _Vetro in ricarica, riposa..._`)}\n${line('')}\n${line(`⏰ Torna tra _${remain} minuti_ 💫`)}\n${boxEnd()}`;
+            const txt = `${sec('⏳ WORK COOLDOWN')}\n${boxOpen()}\n${line(`💼 @${dispOf(sender)} — turno in pausa ✨`)}\n${line(`🔮 _Vetro in ricarica, riposa..._`)}\n${line('')}\n${line(`⏰ Torna tra _${remain} minuti_ 💫`)}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
         }
         userData.cooldowns[cooldownKey] = now;
@@ -61,7 +62,7 @@ module.exports = {
         const eventLine = event ? line(`${event.emoji} _${event.label}_ 💫`) : '';
         const evLine = evMult > 1 ? line(`💰 Evento attivo _x${evMult}_ ✨`) : '';
 
-        const resultText = `${sec('💼 WORK GLASS')}\n${boxOpen()}\n${line(`✨ @${sender.split('@')[0]} — _${lavoro.emoji} ${lavoro.nome}_ 💎`)}\n${line(`🔮 _Turno vetro diamantato completato_`)}\n${line('')}\n${line(`💸 Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${event ? eventLine : line(`✨ Turno standard • ben fatto!`)}\n${evMult > 1 ? evLine : ''}\n${line(`💳 Saldo: _${formatMoney(userData.money)}€_ • ⏳ prossimo tra _20m_`)}\n${boxEnd()}`;
+        const resultText = `${sec('💼 WORK GLASS')}\n${boxOpen()}\n${line(`✨ @${dispOf(sender)} — _${lavoro.emoji} ${lavoro.nome}_ 💎`)}\n${line(`🔮 _Turno vetro diamantato completato_`)}\n${line('')}\n${line(`💸 Lordo: _+${formatMoney(gross)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${event ? eventLine : line(`✨ Turno standard • ben fatto!`)}\n${evMult > 1 ? evLine : ''}\n${line(`💳 Saldo: _${formatMoney(userData.money)}€_ • ⏳ prossimo tra _20m_`)}\n${boxEnd()}`;
 
         await sendButtons(sock, from, toDarkFont(resultText), [
             { label: `💼 Nuovo turno ✨`, id: `.${command}` },

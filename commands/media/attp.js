@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const { escapeXml, wrapLines } = require('../../lib/svg-utils');
@@ -56,7 +57,7 @@ module.exports = {
             const svg = renderNeonSvg(text);
             const sticker = await makeSticker(sharp, webpmux, Buffer.from(svg));
             await sock.sendMessage(from, { sticker }, { quoted: msg });
-            const cap = `${sec('✨ ATTP GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — sticker neon vetro ✨🔮` )}\n${line(`💫 Testo: _${text.slice(0,30)}_ 💎`)}\n${boxEnd()}`;
+            const cap = `${sec('✨ ATTP GLASS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — sticker neon vetro ✨🔮` )}\n${line(`💫 Testo: _${text.slice(0,30)}_ 💎`)}\n${boxEnd()}`;
             await sock.sendMessage(from, { text: cap, mentions: [sender] }, { quoted: msg });
         } catch (e) {
             console.error('[attp]', e.message);

@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const { toDecorated } = require('../../lib/font');
@@ -34,7 +35,7 @@ module.exports = {
                 if (u.pregi.length > 12) u.pregi = u.pregi.slice(-12);
                 saveDB();
                 return reply(
-`${sec('BOSS ABBATTUTO')}\n${boxOpen()}\n${line('💥 *BOSS ABBATTUTO!* 💥')}\n${line(`@${sender.split('@')[0]} ha dato il colpo`)}\n${line(`finale: _${shot.dmg} danno_!`)}\n${line(`🏆 Bottino: _+${shot.reward}€_`)}\n${line('🐉 Pregio: *Cacciatore di Boss*')}\n${boxEnd()}`);
+`${sec('BOSS ABBATTUTO')}\n${boxOpen()}\n${line('💥 *BOSS ABBATTUTO!* 💥')}\n${line(`@${dispOf(sender)} ha dato il colpo`)}\n${line(`finale: _${shot.dmg} danno_!`)}\n${line(`🏆 Bottino: _+${shot.reward}€_`)}\n${line('🐉 Pregio: *Cacciatore di Boss*')}\n${boxEnd()}`);
             }
             const pct = Math.max(0, Math.min(100, Math.round((shot.hp / shot.maxHp) * 100)));
             return reply(
@@ -48,7 +49,7 @@ module.exports = {
             const u = getUser(sender, from);
             u.money = (u.money || 0) + rain.amount;
             saveDB();
-            return reply(`${sec('PIOGGIA RACCOLTA')}\n${boxOpen()}\n${line(`🌧️ *PIOGGIA RACCOLTA!* 🌧️\n\n▸ @${sender.split('@')[0]} ha preso _+${rain.amount}€_\n▸ Saldo: _${u.money}€_\n\n`)}\n${boxEnd()}`);
+            return reply(`${sec('PIOGGIA RACCOLTA')}\n${boxOpen()}\n${line(`🌧️ *PIOGGIA RACCOLTA!* 🌧️\n\n▸ @${dispOf(sender)} ha preso _+${rain.amount}€_\n▸ Saldo: _${u.money}€_\n\n`)}\n${boxEnd()}`);
         }
 
         // ── EVENTO APRI: cassa misteriosa 
@@ -69,7 +70,7 @@ module.exports = {
             u.money = (u.money || 0) + res.money;
             saveDB();
             const badgeLine = res.badge ? '\n▸ 🏅 Pregio: *Fortunato della Cassa*' : '';
-            return reply(`${sec('CASSA MISTERIOSA')}\n${boxOpen()}\n${line(`🎁 *CASSA MISTERIOSA* 🎁\n\n▸ @${sender.split('@')[0]} ha trovato\n  _+${res.money}€_${badgeLine}\n▸ Saldo: _${u.money}€_\n▸ Prossima cassa: _60 min_\n\n`)}\n${boxEnd()}`);
+            return reply(`${sec('CASSA MISTERIOSA')}\n${boxOpen()}\n${line(`🎁 *CASSA MISTERIOSA* 🎁\n\n▸ @${dispOf(sender)} ha trovato\n  _+${res.money}€_${badgeLine}\n▸ Saldo: _${u.money}€_\n▸ Prossima cassa: _60 min_\n\n`)}\n${boxEnd()}`);
         }
 
         // ── GESTIONE (solo owner/admin) 

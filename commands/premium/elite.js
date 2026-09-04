@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 const prem = require('../../lib/premium');
 
@@ -21,7 +22,7 @@ module.exports = {
 
         const level = u.level || 1;
         const xp = u.xp || 0;
-        const txt = `${sec('🌟 ELITE STATUS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — *ELITE* 👑✨`)}\n${line(`🔮 _Cristallo d'élite attivo_`)}\n${line('')}\n${line(`⭐ Livello: _${level}_ • XP: _${xp}_`)}\n${line(`👑 Tier: _ELITE DIAMOND_ 💎`)}\n${line(`⏳ Scadenza: _${remain}_`)}\n${line('')}\n${line(`🌟 Benefici Elite:`)}\n${line(`  ▸ 🚀 Boost ogni 4h`)}\n${line(`  ▸ 🎮 Moltiplicatore giochi x1.5`)}\n${line(`  ▸ 💫 Priorità assoluta nei comandi`)}\n${boxEnd()}`;
+        const txt = `${sec('🌟 ELITE STATUS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *ELITE* 👑✨`)}\n${line(`🔮 _Cristallo d'élite attivo_`)}\n${line('')}\n${line(`⭐ Livello: _${level}_ • XP: _${xp}_`)}\n${line(`👑 Tier: _ELITE DIAMOND_ 💎`)}\n${line(`⏳ Scadenza: _${remain}_`)}\n${line('')}\n${line(`🌟 Benefici Elite:`)}\n${line(`  ▸ 🚀 Boost ogni 4h`)}\n${line(`  ▸ 🎮 Moltiplicatore giochi x1.5`)}\n${line(`  ▸ 💫 Priorità assoluta nei comandi`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },
 };

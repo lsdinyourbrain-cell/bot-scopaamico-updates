@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -30,7 +31,7 @@ module.exports = {
                 // Costruisce le righe degli admin con icona di ruolo (usa il numero
                 // di telefono reale quando disponibile: i @lid non si mostrano)
                 const buildAdminLine = (p, icon) =>
-                    `${icon} ▸ _@${((p.phoneNumber || p.id || p.jid) || '').split('@')[0]}_`;
+                    `${icon} ▸ _@${dispOf(((p.phoneNumber || p.id || p.jid) || ''))}_`;
 
                 const superAdminLines = superAdmins.map(p => buildAdminLine(p, '👑')).join('\n');
                 const adminLines      = admins.map(p => buildAdminLine(p, '⚙️')).join('\n');

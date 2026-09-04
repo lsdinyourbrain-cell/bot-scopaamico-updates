@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const EV = require('../../lib/events');
@@ -25,7 +26,7 @@ module.exports = {
             }
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) {
-                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — hai _${formatMoney(uDB.money)}_ 💫`)}\n${line('🔮 _Servono più fondi per girare_')}\n${boxEnd()}`;
+                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — hai _${formatMoney(uDB.money)}_ 💫`)}\n${line('🔮 _Servono più fondi per girare_')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
 
@@ -34,7 +35,7 @@ module.exports = {
             uDB.money += win ? puntata * evMult : -puntata;
             saveDB();
 
-            const resultText = `${sec(win ? '🎰 ROULETTE WIN' : '🎰 ROULETTE GLASS')}\n${boxOpen()}\n${line(`💎 @${sender.split('@')[0]} — _${formatMoney(puntata)}_ puntati ✨`)}\n${line(win ? `✨ _È uscito il tuo numero!_ 💫` : `🫠 _Giro storto, riprova_ 💎`)}\n${evMult>1 && win ? line(`🎰 Evento _x${evMult}_ 🔮`) : ''}\n${line(`💳 Saldo: _${formatMoney(uDB.money)}_ • 🎰 glass spin`)}\n${boxEnd()}`;
+            const resultText = `${sec(win ? '🎰 ROULETTE WIN' : '🎰 ROULETTE GLASS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — _${formatMoney(puntata)}_ puntati ✨`)}\n${line(win ? `✨ _È uscito il tuo numero!_ 💫` : `🫠 _Giro storto, riprova_ 💎`)}\n${evMult>1 && win ? line(`🎰 Evento _x${evMult}_ 🔮`) : ''}\n${line(`💳 Saldo: _${formatMoney(uDB.money)}_ • 🎰 glass spin`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `🎰 Rigioca ${puntata} ✨`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

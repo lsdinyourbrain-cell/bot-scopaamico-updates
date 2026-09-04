@@ -347,7 +347,7 @@ const applyWarn = async (sock, groupJid, userJid, reason) => {
     saveDB();
     logGroupEvent(groupJid, 'warn', userJid, null, userJid, reason);
 
-    const short = userJid.split('@')[0];
+    const short = dispOf(userJid);
 
     if (user.warnings >= WARN_LIMIT) {
         const reasons = user.warnLog.map((w, i) => `${i + 1}. ${w.reason}`).join('\n');
@@ -747,14 +747,14 @@ const getWelcomeCustom = (groupJid, type) => {
 // Sostituisce i placeholder nel testo custom: @user, {user}, @group, {group}, @desc
 const formatWelcomeText = (template, { userJid, userMention, groupName, groupDesc, isSingle }) => {
     let t = String(template || '');
-    const short = String(userJid || userMention || '').split('@')[0];
+    const short = dispOf(userJid || userMention || '');
     const mentionTag = `@${short}`;
     t = t.replace(/\{user\}/gi, mentionTag).replace(/@user/gi, mentionTag);
     t = t.replace(/\{group\}/gi, groupName || '').replace(/@group/gi, groupName || '');
     t = t.replace(/\{desc\}/gi, (groupDesc || '').slice(0, 200)).replace(/@desc/gi, (groupDesc || '').slice(0, 200));
     // @users per il caso multiplo
     if (userMention && Array.isArray(userMention)) {
-        const all = userMention.map(j => '@' + String(j).split('@')[0]).join(' ');
+        const all = userMention.map(j => '@' + dispOf(j)).join(' ');
         t = t.replace(/\{users\}/gi, all).replace(/@users/gi, all);
     }
     return t;
@@ -1860,11 +1860,11 @@ async function startBot() {
                     sess.timer = setTimeout(async ()=>{
                         if (global._callSessions.has(gid)) {
                             global._callSessions.delete(gid);
-                            await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ⏱️ Chiamata/voice chat terminata (5 min max)\n│ Cronologia: ${sess.history.length} scambi | Host: @${String(sess.host).split('@')[0]}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` , mentions:[sess.host]}).catch(()=>{});
+                            await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ⏱️ Chiamata/voice chat terminata (5 min max)\n│ Cronologia: ${sess.history.length} scambi | Host: @${dispOf(sess.host)}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─` , mentions:[sess.host]}).catch(()=>{});
                         }
                     }, 5*60*1000);
                     global._callSessions.set(gid, sess);
-                    const hostName = String(sess.host).split('@')[0];
+                    const hostName = dispOf(sess.host);
                     await sock.sendMessage(gid, { text: `ㅤㅤ⋆｡˚『 ╭ \`CALL AI\` ╯ 』˚｡⋆\n╭\n│ ✅ Entrato in chiamata/voice chat!\n│ 🎤 Host filtrato: @${hostName} (solo sua voce)\n│ 🗣️ Parla in chiamata o invia vocale 60s\n│ 🧠 Rispondo a voce in chiamata con cronologia\n│ ⏱️ Max 5 min • 10/h • 30s cooldown\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`, mentions:[sess.host] }).catch(()=>{});
                 } catch(_){}
             }
@@ -2186,7 +2186,7 @@ startBot();
                     logGroupEvent(from, `guard-${_gWhat}`, actorMain, msg.key?.participantAlt || null, null,
                         restored ? 'demote + ripristinato dal backup' : 'demote (ripristino fallito)');
                     await sock.sendMessage(from, {
-                        text: `🛡️ *GRUPPO PROTETTO*\n▸ @${String(msg.key?.participantAlt || actorMain || '').split('@')[0]} era admin ma non è in whitelist.\n▸ ${_gWhat.charAt(0).toUpperCase() + _gWhat.slice(1)} ripristinato/a dal backup.\n▸ Admin revocato.`,
+                        text: `🛡️ *GRUPPO PROTETTO*\n▸ @${dispOf(msg.key?.participantAlt || actorMain || '')} era admin ma non è in whitelist.\n▸ ${_gWhat.charAt(0).toUpperCase() + _gWhat.slice(1)} ripristinato/a dal backup.\n▸ Admin revocato.`,
                         mentions: [msg.key?.participantAlt || actorMain].filter(Boolean),
                     }).catch(() => {});
                 } else {
@@ -2347,7 +2347,7 @@ startBot();
                     const bonus = 10 + Math.max(...ups) * 5;
                     userData.money = (userData.money || 0) + bonus;
                     sock.sendMessage(from, {
-                        text: xpLib.levelUpText(ups, (senderAlt || sender).split('@')[0]),
+                        text: xpLib.levelUpText(ups, dispOf(sender, senderAlt)),
                         mentions: [senderAlt || sender],
                     }).catch(() => {});
                 }
@@ -2374,7 +2374,7 @@ startBot();
                     if (amt) {
                         userData.money = (userData.money || 0) + amt;
                         sock.sendMessage(from, {
-                            text: `👥 *RADUNO!* 👥\n\n@${(senderAlt || sender).split('@')[0]} è al raduno e riceve _+${amt}€_!\n\nManda un messaggio anche tu per partecipare! 💸`,
+                            text: `👥 *RADUNO!* 👥\n\n@${dispOf(sender, senderAlt)} è al raduno e riceve _+${amt}€_!\n\nManda un messaggio anche tu per partecipare! 💸`,
                             mentions: [senderAlt || sender],
                         }).catch(() => {});
                     }
@@ -2723,7 +2723,7 @@ startBot();
                     uData.isMuted = true;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `⛔ *ANTI-FLOOD*\n\n@${(senderAlt || sender).split('@')[0]} troppi messaggi! Sei mutato 1 minuto. Rilassati un attimo 🙄`,
+                        text: `⛔ *ANTI-FLOOD*\n\n@${dispOf(sender, senderAlt)} troppi messaggi! Sei mutato 1 minuto. Rilassati un attimo 🙄`,
                         mentions: [senderAlt || sender],
                     });
                     setTimeout(() => {
@@ -2748,14 +2748,14 @@ startBot();
                     uBest.passAntiBestemmia -= 1;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `ㅤㅤ⋆｡˚『 ╭ \`PASS ANTI-BESTEMMIA\` ╯ 』˚｡⋆\n╭\n│ @${sender.split('@')[0]} ti perdono\n│ Questo scivolone... questa volta.\n│ Pass rimasti: ${uBest.passAntiBestemmia}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`,
+                        text: `ㅤㅤ⋆｡˚『 ╭ \`PASS ANTI-BESTEMMIA\` ╯ 』˚｡⋆\n╭\n│ @${dispOf(sender)} ti perdono\n│ Questo scivolone... questa volta.\n│ Pass rimasti: ${uBest.passAntiBestemmia}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`,
                         mentions: [sender],
                     }).catch(() => {});
                 } else {
                     uBest.bestemmie = (uBest.bestemmie || 0) + 1;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `ㅤㅤ⋆｡˚『 ╭ \`BESTEMMIOMETRO\` ╯ 』˚｡⋆\n╭\n│ @${sender.split('@')[0]}\n│ ${bestemmiometro.getReaction()}\n│ Bestemmia n° ${uBest.bestemmie}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`,
+                        text: `ㅤㅤ⋆｡˚『 ╭ \`BESTEMMIOMETRO\` ╯ 』˚｡⋆\n╭\n│ @${dispOf(sender)}\n│ ${bestemmiometro.getReaction()}\n│ Bestemmia n° ${uBest.bestemmie}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`,
                         mentions: [sender],
                     });
                 }
@@ -2819,7 +2819,7 @@ startBot();
                                         const t = setTimeout(()=>ctrl.abort(), 15000);
                                         try {
                                             const hist = (sess.history || []).slice(-10);
-                                            const msgs = [...hist, { role: 'user', content: `[vocale ${dur}s di @${String(sender).split('@')[0]}] Trascrivi e rispondi brevemente, mantieni contesto.` }];
+                                            const msgs = [...hist, { role: 'user', content: `[vocale ${dur}s di @${dispOf(sender)}] Trascrivi e rispondi brevemente, mantieni contesto.` }];
                                             const resp = await axios.post(aiUrl, {
                                                 model: aiModel,
                                                 messages: msgs,
@@ -2901,7 +2901,7 @@ startBot();
                         try {
                             await sock.sendMessage(from, { delete: msg.key });
                             await sock.sendMessage(from, {
-                                text: `🔥 *ANTIFLAME* 🚨\n\n@${sender.split('@')[0]} messaggio rimosso (contiene parole pesanti).`,
+                                text: `🔥 *ANTIFLAME* 🚨\n\n@${dispOf(sender)} messaggio rimosso (contiene parole pesanti).`,
                                 mentions: [sender],
                             });
                         } catch (_) {}
@@ -2923,7 +2923,7 @@ startBot();
                     if (members.length > 1) {
                         const bounty = trySpawnBounty(from, members, regal);
                         if (bounty) {
-                            const targetShort = bounty.target.split('@')[0];
+                            const targetShort = dispOf(bounty.target);
                             await sock.sendMessage(from, {
                                 text: regal
                                     ? `🏆 *TAGLIA REGALE!* 🏆\n\n👑 È stata messa una taglia di *${bounty.reward}€* su @${targetShort}!\n\nusa \`.spara\` per provare a incassarla! 🔫`
@@ -2952,7 +2952,7 @@ startBot();
                     uDB.money += reward;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `✅ *ENIGMA RISOLTO!* 🧠\n\n@${senderAlt || sender.split('@')[0]} ha risposto:\n*${eg.answer}*\n\n+${reward}€ 💰`,
+                        text: `✅ *ENIGMA RISOLTO!* 🧠\n\n@${dispOf(sender, senderAlt)} ha risposto:\n*${eg.answer}*\n\n+${reward}€ 💰`,
                         mentions: [sender],
                     });
                 }
@@ -2977,12 +2977,12 @@ startBot();
                     uDB.money += reward;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `✅ *RISPOSTA ESATTA!* 🎉\n\n@${senderAlt || sender.split('@')[0]} ha risposto correttamente!\n+${reward}€ 💰`,
+                        text: `✅ *RISPOSTA ESATTA!* 🎉\n\n@${dispOf(sender, senderAlt)} ha risposto correttamente!\n+${reward}€ 💰`,
                         mentions: [sender],
                     });
                 } else if (guessedLetter !== -1) {
                     await sock.sendMessage(from, {
-                        text: `❌ @${sender.split('@')[0]}, risposta sbagliata! Riprova.`,
+                        text: `❌ @${dispOf(sender)}, risposta sbagliata! Riprova.`,
                         mentions: [sender],
                     });
                 }
@@ -3003,12 +3003,12 @@ startBot();
                     uDB.money += reward;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🏆 *BANDIERA INDOVINATA!* 🌍\n\n@${sender.split('@')[0]} ha riconosciuto la bandiera!\n+${reward}€ 💰`,
+                        text: `🏆 *BANDIERA INDOVINATA!* 🌍\n\n@${dispOf(sender)} ha riconosciuto la bandiera!\n+${reward}€ 💰`,
                         mentions: [sender],
                     });
                 } else {
                     await sock.sendMessage(from, {
-                        text: `❌ @${sender.split('@')[0]}, risposta sbagliata!`,
+                        text: `❌ @${dispOf(sender)}, risposta sbagliata!`,
                         mentions: [sender],
                     });
                 }
@@ -3027,12 +3027,12 @@ startBot();
                         uDB.money += 50;
                         saveDB();
                         await sock.sendMessage(from, {
-                            text: `⚡ *VELOCISSIMO!* @${sender.split('@')[0]} ha reagito in tempo!\n+50€ 💰`,
+                            text: `⚡ *VELOCISSIMO!* @${dispOf(sender)} ha reagito in tempo!\n+50€ 💰`,
                             mentions: [sender],
                         });
                     } else {
                         await sock.sendMessage(from, {
-                            text: `🐌 @${sender.split('@')[0]}, troppo tardi! 😴`,
+                            text: `🐌 @${dispOf(sender)}, troppo tardi! 😴`,
                             mentions: [sender],
                         });
                     }
@@ -3071,7 +3071,7 @@ startBot();
                     uDB.money += 100;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🎉 *PAROLA INDOVINATA!* @${sender.split('@')[0]} ha trovato la parola *${wg.word}*!\n+100€ 💰`,
+                        text: `🎉 *PAROLA INDOVINATA!* @${dispOf(sender)} ha trovato la parola *${wg.word}*!\n+100€ 💰`,
                         mentions: [sender],
                     });
                     return;
@@ -3248,7 +3248,7 @@ startBot();
                 if (winnerIdx !== null) {
                     game.active = false;
                     saveDB();
-                    caption = `🏆 *GG!* @${game.players[winnerIdx].split('@')[0]} (${symbol}) ha spaccato al tris!`;
+                    caption = `🏆 *GG!* @${dispOf(game.players[winnerIdx])} (${symbol}) ha spaccato al tris!`;
                 } else if (isFull) {
                     game.active = false;
                     saveDB();
@@ -3257,7 +3257,7 @@ startBot();
                     game.current = 1 - game.current;
                     saveDB();
                     const nextSymbol = game.current === 0 ? '❌' : '⭕';
-                    caption = `🎮 *TRIS* — Tocca a @${game.players[game.current].split('@')[0]} (${nextSymbol}).\nManda un numero *1-9*!`;
+                    caption = `🎮 *TRIS* — Tocca a @${dispOf(game.players[game.current])} (${nextSymbol}).\nManda un numero *1-9*!`;
                 }
 
                 // Render NUOVA board e invia PRIMA, poi cancella il messaggio
@@ -3311,7 +3311,7 @@ startBot();
                     uDB.money += 75;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🧠 *MEMORIA FERREA!* @${sender.split('@')[0]} ha ripetuto la sequenza ${mg.sequence.join(' ')}!\n+75€ 💰`,
+                        text: `🧠 *MEMORIA FERREA!* @${dispOf(sender)} ha ripetuto la sequenza ${mg.sequence.join(' ')}!\n+75€ 💰`,
                         mentions: [sender],
                     });
                 } else {
@@ -3360,7 +3360,7 @@ startBot();
                     const winnerUser = getUser(game.players[game.current], from);
                     winnerUser.money += 150;
                     saveDB();
-                    caption = `🏆 *GG!* @${game.players[game.current].split('@')[0]} ha spaccato a Forza 4!\n+150€ 💰`;
+                    caption = `🏆 *GG!* @${dispOf(game.players[game.current])} ha spaccato a Forza 4!\n+150€ 💰`;
                 } else if (full) {
                     game.active = false;
                     saveDB();
@@ -3369,7 +3369,7 @@ startBot();
                     game.current = 1 - game.current;
                     saveDB();
                     const nextMark = game.current === 0 ? '🔴' : '🟡';
-                    caption = `🎮 *FORZA 4* — Tocca a @${game.players[game.current].split('@')[0]} (${nextMark}).\nManda un numero *1-7*!`;
+                    caption = `🎮 *FORZA 4* — Tocca a @${dispOf(game.players[game.current])} (${nextMark}).\nManda un numero *1-7*!`;
                 }
 
                 let boardBuffer;
@@ -3452,7 +3452,7 @@ startBot();
                     const uDB = getUser(sender, from);
                     uDB.money += 120;
                     saveDB();
-                    caption = `🎉 *GG!* @${sender.split('@')[0]} ha beccato *${wg.target}* in ${wg.attempts.length} tentativi!\n+120€ 💰`;
+                    caption = `🎉 *GG!* @${dispOf(sender)} ha beccato *${wg.target}* in ${wg.attempts.length} tentativi!\n+120€ 💰`;
                 } else if (wg.attempts.length >= maxAttempts) {
                     wg.active = false;
                     saveDB();
@@ -3508,7 +3508,7 @@ startBot();
 
                 const q = tr.questions[tr.qIndex];
                 if (letter !== q.letter) {
-                    await sock.sendMessage(from, { text: `❌ @${sender.split('@')[0]}, risposta sbagliata! Riprova.`, mentions: [sender] });
+                    await sock.sendMessage(from, { text: `❌ @${dispOf(sender)}, risposta sbagliata! Riprova.`, mentions: [sender] });
                     return;
                 }
 
@@ -3528,9 +3528,9 @@ startBot();
                         if (jid === best) u.money += trivia2Cmd.BONUS_TOP;
                     }
                     saveDB();
-                    const scoreboard = Object.entries(tr.score).map(([j, p]) => `• @${j.split('@')[0]} — *${p}*`).join('\n');
+                    const scoreboard = Object.entries(tr.score).map(([j, p]) => `• @${dispOf(j)} — *${p}*`).join('\n');
                     await sock.sendMessage(from, {
-                        text: `🏆 *TRIVIA FINITA!*\n\n🏅 Vincitore: @${best.split('@')[0]}\n\n${scoreboard}\n\n🎉 Premi:\n· +${trivia2Cmd.REWARD_PER_CORRECT}€ a risposta\n· +${trivia2Cmd.BONUS_TOP}€ al vincitore`,
+                        text: `🏆 *TRIVIA FINITA!*\n\n🏅 Vincitore: @${dispOf(best)}\n\n${scoreboard}\n\n🎉 Premi:\n· +${trivia2Cmd.REWARD_PER_CORRECT}€ a risposta\n· +${trivia2Cmd.BONUS_TOP}€ al vincitore`,
                         mentions: Object.keys(tr.score),
                     });
                 } else {
@@ -3538,7 +3538,7 @@ startBot();
                     saveDB();
                     const next = tr.questions[tr.qIndex];
                     await sock.sendMessage(from, {
-                        text: `✅ @${sender.split('@')[0]} ha risposto giusto! (${tr.score[sender]} pt)\n\n${duelQuiz.formatQuestion(next, tr.qIndex + 1)}`,
+                        text: `✅ @${dispOf(sender)} ha risposto giusto! (${tr.score[sender]} pt)\n\n${duelQuiz.formatQuestion(next, tr.qIndex + 1)}`,
                         mentions: [sender],
                     });
                 }
@@ -3574,7 +3574,7 @@ startBot();
                     uDB.money += akinatorCmd.REWARD;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🎭 *HO INDOVINATO!*\n\nPensavi a *${next.guess}*!\n\n🎉 +${akinatorCmd.REWARD}€ per @${sender.split('@')[0]}!`,
+                        text: `🎭 *HO INDOVINATO!*\n\nPensavi a *${next.guess}*!\n\n🎉 +${akinatorCmd.REWARD}€ per @${dispOf(sender)}!`,
                         mentions: [sender],
                     });
                 } else {
@@ -3617,7 +3617,7 @@ startBot();
                     saveDB();
                     const mins = Math.floor((Date.now() - myAfk.ts) / 60000);
                     await sock.sendMessage(from, {
-                        text: `👋 *Bentornato* @${(senderAlt || sender).split('@')[0]}!\n\nEri via per _${myAfk.reason || 'nessun motivo'}_\n⏱️ AFK per ${mins > 0 ? mins + ' min' : 'meno di un minuto'}.\n\nStato AFK rimosso. ✅`,
+                        text: `👋 *Bentornato* @${dispOf(sender, senderAlt)}!\n\nEri via per _${myAfk.reason || 'nessun motivo'}_\n⏱️ AFK per ${mins > 0 ? mins + ' min' : 'meno di un minuto'}.\n\nStato AFK rimosso. ✅`,
                         mentions: [senderAlt || sender],
                     }, { quoted: msg }).catch(() => {});
                 }
@@ -3650,7 +3650,7 @@ startBot();
                         greetingLastReply.set(lastKey, now);
                         // Il token @numero nel testo fa sì che WhatsApp evidenzi
                         // il nome del contatto come vera menzione.
-                        const name = (senderAlt || sender).split('@')[0];
+                        const name = dispOf(sender, senderAlt);
                         const text = greetings.pickGreeting(kind, name);
                         await sock.sendMessage(from, {
                             text,
@@ -3863,7 +3863,7 @@ const collectMentionsFromText = async (sock, text, from) => {
         if (isGroup && ADMIN_COMMANDS.has(command) && !isSenderAdmin && !isOwner) {
             const ownerOnlyDeny = new Set(['clear', 'pulizia', 'cache', 'svuota', 'ds']);
             if (!ownerOnlyDeny.has(command) && command !== 'godmode') {
-                const denyAdmin = `🚫 *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ @${sender.split('@')[0]} ci hai provato, ma non sei admin 😒\n▸ Il comando *.${command}* è solo per gli admin del gruppo\n▸ Torna quando avrai i poteri 👑\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                const denyAdmin = `🚫 *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ @${dispOf(sender)} ci hai provato, ma non sei admin 😒\n▸ Il comando *.${command}* è solo per gli admin del gruppo\n▸ Torna quando avrai i poteri 👑\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
                 try {
                     await sendButtons(sock, from, denyAdmin, [{ label: '🛡️ Diventa admin', id: 'admin' }], msg, [sender]);
                 } catch (_) {
@@ -3952,7 +3952,7 @@ const collectMentionsFromText = async (sock, text, from) => {
             const meta = await sock.groupMetadata(groupJid);
             const groupName = (meta?.subject) || 'Questo gruppo';
             const groupDesc = (meta?.desc || '').trim().slice(0, 200);
-            const names = welcomedJids.map(j => '@' + j.split('@')[0]).join(' ');
+            const names = welcomedJids.map(j => '@' + dispOf(j)).join(' ');
             // Grafica nuova VEX + mostra membri — SINGOLO messaggio garantito
             const totalMembers = Array.isArray(meta.participants) ? meta.participants.length : welcomedJids.length;
             const adminCount = Array.isArray(meta.participants) ? meta.participants.filter(p=>['admin','superadmin'].includes(p.admin)).length : 0;
@@ -3964,7 +3964,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                 if (!formatted.includes('@')) welcomeText = `${names}\n${welcomeText}`;
                 // Avvolgi custom in grafica nuova se non già decorato
                 if (!welcomeText.includes('⋆｡˚')) {
-                    const body = `📍 ${groupName} • 👥 ${totalMembers} membri (${adminCount} admin)\n👋 ${welcomedJids.map(j=>'@'+j.split('@')[0]).join(' ')}\n${welcomeText}\n📜 ${groupDesc.slice(0,120)}`;
+                    const body = `📍 ${groupName} • 👥 ${totalMembers} membri (${adminCount} admin)\n👋 ${welcomedJids.map(j=>'@' + dispOf(j)).join(' ')}\n${welcomeText}\n📜 ${groupDesc.slice(0,120)}`;
                     welcomeText = `ㅤㅤ⋆｡˚『 ╭ \`BENVENUTO\` ╯ 』˚｡⋆\n╭\n│ ${body.split('\n').map(l=>'│ '+l).join('\n')}\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
                 }
             } else {
@@ -4107,7 +4107,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                         logGroupEvent(groupJid, 'guard-promote', author || null, authorPn || null,
                             gTargets.join(', ') || null, 'demote autore + promossi annullati');
                         await sock.sendMessage(groupJid, {
-                            text: `🛡️ *GRUPPO PROTETTO*\n▸ @${String(authorPn || author || '').split('@')[0]} era admin ma non è in whitelist.\n▸ Promozione annullata e admin revocato.`,
+                            text: `🛡️ *GRUPPO PROTETTO*\n▸ @${dispOf(authorPn || author || '')} era admin ma non è in whitelist.\n▸ Promozione annullata e admin revocato.`,
                             mentions: [authorPn || author].filter(Boolean),
                         }).catch(() => {});
                         return;
@@ -4130,7 +4130,7 @@ const collectMentionsFromText = async (sock, text, from) => {
 
                     let actorAllowed = !actorJid; // nessun autore noto: non bloccare
                     if (actorJid) {
-                        if (isOwnerJid(actorJid, sock, db, actorAlt) || isAntinukeWhitelisted(anCfg, actorJid)) {
+                        if (isOwnerJid(actorJid, sock, db, actorAlt) || isAntinukeWhitelisted(anCfg, actorJid, actorAlt)) {
                             actorAllowed = true;
                         } else {
                             try {
@@ -4149,7 +4149,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                                 await sock.groupParticipantsUpdate(groupJid, [t], revertAction).catch(() => {});
                             }
                             await sock.sendMessage(groupJid, {
-                                text: `🛡️ *ANTINUKE* — @${(actorJid || '').split('@')[0] || '?'} ha ${action === 'promote' ? 'promosso' : 'retrocesso'} membri senza permesso. Azione annullata.`,
+                                text: `🛡️ *ANTINUKE* — @${dispOf((actorJid || '')) || '?'} ha ${action === 'promote' ? 'promosso' : 'retrocesso'} membri senza permesso. Azione annullata.`,
                                 mentions: actorJid ? [actorJid] : [],
                             }).catch(() => {});
                             return;
@@ -4193,7 +4193,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                 // In LID mode jid è un @lid casuale: per la visualizzazione e
                 // le menzioni usiamo sempre il numero reale (PN), se presente.
                 const displayJid = p?.phoneNumber || jid;
-                const short = displayJid.split('@')[0];
+                const short = dispOf(displayJid);
 
                 // Durante un nuke (dedsecregna) non inviamo né welcome né
                 // goodbye e non eseguiamo i check d'ingresso: è il bot stesso
@@ -4258,7 +4258,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                     // whitelist antinuke (gli utenti fidati NON vengono mai
                     // toccati, anche se gli altri anti-* separati sono attivi).
                     const anCfg = getAntinukeGroup(db, groupJid);
-                    if (anCfg.enabled && !isAntinukeWhitelisted(anCfg, jid)) {
+                    if (anCfg.enabled && !isAntinukeWhitelisted(anCfg, jid, displayJid)) {
                         const numClean = short.replace(/[^0-9]/g, '');
                         try {
                             // ANTIBOT / ANTIFAKE antinuke: pfp mancante + numero corto
@@ -4356,7 +4356,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                 if (!actor) continue;
 
                 // Owner, whitelist e admin sono esenti.
-                if (isOwnerJid(actor, sock, db, u?.authorPn) || isAntinukeWhitelisted(cfg, actor)) continue;
+                if (isOwnerJid(actor, sock, db, u?.authorPn) || isAntinukeWhitelisted(cfg, actor, u?.authorPn)) continue;
                 let isAdminActor = false;
                 try {
                     const meta = await getCachedGroupMeta(sock, gid);
@@ -4373,7 +4373,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                 if (typeof u.restrict === 'boolean') changed.push('impostazioni');
                 if (!changed.length) continue;
 
-                const short = actor.split('@')[0];
+                const short = dispOf(actor);
                 try {
                     if (typeof u.subject === 'string' && snapshot?.subject !== undefined) {
                         await sock.groupUpdateSubject(gid, snapshot.subject || '').catch(() => {});

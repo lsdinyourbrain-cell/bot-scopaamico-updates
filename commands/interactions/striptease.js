@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 // 
@@ -54,7 +55,7 @@ module.exports = {
         if (!target && numArg.length >= 7) target = `${numArg}@s.whatsapp.net`;
         if (!target) return reply(`${sec('INFO')}\n${boxOpen()}\n${line(`💃 *${T('Striptease')}*\n\n▸ Tagga lo spogliarellista:\n▸ _.striptease @utente_`)}\n${boxEnd()}`);
 
-        const targetShow = `@${String(target).split('@')[0]}`;
+        const targetShow = `@${dispOf(target)}`;
         const mentions = [target];
 
         // Atto 1

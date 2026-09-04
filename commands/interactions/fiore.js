@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
@@ -15,7 +16,7 @@ module.exports = {
             const recipient = targetJid || sender;
             const flower = randomChoice(ARRAYS.fiori);
             await sock.sendMessage(from, {
-                text: `${sec('UN FIORE PER TE')}\n${boxOpen()}\n${line(`🌷 *_UN FIORE PER TE_*\n\n▸ @${sender.split('@')[0]} regala a @${recipient.split('@')[0]}\n▸ ${flower} ✨\n\n`)}\n${boxEnd()}`,
+                text: `${sec('UN FIORE PER TE')}\n${boxOpen()}\n${line(`🌷 *_UN FIORE PER TE_*\n\n▸ @${dispOf(sender)} regala a @${dispOf(recipient)}\n▸ ${flower} ✨\n\n`)}\n${boxEnd()}`,
                 mentions: [sender, recipient],
             }, { quoted: msg });
     },

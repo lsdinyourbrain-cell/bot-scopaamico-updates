@@ -1,5 +1,6 @@
 'use strict';
 
+const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 
 module.exports = {
@@ -19,7 +20,7 @@ module.exports = {
                          : pct <= 80 ? 'Tuta in acetato e AirPods a palla 🎧'
                          : 'Borsello falso, cassa Bluetooth sulla metro, codice penale aperto 🚔';
             await sock.sendMessage(from, {
-                text: `   *MARANZA TEST*   \n\n${line(`👤 @${target.split('@')[0]}`)}\n${line(`📊 *Percentuale:* _*${pct}%*_`)}\n\n${line(`💬 _${frase}_`)}\n\n`,
+                text: `   *MARANZA TEST*   \n\n${line(`👤 @${dispOf(target)}`)}\n${line(`📊 *Percentuale:* _*${pct}%*_`)}\n\n${line(`💬 _${frase}_`)}\n\n`,
                 mentions: [target],
             });
     },
