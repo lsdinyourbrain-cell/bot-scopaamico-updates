@@ -295,11 +295,12 @@ module.exports = {
                 id: `menu ${s.key}`,
             })),
         };
+        const sponsorLink = (context.db?._config?.sponsorLink) || (services.db?._config?.sponsorLink) || 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
         const btns = [
             sheet,
             { label: '📖 Guida', id: 'aiuto' },
             { label: '⚡ Ping', id: 'ping' },
-            { label: '👤 Profilo', id: 'profilo' },
+            { label: '💎 Sponsor', url: sponsorLink },
         ];
         return sendButtons(sock, from, homeScreen(pushName, timeStr, dateStr, stats,
             'Prova .menu giochi o .menu economia', visible), btns, msg, null, {
