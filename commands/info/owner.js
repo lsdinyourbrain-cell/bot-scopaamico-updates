@@ -16,6 +16,11 @@ module.exports = {
 
         const txt = `${sec('VEX BOT')}\n${boxOpen()}\n${line(`${sec('VEX BOT')}\n${boxOpen()}\n${line(`🤖 *_VEX BOT_*\n\n▸ ✍️ Creato da:\n▸ 👑 _@${MAIN_OWNER_NUM}_\n▸ 📞 _${MAIN_OWNER_FORMATTED}_\n\n▸ 💬 Per assistenza scrivi\n  pure al creatore.\n\n`)}\n${boxEnd()}`)}\n${boxEnd()}`;
 
-        await sock.sendMessage(from, { text: txt, mentions: [MAIN_OWNER_JID] }).catch(() => {});
+        const { sendButtons } = services;
+        await sendButtons(sock, from, txt, [
+            { label: '🏠 Menu', id: 'menu' },
+            { label: 'ℹ️ Infobot', id: 'infobot' },
+            { label: '⚡ Ping', id: 'ping' },
+        ], msg, [MAIN_OWNER_JID]).catch(() => {});
     },
 };

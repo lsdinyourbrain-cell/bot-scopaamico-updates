@@ -42,6 +42,24 @@ module.exports = {
         const [w1, w2] = q.split(/\s+/);
         let g = groupJid ? db[groupJid]?.bandaGame : null;
 
+        const quitBanda = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'];
+        if (quitBanda.includes(w1) || quitBanda.includes(q)) {
+            if (!g || !g.active) {
+                return reply('Nessuna partita di banda attiva.');
+            }
+            g.active = false;
+            delete db[groupJid].bandaGame;
+            // pulisci mappa
+            if (db._bandaMap) {
+                for (const [k,v] of Object.entries(db._bandaMap)) if (v === groupJid) delete db._bandaMap[k];
+            }
+            saveDB();
+            return sendButtons(sock, from, `🛑 *BANDA TERMINATA!*\nPartita annullata da @${String(sender).split('@')[0]}`, [
+                { label: '🔄 Nuova partita', id: 'banda' },
+                { label: '🏠 Menu', id: 'menu' },
+            ], msg, [sender]);
+        }
+
         // ── AZIONE NOTTURNA (DM) 
         if (isDm && (w1 === 'kill' || w1 === 'check' || w1 === 'cura')) {
             if (!g || !g.active || g.phase !== 'night') return reply('Non c\'è una notte di gioco attiva.');
@@ -121,6 +139,7 @@ Min 4 giocatori per iniziare.`,
                         [
                             { label: '🔫 Unisciti', id: 'banda unisciti' },
                             { label: '▶️ Inizia', id: 'banda inizia' },
+                            { label: '❌ Termina', id: 'banda termina' },
                         ], msg);
                 }
                 if (g.players.some(p => p.jid === sender)) {
@@ -135,6 +154,7 @@ siete in almeno 4.`,
                         [
                             { label: '🔫 Unisciti', id: 'banda unisciti' },
                             { label: '▶️ Inizia', id: 'banda inizia' },
+                            { label: '❌ Termina', id: 'banda termina' },
                         ], msg);
                 }
                 if (g.players.length >= 8) return reply('Partita al completo (max 8).');
@@ -152,6 +172,7 @@ Premi ▶️ per iniziare (min 4).`,
                     [
                         { label: '🔫 Unisciti', id: 'banda unisciti' },
                         { label: '▶️ Inizia', id: 'banda inizia' },
+                        { label: '❌ Termina', id: 'banda termina' },
                     ], msg);
             }
 

@@ -9,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, sendButtons, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
         const userJid = sender || from;
         const groupJid = isGroup ? from : null;
@@ -17,6 +17,10 @@ module.exports = {
         let txt = `${sec('ID INFO')}\n${boxOpen()}\n\n${boxEnd()}`;
         if (groupJid) txt += `${sec('GRUPPON  _GROUPJID_N')}\n${boxOpen()}\n${line(`👥 *Gruppo:*\n▸ 📱 _${groupJid}_\n`)}\n${boxEnd()}`;
         txt += `\n`;
-        await reply(txt);
+        await sendButtons(sock, from, txt, [
+            { label: '🏠 Menu', id: 'menu' },
+            { label: 'ℹ️ Groupinfo', id: 'groupinfo' },
+            { label: '👤 Profilo', id: 'profilo' },
+        ], msg);
     },
 };

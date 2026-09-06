@@ -167,7 +167,7 @@ const startGame = async (sock, msg, context, { maze, difficulty }) => {
         caption: `🌀 *LABIRINTO · ${diff.emoji} ${diff.label}*\n\n🔴 Tu · 🟢 Uscita\n\n🎮 Muoviti con i pulsanti\nqui sotto, oppure scrivi\n*u/d/l/r* in chat.`,
     }, { quoted: msg });
 
-    const btnKey = await sendButtonsWithKey(sock, from, MOVES_TEXT, [moveNavButton()], msg);
+    const btnKey = await sendButtonsWithKey(sock, from, MOVES_TEXT, [moveNavButton(), { label: '❌ Termina', id: 'labirinto termina' }, { label: '🔄 Nuova partita', id: 'labirinto termina' }], msg);
 
     db[from].mazeGame.lastMsgKey = sent?.key || null;
     db[from].mazeGame.btnKey = btnKey;
@@ -210,12 +210,15 @@ module.exports = {
 
         // ── PARTITA IN CORSO 
         if (g?.active) {
-            if (QUIT_WORDS.includes(w1)) {
+            if (QUIT_WORDS.includes(w1) || ['termina','abbandona','annulla'].includes(w1)) {
                 delete db[from].mazeGame;
                 saveDB();
                 if (g.lastMsgKey) { try { await sock.sendMessage(from, { delete: g.lastMsgKey }); } catch (_) {} }
                 if (g.btnKey) { try { await sock.sendMessage(from, { delete: g.btnKey }); } catch (_) {} }
-                return reply('🏁 *Labirinto terminato!*\nTorna quando vuoi con `.labirinto`. 🌀');
+                return sendButtons(sock, from, '🏁 *Labirinto terminato!*\nTorna quando vuoi con `.labirinto`. 🌀', [
+                    { label: '🔄 Nuova partita', id: 'labirinto' },
+                    { label: '🏠 Menu', id: 'menu' },
+                ], msg);
             }
             if (w1 === 'muovi') {
                 // Pulsante di movimento premuto → stessa logica dell'handler testo.
@@ -226,7 +229,20 @@ module.exports = {
                 }
                 return;
             }
-            return reply("C'è già un labirinto in corso!\nUsa i pulsanti sotto la\nboard o scrivi *u/d/l/r*.");
+            if (QUIT_WORDS.includes(q)) {
+                delete db[from].mazeGame;
+                saveDB();
+                if (g.lastMsgKey) { try { await sock.sendMessage(from, { delete: g.lastMsgKey }); } catch (_) {} }
+                if (g.btnKey) { try { await sock.sendMessage(from, { delete: g.btnKey }); } catch (_) {} }
+                return sendButtons(sock, from, '🏁 *Labirinto terminato!* 🌀', [
+                    { label: '🔄 Nuova partita', id: 'labirinto' },
+                    { label: '🏠 Menu', id: 'menu' },
+                ], msg);
+            }
+            return sendButtons(sock, from, "🌀 *LABIRINTO IN CORSO!*\nC'è già un labirinto attivo.\nUsa i pulsanti o *u/d/l/r* — oppure termina.", [
+                { label: '❌ Termina', id: 'labirinto termina' },
+                { label: '🔄 Nuova partita', id: 'labirinto termina' },
+            ], msg);
         }
 
         // ── PAROLE DI USCITA SENZA PARTITA 

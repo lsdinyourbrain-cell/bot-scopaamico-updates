@@ -11,7 +11,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, sender, pushName, services } = context;
-        const { db, commands } = services;
+        const { db, commands, sendButtons } = services;
 
         // Uptime
         const upSec = Math.floor(process.uptime());
@@ -93,6 +93,10 @@ module.exports = {
 
         const txt = `${sec('📊 STATS2 • VEX BOT')}\n${boxOpen()}\n${line(`✨ Richiesto da @${dispOf(sender)} • _${pushName || 'Utente'}_`)}\n${line(`🔮 _TOP • real-time_`)}\n${line('')}\n${line(`⏱️ Uptime: _${uptime}_ • PID _${process.pid}_`)}\n${line(`🟢 Node: _${nodeVer}_ • CPU _${cpuCores} core_`)}\n${line(`💾 RAM: _${memUsed} MB_ (heap _${heap} MB_)`)}\n${line(`🖥️ _${platform}_`)}\n${line('')}\n${line(`📦 Gruppi: _${groupCount}_ • 👥 Membri totali: _${totalMembers}_`)}\n${line(`👤 Utenti unici DB: _${uniqueUsers}_ • 💬 Chat DB: _${dbChats}_`)}\n${line(`⚙️ Comandi: _${cmdCount}_ alias • 📁 File: _${fileCount}_`)}\n${line('')}\n${line(`Premium attivi: _${(db._premium ? Object.keys(db._premium).length : 0)}_ • 🔮 top ✨`)}\n${line(`📈 Messaggi elaborati: _${uniqueUsers * 3 + totalMembers}_ stimati`)}\n${boxEnd()}`;
 
-        return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
+        return sendButtons(sock, from, txt, [
+            { label: '📊 Status', id: 'status' },
+            { label: '⚡ Ping', id: 'ping' },
+            { label: '🏠 Menu', id: 'menu' },
+        ], msg, [sender]);
     },
 };

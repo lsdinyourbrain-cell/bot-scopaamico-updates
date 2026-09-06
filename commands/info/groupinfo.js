@@ -10,7 +10,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, sendButtons, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
 
             if (!isGroup) {
@@ -57,18 +57,11 @@ module.exports = {
                 const txt =
 `${sec('INFORMAZIONI GRUPPO')}\n${boxOpen()}\n${line(`📛 Nome: _${meta.subject || 'N/D'}_`)}\n${line(`🆔 ID: _${from}_`)}\n${line(`📅 Creato: _${creation}_`)}\n${line(`👥 Membri: _${totalMembers}_`)}\n${line('📝 *Descrizione*')}\n${line(`_${desc}_`)}\n${line('👑 *Fondatore/SuperAdmin*')}\n${line(`${superAdminLines || '▸ _(nessuno)_'}`)}\n${line('⚙️ *Amministratori*')}\n${line(`${adminLines || '▸ _(nessuno)_'}`)}\n${boxEnd()}`;
 
-                // PFP del gruppo come allegato (fallback: solo testo)
-                let pfpUrl;
-                try { pfpUrl = await sock.profilePictureUrl(from, 'image'); } catch (_) { pfpUrl = null; }
-
-                if (pfpUrl) {
-                    await sock.sendMessage(from,
-                        { image: { url: pfpUrl }, caption: txt, mentions: adminMentions },
-                        { quoted: msg }
-                    );
-                } else {
-                    await sock.sendMessage(from, { text: txt, mentions: adminMentions }, { quoted: msg });
-                }
+                await sendButtons(sock, from, txt, [
+                    { label: '🏠 Menu', id: 'menu' },
+                    { label: '🔗 Link', id: 'link' },
+                    { label: '👑 Admin', id: 'admin' },
+                ], msg, adminMentions);
 
             } catch (e) {
                 console.error('[groupinfo]', e.message);

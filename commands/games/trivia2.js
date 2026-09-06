@@ -16,11 +16,34 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB } = services;
+        const { db, saveDB, sendButtons } = services;
 
         if (!isGroup) return reply(`${sec('GRUPPI')}\n${boxOpen()}\n${line('La trivia si gioca solo nei gruppi.')}\n${boxEnd()}`);
 
+        const qLower = String(textArgs || '').trim().toLowerCase();
+        const isQuit = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'].includes(qLower) || qLower.startsWith('stop ') || qLower.startsWith('termina') || qLower.startsWith('abbandona') || qLower.startsWith('annulla');
+        if (isQuit) {
+            if (!db[from]?.triviaGame?.active) return reply("Nessuna trivia attiva.");
+            db[from].triviaGame.active = false;
+            saveDB();
+            const t = `${sec('🛑 TRIVIA TERMINATA')}\n${boxOpen()}\n${line(`Trivia terminata da @${sender.split('@')[0]} ✨`)}\n${boxEnd()}`;
+            if (sendButtons) {
+                return sendButtons(sock, from, t, [
+                    { label: '🔄 Nuova trivia', id: 'trivia2' },
+                    { label: '🏠 Menu', id: 'menu' },
+                ], msg, [sender]);
+            }
+            return sock.sendMessage(from, { text: t }, { quoted: msg });
+        }
+
         if (db[from]?.triviaGame?.active) {
+            const t = `${sec('🏆 TRIVIA ATTIVA')}\n${boxOpen()}\n${line("C'è già una trivia in corso ✨")}\n${line("Rispondi *A/B/C/D* oppure termina")}\n${boxEnd()}`;
+            if (sendButtons) {
+                return sendButtons(sock, from, t, [
+                    { label: '❌ Termina', id: 'trivia2 termina' },
+                    { label: '🔄 Nuova trivia', id: 'trivia2 termina' },
+                ], msg);
+            }
             return reply(`${sec('TRIVIA')}\n${boxOpen()}\n${line("C'è già una trivia in corso! Rispondi con *A/B/C/D* per partecipare.")}\n${boxEnd()}`);
         }
 
@@ -40,9 +63,17 @@ module.exports = {
         saveDB();
 
         const q = questions[0];
-        await sock.sendMessage(from, {
-            text: `${sec('TRIVIA SFIDA')}\n${boxOpen()}\n${line(formatQuestion(q, 1))}\n${line('⚡ Rispondi con *A/B/C/D*!')}\n${boxEnd()}`,
-        }, { quoted: msg });
+        const triviaText = `${sec('TRIVIA SFIDA')}\n${boxOpen()}\n${line(formatQuestion(q, 1))}\n${line('⚡ Rispondi con *A/B/C/D*!')}\n${boxEnd()}`;
+        if (sendButtons) {
+            await sendButtons(sock, from, triviaText, [
+                { label: '❌ Termina', id: 'trivia2 termina' },
+                { label: '🔄 Nuova trivia', id: 'trivia2 termina' },
+            ], msg);
+        } else {
+            await sock.sendMessage(from, {
+                text: triviaText,
+            }, { quoted: msg });
+        }
 
         setTimeout(() => {
             const g = db[from]?.triviaGame;

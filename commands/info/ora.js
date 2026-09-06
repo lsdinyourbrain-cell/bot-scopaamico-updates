@@ -31,7 +31,9 @@ module.exports = {
             const time = now.toLocaleTimeString('it-IT');
             const date = now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
             await sendButtons(sock, from, `🕐 *_Ora di sistema_*\n\n▸ ⏰ _${time}_\n▸ 📅 _${date}_\n\nℹ️ Città "${city}" non trovata; mostro l'ora del server.\n`, [
-                { label: '.ora', id: 'ora' },
+                { label: '🕐 Ora', id: 'ora' },
+                { label: '🏠 Menu', id: 'menu' },
+                { label: '⚡ Ping', id: 'ping' },
             ], msg);
         } catch (_) {
             await reply('❌ Errore nel recupero dell\'ora. Riprova.');

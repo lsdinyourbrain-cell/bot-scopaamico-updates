@@ -12,11 +12,36 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB, sameJid, sharp, getCachedGroupMeta } = services;
+        const { db, saveDB, sameJid, sharp, getCachedGroupMeta, sendButtons } = services;
 
         if (!isGroup) return reply("Il Forza 4 si gioca solo nei gruppi.");
 
+        const qLower = String(textArgs || '').trim().toLowerCase();
+        const isQuit = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'].includes(qLower) || qLower.startsWith('stop ') || qLower.startsWith('termina') || qLower.startsWith('abbandona') || qLower.startsWith('annulla');
+        if (isQuit) {
+            if (!db[from]?.forza4Game?.active) return reply("Nessuna partita di Forza 4 attiva.");
+            const active = db[from].forza4Game;
+            if (active.lastMsgKey) { try { await sock.sendMessage(from, { delete: active.lastMsgKey }); } catch (_) {} }
+            delete db[from].forza4Game;
+            saveDB();
+            const t = `${sec('🛑 FORZA 4 TERMINATO')}\n${boxOpen()}\n${line(`Partita terminata da @${dispOf(sender)} ✨`)}\n${line('Usa *.forza4 @utente* per rigiocare')}\n${boxEnd()}`;
+            if (sendButtons) {
+                return sendButtons(sock, from, t, [
+                    { label: '🔄 Nuova partita', id: 'forza4' },
+                    { label: '🏠 Menu', id: 'menu' },
+                ], msg, active.players || [sender]);
+            }
+            return sock.sendMessage(from, { text: t, mentions: active.players || [sender] }, { quoted: msg });
+        }
+
         if (db[from]?.forza4Game?.active) {
+            const t = `${sec('🔴 FORZA 4 ATTIVO')}\n${boxOpen()}\n${line('C\'è già una partita in corso ✨')}\n${line('Scrivi *1-7* per giocare oppure termina')}\n${boxEnd()}`;
+            if (sendButtons) {
+                return sendButtons(sock, from, t, [
+                    { label: '❌ Termina', id: 'forza4 termina' },
+                    { label: '🔄 Nuova partita', id: 'forza4 termina' },
+                ], msg);
+            }
             return reply("C'è già una partita di Forza 4 in corso! Scrivi un numero *1-7* per giocare.");
         }
 
@@ -75,5 +100,13 @@ module.exports = {
 
         db[from].forza4Game.lastMsgKey = sent?.key || null;
         saveDB();
+        if (sendButtons) {
+            try {
+                await sendButtons(sock, from, `${sec('🔴 FORZA 4 CONTROLLI')}\n${boxOpen()}\n${line('Partita in corso ✨')}\n${line('❌ Termina — annulla la sfida')}\n${line('🔄 Nuova — termina e rigioca')}\n${boxEnd()}`, [
+                    { label: '❌ Termina', id: 'forza4 termina' },
+                    { label: '🔄 Nuova partita', id: 'forza4 termina' },
+                ], msg);
+            } catch (_) {}
+        }
     },
 };

@@ -26,7 +26,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, pushName, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCachedGroupMeta, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, sameJid, saveDB, sendButtons, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
         const sub = String(args[0] || '').toLowerCase();
         const uDBSelf = getUser(sender, from);
@@ -99,9 +99,6 @@ ${boxEnd()}`);
         const lastPregi = pregi.slice(-3).map(p => (p && p.rank) || '').join(' · ');
         const bestemmie = uDB.bestemmie || 0;
 
-        let pfpUrl;
-        try { pfpUrl = await sock.profilePictureUrl(target, 'image'); } catch (_) { pfpUrl = null; }
-
         const profileText =
 `${sec('PROFILO')}
 ${boxOpen()}
@@ -122,15 +119,16 @@ ${line('🤬 Bestemmie ' + bestemmie)}
 ${boxEnd()}
 ${isSelf ? `${sec('INFO')}\n${boxOpen()}\n${line('.profilo nick/bio/stile per personalizzare')}\n${boxEnd()}` : ''}`;
 
+        const mentionJids = spouse ? [spouse] : [];
         try {
-            if (pfpUrl) {
-                await sock.sendMessage(from, { image: { url: pfpUrl }, caption: profileText, mentions: spouse ? [spouse] : [] });
-            } else {
-                await sock.sendMessage(from, { text: profileText, mentions: spouse ? [spouse] : [] });
-            }
+            await sendButtons(sock, from, profileText, [
+                { label: '📊 Top', id: 'top' },
+                { label: '🏠 Menu', id: 'menu' },
+                { label: '💎 Ricchi', id: 'ricchi' },
+            ], msg, mentionJids);
         } catch (e) {
             console.error('[profilo] send error:', e.message);
-            try { await sock.sendMessage(from, { text: profileText, mentions: spouse ? [spouse] : [] }, { quoted: msg }); } catch (_) {}
+            try { await sock.sendMessage(from, { text: profileText, mentions: mentionJids }, { quoted: msg }); } catch (_) {}
         }
     },
 };

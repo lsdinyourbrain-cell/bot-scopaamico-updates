@@ -17,11 +17,38 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB, randomChoice, sharp } = services;
+        const { db, saveDB, randomChoice, sharp, sendButtons } = services;
 
         if (!isGroup) return reply("Il Wordle si gioca solo nei gruppi.");
 
+        const qLower = String(textArgs || '').trim().toLowerCase();
+        const isQuit = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'].includes(qLower) || qLower.startsWith('stop ') || qLower.startsWith('termina') || qLower.startsWith('abbandona') || qLower.startsWith('annulla');
+        if (isQuit) {
+            if (!db[from]?.wordleGame?.active) return reply("Nessun Wordle attivo.");
+            const active = db[from].wordleGame;
+            if (active.lastMsgKey) { try { await sock.sendMessage(from, { delete: active.lastMsgKey }); } catch (_) {} }
+            const target = active.target;
+            active.active = false;
+            delete db[from].wordleGame;
+            saveDB();
+            const t = `${sec('🛑 WORDLE TERMINATO')}\n${boxOpen()}\n${line(`Parola era *${target}* ✨`)}\n${line(`Terminato da @${sender.split('@')[0]}`)}\n${boxEnd()}`;
+            if (sendButtons) {
+                return sendButtons(sock, from, t, [
+                    { label: '🔄 Nuova partita', id: 'wordle' },
+                    { label: '🏠 Menu', id: 'menu' },
+                ], msg, [sender]);
+            }
+            return sock.sendMessage(from, { text: t }, { quoted: msg });
+        }
+
         if (db[from]?.wordleGame?.active) {
+            const t = `${sec('🟩 WORDLE ATTIVO')}\n${boxOpen()}\n${line('C\'è già un Wordle in corso ✨')}\n${line('Scrivi una parola o termina')}\n${boxEnd()}`;
+            if (sendButtons) {
+                return sendButtons(sock, from, t, [
+                    { label: '❌ Termina', id: 'wordle termina' },
+                    { label: '🔄 Nuova partita', id: 'wordle termina' },
+                ], msg);
+            }
             return reply("C'è già un Wordle in corso! Scrivi una parola di 5 lettere per provare.");
         }
 
@@ -66,6 +93,14 @@ module.exports = {
 
         db[from].wordleGame.lastMsgKey = sent?.key || null;
         saveDB();
+        if (sendButtons) {
+            try {
+                await sendButtons(sock, from, `${sec('🟩 WORDLE CONTROLLI')}\n${boxOpen()}\n${line('Parola in corso ✨')}\n${line('❌ Termina — rivela la parola')}\n${line('🔄 Nuova — termina e rigioca')}\n${boxEnd()}`, [
+                    { label: '❌ Termina', id: 'wordle termina' },
+                    { label: '🔄 Nuova partita', id: 'wordle termina' },
+                ], msg);
+            } catch (_) {}
+        }
 
         setTimeout(() => {
             const g = db[from]?.wordleGame;

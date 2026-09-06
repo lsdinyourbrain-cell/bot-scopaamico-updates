@@ -42,7 +42,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, pushName, isGroup, services } = context;
-        const { db, sameJid, ownerNumber } = services;
+        const { db, sameJid, ownerNumber, sendButtons } = services;
 
         const mentions = [];
 
@@ -186,6 +186,10 @@ module.exports = {
         txt += `▸ Scrivi .menu per\n  la lista completa!\n`;
         txt += `\n`;
 
-        await sock.sendMessage(from, { text: txt, mentions }, { quoted: msg });
+        await sendButtons(sock, from, txt, [
+            { label: '📊 Status', id: 'status' },
+            { label: '⚡ Ping', id: 'ping' },
+            { label: '🏠 Menu', id: 'menu' },
+        ], msg, mentions);
     },
 };

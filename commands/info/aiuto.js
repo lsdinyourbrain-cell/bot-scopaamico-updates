@@ -95,13 +95,16 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { textArgs, from, reply, services } = context;
-        const { commands } = services;
+        const { commands, sendButtons } = services;
 
         if (!commands) {
-            return reply(`${sec('ERRORE')}
-${boxOpen()}
-${line('Guida non disponibile in questo momento. Riprova tra poco.')}
-${boxEnd()}`);
+            const t = `${sec('ERRORE')}\n${boxOpen()}\n${line('Guida non disponibile in questo momento. Riprova tra poco.')}\n${boxEnd()}`;
+            if (sendButtons) return sendButtons(sock, from, t, [
+                { label: '🏠 Menu', id: 'menu' },
+                { label: '⚡ Ping', id: 'ping' },
+                { label: '📊 Status', id: 'status' },
+            ], msg);
+            return reply(t);
         }
 
         const q = String(textArgs || '').trim().toLowerCase();
@@ -119,11 +122,27 @@ ${boxEnd()}`));
         }
 
         const mod = commands.get(q);
-        if (mod) return reply(explain(mod));
+        if (mod) {
+            const t = explain(mod);
+            if (sendButtons) return sendButtons(sock, from, t, [
+                { label: '🏠 Menu', id: 'menu' },
+                { label: '📖 Guida', id: 'aiuto' },
+                { label: '⚡ Ping', id: 'ping' },
+            ], msg);
+            return reply(t);
+        }
 
         const foundSec = SECTIONS.find(s => s.key === q)
             || SECTIONS.find((s, i) => String(i + 1) === q);
-        if (foundSec) return reply(sectionDump(foundSec, commands));
+        if (foundSec) {
+            const t = sectionDump(foundSec, commands);
+            if (sendButtons) return sendButtons(sock, from, t, [
+                { label: '🏠 Menu', id: 'menu' },
+                { label: '📖 Guida', id: 'aiuto' },
+                { label: '⬅️ Indietro', id: 'menu' },
+            ], msg);
+            return reply(t);
+        }
 
         const near = uniqueCommands(commands)
             .map(m => m.name)
@@ -131,13 +150,19 @@ ${boxEnd()}`));
             .slice(0, 5);
         const sug = near.length ? near.map(n => '.' + n).join(', ') : '';
         const sugLines = sug ? [line(`Forse cercavi: ${sug}`), line('')] : [];
-        return reply(
+        const notFoundTxt =
 `${sec('NON TROVATO')}
 ${boxOpen()}
 ${line(`Comando o sezione *${q}* non trovato.`)}
 ${sugLines.join('\n')}${sugLines.length ? '' : ''}
 ${line('Usa `.aiuto` per la guida completa,')}
 ${line('o `.menu` per vedere tutte le sezioni.')}
-${boxEnd()}`);
+${boxEnd()}`;
+        if (sendButtons) return sendButtons(sock, from, notFoundTxt, [
+            { label: '🏠 Menu', id: 'menu' },
+            { label: '📖 Guida', id: 'aiuto' },
+            { label: '🔍 Cerca', id: 'aiuto ' + q },
+        ], msg);
+        return reply(notFoundTxt);
     },
 };

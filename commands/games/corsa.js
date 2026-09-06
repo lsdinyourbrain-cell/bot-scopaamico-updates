@@ -62,6 +62,17 @@ module.exports = {
         const [w1, w2] = q.split(/\s+/);
         let g = db[from]?.corsaGame;
 
+        const quitCorsa = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'];
+        if (quitCorsa.includes(w1) || quitCorsa.includes(q)) {
+            if (!g || !g.active) return reply('Nessuna corsa attiva.');
+            db[from].corsaGame = null;
+            saveDB();
+            return sendButtons(sock, from, `🛑 *CORSA TERMINATA!*\nGara annullata da @${show(sender, senderAlt)}`, [
+                { label: '🔄 Nuova gara', id: 'corsa' },
+                { label: '🏠 Menu', id: 'menu' },
+            ], msg, [sender]);
+        }
+
         // In LID mode il sender è un @lid: nei testi mostriamo il PN reale.
         const show = (jid, alt) => String(alt || jid || '').split('@')[0];
 
@@ -207,10 +218,14 @@ Primo arrivato, primo vince!`,
                 [
                     { label: '🙋 Partecipa', id: 'corsa partecipa' },
                     { label: '🏁 Inizia', id: 'corsa inizia' },
+                    { label: '❌ Termina', id: 'corsa termina' },
                 ], msg, [sender]);
         }
 
-        return reply('⏳ Gara in corso. Aspetta il tuo turno o premi un pulsante!');
+        return sendButtons(sock, from, '⏳ Gara in corso. Premi Termina per annullare o attendi il turno.', [
+            { label: '❌ Termina', id: 'corsa termina' },
+            { label: '🔄 Nuova gara', id: 'corsa termina' },
+        ], msg);
     },
 };
 
@@ -226,6 +241,8 @@ async function askTurn(sock, from, msg, services) {
         label: o.label.slice(0, 25),
         id: `corsa risp ${o.label}`,
     }));
+    // Add termina within 4-button limit (3 options + 1 termina = 4)
+    const allBtns = buttons.length < 4 ? [...buttons, { label: '❌ Termina', id: 'corsa termina' }] : [...buttons.slice(0,3), { label: '❌ Termina', id: 'corsa termina' }];
 
     await sendButtons(sock, from,
 `🧠 *PROSSIMA SFIDA*
@@ -234,7 +251,7 @@ ${g.question.q}
 
 Premi la risposta giusta!
 (chi risponde per primo guadagna punti)`,
-        buttons, msg);
+        allBtns, msg);
 
     // Timer: se nessuno risponde entro 25s, si passa oltre.
     setTimeout(() => {

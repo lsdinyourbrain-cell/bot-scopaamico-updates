@@ -9,7 +9,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { getUser, saveDB, sendButtons, formatMoney, applyTax } = services;
+        const { getUser, saveDB, formatMoney, applyTax } = services;
 
         const uDB = getUser(sender, from);
 
@@ -49,8 +49,6 @@ module.exports = {
 
         const resultText = `${sec('🔥 STREAK')}\n${boxOpen()}\n${line(`Streak: ${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}${newCount > 1 ? ' — let\'s go' : ' 🆕'}`)}\n${line(`Lordo: _+${formatMoney(reward)}€_ → Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${line(`Saldo: _${uDB.money}€_` )}\n${boxEnd()}`;
 
-        await sendButtons(sock, from, resultText, [
-            { label: `🔥 Streak`, id: `${command}` },
-        ], msg);
+        await sock.sendMessage(from, { text: resultText }, { quoted: msg });
     },
 };

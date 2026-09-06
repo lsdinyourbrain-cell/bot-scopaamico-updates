@@ -28,7 +28,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { textArgs, from, isGroup, reply, services } = context;
-        const { db, dispOf } = services;
+        const { db, dispOf, sendButtons } = services;
 
         if (!isGroup) return reply(`${sec('GRUPPI')}
 ${boxOpen()}
@@ -37,14 +37,18 @@ ${boxEnd()}`);
 
         const log = db._grouplog?.[from];
         if (!Array.isArray(log) || !log.length) {
-            return reply(
+            return sendButtons(sock, from,
 `📜 *REGISTRO MODIFICHE*
 ▸ Nessuna modifica registrata
   per questo gruppo... ancora.
 ▸ Entrate, uscite, admin, avvisi,
   nome e impostazioni verranno
   annotati qui.
-`);
+`, [
+                { label: '🔄 Aggiorna', id: 'registro' },
+                { label: '🏠 Menu', id: 'menu' },
+                { label: '👑 Admin', id: 'admin' },
+            ], msg);
         }
 
         const want = parseInt(String(textArgs || '').trim(), 10);
@@ -72,7 +76,10 @@ ${lines}
 ▸ Di più: \`.registro 50\`
 `;
 
-        return sock.sendMessage(from, { text: txt, mentions: mentionJids }, { quoted: msg })
-            .catch(() => reply(txt));
+        return sendButtons(sock, from, txt, [
+            { label: '🔄 Aggiorna', id: 'registro' },
+            { label: '🏠 Menu', id: 'menu' },
+            { label: '👑 Admin', id: 'admin' },
+        ], msg, mentionJids).catch(() => reply(txt));
     },
 };

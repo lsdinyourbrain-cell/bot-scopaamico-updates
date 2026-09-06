@@ -62,9 +62,9 @@ const cleanAnswers = (arr) => arr.filter(p => {
     return Boolean(clean);
 });
 const LEVELS = {
-    facile:    { emoji: '🟢', label: 'FACILE',    color: '🟢' },
-    media:     { emoji: '🟡', label: 'MEDIA',     color: '🟡' },
-    difficile: { emoji: '🔴', label: 'DIFFICILE', color: '🔴' },
+    facile:    { emoji: '🟢', label: 'FACILE',    color: '🟢', timeout: 10000, reward: 30 },
+    media:     { emoji: '🟡', label: 'MEDIA',     color: '🟡', timeout: 7000,  reward: 60 },
+    difficile: { emoji: '🔴', label: 'DIFFICILE', color: '🔴', timeout: 5000,  reward: 100 },
 };
 
 const shuffle = (arr) => {
@@ -100,15 +100,17 @@ module.exports = {
                 if (guess === correct) {
                     g.active = false;
                     saveDB();
-                    // Piccolo premio
+                    // Premio scalato per difficoltà: facile 30, media 60, difficile 100
                     const u = context.services.getUser(sender, from);
-                    const reward = 30;
+                    const lvl = LEVELS[g.level] || LEVELS.facile;
+                    const reward = g.reward || lvl.reward || 30;
                     u.money = (u.money || 0) + reward;
                     saveDB();
                     return sendButtons(sock, from,
 `✅ *ESATTO!* 🎉
 
 🛑 Era: *${g.answer}*!
+${lvl.emoji} ${lvl.label} · ⏳ ${lvl.timeout/1000}s
 💰 Premio: *+${reward}€*
 `,
                         [
@@ -131,6 +133,22 @@ Ancora: *${g.emoji}*
             }
         }
 
+        const quitWordsEmoji = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'];
+        if (quitWordsEmoji.includes(w1) || quitWordsEmoji.includes(q)) {
+            const g = db[from]?.emojiGame;
+            if (!g?.active) return reply('Nessuna partita attiva.');
+            const ans = g.answer;
+            g.active = false;
+            saveDB();
+            return sendButtons(sock, from,
+`🛑 *REBUS TERMINATO!* Era: *${ans}*
+`,
+                [
+                    { label: '🔄 Nuova partita', id: 'indovina_emoji' },
+                    { label: '🏠 Menu', id: 'menu' },
+                ], msg);
+        }
+
         // ── RIVELA / PASSA 
         if (w1 === 'passa' || w1 === 'rivela' || w1 === 'answer') {
             const g = db[from]?.emojiGame;
@@ -149,8 +167,15 @@ Ancora: *${g.emoji}*
         // ── SELEZIONE LIVELLO 
         const level = LEVELS[q];
         if (!level) {
-            if (db[from]?.emojiGame?.active && q === '') {
-                return reply('🔍 C\'è già un rebus attivo! Rispondi con un pulsante.');
+            if (db[from]?.emojiGame?.active) {
+                const gActive = db[from].emojiGame;
+                return sendButtons(sock, from,
+`🔍 *REBUS ATTIVO!* ${gActive.emoji}
+Rispondi con un pulsante oppure termina.`,
+                    [
+                        { label: '❌ Termina', id: 'indovina_emoji termina' },
+                        { label: '🔄 Nuova partita', id: 'indovina_emoji termina' },
+                    ], msg);
             }
             return sendButtons(sock, from,
 `🔮 *INDOVINA L'EMOJI*
@@ -187,17 +212,32 @@ Scegli la difficoltà:
             answer: pick.answer,
             sender,
             timestamp: Date.now(),
+            reward: level.reward,
+            timeout: level.timeout,
         };
         saveDB();
 
+        const btns = options.map(o => ({ label: o.slice(0, 28), id: `indovina_emoji risp ${encodeURIComponent(o)}` }));
+        // Keep max 2 answer options + 2 control buttons = 4 total (WhatsApp limit)
+        const finalBtns = btns.length <= 2 ? [...btns, { label: '❌ Termina', id: 'indovina_emoji termina' }, { label: '🔄 Nuova', id: 'indovina_emoji termina' }].slice(0,4)
+            : [...btns.slice(0,2), { label: '❌ Termina', id: 'indovina_emoji termina' }, { label: '🔄 Nuova', id: 'indovina_emoji termina' }];
+        // Timer 10s/7s/5s in base a difficoltà
+        setTimeout(() => {
+            const cur = db[from]?.emojiGame;
+            if (cur?.active && cur.answer === pick.answer && cur.emoji === pick.emoji) {
+                cur.active = false;
+                saveDB();
+                sock.sendMessage(from, { text: `⏰ *TEMPO SCADUTO!* ${level.emoji} ${level.label}\nEra: *${pick.answer}* ${pick.emoji}\n⏳ ${level.timeout/1000}s scaduti — troppo lento!` }).catch(() => {});
+            }
+        }, level.timeout);
         return sendButtons(sock, from,
-`${level.emoji} *EMOJI QUIZ* · ${level.label}
+`${level.emoji} *EMOJI QUIZ* · ${level.label} · ⏳ ${level.timeout/1000}s · 💰 ${level.reward}€
 
 🌠 ${pick.emoji}
 
 Indovina cosa rappresento!
 Premi la risposta giusta 👇`,
-            options.map(o => ({ label: o.slice(0, 28), id: `indovina_emoji risp ${encodeURIComponent(o)}` })),
+            finalBtns,
             msg);
     },
 };

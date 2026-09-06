@@ -8,7 +8,7 @@ module.exports = {
     description: 'Riassunto ultime 2 ore con IA.',
     async run(sock, msg, args, context){
         const { from, reply, services } = context;
-        const { db, AI_API_KEY, AI_API_URL, AI_MODEL, axios } = services;
+        const { db, AI_API_KEY, AI_API_URL, AI_MODEL, axios, sendButtons } = services;
         const chat = db[from] || {};
         // Raccogli messaggi ultimi 2 ore da db (msgCount con ts)
         const now = Date.now();
@@ -29,11 +29,19 @@ module.exports = {
             promptText = msgs.slice(-30).map(m=>`${m.jid.split('@')[0]}: ${m.text}`).join('\n');
         } else {
             // Se non ci sono log, di che non ci sono abbastanza messaggi
-            return reply(`${sec('RIASSUNTO')}\n${boxOpen()}\n${line('Nessun messaggio nelle ultime 2 ore da riassumere.')}\n${line('Parla un po\' e riprova fra poco, fra.')}\n${boxEnd()}`);
+            return sendButtons(sock, from, `${sec('RIASSUNTO')}\n${boxOpen()}\n${line('Nessun messaggio nelle ultime 2 ore da riassumere.')}\n${line('Parla un po\' e riprova fra poco, fra.')}\n${boxEnd()}`, [
+                { label: '📜 Nastro', id: 'nastro' },
+                { label: '🏠 Menu', id: 'menu' },
+                { label: '📊 Registro', id: 'registro' },
+            ], msg);
         }
         const activeKey = (db?._ai?.apiKey) || AI_API_KEY;
         if(!activeKey || activeKey==='INSERISCI_QUI_LA_TUA_API_KEY'){
-            return reply(`${sec('RIASSUNTO')}\n${boxOpen()}\n${line('AI non configurata.')}\n${line('Fai .ai set <key>')}\n${boxEnd()}`);
+            return sendButtons(sock, from, `${sec('RIASSUNTO')}\n${boxOpen()}\n${line('AI non configurata.')}\n${line('Fai .ai set <key>')}\n${boxEnd()}`, [
+                { label: '🏠 Menu', id: 'menu' },
+                { label: 'ℹ️ Infobot', id: 'infobot' },
+                { label: '📊 Nastro', id: 'nastro' },
+            ], msg);
         }
         const prog = await services.showProgress(sock, from, { label: 'RIASSUNTO 2H', duration: 4000, quoted: msg });
         try{

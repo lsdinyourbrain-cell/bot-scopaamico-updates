@@ -40,8 +40,9 @@ ${line(`🔋 PID: _${process.pid}_`)}
 ${boxEnd()}`;
 
         await sendButtons(sock, from, txt, [
-            { label: '🔄 Status', id: 'status' },
             { label: '⚡ Ping', id: 'ping' },
+            { label: '🏠 Menu', id: 'menu' },
+            { label: '👥 Gruppi', id: 'groups' },
         ], msg);
     },
 };

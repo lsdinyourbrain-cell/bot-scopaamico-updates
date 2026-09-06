@@ -10,7 +10,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { db, getUser, saveDB, sendButtons, randomInt } = services;
+        const { db, getUser, saveDB, randomInt } = services;
 
         const AZIENDE = [
             { code: 'WA',   name: 'WhatsApp Inc', price: 250 },
@@ -56,17 +56,13 @@ module.exports = {
                 : 0;
 
             const portLines = linee.length ? linee.map(l => line(l)).join('\n') : `${line('📭 Portafoglio vuoto.')}\n${line('Compra con: _*.investi compra GOOG*_ ✨')}`;
-            const text = `${sec('💹 BORSA')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *PORTAFOGLIO*`)}\n${line('')}\n${portLines}\n${line('')}\n${line(`💶 Valore azioni: _${tot}€_ • 💎 top`)}\n${line(`💳 Contante: _${uDB.money}€_`)}\n${boxEnd()}`;
-            return await sendButtons(sock, from, text, [
-                { label: '📝 Listino ✨', id: 'investi listino' },
-            ], msg);
+            const text = `${sec('💹 BORSA')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *PORTAFOGLIO*`)}\n${line('')}\n${portLines}\n${line('')}\n${line(`💶 Valore azioni: _${tot}€_ • 💎 top`)}\n${line(`💳 Contante: _${uDB.money}€_`)}\n${line('')}\n${line('📌 Vedi _*.investi listino*_ ✨')}\n${boxEnd()}`;
+            return await sock.sendMessage(from, { text, mentions: [sender] }, { quoted: msg });
         }
 
         if (azione === 'LISTINO') {
-            const listino = `${sec('📊 LISTINO')}\n${boxOpen()}\n${line(`Mercato *VEX* — prezzi live`)}\n${line('')}\n${AZIENDE.map(a => line(`🔹 ${a.code.padEnd(6)} ${a.name.padEnd(12)} _${a.price}€_`)).join('\n')}\n${line('')}\n${line('📌 *.investi compra <CODICE> [n]* ✨')}\n${boxEnd()}`;
-            return await sendButtons(sock, from, listino, [
-                { label: '📊 Portafoglio 💎', id: 'investi' },
-            ], msg);
+            const listino = `${sec('📊 LISTINO')}\n${boxOpen()}\n${line(`Mercato *VEX* — prezzi live`)}\n${line('')}\n${AZIENDE.map(a => line(`🔹 ${a.code.padEnd(6)} ${a.name.padEnd(12)} _${a.price}€_`)).join('\n')}\n${line('')}\n${line('📌 *.investi compra <CODICE> [n]* ✨')}\n${line('📌 *.investi* per portafoglio')}\n${boxEnd()}`;
+            return await sock.sendMessage(from, { text: listino }, { quoted: msg });
         }
 
         if (azione === 'COMPRA' || azione === 'VENDI') {

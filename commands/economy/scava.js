@@ -12,7 +12,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, sendButtons, applyTax } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, applyTax } = services;
 
 
             const cooldownKey = 'scava';
@@ -38,8 +38,6 @@ module.exports = {
             const taxLine = taxed.tax > 0 ? ` • _tassa ${taxed.tax}€_` : '';
             const gems = ['⛏️','💰','✨','🔥','⭐'][Math.floor(Math.random()*5)];
             const txt2 = `${sec('⛏️ MINIERA')}\n${boxOpen()}\n${line(`${gems} @${dispOf(sender)} — *SCAVO TOP*`)}\n${line(`_bottino estratto, hai spaccato fra_`)}\n${line('')}\n${line(`Lordo: _+${gross}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult>1 ? line(`Evento _x${evMult}_ attivo`) : line(`Scavo riuscito bro`)}\n${line(`Saldo: _${userData.money}€_ • continua così`)}\n${boxEnd()}`;
-            await sendButtons(sock, from, txt2, [
-                { label: `⛏️ Scava ancora`, id: `${command}` },
-            ], msg);
+            await sock.sendMessage(from, { text: txt2, mentions: [sender] }, { quoted: msg });
     },
 };

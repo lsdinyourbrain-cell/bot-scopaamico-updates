@@ -150,8 +150,8 @@ module.exports = {
 
         const args2 = String(textArgs || '').trim().toLowerCase();
 
-        // Ferma la partita del giocatore che la invoca (o di tutti con 'stop tutti').
-        if (['stop', 'esci', 'fine', 'basta', 'abbandona', 'lascia'].includes(args2) || args2.startsWith('stop ')) {
+        const quitWords = ['stop','esci','fine','basta','abbandona','lascia','termina','annulla','chiudi','ferma','abbandono','termino','annulla partita','termina partita'];
+        if (quitWords.includes(args2) || args2.startsWith('stop ') || args2.startsWith('termina') || args2.startsWith('abbandona') || args2.startsWith('annulla')) {
             db[from] = db[from] || {};
             const games = db[from].impiccatoGames || {};
             if (args2.includes('tutti')) {
@@ -164,7 +164,10 @@ module.exports = {
                 const parola = games[sender].word;
                 delete games[sender];
                 saveDB();
-                return reply(`🛑 Partita fermata!\nLa parola era *${parola}*.`);
+                return sendButtons(sock, from, `🛑 Partita fermata!\nLa parola era *${parola}*.`, [
+                    { label: '🔄 Nuova partita', id: 'impiccato' },
+                    { label: '🏠 Menu', id: 'menu' },
+                ], msg);
             }
             return reply("Non hai partite di impiccato attive, fra.");
         }
@@ -196,7 +199,10 @@ lunghe e poche chances!
 
         // Una partita per giocatore: se ne ha già una attiva, niente doppioni.
         if (games[sender]?.active) {
-            return reply("Hai già una partita in corso! Manda una lettera o chiudila con `.impiccato stop`, fra.");
+            return sendButtons(sock, from, `Hai già una partita in corso! Manda una lettera o premi Termina.`, [
+                { label: '❌ Termina', id: 'impiccato termina' },
+                { label: '🔄 Nuova partita', id: 'impiccato termina' },
+            ], msg);
         }
 
         // Parole della giusta lunghezza per la difficoltà scelta, evitando
@@ -239,6 +245,12 @@ lunghe e poche chances!
             lastMsgKey: sent?.key || null,
         };
         saveDB();
+        try {
+            await sendButtons(sock, from, `${diff.emoji} *IMPICCATO CONTROLLI* · ${diff.label}\nPremi per gestire la partita:`, [
+                { label: '❌ Termina', id: 'impiccato termina' },
+                { label: '🔄 Nuova partita', id: 'impiccato termina' },
+            ], msg);
+        } catch (_) {}
 
         // Timer di scadenza
         setTimeout(() => {

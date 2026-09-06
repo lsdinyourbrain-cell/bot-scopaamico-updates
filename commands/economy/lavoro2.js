@@ -23,7 +23,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, reply, services } = context;
-        const { getUser, saveDB, randomChoice, randomInt, formatMoney, sendButtons, applyTax, db } = services;
+        const { getUser, saveDB, randomChoice, randomInt, formatMoney, applyTax, db } = services;
 
         const userData = getUser(sender, from);
         userData.cooldowns = userData.cooldowns || {};
@@ -55,8 +55,6 @@ module.exports = {
         const text =
 `${sec('💪 LAVORETTO')}\n${boxOpen()}\n${line(`${gig.emoji} _${gig.nome}_ — ${bonus ? '🔥 CRITICO! ' : ''}${randomChoice(gig.tip())}`)}\n${line(`Lordo: _+${formatMoney(gross)}€_ → Netto: _+${formatMoney(taxed.net)}€_${taxLine}${evLine}`)}\n${line(`Saldo: _${formatMoney(userData.money)}€_ • prossimo: _60m_ • fatti: _${userData.lavoro2.giorni}_`)}\n${boxEnd()}`;
 
-        await sendButtons(sock, from, text, [
-            { label: `💪 Altro lavoretto`, id: `.${command}` },
-        ], msg);
+        await sock.sendMessage(from, { text }, { quoted: msg });
     },
 };

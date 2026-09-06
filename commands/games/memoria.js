@@ -26,8 +26,33 @@ module.exports = {
             }
             userData.cooldowns[cooldownKey] = now;
 
+            const qLowerMem = String(textArgs || '').trim().toLowerCase();
+            const isQuitMem = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'].includes(qLowerMem) || qLowerMem.startsWith('stop ') || qLowerMem.startsWith('termina') || qLowerMem.startsWith('abbandona') || qLowerMem.startsWith('annulla');
+            if (isQuitMem) {
+                if (!db[from]?.memGame?.active) return sock.sendMessage(from, { text: `${sec('🧠 MEMORIA')}\n${boxOpen()}\n${line('Nessuna sequenza attiva ✨')}\n${boxEnd()}` }, { quoted: msg });
+                const active = db[from].memGame;
+                active.active = false;
+                delete db[from].memGame;
+                saveDB();
+                const t = `${sec('🛑 MEMORIA TERMINATA')}\n${boxOpen()}\n${line(`Sequenza era *${active.sequence.join(' ')}* ✨`)}\n${boxEnd()}`;
+                const { sendButtons: sbMem } = services;
+                if (sbMem) {
+                    return sbMem(sock, from, t, [
+                        { label: '🔄 Nuova sequenza', id: 'memoria' },
+                        { label: '🏠 Menu', id: 'menu' },
+                    ], msg);
+                }
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
+            }
             if (db[from]?.memGame?.active) {
                 const t = `${sec('🧠 MEMORIA ATTIVA')}\n${boxOpen()}\n${line('C\'è già una sequenza in corso ✨')}\n${line('🔮 _Completa quella prima di crearne un\'altra_')}\n${boxEnd()}`;
+                const { sendButtons: sbMem2 } = services;
+                if (sbMem2) {
+                    return sbMem2(sock, from, t, [
+                        { label: '❌ Termina', id: 'memoria termina' },
+                        { label: '🔄 Nuova sequenza', id: 'memoria termina' },
+                    ], msg);
+                }
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
 
@@ -47,7 +72,15 @@ module.exports = {
             const display = sequence.map(k => `${COLOR_MAP[k]} ${k}`).join(' ');
 
             const txt = `${sec('🧠 MEMORIA')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — memorizza bene`)}\n${line('')}\n${line(`🎨 Sequenza: _${display}_`)}\n${line('')}\n${line('✏️ Ripeti le *lettere* (es: `R G B Y`) ✨')}\n${line('⏳ Hai _60 secondi_ • top')}\n${boxEnd()}`;
-            await sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
+            const { sendButtons: sbMem3 } = services;
+            if (sbMem3) {
+                await sbMem3(sock, from, txt, [
+                    { label: '❌ Termina', id: 'memoria termina' },
+                    { label: '🔄 Nuova sequenza', id: 'memoria termina' },
+                ], msg, [sender]);
+            } else {
+                await sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
+            }
 
             setTimeout(() => {
                 const mg = db[from]?.memGame;

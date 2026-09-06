@@ -64,7 +64,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, reply, services } = context;
-        const { db, saveDB, getUser, sendButtons, getCachedGroupMeta } = services;
+        const { db, saveDB, getUser, getCachedGroupMeta } = services;
         const { dispOf, resolveJid } = require('../../lib/jid');
 
         if (!isGroup) return reply('Si gioca solo nei gruppi!');
@@ -87,13 +87,7 @@ module.exports = {
             u.money = (u.money || 0) + winnings;
             db[from].mineGame = null;
             saveDB();
-            return sendButtons(sock, from,
-`✅ *MONTE CASSATO!*
-
-🎌 Hai incassato *${winnings}€*!
-
-💰 Nuovo saldo: *${u.money}€*`,
-                [{ label: '🔁 Nuova partita', id: 'mine' }, { label: '🏠 Menu', id: 'menu' }], msg);
+            return sock.sendMessage(from, { text: `✅ *MONTE CASSATO!*\n\n🎌 Hai incassato *${winnings}€*!\n\n💰 Nuovo saldo: *${u.money}€*\n\nScrivi \`.mine\` per una nuova partita.` }, { quoted: msg });
         }
 
         // ── SCAVO (da pulsante, es. "mine scava 12") 
@@ -116,53 +110,19 @@ ${boxEnd()}`);
             if (g.bombs.has(key)) {
                 db[from].mineGame = null;
                 saveDB();
-                return sendButtons(sock, from,
-`💥 *BOOM!* Hai trovato una bomba!
-
-${renderBoard(g, true)}
-
-Montepremi azzerato. 💸
-La bomba era in ${key}...`,
-                    [{ label: '🔁 Nuova partita', id: 'mine' }, { label: '🏠 Menu', id: 'menu' }], msg);
+                return sock.sendMessage(from, { text: `💥 *BOOM!* Hai trovato una bomba!\n\n${renderBoard(g, true)}\n\nMontepremi azzerato. 💸\nLa bomba era in ${key}...\n\nScrivi \`.mine\` per riprovare.` }, { quoted: msg });
             }
 
             g.pot += CELL_REWARD;
             saveDB();
 
             const safeLeft = remainingSafeCells(g);
-            const btns = safeLeft.slice(0, 3).map(cell => ({
-                label: `🟩 Scava ${cell.slice(0, 1)}-${cell.slice(1)}`,
-                id: `mine scava ${cell}`,
-            }));
-            if (btns.length < 3) btns.push({ label: '💰 Incassa', id: 'mine incassa' });
-            while (btns.length < 3) btns.push({ label: '🏠 Menu', id: 'menu' });
-
-            return sendButtons(sock, from,
-`✅ *CELLA SICURA!* +${CELL_REWARD}€
-
-${renderBoard(g)}
-
-🎌 Montepremi: *${g.pot}€*
-🕳️ Celle sicure rimaste: ${safeLeft.length}
-
-Continua a scavare o incassa 👇`,
-                btns, msg);
+            return sock.sendMessage(from, { text: `✅ *CELLA SICURA!* +${CELL_REWARD}€\n\n${renderBoard(g)}\n\n🎌 Montepremi: *${g.pot}€*\n🕳️ Celle sicure rimaste: ${safeLeft.length}\n\nUsa \`.mine scava <cella>\` es. \`.mine scava ${safeLeft[0] || '11'}\` o \`.mine incassa\` per incassare.` }, { quoted: msg });
         }
 
-        // ── PARTITA GIÀ ATTIVA 
+        // ── PARTITA GIÀ ATTIVA
         if (g?.active) {
-            return sendButtons(sock, from,
-`⛏️ C'è già una partita attiva
-di *${disp(g.sender)}*!
-
-${renderBoard(g)}
-
-🎌 Montepremi: *${g.pot}€*`,
-                [
-                    { label: '🟩 Scava', id: `mine scava ${remainingSafeCells(g)[0] || '11'}` },
-                    { label: '💰 Incassa', id: 'mine incassa' },
-                    { label: '🏠 Menu', id: 'menu' },
-                ], msg);
+            return sock.sendMessage(from, { text: `⛏️ C'è già una partita attiva\ndi *${disp(g.sender)}*!\n\n${renderBoard(g)}\n\n🎌 Montepremi: *${g.pot}€*\n\nUsa \`.mine scava <cella>\` es. \`.mine scava ${remainingSafeCells(g)[0] || '11'}\` o \`.mine incassa\`` }, { quoted: msg });
         }
 
         // ── AVVIO NUOVA PARTITA 
@@ -181,20 +141,6 @@ ${renderBoard(g)}
         saveDB();
 
         const first = remainingSafeCells(db[from].mineGame).slice(0, 3);
-        return sendButtons(sock, from,
-`💣 *CAMPO MINATO*
-
-${renderBoard(db[from].mineGame)}
-
-${BOMBS} bombe nascoste 💥 in 9 celle.
-Scava le celle sicure per
-accumulare il montepremi
-(+${CELL_REWARD}€ a cella), ma se
-trovi una bomba perdi tutto!
-
-🎟️ Biglietto: ${TICKET}€ (pagato)
-🎌 Montepremi: 0€`,
-            first.map(cell => ({ label: `🟩 Scava ${cell.slice(0, 1)}-${cell.slice(1)}`, id: `mine scava ${cell}` })),
-            msg);
+        return sock.sendMessage(from, { text: `💣 *CAMPO MINATO*\n\n${renderBoard(db[from].mineGame)}\n\n${BOMBS} bombe nascoste 💥 in 9 celle.\nScava le celle sicure per\naccumulare il montepremi\n(+${CELL_REWARD}€ a cella), ma se\ntrovi una bomba perdi tutto!\n\n🎟️ Biglietto: ${TICKET}€ (pagato)\n🎌 Montepremi: 0€\n\nUsa \`.mine scava <cella>\` es. \`.mine scava ${first[0] || '11'}\` • \`.mine incassa\` per incassare` }, { quoted: msg });
     },
 };

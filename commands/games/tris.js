@@ -12,15 +12,42 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { sharp, db, saveDB, sameJid, getCachedGroupMeta } = services;
+        const { sharp, db, saveDB, sameJid, getCachedGroupMeta, sendButtons } = services;
 
         if (!isGroup) {
             const t = `${sec('👥 SOLO GRUPPI')}\n${boxOpen()}\n${line('🎮 Il tris si gioca solo nei gruppi 💎✨')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
+        const qLower = String(textArgs || '').trim().toLowerCase();
+        const isQuit = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia','annulla partita','termina partita'].includes(qLower) || qLower.startsWith('stop ') || qLower.startsWith('termina') || qLower.startsWith('abbandona') || qLower.startsWith('annulla');
+        if (isQuit) {
+            if (!db[from]?.trisGame?.active) {
+                const t = `${sec('🎮 TRIS')}\n${boxOpen()}\n${line('Nessuna partita di tris attiva ✨')}\n${boxEnd()}`;
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
+            }
+            const active = db[from].trisGame;
+            if (active.lastMsgKey) { try { await sock.sendMessage(from, { delete: active.lastMsgKey }); } catch (_) {} }
+            delete db[from].trisGame;
+            saveDB();
+            const t = `${sec('🛑 TRIS TERMINATO')}\n${boxOpen()}\n${line(`Partita terminata da @${dispOf(sender)} ✨`)}\n${line('Usa *.tris @utente* per una nuova sfida')}\n${boxEnd()}`;
+            if (sendButtons) {
+                return sendButtons(sock, from, t, [
+                    { label: '🔄 Nuova partita', id: 'tris' },
+                    { label: '🏠 Menu', id: 'menu' },
+                ], msg, active.players || [sender]);
+            }
+            return sock.sendMessage(from, { text: t, mentions: active.players || [sender] }, { quoted: msg });
+        }
+
         if (db[from]?.trisGame?.active) {
             const t = `${sec('🎮 TRIS ATTIVO')}\n${boxOpen()}\n${line('C\'è già una partita di tris in corso ✨')}\n${line('🔮 _Completala prima di crearne un\'altra_')}\n${boxEnd()}`;
+            if (sendButtons) {
+                return sendButtons(sock, from, t, [
+                    { label: '❌ Termina', id: 'tris termina' },
+                    { label: '🔄 Nuova partita', id: 'tris termina' },
+                ], msg);
+            }
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
@@ -84,5 +111,13 @@ module.exports = {
 
         db[from].trisGame.lastMsgKey = sent?.key || null;
         saveDB();
+        if (sendButtons) {
+            try {
+                await sendButtons(sock, from, `${sec('🎮 TRIS CONTROLLI')}\n${boxOpen()}\n${line('Partita in corso ✨')}\n${line('❌ Termina — annulla la sfida')}\n${line('🔄 Nuova — termina e rigioca')}\n${boxEnd()}`, [
+                    { label: '❌ Termina', id: 'tris termina' },
+                    { label: '🔄 Nuova partita', id: 'tris termina' },
+                ], msg);
+            } catch (_) {}
+        }
     },
 };

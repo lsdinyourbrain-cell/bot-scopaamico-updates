@@ -12,7 +12,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro, sendButtons } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sleep, claimBounty, getBounty, removeBounty, bestemmiometro } = services;
 
 
             const cooldownKey = 'dadi';
@@ -74,8 +74,6 @@ module.exports = {
             const extraRiccoDadi = uDB.money > 5000 ? line(`💫 _${frasiIronicheDadi[Math.floor(Math.random()*frasiIronicheDadi.length)]}_`) : '';
 
             const resultText = `${sec('🎲 DADI')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — lancio top`)}\n${line(`🧑 Tu: _${userRoll}_ 🎲  •  🤖 Bot: _${botRoll}_`)}\n${line(`${esito}`)}\n${extraRiccoDadi ? extraRiccoDadi+'\n' : ''}${line(`💳 Saldo: _${uDB.money}€_ • 🎲 let's roll`)}\n${boxEnd()}`;
-            await sendButtons(sock, from, resultText, [
-                { label: `🎲 Rilancia ${puntata} ✨`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
-            ], msg);
+            await sock.sendMessage(from, { text: resultText, mentions: [sender] }, { quoted: msg });
     },
 };

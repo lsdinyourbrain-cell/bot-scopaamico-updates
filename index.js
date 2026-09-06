@@ -3064,7 +3064,7 @@ startBot();
                 const strippedAns = answerNorm.replace(/^(il |lo |la |i |gli |le |un |uno |una )/, '').trim();
                 if (lower === answerNorm || (stripped && stripped === strippedAns)) {
                     eg.active = false;
-                    const reward = 50;
+                    const reward = eg.reward || 50;
                     const uDB = getUser(sender, from);
                     uDB.money += reward;
                     saveDB();
@@ -3089,12 +3089,12 @@ startBot();
 
                 if (guessedCorrect) {
                     qg.active = false;
-                    const reward = 100;
+                    const reward = qg.reward || 100;
                     const uDB = getUser(sender, from);
                     uDB.money += reward;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `✅ *RISPOSTA ESATTA!* 🎉\n\n@${dispOf(sender, senderAlt)} ha risposto correttamente!\n+${reward}€ 💰`,
+                        text: `✅ *RISPOSTA ESATTA!* 🎉\n\n@${dispOf(sender, senderAlt)} ha risposto correttamente!${qg.difficulty ? ` [${qg.difficulty}]` : ''}\n+${reward}€ 💰`,
                         mentions: [sender],
                     });
                 } else if (guessedLetter !== -1) {
@@ -3115,12 +3115,12 @@ startBot();
                 if (guessedLetter === -1) {}
                 else if (guessedLetter === fg.correctIndex) {
                     fg.active = false;
-                    const reward = 150;
+                    const reward = fg.reward || 150;
                     const uDB = getUser(sender, from);
                     uDB.money += reward;
                     saveDB();
                     await sock.sendMessage(from, {
-                        text: `🏆 *BANDIERA INDOVINATA!* 🌍\n\n@${dispOf(sender)} ha riconosciuto la bandiera!\n+${reward}€ 💰`,
+                        text: `🏆 *BANDIERA INDOVINATA!* 🌍\n\n@${dispOf(sender)} ha riconosciuto la bandiera!${fg.difficulty ? ` [${fg.difficulty}]` : ''}\n+${reward}€ 💰`,
                         mentions: [sender],
                     });
                 } else {

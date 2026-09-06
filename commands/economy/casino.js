@@ -9,16 +9,9 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS, sendButtons } = services;
+        const { AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE, ARRAYS, COPY, axios, checkTrisWinner, crypto, db, downloadContentFromMessage, downloadMediaMessage, execFileAsync, ffmpeg, formatMoney, fs, getAntilinkGroup, getCpuUsage, getQuotedKey, getSysInfo, getUser, os, path, projectDir, randomChoice, randomInt, renderTrisBoard, sameJid, saveDB, setAntilinkPlatform, sharp, webpmux, ANTILINK_PLATFORMS } = services;
 
-
-            await sendButtons(sock, from,
-                `${sec('🎰 CASINÒ')}\n${boxOpen()}\n${line('Benvenuto nel *Casino VEX*')}\n${line('🎲 Premi un pulsante e tenta la sorte')}\n${line('🍀 _tenta la sorte, bro_')}\n${boxEnd()}`,
-                [
-                    { label: '🎲 Dadi 100 ✨', id: 'dadi 100' },
-                    { label: '🎰 Slot 100 💎', id: 'slot 100' },
-                    { label: '🎡 Roulette 100 🔮', id: 'roulette 100' },
-                ],
-                msg);
+            const txt = `${sec('🎰 CASINÒ')}\n${boxOpen()}\n${line('Benvenuto nel *Casino VEX*')}\n${line('🎲 Comandi: _.dadi 100_ • _.slot 100_ • _.roulette 100_')}\n${line('🍀 _tenta la sorte, bro_')}\n${boxEnd()}`;
+            await sock.sendMessage(from, { text: txt }, { quoted: msg });
     },
 };

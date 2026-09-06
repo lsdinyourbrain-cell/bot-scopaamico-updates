@@ -24,7 +24,31 @@ module.exports = {
             }
             userData.cooldowns[cooldownKey] = now;
 
+            const qLowerReaz = String(textArgs || '').trim().toLowerCase();
+            const isQuitReaz = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'].includes(qLowerReaz) || qLowerReaz.startsWith('stop ') || qLowerReaz.startsWith('termina') || qLowerReaz.startsWith('abbandona') || qLowerReaz.startsWith('annulla');
+            if (isQuitReaz) {
+                if (!db[from]?.reactionGame?.active) return reply("Nessun test di reazione attivo.");
+                db[from].reactionGame.active = false;
+                saveDB();
+                const t = `${sec('🛑 REAZIONE TERMINATA')}\n${boxOpen()}\n${line(`Test terminato da @${sender.split('@')[0]} ✨`)}\n${boxEnd()}`;
+                const { sendButtons: sbReaz } = services;
+                if (sbReaz) {
+                    return sbReaz(sock, from, t, [
+                        { label: '🔄 Nuovo test', id: 'reazione' },
+                        { label: '🏠 Menu', id: 'menu' },
+                    ], msg, [sender]);
+                }
+                return sock.sendMessage(from, { text: t }, { quoted: msg });
+            }
             if (db[from]?.reactionGame?.active) {
+                const t = `${sec('⚡ REAZIONE ATTIVA')}\n${boxOpen()}\n${line("C'è già un test in corso ✨")}\n${line("Attendi il GO o termina")}\n${boxEnd()}`;
+                const { sendButtons: sbReaz2 } = services;
+                if (sbReaz2) {
+                    return sbReaz2(sock, from, t, [
+                        { label: '❌ Termina', id: 'reazione termina' },
+                        { label: '🔄 Nuovo test', id: 'reazione termina' },
+                    ], msg);
+                }
                 return reply(`${sec('REAZIONE')}\n${boxOpen()}\n${line("⏳ C'è già un test di reazione in corso in questa chat!")}\n${boxEnd()}`);
             }
 
@@ -38,7 +62,15 @@ module.exports = {
             };
             saveDB();
 
-            await reply(`${sec('TEST DI REAZIONE')}\n${boxOpen()}\n${line('Quando il bot manda il segnale,')}\n${line('scrivi *GO* il più veloce!')}\n${line('')}\n${line('👀 Ti avviserò tra poco...')}\n${boxEnd()}`);
+            const { sendButtons: sbReaz3 } = services;
+            if (sbReaz3) {
+                await sbReaz3(sock, from, `${sec('TEST DI REAZIONE')}\n${boxOpen()}\n${line('Quando il bot manda il segnale,')}\n${line('scrivi *GO* il più veloce!')}\n${line('')}\n${line('👀 Ti avviserò tra poco...')}\n${boxEnd()}`, [
+                    { label: '❌ Termina', id: 'reazione termina' },
+                    { label: '🔄 Nuovo test', id: 'reazione termina' },
+                ], msg);
+            } else {
+                await reply(`${sec('TEST DI REAZIONE')}\n${boxOpen()}\n${line('Quando il bot manda il segnale,')}\n${line('scrivi *GO* il più veloce!')}\n${line('')}\n${line('👀 Ti avviserò tra poco...')}\n${boxEnd()}`);
+            }
 
             const delay = randomInt(3000, 7000);
             setTimeout(() => {

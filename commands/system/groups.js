@@ -8,7 +8,8 @@ module.exports = {
     description: "Mostra tutti i gruppi dov'è il bot (owner).",
 
     async run(sock, msg, args, context) {
-        const { from, sender, isOwner, reply } = context;
+        const { from, sender, isOwner, reply, services } = context;
+        const { sendButtons } = services || {};
 
         if (!isOwner) return reply("Solo il proprietario.");
 
@@ -25,12 +26,20 @@ module.exports = {
                 txt += `▸ ${i+1}. _${name.slice(0, 18)}_\n▸ 👥 _${count}_ · _${short}_\n`;
             });
             txt += `\n`;
-            // Send in chunks if too long
+            // Single message via sendButtons (chunk fallback to plain)
             if (txt.length > 4000) {
                 const chunks = txt.match(/.{1,4000}/g) || [txt];
                 for (const chunk of chunks) await reply(chunk);
             } else {
-                await reply(txt);
+                if (sendButtons) {
+                    await sendButtons(sock, from, txt, [
+                        { label: '📊 Status', id: 'status' },
+                        { label: '🏠 Menu', id: 'menu' },
+                        { label: '🏆 Top gruppi', id: 'topgruppi' },
+                    ], msg);
+                } else {
+                    await reply(txt);
+                }
             }
         } catch (e) {
             await reply("❌ Errore nel recuperare la lista gruppi.");

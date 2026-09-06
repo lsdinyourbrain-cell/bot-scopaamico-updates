@@ -11,7 +11,33 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
-        const { db, saveDB, randomChoice, getUser } = services;
+        const { db, saveDB, randomChoice, getUser, sendButtons } = services;
+
+            const qLower = String(textArgs || '').trim().toLowerCase();
+            const isQuit = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia'].includes(qLower) || qLower.startsWith('stop ') || qLower.startsWith('termina') || qLower.startsWith('abbandona') || qLower.startsWith('annulla');
+            if (isQuit) {
+                if (!db[from]?.wordGame?.active) return reply("Nessuna partita di parola attiva.");
+                const tg = db[from].wordGame.word;
+                db[from].wordGame.active = false;
+                saveDB();
+                const t = `${sec('🛑 PAROLA TERMINATA')}\n${boxOpen()}\n${line(`Parola era *${tg}* ✨`)}\n${line(`Terminata da @${sender.split('@')[0]}`)}\n${boxEnd()}`;
+                if (sendButtons) {
+                    return sendButtons(sock, from, t, [
+                        { label: '🔄 Nuova parola', id: 'parola' },
+                        { label: '🏠 Menu', id: 'menu' },
+                    ], msg, [sender]);
+                }
+                return reply(t);
+            }
+            if (db[from]?.wordGame?.active) {
+                const t = `${sec('🧩 PAROLA ATTIVA')}\n${boxOpen()}\n${line("C'è già una partita in corso ✨")}\n${line("Scrivi una lettera o termina")}\n${boxEnd()}`;
+                if (sendButtons) {
+                    return sendButtons(sock, from, t, [
+                        { label: '❌ Termina', id: 'parola termina' },
+                        { label: '🔄 Nuova parola', id: 'parola termina' },
+                    ], msg);
+                }
+            }
 
             const cooldownKey = 'parola';
             const userData = getUser(sender, from);
@@ -50,7 +76,14 @@ module.exports = {
 
             const mask = (wg) => wg.word.split('').map(ch => wg.guessed.includes(ch) ? ch : ' _ ').join('');
 
-            await reply(`${sec('INDOVINA LA PAROLA')}\n${boxOpen()}\n${line(mask(db[from].wordGame))}\n${line('')}\n${line('✏️ Scrivi una *lettera* o la *parola intera*!')}\n${line('⏳ 90 secondi · 6 errori = fine.')}\n${boxEnd()}`);
+            if (sendButtons) {
+                await sendButtons(sock, from, `${sec('INDOVINA LA PAROLA')}\n${boxOpen()}\n${line(mask(db[from].wordGame))}\n${line('')}\n${line('✏️ Scrivi una *lettera* o la *parola intera*!')}\n${line('⏳ 90 secondi · 6 errori = fine.')}\n${boxEnd()}`, [
+                    { label: '❌ Termina', id: 'parola termina' },
+                    { label: '🔄 Nuova parola', id: 'parola termina' },
+                ], msg);
+            } else {
+                await reply(`${sec('INDOVINA LA PAROLA')}\n${boxOpen()}\n${line(mask(db[from].wordGame))}\n${line('')}\n${line('✏️ Scrivi una *lettera* o la *parola intera*!')}\n${line('⏳ 90 secondi · 6 errori = fine.')}\n${boxEnd()}`);
+            }
 
             setTimeout(() => {
                 const wg = db[from]?.wordGame;

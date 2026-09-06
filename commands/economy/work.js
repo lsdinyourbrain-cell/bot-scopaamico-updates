@@ -12,7 +12,7 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, isButton, services } = context;
-        const { getUser, saveDB, sendButtons, randomInt, randomChoice, formatMoney, applyTax, db } = services;
+        const { getUser, saveDB, randomInt, randomChoice, formatMoney, applyTax, db } = services;
 
         const cooldownKey = 'work';
         const userData = getUser(sender, from);
@@ -63,8 +63,6 @@ module.exports = {
 
         const resultText = `${sec('💼 WORK')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — _${lavoro.emoji} ${lavoro.nome}_`)}\n${line(`_turno chiuso, hai spaccato fra_`)}\n${line('')}\n${line(`Lordo: _+${formatMoney(gross)}€_ → Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${event ? eventLine : line(`Turno standard • ben fatto bro`)}\n${evMult > 1 ? evLine : ''}\n${line(`Saldo: _${formatMoney(userData.money)}€_ • prossimo tra _20m_`)}\n${boxEnd()}`;
 
-        await sendButtons(sock, from, resultText, [
-            { label: `💼 Nuovo turno`, id: `.${command}` },
-        ], msg);
+        await sock.sendMessage(from, { text: resultText, mentions: [sender] }, { quoted: msg });
     },
 };
