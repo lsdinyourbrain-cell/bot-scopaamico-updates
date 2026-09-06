@@ -14,7 +14,7 @@ module.exports = {
         const { db, saveDB, getCachedGroupMeta } = services;
 
         if (!isOwner) {
-            const t = `${sec('🔒 OWNER ONLY')}\n${boxOpen()}\n${line('👑 Solo gli *Owner* possono aggiungere Premium 💎')}\n${line('✨ Contatta +1(548)314-7193')}\n${boxEnd()}`;
+            const t = `${sec('🔒 OWNER ONLY')}\n${boxOpen()}\n${line('👑 Solo gli *Owner* possono aggiungere Premium')}\n${line('✨ Contatta +1(548)314-7193')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         if (!targetJid) {
@@ -35,7 +35,7 @@ module.exports = {
 
         const dur = days ? `${days} giorni` : '♾️ PERMANENTE';
         const remain = days ? prem.formatRemaining(Date.now()+days*86400000) : '∞ permanente';
-        const txt = `${sec('✅ PREMIUM AGGIUNTO')}\n${boxOpen()}\n${line(`💎 @${disp(targetJid)} ora è *PREMIUM* 👑✨`)}\n${line(`🔮 _Vetro cromato attivato_`)}\n${line('')}\n${line(`⏳ Durata: _${dur}_`)}\n${line(`📅 Scadenza: _${remain}_`)}\n${line(`👑 Attivato da Owner ✨`)}\n${boxEnd()}`;
+        const txt = `${sec('✅ PREMIUM AGGIUNTO')}\n${boxOpen()}\n${line(`@${disp(targetJid)} ora è *PREMIUM* 👑✨`)}\n${line(`🔮 _premium attivo, let's go_`)}\n${line('')}\n${line(`⏳ Durata: _${dur}_`)}\n${line(`📅 Scadenza: _${remain}_`)}\n${line(`👑 Attivato da Owner ✨`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [targetJid] }, { quoted: msg });
     },
 };

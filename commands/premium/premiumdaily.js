@@ -23,7 +23,7 @@ module.exports = {
         const last = u.premiumDaily || 0;
         if (now - last < cd) {
             const remain = Math.ceil((cd - (now - last))/3600000);
-            const txt = `${sec('⏳ PREMIUM DAILY')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — già riscosso ✨`)}\n${line(`⏰ Torna tra _${remain}h_ 🔮`)}\n${boxEnd()}`;
+            const txt = `${sec('⏳ PREMIUM DAILY')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — già riscosso ✨`)}\n${line(`⏰ Torna tra _${remain}h_`)}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
         }
         const bonus = randomInt(180, 420);
@@ -32,7 +32,7 @@ module.exports = {
         u.xp = (Number(u.xp)||0) + 25;
         saveDB();
 
-        const txt = `${sec('💎 PREMIUM DAILY')}\n${boxOpen()}\n${line(`👑 @${dispOf(sender)} — *PREMIO VIP* ✨🔮`)}\n${line('')}\n${line(`💰 +${bonus}€  •  ⚡ +25 XP` )}\n${line(`💫 _Bonus vetro diamantato x3_`)}\n${line(`👛 Saldo: _${u.money}€_`)}\n${line('')}\n${line(`⏳ Prossimo tra _20h_ 💎`)}\n${boxEnd()}`;
+        const txt = `${sec('💎 PREMIUM DAILY')}\n${boxOpen()}\n${line(`👑 @${dispOf(sender)} — *PREMIO VIP*`)}\n${line('')}\n${line(`💰 +${bonus}€  •  ⚡ +25 XP` )}\n${line(`💫 _bonus x3, spacca_`)}\n${line(`👛 Saldo: _${u.money}€_`)}\n${line('')}\n${line(`⏳ Prossimo tra _20h_`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },
 };

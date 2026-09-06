@@ -32,7 +32,7 @@ ${boxEnd()}`);
             const thiefData = getUser(sender, from);
 
             if (targetData.money < 10) {
-                const txt = `${sec('🍃 VITTIMA AL VERDE')}\n${boxOpen()}\n${line(`💎 @${disp(targetJid)} è al verde, niente da rubare ✨` )}\n${line(`🔮 _Vetro vuoto, passa oltre_ 💫`)}\n${boxEnd()}`;
+                const txt = `${sec('🍃 VITTIMA AL VERDE')}\n${boxOpen()}\n${line(`@${disp(targetJid)} è al verde, niente da rubare ✨` )}\n${line(`🔮 _niente da prendere qui_`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: txt, mentions: [targetJid] }, { quoted: msg });
             }
 
@@ -53,7 +53,7 @@ ${boxEnd()}`);
                 saveDB();
                 const isRiccoFail = (thiefData.money > 5000) || ((thiefData.totaleRubato || 0) > 5000);
                 const extraFail = isRiccoFail ? line(`💫 _${pickFrase()}_`) : '';
-                const txtFail = `${sec('🚨 FURTO FALLITO')}\n${boxOpen()}\n${line(`💎 @${disp(sender)} — beccato! 😱✨`)}\n${line(`🔮 _Multa vetro: _${penalty}€__ 💫`)}\n${extraFail ? extraFail+'\n' : ''}${line(`💳 Saldo: _${thiefData.money}€_`)}\n${boxEnd()}`;
+                const txtFail = `${sec('🚨 FURTO FALLITO')}\n${boxOpen()}\n${line(`@${disp(sender)} — beccato! 😱✨`)}\n${line(`🔮 _multa: _${penalty}€__`)}\n${extraFail ? extraFail+'\n' : ''}${line(`💳 Saldo: _${thiefData.money}€_`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: txtFail, mentions: [sender] }, { quoted: msg });
             }
 
@@ -65,7 +65,7 @@ ${boxEnd()}`);
 
             const isRicco = (thiefData.money > 5000) || (thiefData.totaleRubato > 5000);
             const extraRicco = isRicco ? line(`💫 _${pickFrase()}_`) : '';
-            const txtOk = `${sec('💀 FURTO GLASS')}\n${boxOpen()}\n${line(`🕵️ @${disp(sender)} → @${disp(targetJid)} 💎✨`)}\n${line(`🔮 _Colpo nel vetro, cristalli ovunque_`)}\n${line('')}\n${line(`💀 Hai rubato _${stolen}€_! 🫶`)}\n${extraRicco ? extraRicco+'\n' : ''}${line(`💳 Il tuo saldo: _${thiefData.money}€_ • 💫`)}\n${boxEnd()}`;
+            const txtOk = `${sec('💀 FURTO')}\n${boxOpen()}\n${line(`🕵️ @${disp(sender)} → @${disp(targetJid)} 💎✨`)}\n${line(`🔮 _colpo da manuale_`)}\n${line('')}\n${line(`💀 Hai rubato _${stolen}€_! 🫶`)}\n${extraRicco ? extraRicco+'\n' : ''}${line(`💳 Il tuo saldo: _${thiefData.money}€_ •`)}\n${boxEnd()}`;
             await sock.sendMessage(from, { text: txtOk, mentions: [sender, targetJid] }, { quoted: msg });
     },
 };

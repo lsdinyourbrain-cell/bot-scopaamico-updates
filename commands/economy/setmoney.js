@@ -2,8 +2,6 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-const { toDarkFont } = require('../../lib/font');
-
 module.exports = {
     name: 'setmoney',
     aliases: ['setbalance'],

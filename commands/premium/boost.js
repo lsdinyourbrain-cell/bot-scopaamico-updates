@@ -24,7 +24,7 @@ module.exports = {
         const last = u.cooldowns.boost || 0;
         if (now - last < cd) {
             const remain = Math.ceil((cd - (now - last)) / 60000);
-            const txt = `${sec('⏳ BOOST COOLDOWN')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — turbo in ricarica ✨`)}\n${line(`⏳ Riprova tra _${remain} minuti_`)}\n${line(`💫 _Il vetro si ricarica..._ 🔮`)}\n${boxEnd()}`;
+            const txt = `${sec('⏳ BOOST COOLDOWN')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — turbo in ricarica ✨`)}\n${line(`⏳ Riprova tra _${remain} minuti_`)}\n${line(`💫 _un attimo e torni carico..._`)}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
         }
         u.cooldowns.boost = now;
@@ -35,7 +35,7 @@ module.exports = {
         // livello auto? lascia a xp lib
         saveDB();
 
-        const txt = `${sec('🚀 BOOST ATTIVATO')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *TURBO PREMIUM* ✨`)}\n${line(`🔮 _Glass boost sprigionato!_`)}\n${line('')}\n${line(`💰 +${gainMoney}€ • ⚡ +${gainXp} XP`)}\n${line(`👑 Saldo: _${u.money}€_ • ⭐ XP: _${u.xp}_`)}\n${line('')}\n${line(`💫 Prossimo boost tra _6 ore_ • ricarica cristallo 💎`)}\n${boxEnd()}`;
+        const txt = `${sec('🚀 BOOST ATTIVATO')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *TURBO PREMIUM* ✨`)}\n${line(`🔮 _boost caricato!_`)}\n${line('')}\n${line(`💰 +${gainMoney}€ • ⚡ +${gainXp} XP`)}\n${line(`👑 Saldo: _${u.money}€_ • ⭐ XP: _${u.xp}_`)}\n${line('')}\n${line(`💫 Prossimo boost tra _6 ore_ • ricarica cristallo`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },
 };

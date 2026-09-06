@@ -20,7 +20,7 @@ module.exports = {
         }
 
         if (db[from]?.trisGame?.active) {
-            const t = `${sec('🎮 TRIS ATTIVO')}\n${boxOpen()}\n${line('💎 C\'è già una partita di tris in corso ✨')}\n${line('🔮 _Completala prima di crearne un\'altra_ 💫')}\n${boxEnd()}`;
+            const t = `${sec('🎮 TRIS ATTIVO')}\n${boxOpen()}\n${line('C\'è già una partita di tris in corso ✨')}\n${line('🔮 _Completala prima di crearne un\'altra_')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
@@ -30,11 +30,11 @@ module.exports = {
             opponent = contextInfo?.participant || null;
         }
         if (!opponent) {
-            const t = `${sec('🎮 TRIS GLASS')}\n${boxOpen()}\n${line('💎 Tagga l\'avversario ✨')}\n${line('📌 Esempio: *.tris @marco* 🔮')}\n${boxEnd()}`;
+            const t = `${sec('🎮 TRIS')}\n${boxOpen()}\n${line('Tagga l\'avversario ✨')}\n${line('📌 Esempio: *.tris @marco*')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         if (sameJid(opponent, sender)) {
-            const t = `${sec('🎮 TRIS')}\n${boxOpen()}\n${line('✨ Non sfidare te stesso, leggenda! 💫')}\n${boxEnd()}`;
+            const t = `${sec('🎮 TRIS')}\n${boxOpen()}\n${line('✨ Non sfidare te stesso, leggenda!')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
@@ -72,13 +72,13 @@ module.exports = {
             console.error('[tris] render iniziale:', e.message);
             delete db[from].trisGame;
             saveDB();
-            const t = `${sec('❌ ERRORE TRIS')}\n${boxOpen()}\n${line('💎 Errore generazione board ✨')}\n${boxEnd()}`;
+            const t = `${sec('❌ ERRORE TRIS')}\n${boxOpen()}\n${line('Errore generazione board ✨')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
         const sent = await sock.sendMessage(from, {
             image: boardBuffer,
-            caption: `${sec('🎮 TRIS GLASS')}\n${boxOpen()}\n${line(`💎 Sfida vetro: @${dispOf(senderPn)} ❌ vs @${dispOf(opponentPn)} ⭕ ✨`)}\n${line(`🔮 Tocca a ❌ @${dispOf(senderPn)} — scrivi *1-9* 💫`)}\n${boxEnd()}`,
+            caption: `${sec('🎮 TRIS')}\n${boxOpen()}\n${line(`Sfida: @${dispOf(senderPn)} ❌ vs @${dispOf(opponentPn)} ⭕ ✨`)}\n${line(`🔮 Tocca a ❌ @${dispOf(senderPn)} — scrivi *1-9*`)}\n${boxEnd()}`,
             mentions: players,
         }, { quoted: msg });
 

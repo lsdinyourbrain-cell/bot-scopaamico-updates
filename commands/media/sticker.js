@@ -26,7 +26,7 @@ module.exports = {
 
             const media = directMedia || quotedMedia;
             if (!media) {
-                const t = `${sec('🖼️ STICKER GLASS')}\n${boxOpen()}\n${line('💎 Invia o rispondi a immagine/video ✨🔮')}\n${line('📌 Uso: *.sticker* / *.s* 💫')}\n${boxEnd()}`;
+                const t = `${sec('🖼️ STICKER')}\n${boxOpen()}\n${line('Invia o rispondi a immagine/video')}\n${line('📌 Uso: *.sticker* / *.s*')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
 
@@ -64,7 +64,7 @@ module.exports = {
                 }
 
                 if (!buffer || buffer.length === 0) {
-                    const t = `${sec('❌ STICKER ERRORE')}\n${boxOpen()}\n${line('💎 Media non disponibile ✨')}\n${line('🔮 _Reinvia il file, vetro scaduto_ 💫')}\n${boxEnd()}`;
+                    const t = `${sec('❌ STICKER ERRORE')}\n${boxOpen()}\n${line('Media non disponibile ✨')}\n${line('🔮 _reinvia il file, è scaduto_')}\n${boxEnd()}`;
                     return sock.sendMessage(from, { text: t }, { quoted: msg });
                 }
 
@@ -126,7 +126,7 @@ module.exports = {
 
             } catch (err) {
                 console.error('[sticker]', err.message);
-                const t = `${sec('❌ STICKER ERRORE')}\n${boxOpen()}\n${line('💎 Errore vetro sticker ✨')}\n${line('🔮 _File forse corrotto, riprova_ 💫')}\n${boxEnd()}`;
+                const t = `${sec('❌ STICKER ERRORE')}\n${boxOpen()}\n${line('Errore sticker ✨')}\n${line('🔮 _File forse corrotto, riprova_')}\n${boxEnd()}`;
                 await sock.sendMessage(from, { text: t }, { quoted: msg });
             }
     },

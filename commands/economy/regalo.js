@@ -22,27 +22,27 @@ module.exports = {
         const { getUser, saveDB, sameJid, formatMoney, randomChoice, getCachedGroupMeta } = services;
 
         if (!isGroup) {
-            const t = `${sec('👥 SOLO GRUPPI')}\n${boxOpen()}\n${line('🎀 Il regalo funziona solo nei gruppi 💎')}\n${line('🔮 _Vetro condiviso solo in gruppo_')}\n${boxEnd()}`;
+            const t = `${sec('👥 SOLO GRUPPI')}\n${boxOpen()}\n${line('🎀 Il regalo funziona solo nei gruppi')}\n${line('🔮 _solo nei gruppi, fra_')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         if (!targetJid) {
-            const t = `${sec('🎀 REGALO GLASS')}\n${boxOpen()}\n${line('💎 Tagga chi vuoi sorprendere ✨')}\n${line('📌 Uso: *.regalo @utente 100* 🎁')}\n${boxEnd()}`;
+            const t = `${sec('🎀 REGALO')}\n${boxOpen()}\n${line('Tagga chi vuoi sorprendere ✨')}\n${line('📌 Uso: *.regalo @utente 100* 🎁')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         if (sameJid(targetJid, sender)) {
-            const t = `${sec('🎀 REGALO')}\n${boxOpen()}\n${line('✨ Non regalare a te stesso, condividi! 💫')}\n${boxEnd()}`;
+            const t = `${sec('🎀 REGALO')}\n${boxOpen()}\n${line('✨ Non regalare a te stesso, condividi!')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
         const amount = parseInt((args || []).find((a) => /^\d+$/.test(a)));
         if (!Number.isFinite(amount) || amount <= 0) {
-            const t = `${sec('🎀 REGALO')}\n${boxOpen()}\n${line('💎 Importo non valido ✨')}\n${line('📌 Esempio: *.regalo @marco 100*')}\n${boxEnd()}`;
+            const t = `${sec('🎀 REGALO')}\n${boxOpen()}\n${line('Importo non valido ✨')}\n${line('📌 Esempio: *.regalo @marco 100*')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
         const me = getUser(sender, from);
         if (me.money < amount) {
-            const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 Hai solo _${formatMoney(me.money)}_ ✨`)}\n${line('🔮 _Ricarica con daily/work_')}\n${boxEnd()}`;
+            const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`Hai solo _${formatMoney(me.money)}_ ✨`)}\n${line('🔮 _Ricarica con daily/work_')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
         }
 
@@ -50,7 +50,7 @@ module.exports = {
         me.regali = me.regali || { day: '', n: 0 };
         if (me.regali.day !== today) { me.regali.day = today; me.regali.n = 0; }
         if (me.regali.n >= 3) {
-            const t = `${sec('⏳ LIMITE GIORNALIERO')}\n${boxOpen()}\n${line('🎀 Hai già fatto 3 regali oggi 💎')}\n${line('⏳ Torna domani, generoso! 💫')}\n${boxEnd()}`;
+            const t = `${sec('⏳ LIMITE GIORNALIERO')}\n${boxOpen()}\n${line('🎀 Hai già fatto 3 regali oggi')}\n${line('⏳ Torna domani, generoso!')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         me.regali.n += 1;
@@ -65,7 +65,7 @@ module.exports = {
         target.regaliRicevuti = (Number(target.regaliRicevuti) || 0) + 1;
         saveDB();
 
-        const giftTxt = `${sec('🎀 REGALO GLASS')}\n${boxOpen()}\n${line(`💎 @${disp(sender)} → @${disp(targetJid)} ✨🎁`)}\n${line(`🔮 _Cristallo dono nel vetro_`)}\n${line('')}\n${line(`🎁 Donato: _${formatMoney(amount)}_ 💫`)}\n${line(`_${randomChoice(GIFT_LINES)}_ ✨`)}\n${line(`💳 Saldo: _${formatMoney(me.money)}_ • 📦 _${me.regali.n}/3_ oggi`)}\n${boxEnd()}`;
+        const giftTxt = `${sec('🎀 REGALO')}\n${boxOpen()}\n${line(`@${disp(sender)} → @${disp(targetJid)} ✨🎁`)}\n${line(`🔮 _regalo spedito con stile_`)}\n${line('')}\n${line(`🎁 Donato: _${formatMoney(amount)}_`)}\n${line(`_${randomChoice(GIFT_LINES)}_ ✨`)}\n${line(`💳 Saldo: _${formatMoney(me.money)}_ • 📦 _${me.regali.n}/3_ oggi`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: giftTxt, mentions: [sender, targetJid] }, { quoted: msg });
     },
 };

@@ -6,6 +6,6 @@ module.exports = {
     description: 'Spaccia.',
     async run(sock, msg, args, context){
         const { from, sender } = context;
-        await sock.sendMessage(from,{ text: `${sec('SPACCI')}\n${boxOpen()}\n${line('SPACCI - presto disponibile!')}\n${boxEnd()}` });
+        await sock.sendMessage(from,{ text: `${sec('SPACCI')}\n${boxOpen()}\n${line('SPACCI - bro è in arrivo — ci stiamo lavorando, stay tuned 🔥')}\n${boxEnd()}` });
     }
 };

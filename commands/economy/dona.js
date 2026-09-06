@@ -35,7 +35,7 @@ ${boxEnd()}`);
         targetData.money += amount;
         saveDB();
 
-        const txt = `${sec('🎁 DONAZIONE GLASS')}\n${boxOpen()}\n${line(`💎 @${disp(sender)} → @${disp(targetJid)} ✨`)}\n${line(`🔮 _Gesto diamantato nel vetro_`)}\n${line('')}\n${line(`🎁 Donato: _${formatMoney(amount)}€_ 🫶`)}\n${line(`💳 Il tuo saldo: _${formatMoney(senderData.money)}€_`)}\n${line(`💰 Saldo @${disp(targetJid)}: _${formatMoney(targetData.money)}€_`)}\n${line('')}\n${line(`✨ Generosità ricompensata, leggenda! 💫`)}\n${boxEnd()}`;
+        const txt = `${sec('🎁 DONAZIONE')}\n${boxOpen()}\n${line(`@${disp(sender)} → @${disp(targetJid)} ✨`)}\n${line(`🔮 _gesto top fra_`)}\n${line('')}\n${line(`🎁 Donato: _${formatMoney(amount)}€_ 🫶`)}\n${line(`💳 Il tuo saldo: _${formatMoney(senderData.money)}€_`)}\n${line(`💰 Saldo @${disp(targetJid)}: _${formatMoney(targetData.money)}€_`)}\n${line('')}\n${line(`✨ Generosità ricompensata, leggenda!`)}\n${boxEnd()}`;
         await sock.sendMessage(from, { text: txt, mentions: [sender, targetJid] }, { quoted: msg });
     },
 };

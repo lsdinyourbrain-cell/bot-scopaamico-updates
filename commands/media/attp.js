@@ -49,7 +49,7 @@ module.exports = {
 
         const text = String(textArgs || '').trim();
         if (!text || text.length > 80) {
-            const t = `${sec('✨ ATTP GLASS')}\n${boxOpen()}\n${line('💎 Scrivi il testo per lo sticker neon ✨🔮')}\n${line('📌 Uso: *.attp <testo>* • max 80 car.')}\n${line('💫 Esempio: *.attp VEX BOT*')}\n${boxEnd()}`;
+            const t = `${sec('✨ ATTP')}\n${boxOpen()}\n${line('Scrivi il testo per lo sticker neon')}\n${line('📌 Uso: *.attp <testo>* • max 80 car.')}\n${line('💫 Esempio: *.attp VEX BOT*')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
@@ -57,11 +57,11 @@ module.exports = {
             const svg = renderNeonSvg(text);
             const sticker = await makeSticker(sharp, webpmux, Buffer.from(svg));
             await sock.sendMessage(from, { sticker }, { quoted: msg });
-            const cap = `${sec('✨ ATTP GLASS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — sticker neon vetro ✨🔮` )}\n${line(`💫 Testo: _${text.slice(0,30)}_ 💎`)}\n${boxEnd()}`;
+            const cap = `${sec('✨ ATTP')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — sticker neon creato` )}\n${line(`💫 Testo: _${text.slice(0,30)}_`)}\n${boxEnd()}`;
             await sock.sendMessage(from, { text: cap, mentions: [sender] }, { quoted: msg });
         } catch (e) {
             console.error('[attp]', e.message);
-            const t = `${sec('❌ ERRORE ATTP')}\n${boxOpen()}\n${line('💎 Errore creazione sticker ✨')}\n${line('🔮 _Riprova più tardi_ 💫')}\n${boxEnd()}`;
+            const t = `${sec('❌ ERRORE ATTP')}\n${boxOpen()}\n${line('Errore creazione sticker ✨')}\n${line('🔮 _Riprova più tardi_')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
     },

@@ -29,7 +29,7 @@ const SECTIONS = [
             ['🔫', 'spara'], ['🎟️', 'lotteria'], ['🏆', 'top'], ['🤑', 'ricchi'],
             ['💝', 'famiglia'], ['🎁', 'dona'], ['📈', 'investi'], ['💼', 'work'],
             ['🔥', 'streak'], ['📦', 'cassaforte'], ['⭐', 'reputazione'], ['💪', 'lavoro2'],
-            ['🎁', 'regalo'], ['🏷️', 'titolo'], ['🎴', 'carte'], ['💣', 'rapina'], ['💊', 'spacci'],
+            ['🎁', 'regalo'], ['🏷️', 'titolo'], ['🎴', 'carte'],
         ],
     },
     {
@@ -41,7 +41,7 @@ const SECTIONS = [
             ['🎡', 'ruota'], ['🎟️', 'gratta'], ['⚡', 'reazione'], ['🧩', 'parola'],
             ['🧠', 'memoria'], ['🧩', 'enigma'], ['🃏', 'poker'], ['🔫', 'russia'],
             ['🎱', 'tombola'], ['🎯', 'impiccato'], ['⭕', 'tris'], ['🔴', 'forza4'],
-            ['🟩', 'wordle'], ['🌀', 'labirinto'], ['🏆', 'trivia2'], ['🎭', 'akinator'], ['🎰', 'slot2'], ['🎲', 'dado2'],
+            ['🟩', 'wordle'], ['🌀', 'labirinto'], ['🏆', 'trivia2'], ['🎭', 'akinator'],
         ],
     },
     {
@@ -93,7 +93,7 @@ const SECTIONS = [
             ['🌙', 'afk'], ['📄', 'readmore'], ['👑', 'owner'], ['🐛', 'report'],
             ['🌟', 'sponsor'], ['🛡️', 'admin'], ['⏰', 'promemoria'], ['📊', 'sondaggio'],
             ['🔄', 'converti'], ['⏳', 'timer'], ['🌙', 'afklist'], ['📜', 'registro'],
-            ['📘', 'aiuto'], ['🔮', 'oracolo'], ['🍀', 'sorte'], ['🌟', 'destino'],
+            ['📘', 'aiuto'], ['📝', 'riassunto'],
         ],
     },
     {
@@ -118,7 +118,7 @@ const SECTIONS = [
             ['💀', 'wasted'], ['📖', 'pokedex'], ['🤡', 'clown'], ['🖼️', 'toimg'],
             ['📹', 'vv'], ['🎨', 'sticker'], ['🏃', 'rubato'], ['💻', 'hack'],
             ['👥', 'clona'], ['✨', 'attp'], ['🧹', 'removebg'], ['🎨', 'mememaker'],
-            ['😜', 'emojimix'], ['🔣', 'ascii'], ['💧', 'wm'], ['🤡', 'trigger'], ['🔍', 'wanted'], ['💖', 'beautiful'],
+            ['😜', 'emojimix'], ['🔣', 'ascii'], ['💧', 'wm'],
         ],
     },
     {

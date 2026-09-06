@@ -14,7 +14,7 @@ module.exports = {
         const { db, saveDB, getCachedGroupMeta } = services;
 
         if (!isOwner) {
-            const t = `${sec('🔒 OWNER ONLY')}\n${boxOpen()}\n${line('👑 Solo gli *Owner* possono rimuovere Premium 💎')}\n${boxEnd()}`;
+            const t = `${sec('🔒 OWNER ONLY')}\n${boxOpen()}\n${line('👑 Solo gli *Owner* possono rimuovere Premium')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         if (!targetJid) {
@@ -27,12 +27,12 @@ module.exports = {
         const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
 
         if (!prem.isPremium(db, targetJid)) {
-            const t = `${sec('💎 DEL PREMIUM')}\n${boxOpen()}\n${line(`✨ @${disp(targetJid)} non è Premium 💎`)}\n${boxEnd()}`;
+            const t = `${sec('💎 DEL PREMIUM')}\n${boxOpen()}\n${line(`✨ @${disp(targetJid)} non è Premium`)}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t, mentions: [targetJid] }, { quoted: msg });
         }
         prem.removePremium(db, targetJid);
         saveDB();
-        const txt = `${sec('🗑️ PREMIUM RIMOSSO')}\n${boxOpen()}\n${line(`💎 @${disp(targetJid)} non è più *Premium* 💫`)}\n${line(`🔮 Vetro disattivato`)}\n${boxEnd()}`;
+        const txt = `${sec('🗑️ PREMIUM RIMOSSO')}\n${boxOpen()}\n${line(`@${disp(targetJid)} non è più *Premium*`)}\n${line(`🔮 premium off`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [targetJid] }, { quoted: msg });
     },
 };

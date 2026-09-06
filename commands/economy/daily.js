@@ -23,7 +23,7 @@ module.exports = {
                 const remaining = DAY_MS - (now - userData.lastDaily);
                 const hours = Math.floor(remaining / 3600000);
                 const mins = Math.floor((remaining % 3600000) / 60000);
-                const txt = `${sec('⏳ DAILY COOLDOWN')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — hai già riscosso oggi ✨`)}\n${line(`🔮 _Vetro in ricarica..._`)}\n${line('')}\n${line(`⏰ Ripassa tra _${hours}h ${mins}m_ 💫`)}\n${line(`💰 Saldo: _${userData.money}€_`)}\n${boxEnd()}`;
+                const txt = `${sec('⏳ DAILY COOLDOWN')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — hai già riscosso oggi ✨`)}\n${line(`🔮 _in cooldown, chill un attimo_`)}\n${line('')}\n${line(`⏰ Ripassa tra _${hours}h ${mins}m_`)}\n${line(`💰 Saldo: _${userData.money}€_`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
             }
 
@@ -35,7 +35,7 @@ module.exports = {
             saveDB();
 
             const taxLine = taxed.tax > 0 ? ` • _tassa ${taxed.tax}€_ 🔹` : '';
-            const txt2 = `${sec('🎁 DAILY PREMIUM')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *BONUS GIORNALIERO* ✨🔮`)}\n${line(`🌟 _Vetro diamantato sprigionato_`)}\n${line('')}\n${line(`🎁 Lordo: _+${grossBonus}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult > 1 ? line(`💰 Evento attivo _x${evMult}_ 💫`) : line(`✨ Bonus base riscattato`)}\n${line(`💳 Saldo: _${userData.money}€_ • 💫 glass effect`)}\n${boxEnd()}`;
+            const txt2 = `${sec('🎁 DAILY PREMIUM')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *BONUS GIORNALIERO*`)}\n${line(`🌟 _bonus carico, let's go_`)}\n${line('')}\n${line(`🎁 Lordo: _+${grossBonus}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult > 1 ? line(`💰 Evento attivo _x${evMult}_`) : line(`✨ Bonus base riscattato`)}\n${line(`💳 Saldo: _${userData.money}€_ • 💫 top`)}\n${boxEnd()}`;
             await sock.sendMessage(from, { text: txt2, mentions: [sender] }, { quoted: msg });
     },
 };

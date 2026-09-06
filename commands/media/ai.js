@@ -14,7 +14,7 @@ module.exports = {
 
 
             if (!textArgs) {
-                const t = `${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line('💎 Fammi una domanda nel vetro ✨🔮')}\n${line('📌 Esempio: *.ai Qual è la capitale d\'Italia?* 💫')}\n${boxEnd()}`;
+                const t = `${sec('🤖 AI')}\n${boxOpen()}\n${line('Fammi una domanda, fra')}\n${line('📌 Esempio: *.ai Qual è la capitale d\'Italia?*')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
 
@@ -23,19 +23,19 @@ module.exports = {
                 const rawKey = setMatch[1].trim();
                 const apiKey = rawKey.replace(/^["']|["']$/g, '');
                 if (!apiKey || apiKey.length < 10) {
-                    const t = `${sec('❌ AI ERRORE')}\n${boxOpen()}\n${line('💎 Chiave non valida ✨')}\n${line('📌 Usa: *.ai set "sk-or-v1-..."* 💫')}\n${boxEnd()}`;
+                    const t = `${sec('❌ AI ERRORE')}\n${boxOpen()}\n${line('Chiave non valida ✨')}\n${line('📌 Usa: *.ai set "sk-or-v1-..."*')}\n${boxEnd()}`;
                     return sock.sendMessage(from, { text: t }, { quoted: msg });
                 }
                 if (!db._ai) db._ai = {};
                 db._ai.apiKey = apiKey;
                 saveDB();
-                const t2 = `${sec('✅ AI GLASS')}\n${boxOpen()}\n${line('💎 API Key salvata nel vetro ✨🔮')}\n${line('💫 Ora usa *.ai <domanda>* 💎')}\n${boxEnd()}`;
+                const t2 = `${sec('✅ AI')}\n${boxOpen()}\n${line('API Key salvata, top')}\n${line('💫 Ora usa *.ai <domanda>*')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t2 }, { quoted: msg });
             }
 
             const activeKey = (db?._ai?.apiKey) || AI_API_KEY;
             if (!activeKey || activeKey === 'INSERISCI_QUI_LA_TUA_API_KEY') {
-                const t = `${sec('🔑 AI CONFIG')}\n${boxOpen()}\n${line('💎 API Key mancante nel vetro ✨')}\n${line('📌 Usa: *.ai set "sk-or-v1-..."* 🔮')}\n${line('💫 Oppure imposta *AI_API_KEY* in .env')}\n${boxEnd()}`;
+                const t = `${sec('🔑 AI CONFIG')}\n${boxOpen()}\n${line('API Key mancante bro ✨')}\n${line('📌 Usa: *.ai set "sk-or-v1-..."*')}\n${line('💫 Oppure imposta *AI_API_KEY* in .env')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
             try {
@@ -58,14 +58,14 @@ module.exports = {
                 });
                 const replyText = response.data?.choices?.[0]?.message?.content?.trim();
                 if (!replyText) {
-                    const t = `${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line('💎 L\'IA non ha risposto ✨')}\n${line('🔮 _Riprova più tardi_ 💫')}\n${boxEnd()}`;
+                    const t = `${sec('🤖 AI')}\n${boxOpen()}\n${line('L\'IA non ha risposto ✨')}\n${line('🔮 _Riprova più tardi_')}\n${boxEnd()}`;
                     return sock.sendMessage(from, { text: t }, { quoted: msg });
                 }
-                await prog.done(`${sec('🤖 AI GLASS')}\n${boxOpen()}\n${line(`💎 Risposta vetro per @${dispOf(sender)} ✨🔮`)}\n${line('')}\n${line(replyText.slice(0,1200))}\n${boxEnd()}`);
+                await prog.done(`${sec('🤖 AI')}\n${boxOpen()}\n${line(`Risposta per @${dispOf(sender)}`)}\n${line('')}\n${line(replyText.slice(0,1200))}\n${boxEnd()}`);
             } catch (e) {
                 const errMsg = e.response?.data?.error?.message || e.response?.data?.error || e.message;
                 console.error('[ai]', errMsg);
-                const t = `${sec('❌ AI ERRORE')}\n${boxOpen()}\n${line(`💎 Errore vetro: _${String(errMsg).slice(0,120)}_ ✨`)}\n${boxEnd()}`;
+                const t = `${sec('❌ AI ERRORE')}\n${boxOpen()}\n${line(`Errore: _${String(errMsg).slice(0,120)}_ ✨`)}\n${boxEnd()}`;
                 await sock.sendMessage(from, { text: t }, { quoted: msg });
             }
     },

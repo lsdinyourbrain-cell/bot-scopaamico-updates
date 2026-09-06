@@ -23,11 +23,11 @@ module.exports = {
             u.money = (Number(u.money)||0)+ win;
             u.pgamesDay = today;
             saveDB();
-            const txt = `${sec('🎮 PREMIUM GAMES')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *BONUS PREMIUM* ✨🎰`)}\n${line(`🔮 _Jackpot vetro attivato!_`)}\n${line('')}\n${line(`🎉 Hai vinto _${win}€_ nel hub premium!`)}\n${line(`💰 Saldo: _${u.money}€_`)}\n${line('')}\n${line(`🎮 Giochi potenziati:`)}\n${line(`  ▸ 🎲 Dadi +15% payout`)}\n${line(`  ▸ 🎰 Slot bonus garantito`)}\n${line(`  ▸ ♠️ Blackjack payout x1.2`)}\n${boxEnd()}`;
+            const txt = `${sec('🎮 PREMIUM GAMES')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *BONUS PREMIUM* ✨🎰`)}\n${line(`🔮 _jackpot attivo, let's go_`)}\n${line('')}\n${line(`🎉 Hai vinto _${win}€_ nel hub premium!`)}\n${line(`💰 Saldo: _${u.money}€_`)}\n${line('')}\n${line(`🎮 Giochi potenziati:`)}\n${line(`  ▸ 🎲 Dadi +15% payout`)}\n${line(`  ▸ 🎰 Slot bonus garantito`)}\n${line(`  ▸ ♠️ Blackjack payout x1.2`)}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
         }
 
-        const txt2 = `${sec('🎮 PREMIUM GAMES')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *HUB ELITE* 🎮✨`)}\n${line(`🔮 _Accesso vetro diamantato_`)}\n${line('')}\n${line(`🌟 Benefici attivi:`)}\n${line(`  ▸ 🎲 Dadi, Slot, Roulette +15%`)}\n${line(`  ▸ 🃏 Blackjack & Poker boost`)}\n${line(`  ▸ 🎯 Quiz & Memoria reward x2`)}\n${line('')}\n${line(`💫 Gioca con *.dadi* *.slot* *.blackjack*`)}\n${line(`💎 Le vincite sono maggiorate!`)}\n${boxEnd()}`;
+        const txt2 = `${sec('🎮 PREMIUM GAMES')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *HUB ELITE* 🎮✨`)}\n${line(`🔮 _accesso elite_`)}\n${line('')}\n${line(`🌟 Benefici attivi:`)}\n${line(`  ▸ 🎲 Dadi, Slot, Roulette +15%`)}\n${line(`  ▸ 🃏 Blackjack & Poker boost`)}\n${line(`  ▸ 🎯 Quiz & Memoria reward x2`)}\n${line('')}\n${line(`💫 Gioca con *.dadi* *.slot* *.blackjack*`)}\n${line(`Le vincite sono maggiorate!`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt2, mentions: [sender] }, { quoted: msg });
     },
 };

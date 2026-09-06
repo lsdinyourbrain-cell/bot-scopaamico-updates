@@ -7,7 +7,7 @@ const prem = require('../../lib/premium');
 module.exports = {
     name: 'diamond',
     aliases: ['diamante', 'diamantestatus'],
-    description: 'Stato Diamond premium con effetti glass.',
+    description: 'Stato Diamond premium.',
 
     async run(sock, msg, args, context) {
         const { from, sender, isOwner, services } = context;
@@ -18,7 +18,7 @@ module.exports = {
         const u = getUser(sender, from);
         const info = prem.getPremiumInfo(db, sender);
         const remain = info ? prem.formatRemaining(info.expiry) : '∞ Owner';
-        const txt = `${sec('💎 DIAMOND TIER')}\n${boxOpen()}\n${line(`✨ @${dispOf(sender)} — *DIAMOND* 💎🔮`)}\n${line(`🌟 _Il vetro più puro di VEX_`)}\n${line('')}\n${line(`💰 Saldo: _${u.money||0}€_`)}\n${line(`⭐ XP: _${u.xp||0}_ • Lv _${u.level||1}_`)}\n${line(`⏳ Scadenza: _${remain}_`)}\n${line('')}\n${line(`💫 Poteri Diamond:`)}\n${line(`  ▸ 💎 Cashback 10% su shop`)}\n${line(`  ▸ 🔮 Sconto premiumShop -15%`)}\n${line(`  ▸ 🚀 2 boost/giorno extra`)}\n${boxEnd()}`;
+        const txt = `${sec('💎 DIAMOND TIER')}\n${boxOpen()}\n${line(`✨ @${dispOf(sender)} — *DIAMOND* 💎🔮`)}\n${line(`🌟 _il top di VEX, fra_`)}\n${line('')}\n${line(`💰 Saldo: _${u.money||0}€_`)}\n${line(`⭐ XP: _${u.xp||0}_ • Lv _${u.level||1}_`)}\n${line(`⏳ Scadenza: _${remain}_`)}\n${line('')}\n${line(`💫 Poteri Diamond:`)}\n${line(`  ▸ 💎 Cashback 10% su shop`)}\n${line(`  ▸ 🔮 Sconto premiumShop -15%`)}\n${line(`  ▸ 🚀 2 boost/giorno extra`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },
 };

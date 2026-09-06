@@ -7,7 +7,7 @@ const os = require('os');
 module.exports = {
     name: 'stats2',
     aliases: ['statistiche2', 'botstats2', 'vexstats'],
-    description: 'Mostra statistiche reali del bot con grafica glass premium.',
+    description: 'Mostra statistiche reali del bot.',
 
     async run(sock, msg, args, context) {
         const { from, sender, pushName, services } = context;
@@ -91,7 +91,7 @@ module.exports = {
         const nodeVer = process.version;
         const cpuCores = os.cpus().length;
 
-        const txt = `${sec('📊 STATS2 • VEX BOT')}\n${boxOpen()}\n${line(`✨ Richiesto da @${dispOf(sender)} • _${pushName || 'Utente'}_ 💎`)}\n${line(`🔮 _Vetro diamantato • real-time_`)}\n${line('')}\n${line(`⏱️ Uptime: _${uptime}_ • PID _${process.pid}_`)}\n${line(`🟢 Node: _${nodeVer}_ • CPU _${cpuCores} core_`)}\n${line(`💾 RAM: _${memUsed} MB_ (heap _${heap} MB_)`)}\n${line(`🖥️ _${platform}_`)}\n${line('')}\n${line(`📦 Gruppi: _${groupCount}_ • 👥 Membri totali: _${totalMembers}_`)}\n${line(`👤 Utenti unici DB: _${uniqueUsers}_ • 💬 Chat DB: _${dbChats}_`)}\n${line(`⚙️ Comandi: _${cmdCount}_ alias • 📁 File: _${fileCount}_`)}\n${line('')}\n${line(`💎 Premium attivi: _${(db._premium ? Object.keys(db._premium).length : 0)}_ • 🔮 Glass effect ✨`)}\n${line(`📈 Messaggi elaborati: _${uniqueUsers * 3 + totalMembers}_ stimati`)}\n${boxEnd()}`;
+        const txt = `${sec('📊 STATS2 • VEX BOT')}\n${boxOpen()}\n${line(`✨ Richiesto da @${dispOf(sender)} • _${pushName || 'Utente'}_`)}\n${line(`🔮 _TOP • real-time_`)}\n${line('')}\n${line(`⏱️ Uptime: _${uptime}_ • PID _${process.pid}_`)}\n${line(`🟢 Node: _${nodeVer}_ • CPU _${cpuCores} core_`)}\n${line(`💾 RAM: _${memUsed} MB_ (heap _${heap} MB_)`)}\n${line(`🖥️ _${platform}_`)}\n${line('')}\n${line(`📦 Gruppi: _${groupCount}_ • 👥 Membri totali: _${totalMembers}_`)}\n${line(`👤 Utenti unici DB: _${uniqueUsers}_ • 💬 Chat DB: _${dbChats}_`)}\n${line(`⚙️ Comandi: _${cmdCount}_ alias • 📁 File: _${fileCount}_`)}\n${line('')}\n${line(`Premium attivi: _${(db._premium ? Object.keys(db._premium).length : 0)}_ • 🔮 top ✨`)}\n${line(`📈 Messaggi elaborati: _${uniqueUsers * 3 + totalMembers}_ stimati`)}\n${boxEnd()}`;
 
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },

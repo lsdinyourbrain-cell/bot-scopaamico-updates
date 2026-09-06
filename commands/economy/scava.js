@@ -3,7 +3,6 @@
 const { dispOf, resolveJid } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-const { toDarkFont } = require('../../lib/font');
 const EV = require('../../lib/events');
 
 module.exports = {
@@ -25,7 +24,7 @@ module.exports = {
 
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                const txt = `${sec('⛏️ SCAVA COOLDOWN')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — piccone in ricarica ✨`)}\n${line(`🔮 _Vetro minerario in pausa..._`)}\n${line('')}\n${line(`⏳ Riposa _${remain}s_ poi riscava 💫`)}\n${boxEnd()}`;
+                const txt = `${sec('⛏️ SCAVA COOLDOWN')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — piccone in pausa bro`)}\n${line(`_riposati un attimo e torni a scavare_`)}\n${line('')}\n${line(`Tra _${remain}s_ di nuovo in pista ⏳`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
             }
 
@@ -36,11 +35,11 @@ module.exports = {
             userData.money += taxed.net;
             saveDB();
 
-            const taxLine = taxed.tax > 0 ? ` • _tassa ${taxed.tax}€_ 🔹` : '';
-            const gems = ['💎','🔮','✨','⛏️','🌟'][Math.floor(Math.random()*5)];
-            const txt2 = `${sec('⛏️ MINIERA GLASS')}\n${boxOpen()}\n${line(`${gems} @${dispOf(sender)} — *SCAVO RIUSCITO* 💎`)}\n${line(`🔮 _Cristalli estratti nel vetro_`)}\n${line('')}\n${line(`⛏️ Lordo: _+${gross}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult>1 ? line(`💰 Evento _x${evMult}_ 💫`) : line(`✨ Scavo brillante!`)}\n${line(`💳 Saldo: _${userData.money}€_ • ⛏️ continua!`)}\n${boxEnd()}`;
-            await sendButtons(sock, from, toDarkFont(txt2), [
-                { label: `⛏️ Scava ancora ✨`, id: `${command}` },
+            const taxLine = taxed.tax > 0 ? ` • _tassa ${taxed.tax}€_` : '';
+            const gems = ['⛏️','💰','✨','🔥','⭐'][Math.floor(Math.random()*5)];
+            const txt2 = `${sec('⛏️ MINIERA')}\n${boxOpen()}\n${line(`${gems} @${dispOf(sender)} — *SCAVO TOP*`)}\n${line(`_bottino estratto, hai spaccato fra_`)}\n${line('')}\n${line(`Lordo: _+${gross}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult>1 ? line(`Evento _x${evMult}_ attivo`) : line(`Scavo riuscito bro`)}\n${line(`Saldo: _${userData.money}€_ • continua così`)}\n${boxEnd()}`;
+            await sendButtons(sock, from, txt2, [
+                { label: `⛏️ Scava ancora`, id: `${command}` },
             ], msg);
     },
 };

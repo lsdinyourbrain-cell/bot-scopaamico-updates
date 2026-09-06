@@ -7,7 +7,7 @@ const prem = require('../../lib/premium');
 const ITEMS = [
     { id:'diamante', emoji:'💎', name:'Diamante VEX', price:180, desc:'Gemma ultra rara, rivendibile a 220€' },
     { id:'crown', emoji:'👑', name:'Corona Elite', price:250, desc:'+150 XP e titolo Corona dorata' },
-    { id:'crystal', emoji:'🔮', name:'Cristallo Glass', price:120, desc:'Boost +90€ istantanei' },
+    { id:'crystal', emoji:'🔮', name:'Cristallo', price:120, desc:'Boost +90€ istantanei' },
     { id:'rocket', emoji:'🚀', name:'Turbo Razzo', price:200, desc:'Annulla cooldown boost' },
 ];
 
@@ -36,7 +36,7 @@ module.exports = {
                 return sock.sendMessage(from, { text: txt }, { quoted: msg });
             }
             if (u.money < it.price) {
-                const txt = `${sec('💎 PREMIUM SHOP')}\n${boxOpen()}\n${line(`💸 Servono _${it.price}€_ — hai _${u.money}€_ 💎`)}\n${line('💫 Usa *.premiumdaily* per fare cassa!')}\n${boxEnd()}`;
+                const txt = `${sec('💎 PREMIUM SHOP')}\n${boxOpen()}\n${line(`💸 Servono _${it.price}€_ — hai _${u.money}€_`)}\n${line('💫 Usa *.premiumdaily* per fare cassa!')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
             }
             u.money -= it.price;
@@ -50,7 +50,7 @@ module.exports = {
         }
 
         const list = ITEMS.map(it=> line(`${it.emoji} *${it.name}* — _${it.price}€_ • ${it.desc}`)).join('\n');
-        const txt = `${sec('💎 PREMIUM SHOP')}\n${boxOpen()}\n${line(`✨ Esclusiva *VETRO DIAMANTATO* per @${dispOf(sender)} 🔮`)}\n${line(`💰 Saldo: _${u.money}€_`)}\n${line('')}\n${list}\n${line('')}\n${line('📌 Compra: *.premiumshop compra <id>*')}\n${line(`📦 IDs: _${ITEMS.map(i=>i.id).join(', ')}_`)}\n${boxEnd()}`;
+        const txt = `${sec('💎 PREMIUM SHOP')}\n${boxOpen()}\n${line(`✨ Esclusiva *TOP* per @${dispOf(sender)}`)}\n${line(`💰 Saldo: _${u.money}€_`)}\n${line('')}\n${list}\n${line('')}\n${line('📌 Compra: *.premiumshop compra <id>*')}\n${line(`📦 IDs: _${ITEMS.map(i=>i.id).join(', ')}_`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
     },
 };

@@ -23,7 +23,7 @@ module.exports = {
             const cdMs = 8000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                const t = `${sec('⏳ BLACKJACK COOLDOWN')}\n${boxOpen()}\n${line(`🃏 @${dispOf(sender)} — mazzo in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_ 🔮`)}\n${boxEnd()}`;
+                const t = `${sec('⏳ BLACKJACK COOLDOWN')}\n${boxOpen()}\n${line(`🃏 @${dispOf(sender)} — mazzo in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
             userData.cooldowns[cooldownKey] = now;
@@ -31,15 +31,15 @@ module.exports = {
             const puntata = parseInt(args[0]) || 20;
             const uDB = getUser(sender, from);
             if (puntata < 1) {
-                const t = `${sec('🃏 BLACKJACK')}\n${boxOpen()}\n${line('💎 Puntata non valida ✨')}\n${line('💫 Esempio: _.blackjack 50_ 🔮')}\n${boxEnd()}`;
+                const t = `${sec('🃏 BLACKJACK')}\n${boxOpen()}\n${line('Puntata non valida ✨')}\n${line('💫 Esempio: _.blackjack 50_')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
             if (puntata > 1_000_000) {
-                const t = `${sec('🃏 BLACKJACK')}\n${boxOpen()}\n${line('💎 Puntata max _1.000.000€_ ✨')}\n${boxEnd()}`;
+                const t = `${sec('🃏 BLACKJACK')}\n${boxOpen()}\n${line('Puntata max _1.000.000€_ ✨')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
             if (uDB.money < puntata) {
-                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — hai _${uDB.money}€_ 💫`)}\n${boxEnd()}`;
+                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — hai _${uDB.money}€_`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
 
@@ -89,7 +89,7 @@ module.exports = {
 
             saveDB();
 
-            const resultText = `${sec('🃏 BLACKJACK GLASS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — *TAVOLO VETRO* ✨🔮`)}\n${line(`🃏 Tue: _${playerCards.join(' • ')}_ → _${playerTotal}_ 💫`)}\n${line(`🤖 Bot: _${dealerCards.join(' • ')}_ → _${dealerTotal}_ 💎`)}\n${line('')}\n${line(`${esito} ✨`)}\n${line(`💳 Saldo: _${formatMoney(uDB.money)}_ • 🃏 glass`)}\n${boxEnd()}`;
+            const resultText = `${sec('🃏 BLACKJACK')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *TAVOLO TOP*`)}\n${line(`🃏 Tue: _${playerCards.join(' • ')}_ → _${playerTotal}_`)}\n${line(`🤖 Bot: _${dealerCards.join(' • ')}_ → _${dealerTotal}_`)}\n${line('')}\n${line(`${esito} ✨`)}\n${line(`💳 Saldo: _${formatMoney(uDB.money)}_ • 🃏 `)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `🃏 Rigioca ${puntata} ✨`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);

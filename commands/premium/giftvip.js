@@ -17,7 +17,7 @@ module.exports = {
             return sock.sendMessage(from, { text: prem.premiumRequiredText(sec, boxOpen, boxEnd, line), mentions: [sender] }, { quoted: msg });
         }
         if (!isGroup) {
-            const t = `${sec('👥 SOLO GRUPPI')}\n${boxOpen()}\n${line('💎 Il gift VIP funziona solo nei gruppi ✨')}\n${boxEnd()}`;
+            const t = `${sec('👥 SOLO GRUPPI')}\n${boxOpen()}\n${line('Il gift VIP funziona solo nei gruppi ✨')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         if (!targetJid) {
@@ -25,7 +25,7 @@ module.exports = {
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
         if (sameJid(targetJid, sender) && !isOwner) {
-            const t = `${sec('💎 GIFT VIP')}\n${boxOpen()}\n${line('✨ Non puoi regalare VIP a te stesso 💎')}\n${boxEnd()}`;
+            const t = `${sec('💎 GIFT VIP')}\n${boxOpen()}\n${line('✨ Non puoi regalare VIP a te stesso')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t }, { quoted: msg });
         }
 
@@ -34,7 +34,7 @@ module.exports = {
         const disp = (jid) => dispOf(jid, resolveJid(jid, meta));
 
         if (prem.isPremium(db, targetJid)) {
-            const t = `${sec('👑 GIÀ VIP')}\n${boxOpen()}\n${line(`💎 @${disp(targetJid)} è già *VIP* ✨`)}\n${line('🔮 _Vetro già attivo_')}\n${boxEnd()}`;
+            const t = `${sec('👑 GIÀ VIP')}\n${boxOpen()}\n${line(`@${disp(targetJid)} è già *VIP* ✨`)}\n${line('🔮 _già attivo bro_')}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: t, mentions: [targetJid] }, { quoted: msg });
         }
 
@@ -46,7 +46,7 @@ module.exports = {
         prem.addPremium(db, targetJid, days, sender);
         saveDB();
 
-        const txt = `${sec('🎁 VIP REGALATO')}\n${boxOpen()}\n${line(`💎 @${disp(sender)} ha regalato *VIP* a @${disp(targetJid)} 👑✨`)}\n${line(`🔮 _Vetro diamantato attivato!_`)}\n${line('')}\n${line(`⏳ Durata: _${days} giorni_`)}\n${line(`💫 Scadenza: _${prem.formatRemaining(Date.now() + days*86400000)}_`)}\n${line(`✨ Goditi i privilegi premium!`)}\n${boxEnd()}`;
+        const txt = `${sec('🎁 VIP REGALATO')}\n${boxOpen()}\n${line(`@${disp(sender)} ha regalato *VIP* a @${disp(targetJid)} 👑✨`)}\n${line(`🔮 _premium attivo, top_`)}\n${line('')}\n${line(`⏳ Durata: _${days} giorni_`)}\n${line(`💫 Scadenza: _${prem.formatRemaining(Date.now() + days*86400000)}_`)}\n${line(`✨ Goditi i privilegi premium!`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [sender, targetJid] }, { quoted: msg });
     },
 };

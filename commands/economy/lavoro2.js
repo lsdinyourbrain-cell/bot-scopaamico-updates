@@ -2,7 +2,6 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-const { toDarkFont } = require('../../lib/font');
 const EV = require('../../lib/events');
 
 // Secondo lavoro: un "lavoretto freelance" con un mini-racconto e una paga
@@ -33,7 +32,7 @@ module.exports = {
         const CD_MS = 60 * 60 * 1000;
         if (now - last < CD_MS) {
             const mins = Math.ceil((CD_MS - (now - last)) / 60000);
-            return reply(`⏳ Hai già lavorato al lavoretto!\n☕ Riposa per ancora *${mins} minuti*.`);
+            return reply(`${sec('⏳ COOLDOWN')}\n${boxOpen()}\n${line(`bro hai già spinto, riposati _${mins}m_ ☕`)}\n${boxEnd()}`);
         }
         userData.cooldowns.lavoro2 = now;
 
@@ -50,13 +49,13 @@ module.exports = {
         userData.lavoro2.guadagnato += gross;
         saveDB();
 
-        const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
-        const evLine = evMult > 1 ? `\n▸ 💰 _Evento: guadagno x${evMult}_` : '';
+        const taxLine = taxed.tax > 0 ? ` • tassa ${taxed.tax}€` : '';
+        const evLine = evMult > 1 ? ` • _evento x${evMult}_` : '';
 
         const text =
-`${sec('INFO')}\n${boxOpen()}\n${line(`💪 _Lavoretto: ${gig.emoji} ${gig.nome}_`)}\n${line(`${bonus ? '🔥 CRITICO! ' : ''}${randomChoice(gig.tip())}`)}\n${line(`Lordo: _+${formatMoney(gross)}_ ▸ Netto: _+${formatMoney(taxed.net)}_${taxLine}${evLine}`)}\n${line(`Saldo: _${formatMoney(userData.money)}€_ | Prossimo: _60 min_ | Lavoretti: _${userData.lavoro2.giorni}_`)}\n${line('Vex Bot')}\n${boxEnd()}`;
+`${sec('💪 LAVORETTO')}\n${boxOpen()}\n${line(`${gig.emoji} _${gig.nome}_ — ${bonus ? '🔥 CRITICO! ' : ''}${randomChoice(gig.tip())}`)}\n${line(`Lordo: _+${formatMoney(gross)}€_ → Netto: _+${formatMoney(taxed.net)}€_${taxLine}${evLine}`)}\n${line(`Saldo: _${formatMoney(userData.money)}€_ • prossimo: _60m_ • fatti: _${userData.lavoro2.giorni}_`)}\n${boxEnd()}`;
 
-        await sendButtons(sock, from, toDarkFont(text), [
+        await sendButtons(sock, from, text, [
             { label: `💪 Altro lavoretto`, id: `.${command}` },
         ], msg);
     },

@@ -13,7 +13,7 @@ module.exports = {
 
 
             if (!textArgs) return sendButtons(sock, from,
-                `${sec('🌤️ METEO GLASS')}\n${boxOpen()}\n${line('💎 Scrivi una città nel vetro ✨🔮')}\n${line('📌 Esempio: *.weather Milano* 💫')}\n${boxEnd()}`,
+                `${sec('🌤️ METEO')}\n${boxOpen()}\n${line('Scrivi una città bro')}\n${line('📌 Esempio: *.weather Milano*')}\n${boxEnd()}`,
                 [{ label: '🌤️ Roma ✨', id: 'weather Roma' }],
                 msg);
             try {
@@ -24,9 +24,9 @@ module.exports = {
                 if (!current) throw new Error('Dati meteo non disponibili');
                 const city = area?.areaName?.[0]?.value || textArgs;
                 const description = current.weatherDesc?.[0]?.value || 'N/D';
-                await prog.done(`${sec('🌤️ METEO GLASS')}\n${boxOpen()}\n${line(`💎 📍 *${city}* ✨🔮`)}\n${line(`🌡️ _${current.temp_C}°C_ • _${description}_ 💫`)}\n${line(`💧 Umidità: _${current.humidity}%_ • 🌬️ Vento: _${current.windspeedKmph} km/h_ 💎`)}\n${boxEnd()}`);
+                await prog.done(`${sec('🌤️ METEO')}\n${boxOpen()}\n${line(`📍 *${city}*`)}\n${line(`🌡️ _${current.temp_C}°C_ • _${description}_`)}\n${line(`💧 Umidità: _${current.humidity}%_ • 🌬️ Vento: _${current.windspeedKmph} km/h_`)}\n${boxEnd()}`);
             } catch (_) {
-                await reply(`${sec('❌ METEO ERRORE')}\n${boxOpen()}\n${line('💎 Città non trovata nel vetro ✨')}\n${line('🔮 _Prova nome più preciso_ 💫')}\n${boxEnd()}`);
+                await reply(`${sec('❌ METEO ERRORE')}\n${boxOpen()}\n${line('Città non trovata bro ✨')}\n${line('🔮 _Prova nome più preciso_')}\n${boxEnd()}`);
             }
     },
 };

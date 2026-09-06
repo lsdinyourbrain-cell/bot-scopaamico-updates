@@ -13,7 +13,7 @@ module.exports = {
         const { sameJid, getCachedGroupMeta } = services;
 
             if (!targetJid) {
-                const t = `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line('💎 Tagga qualcuno per la scenetta ✨🔮')}\n${line('📌 Uso: *.hack @utente* 💫')}\n${line('😏 _È solo per finta, promesso_')}\n${boxEnd()}`;
+                const t = `${sec('💻 HACK')}\n${boxOpen()}\n${line('Tagga qualcuno per la scenetta')}\n${line('📌 Uso: *.hack @utente*')}\n${line('😏 _È solo per finta, promesso_')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
 
@@ -30,21 +30,21 @@ module.exports = {
             const pause = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             try {
                 const fake = await sock.sendMessage(from, {
-                    text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Avvio scenetta su @${dispOf(tgtPn)} ✨🔮`)}\n${line('🔍 _Inizializzo vetro..._ 💫')}\n${boxEnd()}`,
+                    text: `${sec('💻 HACK')}\n${boxOpen()}\n${line(`Avvio scenetta su @${dispOf(tgtPn)}`)}\n${line('🔍 _inizializzo..._')}\n${boxEnd()}`,
                     mentions: [tgtPn],
                 }, { quoted: msg });
                 await pause(700);
-                await sock.sendMessage(from, { text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Target: @${dispOf(tgtPn)} ✨`)}\n${line('🔎 _Cerco meme compromettenti..._ 💫')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
+                await sock.sendMessage(from, { text: `${sec('💻 HACK')}\n${boxOpen()}\n${line(`Target: @${dispOf(tgtPn)} ✨`)}\n${line('🔎 _Cerco meme compromettenti..._')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
                 await pause(700);
-                await sock.sendMessage(from, { text: `${sec('💻 HACK GLASS')}\n${boxOpen()}\n${line(`💎 Target: @${dispOf(tgtPn)} ✨`)}\n${line('📦 _Recupero figuracce nel vetro..._ 🔮')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
+                await sock.sendMessage(from, { text: `${sec('💻 HACK')}\n${boxOpen()}\n${line(`Target: @${dispOf(tgtPn)} ✨`)}\n${line('📦 _recupero figuracce..._')}\n${boxEnd()}`, edit: fake.key, mentions: [tgtPn] });
                 await pause(700);
                 await sock.sendMessage(from, {
-                    text: `${sec('✅ HACK COMPLETATO')}\n${boxOpen()}\n${line(`💎 @${dispOf(tgtPn)} hackerato — per finta 😭✨`)}\n${line('🔮 _Vetro cromato: missione scenetta_ 💫')}\n${line('💫 _Tutto fake, stai tranquillo_ 💎')}\n${boxEnd()}`,
+                    text: `${sec('✅ HACK COMPLETATO')}\n${boxOpen()}\n${line(`@${dispOf(tgtPn)} hackerato — per finta 😭✨`)}\n${line('🔮 _missione scenetta_')}\n${line('💫 _Tutto fake, stai tranquillo_')}\n${boxEnd()}`,
                     edit: fake.key,
                     mentions: [tgtPn],
                 });
             } catch (_) {
-                const t = `${sec('❌ ERRORE HACK')}\n${boxOpen()}\n${line('💎 Scenetta impallata ✨')}\n${line('🔮 _Riprova tra poco_ 💫')}\n${boxEnd()}`;
+                const t = `${sec('❌ ERRORE HACK')}\n${boxOpen()}\n${line('Scenetta impallata ✨')}\n${line('🔮 _Riprova tra poco_')}\n${boxEnd()}`;
                 await sock.sendMessage(from, { text: t }, { quoted: msg });
             }
     },

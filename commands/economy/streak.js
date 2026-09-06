@@ -2,8 +2,6 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-const { toDarkFont } = require('../../lib/font');
-
 module.exports = {
     name: 'streak',
     aliases: ['serie'],
@@ -49,10 +47,10 @@ module.exports = {
 
         const taxLine = taxed.tax > 0 ? ` (tassa ${taxed.tax}€)` : '';
 
-        const resultText = `${sec('STREAK')}\n${boxOpen()}\n${line(`🔥 Streak: ${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}${newCount > 1 ? ' ✨' : ' 🆕'}`)}\n${line(`${sec('INFO')}\n${boxOpen()}\n${line(`Lordo: _+${formatMoney(reward)}€_ ▸ Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${boxEnd()}`)}\n${line(`Saldo: _${uDB.money}€_`)}\n${boxEnd()}`;
+        const resultText = `${sec('🔥 STREAK')}\n${boxOpen()}\n${line(`Streak: ${newCount} ${newCount === 1 ? 'giorno' : 'giorni'}${newCount > 1 ? ' — let\'s go' : ' 🆕'}`)}\n${line(`Lordo: _+${formatMoney(reward)}€_ → Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${line(`Saldo: _${uDB.money}€_` )}\n${boxEnd()}`;
 
-        await sendButtons(sock, from, toDarkFont(resultText), [
-            { label: `.${command}`, id: `${command}` },
+        await sendButtons(sock, from, resultText, [
+            { label: `🔥 Streak`, id: `${command}` },
         ], msg);
     },
 };

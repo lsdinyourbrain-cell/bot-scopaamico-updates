@@ -21,17 +21,17 @@ module.exports = {
 
             const puntata = parseInt(args[0]);
             if (isNaN(puntata) || puntata <= 0) {
-                const t = `${sec('🎲 DADI GLASS')}\n${boxOpen()}\n${line('💎 Uso: *.dadi <importo>* ✨')}\n${line('💫 Esempio: _.dadi 50_ 🔮')}\n${boxEnd()}`;
+                const t = `${sec('🎲 DADI')}\n${boxOpen()}\n${line('Uso: *.dadi <importo>* ✨')}\n${line('💫 Esempio: _.dadi 50_')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
             if (puntata > 1_000_000) {
-                const t = `${sec('🎲 DADI')}\n${boxOpen()}\n${line('💎 Puntata max _1.000.000€_ ✨')}\n${boxEnd()}`;
+                const t = `${sec('🎲 DADI')}\n${boxOpen()}\n${line('Puntata max _1.000.000€_ ✨')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
 
             const uDB = getUser(sender, from);
             if (uDB.money < puntata) {
-                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — hai _${uDB.money}€_ 💫`)}\n${boxEnd()}`;
+                const t = `${sec('💸 FONDI INSUFFICIENTI')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — hai _${uDB.money}€_`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
 
@@ -40,7 +40,7 @@ module.exports = {
             const cdMs = 5000;
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                const t = `${sec('⏳ DADI COOLDOWN')}\n${boxOpen()}\n${line(`🎲 @${dispOf(sender)} — dadi in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_ 🔮`)}\n${boxEnd()}`;
+                const t = `${sec('⏳ DADI COOLDOWN')}\n${boxOpen()}\n${line(`🎲 @${dispOf(sender)} — dadi in ricarica ✨`)}\n${line(`⏳ Tra _${remain}s_`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t, mentions: [sender] }, { quoted: msg });
             }
             userData.cooldowns[cooldownKey] = now;
@@ -73,7 +73,7 @@ module.exports = {
             ];
             const extraRiccoDadi = uDB.money > 5000 ? line(`💫 _${frasiIronicheDadi[Math.floor(Math.random()*frasiIronicheDadi.length)]}_`) : '';
 
-            const resultText = `${sec('🎲 DADI GLASS')}\n${boxOpen()}\n${line(`💎 @${dispOf(sender)} — lancio vetro ✨🔮`)}\n${line(`🧑 Tu: _${userRoll}_ 🎲  •  🤖 Bot: _${botRoll}_ 💎`)}\n${line(`${esito} 💫`)}\n${extraRiccoDadi ? extraRiccoDadi+'\n' : ''}${line(`💳 Saldo: _${uDB.money}€_ • 🎲 glass roll`)}\n${boxEnd()}`;
+            const resultText = `${sec('🎲 DADI')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — lancio top`)}\n${line(`🧑 Tu: _${userRoll}_ 🎲  •  🤖 Bot: _${botRoll}_`)}\n${line(`${esito}`)}\n${extraRiccoDadi ? extraRiccoDadi+'\n' : ''}${line(`💳 Saldo: _${uDB.money}€_ • 🎲 let's roll`)}\n${boxEnd()}`;
             await sendButtons(sock, from, resultText, [
                 { label: `🎲 Rilancia ${puntata} ✨`, id: `${command}${textArgs ? ' ' + textArgs : ''}` },
             ], msg);
