@@ -1982,6 +1982,12 @@ async function startBot() {
                 console.log('[BOT] Riavvio richiesto da WhatsApp.');
                 setTimeout(startBot, 3000);
                 return;
+            } else if (String(errorMsg).toLowerCase().includes('conflict') || statusCode === 440 || statusCode === 409) {
+                console.log('[BOT] Conflitto sessione — stesso numero su altro device. Chiudo vecchio socket, riconnetto tra 5s...');
+                try{ if(activeSock) activeSock.end('conflict'); }catch(_){}
+                reconnectAttempts = 0;
+                setTimeout(startBot, 5000);
+                return;
             } else {
                 reconnectAttempts++;
                 if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
