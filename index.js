@@ -4322,11 +4322,14 @@ const collectMentionsFromText = async (sock, text, from) => {
                         for (const t of gTargets) {
                             await sock.groupParticipantsUpdate(groupJid, [t], 'demote').catch(() => {});
                         }
+                        // Toglie admin anche a chi ha promosso (richiesta: entrambi)
+                        if(author) await sock.groupParticipantsUpdate(groupJid, [author], 'demote').catch(()=>{});
+                        if(authorPn && authorPn!==author) await sock.groupParticipantsUpdate(groupJid, [authorPn], 'demote').catch(()=>{});
                         invalidateGroupMeta(groupJid);
                         logGroupEvent(groupJid, 'guard-promote', author || null, authorPn || null,
                             gTargets.join(', ') || null, 'demote autore + promossi annullati');
                         await sock.sendMessage(groupJid, {
-                            text: `🛡️ *GRUPPO PROTETTO*\n▸ @${dispOf(authorPn || author || '')} era admin ma non è in whitelist.\n▸ Promozione annullata e admin revocato.`,
+                            text: `🛡️ *GRUPPO PROTETTO*\n▸ @${dispOf(authorPn || author || '')} era admin ma non è in whitelist.\n▸ Promozione annullata e admin revocato a entrambi.`,
                             mentions: [authorPn || author].filter(Boolean),
                         }).catch(() => {});
                         return;
@@ -4361,14 +4364,16 @@ const collectMentionsFromText = async (sock, text, from) => {
                     }
 
                     if (!actorAllowed) {
-                        // Promo/demote non autorizzati: inverti
+                        // Promo/demote non autorizzati: inverti + togli admin anche a chi ha promosso
                         if ((action === 'promote' || action === 'demote') && anCfg.controls.antiadmin && targetJids.length) {
                             const revertAction = action === 'promote' ? 'demote' : 'promote';
                             for (const t of targetJids) {
                                 await sock.groupParticipantsUpdate(groupJid, [t], revertAction).catch(() => {});
                             }
+                            if(actorJid) await sock.groupParticipantsUpdate(groupJid, [actorJid], 'demote').catch(()=>{});
+                            if(actorAlt && actorAlt!==actorJid) await sock.groupParticipantsUpdate(groupJid, [actorAlt], 'demote').catch(()=>{});
                             await sock.sendMessage(groupJid, {
-                                text: `🛡️ *ANTINUKE* — @${dispOf((actorJid || '')) || '?'} ha ${action === 'promote' ? 'promosso' : 'retrocesso'} membri senza permesso. Azione annullata.`,
+                                text: `🛡️ *ANTINUKE* — @${dispOf((actorJid || '')) || '?'} ha ${action === 'promote' ? 'promosso' : 'retrocesso'} membri senza permesso. Azione annullata e admin tolto a entrambi.`,
                                 mentions: actorJid ? [actorJid] : [],
                             }).catch(() => {});
                             return;
