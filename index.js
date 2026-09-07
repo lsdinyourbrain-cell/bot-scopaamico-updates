@@ -132,8 +132,8 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB — limite WhatsApp
 // 1. Crea un token su https://github.com/settings/tokens/new (solo spunta "gist")
 // 2. Crea un Gist privato con un file database.json vuoto → copia l'ID dall'URL
 // 3. Incolla qui sotto:
-const GIST_ID    = '92025e52f28e241cab9217531fd73b3f';
-const GIST_TOKEN = process.env.GIST_TOKEN || '';
+const GIST_ID    = '';
+const GIST_TOKEN = '';
 // ============================================================================
 
 const DB_FILE = path.join(__dirname, 'database.json');
