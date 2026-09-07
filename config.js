@@ -11,8 +11,8 @@ const BOT_IDENTITY = 'Bot di +1(548)314-7193';
 const SPONSOR_LINK = 'https://chat.whatsapp.com/FYvFuxdBSDiFbZBedloPgo';
 
 const AI_API_KEY = (process.env.AI_API_KEY || '').trim();
-const AI_API_URL = (process.env.AI_API_URL || 'https://openrouter.ai/api/v1/chat/completions').trim();
-const AI_MODEL   = (process.env.AI_MODEL   || 'openrouter/auto').trim();
+const AI_API_URL = (process.env.AI_API_URL || 'https://api.xkiro.com/v1/chat/completions').trim();
+const AI_MODEL   = (process.env.AI_MODEL   || 'qwen/qwen3.8-max:free').trim();
 
 // API key per Last.fm (gratuita: https://www.last.fm/api/account/create).
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY || '0370eb25664f53ae121328eb3c6b5f16';
