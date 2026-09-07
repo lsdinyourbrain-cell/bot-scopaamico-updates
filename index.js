@@ -34,15 +34,7 @@ const { sleep } = require('./lib/cooldowns');
 const botLogger = require('./lib/logger');
 botLogger.init(); // log su file (logs/bot.log)
 
-// ── ANTI-CRASH GLOBALE ───────────────────────────────────────────────────
-process.on('uncaughtException', (err) => {
-    console.error('[ANTI-CRASH] uncaughtException:', err?.message || err);
-    try { botLogger.error && botLogger.error('uncaughtException: ' + (err?.stack || err)); } catch (_) {}
-});
-process.on('unhandledRejection', (reason) => {
-    console.error('[ANTI-CRASH] unhandledRejection:', reason?.message || reason);
-    try { botLogger.error && botLogger.error('unhandledRejection: ' + (reason?.stack || reason)); } catch (_) {}
-});
+
 const { checkFlood, MUTE_DURATION } = require('./lib/antiflood');
 const {
     ANTINUKE_CONTROLS,
