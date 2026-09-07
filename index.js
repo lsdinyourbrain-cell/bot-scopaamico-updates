@@ -1980,34 +1980,8 @@ async function startBot() {
                 return;
             } else if (statusCode === DisconnectReason.restartRequired) {
                 console.log('[BOT] Riavvio richiesto da WhatsApp.');
-// ── ANTICRASH ────────────────────────────────────────────────────────────────
-// Se il bot si blocca o va in sovraccarico, chiude il socket: il gestore
-// 'connection.close' esistente si occupa della riconnessione con backoff.
-const safeRestart = (reason) => {
-    try {
-        console.error('[ANTICRASH] Riavvio per: ' + reason);
-        try { fs.mkdirSync(path.join(__dirname, 'logs'), { recursive: true }); } catch (_) {}
-        fs.appendFileSync(path.join(__dirname, 'logs', 'bot.log'), `\n[ANTICRASH] ${new Date().toISOString()} — ${reason}\n`);
-    } catch (_) {}
-    try {
-        if (activeSock) activeSock.end('anticrash: ' + reason);
-    } catch (_) {}
-    setTimeout(() => anticrash.reset(), 5000);
-};
-
-process.on('uncaughtException', (err) => {
-    try { console.error('[UNCAUGHT]', err); } catch (_) {}
-    safeRestart('uncaughtException: ' + (err?.message || err));
-});
-
-process.on('unhandledRejection', (err) => {
-    try { console.error('[REJECTION]', err); } catch (_) {}
-    // Le promise rifiutate non bloccano il bot: solo log.
-});
-
-anticrash.watch(safeRestart);
-
-startBot();
+                setTimeout(startBot, 3000);
+                return;
             } else {
                 reconnectAttempts++;
                 if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
@@ -4625,5 +4599,19 @@ const collectMentionsFromText = async (sock, text, from) => {
         }
     });
 }
+
+// ── ANTICRASH ────────────────────────────────────────────────────────────────
+const safeRestart = (reason) => {
+    try {
+        console.error('[ANTICRASH] Riavvio per: ' + reason);
+        try { fs.mkdirSync(path.join(__dirname, 'logs'), { recursive: true }); } catch (_) {}
+        fs.appendFileSync(path.join(__dirname, 'logs', 'bot.log'), `\n[ANTICRASH] ${new Date().toISOString()} — ${reason}\n`);
+    } catch (_) {}
+    try { if (typeof activeSock !== 'undefined' && activeSock) activeSock.end('anticrash: ' + reason); } catch (_) {}
+    setTimeout(() => { try{ anticrash.reset(); }catch(_){} }, 5000);
+};
+process.on('uncaughtException', (err) => { try { console.error('[UNCAUGHT]', err); } catch (_) {} safeRestart('uncaughtException: ' + (err?.message || err)); });
+process.on('unhandledRejection', (err) => { try { console.error('[REJECTION]', err); } catch (_) {} });
+try{ anticrash.watch(safeRestart); }catch(_){}
 
 startBot();
