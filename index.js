@@ -2317,9 +2317,18 @@ async function startBot() {
             } catch (_) {}
         }
 
-        if (isGroup && sender) {
+        if (isGroup && sender && !msg.key.fromMe) {
             try {
-                const userData = getUser(sender, from);
+                // Usa PN se disponibile, altrimenti LID — evita doppi conteggi XP per stesso utente
+                const xpJid = (senderAlt && String(senderAlt).endsWith('@s.whatsapp.net')) ? senderAlt : sender;
+                const userData = getUser(xpJid, from);
+                // Aggiorna anche l'altro JID per compatibilità ma senza XP doppio
+                const otherJid = (xpJid === sender) ? senderAlt : sender;
+                if(otherJid && otherJid !== xpJid){
+                    const otherData = getUser(otherJid, from);
+                    otherData.lid = otherJid.endsWith('@lid') ? otherJid : otherData.lid;
+                    otherData.phoneNumber = otherJid.endsWith('@s.whatsapp.net') ? otherJid : otherData.phoneNumber;
+                }
                 userData.msgCount = (userData.msgCount || 0) + 1;
                 if (pushName && pushName !== 'Utente' && String(pushName).trim().length >= 2) {
                     userData.name = String(pushName).trim().slice(0, 32);
@@ -2327,7 +2336,7 @@ async function startBot() {
                 // Salva telefono/lid per mostrare numero vero in dashboard (non lid)
                 try {
                     const alt = senderAlt || null;
-                    const primary = sender || '';
+                    const primary = xpJid || '';
                     if (alt) {
                         if (alt.endsWith('@s.whatsapp.net')) userData.phoneNumber = alt;
                         else if (alt.endsWith('@lid')) userData.lid = alt;
