@@ -4124,11 +4124,11 @@ const collectMentionsFromText = async (sock, text, from) => {
                 antibotLib.prune();
             }
         } catch (error) {
-            console.error('[handler] Errore critico:', error.message);
-            // rate-overlimit: ignora silenziosamente per non spammare
+            console.error('[handler] Errore critico:', error.stack || error.message);
             if (error.data === 429 || error.message === 'rate-overlimit') return;
+            const shortMsg = String(error.message||'errore').split('\n')[0].slice(0,120);
             await sock.sendMessage(from, { 
-                text: `⚠️ *ERRORE DI SISTEMA*\n━━━━━━━━━━━━━━━━━━\nSi è verificato un problema:\n_${error.message}_`
+                text: `⚠️ *ERRORE*\nRiprova tra poco.`
             }, { quoted: msg }).catch(() => {});
         }
     });
