@@ -12,7 +12,7 @@ const fmtMoney = (n) => Number(n || 0).toLocaleString('it-IT');
 
 module.exports = {
     name: 'nastro',
-    aliases: ['riepilogo', 'riassunto', 'statsgruppo', 'settimana'],
+    aliases: ['riepilogo', 'statsgruppo', 'settimana'],
     description: "Riepilogo del gruppo: totale bestemmie, più attivo, messaggi e top XP. Uso: .nastro",
 
     async run(sock, msg, args, context) {
