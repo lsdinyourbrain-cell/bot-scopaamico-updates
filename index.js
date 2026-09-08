@@ -3799,12 +3799,14 @@ quoted: msg });
                                 const isFeet = /piedi|feet|foot/i.test(q) || lowerBody.includes('piedi');
                                 if(isFeet) q='piedi';
                                 const targetMention = (getContextInfo(msg.message)?.mentionedJid||[])[0] || null;
-                                const targetName = targetMention ? `@${targetMention.split('@')[0]}` : '';
+                                const { dispOf } = require('./lib/jid');
+                                const targetName = targetMention ? `@${dispOf(targetMention)}` : '';
+                                const senderName = `@${dispOf(sender, senderAlt)}`;
                                 const urls = await vexai.searchImages(q, isFeet?1:2);
                                 let caption = '';
-                                if(isFeet && targetMention) caption = `Ecco i piedi di ${targetName} 😏 come volevi, @${sender.split('@')[0]} — fanne buon uso`;
-                                else if(targetMention) caption = `Ecco "${q}" per ${targetName} — scelto esatto da VEX AI 🔍`;
-                                else caption = `Ecco "${q}" — scelto esatto da VEX AI 🔍 @${sender.split('@')[0]}`;
+                                if(isFeet && targetMention) caption = `Ecco i piedi di ${targetName} 😏 come volevi, ${senderName} — fanne buon uso`;
+                                else if(targetMention) caption = `Ecco "${q}" per ${targetName} — scelto esatto`;
+                                else caption = `Ecco "${q}" — scelto esatto ${senderName}`;
                                 if(urls && urls.length){
                                     const mentions = targetMention ? [sender, targetMention] : [sender];
                                     await vexai.canSendImages(sock, from, urls, caption).catch(()=>{});
@@ -3828,7 +3830,8 @@ quoted: msg });
                                 pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner, hasVexTrigger, db,
                             });
                             if (vexReply) {
-                                await sock.sendMessage(from, { text: String(vexReply).slice(0, 900) }, { quoted: msg }).catch(() => {});
+                                const footer = '\n\n> ᴠᴇx ᴀɪ';
+                                await sock.sendMessage(from, { text: String(vexReply).slice(0, 850) + footer }, { quoted: msg }).catch(() => {});
                             }
                         } catch (e) { console.error('[VEXAI] vexAIReply errore:', e?.message || e); }
                     }
