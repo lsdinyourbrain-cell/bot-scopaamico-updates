@@ -55,11 +55,12 @@ ${boxEnd()}`);
             const linkText =
 `${sec('LINK DEL GRUPPO')}
 ${boxOpen()}
-${line('e pigliate sto link down 👇')}
+${line('🔗 Link invito gruppo')}
 ${line(`\`${link}\``)}
 ${boxEnd()}`;
             await sendButtons(sock, from, linkText, [
                 { type: 'copy', label: '📋 Copia link', copy: link },
+                { label: '🔄 Rigenera', id: 'revoke' },
             ], msg);
         } catch (_) {
             await reply(`${sec('ERRORE')}
