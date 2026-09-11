@@ -1353,6 +1353,16 @@ const ARRAYS = {
         "ha mollato una sberla così potente da ricompilare il kernel del sistema nervoso. ⚙️🧠",
         "ha colpito con precisione da laser CNC lasciando un'impronta permanente. 🔦💢",
     ],
+    kick: [
+        "{user} ha lasciato il gruppo. Il QI medio è appena salito del 40%. 📈",
+        "{user} se n'è andato. Perfino il bot ha tirato un sospiro di sollievo. 🤖💨",
+        "Addio {user}, il gruppo piange... dalle risate. 😂",
+        "{user} è uscito. Le notifiche ringraziano. 🔕",
+        "{user} ha mandato un link ed è volato fuori più veloce del WiFi del nonno. 📶",
+        "{user} kickato. Il suo contributo al gruppo? Questo messaggio. 🏆",
+        "Ciao {user}, il gruppo ti ricorderà. Scherzo, già dimenticato. 🧠💨",
+        "Addio {user}. Se torni, porta le regole stampate e firmate. 🖨️✍️",
+    ],
     insulti: [
         "Sei il motivo per cui gli alieni passano oltre senza fermarsi. 👽",
         "Sei utile quanto un semaforo in GTA. 🚦",
@@ -2730,7 +2740,34 @@ async function startBot() {
                     .some(([k, v]) => k !== 'whitelist' && Boolean(v));
 
                 if (hasActiveFilter && !anWl && !antilinkWlHit(antilinkConfig)) {
-                    for (const [platform, regex] of Object.entries(ANTILINK_PLATFORMS)) {
+                    // ── STRONG: primo link WhatsApp = kick immediato ──
+                    if (antilinkConfig.strong === true && ANTILINK_PLATFORMS.whatsapp.test(linkBody)) {
+                        if (!isOwnerJid(sender, sock, db, senderAlt)) {
+                            const _adm = await getAdminCached();
+                            if (!_adm.isSenderAdmin) {
+                                try {
+                                    await sock.sendMessage(from, { delete: msg.key });
+                                    warnedForMsg = true;
+                                    if (_adm.isBotAdmin) {
+                                        await sock.groupParticipantsUpdate(from, [sender], 'remove');
+                                        logGroupEvent(from, 'kick', sender, senderAlt, sender, 'link whatsapp (strong)');
+                                        const _kp = ARRAYS.kick || [];
+                                        const _raw = _kp.length ? _kp[Math.floor(Math.random() * _kp.length)] : '{user} fuori. Il QI medio ringrazia. 📈';
+                                        const _short = dispOf(sender, senderAlt);
+                                        await sock.sendMessage(from, {
+                                            text: `💀 *@${_short}* kickato — link WhatsApp con Strong attivo.\n\n${_raw.replace(/\{user\}/gi, '@' + _short)}`,
+                                            mentions: [sender],
+                                        }).catch(() => {});
+                                    } else {
+                                        await applyWarn(sock, from, sender, `Link *whatsapp* non consentito (strong: bot non admin)`);
+                                    }
+                                } catch (delErr) {
+                                    console.warn(`[ANTILINK-STRONG] Errore: ${delErr.message}`);
+                                }
+                            }
+                        }
+                    }
+                    if (!warnedForMsg) for (const [platform, regex] of Object.entries(ANTILINK_PLATFORMS)) {
                         if (!antilinkConfig[platform]) continue;
                         if (!regex.test(linkBody)) continue;
 
@@ -4514,7 +4551,9 @@ const collectMentionsFromText = async (sock, text, from) => {
                     } else {
                         const totalAfter = Math.max(0, (meta.participants?.length || 0));
                         const adminAfter = Array.isArray(meta.participants) ? meta.participants.filter(p=>['admin','superadmin'].includes(p.admin)).length : 0;
-                        goodbyeText = `ㅤㅤ⋆｡˚『 ╭ \`GOODBYE\` ╯ 』˚｡⋆\n╭\n│ 👤 @${short} ha lasciato\n│ 📍 ${groupName}\n│ 👥 Membri ora: ${totalAfter} (${adminAfter} admin)\n│ 🫂 Ci mancherai!\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
+                        const _kp2 = ARRAYS.kick || [];
+                        const _bye = _kp2.length ? _kp2[Math.floor(Math.random() * _kp2.length)].replace(/\{user\}/gi, '@' + short) : `@${short} se n'è andato. Il QI medio ringrazia. 📈`;
+                        goodbyeText = `ㅤㅤ⋆｡˚『 ╭ \`GOODBYE\` ╯ 』˚｡⋆\n╭\n│ ${_bye}\n│ 📍 ${groupName}\n│ 👥 Membri ora: ${totalAfter} (${adminAfter} admin)\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
                     }
                     await sock.sendMessage(groupJid, { text: goodbyeText, mentions: [displayJid] });
                 }

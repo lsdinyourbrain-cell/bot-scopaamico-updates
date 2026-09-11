@@ -467,7 +467,7 @@ async function openGroup(jid){
         if (gText) gText.value = config.welcome.goodbyeText || '';
         const grid = $('#antilinkGrid');
         if (grid) {
-            const plats = ['whatsapp','instagram','telegram','tiktok','facebook','youtube','twitter','altri'];
+            const plats = ['whatsapp','instagram','telegram','tiktok','facebook','youtube','twitter','altri','strong'];
             grid.innerHTML = plats.map(p => `
                 <label class="check"><input type="checkbox" data-plat="${p}" ${config.antilink[p] ? 'checked' : ''}> ${p}</label>
             `).join('');

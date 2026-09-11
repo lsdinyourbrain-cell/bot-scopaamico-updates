@@ -32,15 +32,18 @@ module.exports = {
                 const wlNow = Array.isArray(alConfig.whitelist) ? alConfig.whitelist : [];
                 const guardOn = Object.entries(alConfig).some(([k, v]) => k !== 'whitelist' && Boolean(v));
 
+                const strongOn = Boolean(alConfig.strong);
                 return reply(
 `${sec('ANTILINK — STATO')}
 ${boxOpen()}
 ${statusLines}
+${line(`💀 Strong: ${strongOn ? 'ON — primo link WhatsApp = kick' : 'OFF'}`)}
 ${line(`🛡️ Guard: ${guardOn ? 'ATTIVO' : 'spento'}`)}
 ${line(`📋 Whitelist: ${wlNow.length} autorizzati`)}
 ${boxEnd()}
 ▸ .antilink [piattaforma] [on/off]
 ▸ .antilink tutti on/off
+▸ .antilink strong on/off
 ▸ .antilink wl/unwl @utente`
                 );
             }
@@ -95,6 +98,23 @@ ${boxEnd()}`
             }
 
             const newState = stateArg === 'on';
+
+            if (sub === 'strong') {
+                const data = loadAntilink();
+                if (!data[from]) data[from] = DEFAULT_ANTILINK_GROUP();
+                data[from].strong = newState;
+                saveAntilink(data);
+
+                const icon = newState ? '💀' : '🔴';
+                return reply(
+`${sec('ANTILINK STRONG')}
+${boxOpen()}
+${line(`${icon} Strong → ${stateArg.toUpperCase()}`)}
+${line(newState ? 'Al primo link WhatsApp si viene buttati fuori subito.' : 'Kick immediato disattivato.')}
+${line('(Owner, admin e whitelist sempre esentati.)')}
+${boxEnd()}`
+                );
+            }
 
             if (sub === 'tutti') {
                 const data = loadAntilink();

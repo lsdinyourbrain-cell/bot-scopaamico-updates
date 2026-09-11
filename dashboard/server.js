@@ -529,10 +529,10 @@ app.put('/api/groups/:jid/antilink', (req, res) => {
         if (!gid.endsWith('@g.us')) return res.status(400).json({ ok: false, error: 'JID non valido' });
 
         const body = req.body || {};
-        const allowed = ['whatsapp', 'instagram', 'telegram', 'tiktok', 'facebook', 'youtube', 'twitter', 'altri', 'whitelist'];
+        const allowed = ['whatsapp', 'instagram', 'telegram', 'tiktok', 'facebook', 'youtube', 'twitter', 'altri', 'strong', 'whitelist'];
 
         const data = safeReadJSON(ANTILINK_FILE, {});
-        if (!data[gid]) data[gid] = { whatsapp: false, instagram: false, telegram: false, tiktok: false, facebook: false, youtube: false, twitter: false, altri: false };
+        if (!data[gid]) data[gid] = { whatsapp: false, instagram: false, telegram: false, tiktok: false, facebook: false, youtube: false, twitter: false, altri: false, strong: false };
 
         for (const k of allowed) {
             if (k in body) {
