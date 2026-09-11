@@ -92,9 +92,9 @@ const renderChessBoard = async (sharp, fen, lastMove = null, kingInCheck = null)
             const x = PAD + f * CELL + CELL / 2;
             const y = PAD + r * CELL + CELL / 2 + 17;
             const isWhite = p.color === 'w';
-            // shadow for definition
-            pieces += `<text x="${x+1}" y="${y+1}" font-family="Segoe UI Symbol, DejaVu Sans, Arial, sans-serif" font-size="44" fill="#000000" opacity="0.28" text-anchor="middle" font-weight="bold">${uni}</text>`;
-            pieces += `<text x="${x}" y="${y}" font-family="Segoe UI Symbol, DejaVu Sans, Arial, sans-serif" font-size="44" fill="${isWhite ? '#ffffff' : '#0a0a0a'}" stroke="${isWhite ? '#1a1a1a' : '#f5f5f5'}" stroke-width="0.9" text-anchor="middle" font-weight="bold">${uni}</text>`;
+            // shadow for definition — usa font universale per Termux
+            pieces += `<text x="${x+1}" y="${y+1}" font-family="DejaVu Sans, Noto Sans, Arial, sans-serif" font-size="46" fill="#000000" opacity="0.30" text-anchor="middle" font-weight="900">${uni}</text>`;
+            pieces += `<text x="${x}" y="${y}" font-family="DejaVu Sans, Noto Sans, Arial, sans-serif" font-size="46" fill="${isWhite ? '#ffffff' : '#0a0a0a'}" stroke="${isWhite ? '#1a1a1a' : '#ffffff'}" stroke-width="0.7" text-anchor="middle" font-weight="900">${uni}</text>`;
         }
     }
 
