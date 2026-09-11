@@ -2,7 +2,8 @@
 
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
-const sharp = require('sharp');
+let sharp = null;
+try { sharp = require('sharp'); } catch (_) { sharp = null; }
 
 module.exports = {
     name: 'rubato',

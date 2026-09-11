@@ -1,6 +1,7 @@
 ﻿'use strict';
 
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
+const { svgToPng } = require('../../lib/svg2png');
 
 // 
 //  CERTIFICATO — Vex Bot
@@ -60,7 +61,7 @@ const buildCert = async (sharp, name, title) => {
   <line x1="670" y1="545" x2="810" y2="545" stroke="#c9a227" stroke-width="2"/>
 </svg>`;
 
-    return sharp(Buffer.from(svg)).png().toBuffer();
+    return svgToPng(svg, sharp);
 };
 
 module.exports = {

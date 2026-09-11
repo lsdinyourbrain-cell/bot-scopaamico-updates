@@ -3,7 +3,8 @@
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const axios = require('axios');
-const sharp = require('sharp');
+let sharp = null;
+try { sharp = require('sharp'); } catch (_) { sharp = null; }
 
 module.exports = {
     name: 'wasted',

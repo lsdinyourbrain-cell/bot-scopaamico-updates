@@ -138,7 +138,8 @@ const renderChessBoard = async (sharp, fen, lastMove = null, kingInCheck = null)
         }
     }
     // 2) fallback sharp (PC / se resvg non disponibile)
-    return sharp(Buffer.from(svg)).png().toBuffer();
+    if (sharp) return sharp(Buffer.from(svg)).png().toBuffer();
+    throw new Error('SVG2PNG_MISSING: né resvg né sharp disponibili');
 };
 
 // trova re sotto scacco (se presente)

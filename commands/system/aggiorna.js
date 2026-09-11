@@ -163,7 +163,12 @@ ${boxEnd()}`);
         if (depsChanged) {
             await reply('📥 *Installazione dipendenze...* (potrebbe volerci qualche minuto)');
             try {
-                await execFileAsync('npm', ['install', '--legacy-peer-deps', '--no-audit', '--no-fund'], {
+                // Su Termux salta le optional (sharp non ha binari Android e
+                // npm proverebbe a compilarlo / chiedere wasm32 per ore).
+                const isTermux = String(process.env.PREFIX || '').includes('com.termux');
+                const npmArgs = ['install', '--legacy-peer-deps', '--no-audit', '--no-fund'];
+                if (isTermux) npmArgs.push('--omit=optional');
+                await execFileAsync('npm', npmArgs, {
                     cwd: projectDir,
                     timeout: 600000,
                     maxBuffer: 10 * 1024 * 1024,

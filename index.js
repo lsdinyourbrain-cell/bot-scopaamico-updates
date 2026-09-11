@@ -10,7 +10,19 @@ const {
 } = require('@whiskeysockets/baileys');
 
 // ── LAZY HEAVY MODULES (perf: evita caricamento sincrono all'avvio) ───────
-let sharp; const getSharp = () => sharp || (sharp = require('sharp'));
+// sharp è opzionale: su Termux/Android i binari nativi non esistono e npm
+// suggerisce wasm32 — il bot gira lo stesso, i comandi immagine usano resvg
+// o fallback testo quando sharp è null.
+let sharp; let _sharpWarned = false;
+const getSharp = () => {
+    if (sharp !== undefined) return sharp;
+    try { sharp = require('sharp'); }
+    catch (e) {
+        sharp = null;
+        if (!_sharpWarned) { _sharpWarned = true; console.log('[BOT] sharp non disponibile su questo host — uso resvg/testo.'); }
+    }
+    return sharp;
+};
 let _ffmpeg; const getFfmpeg = () => {
     if (!_ffmpeg) {
         _ffmpeg = require('fluent-ffmpeg');
