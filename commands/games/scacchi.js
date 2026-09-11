@@ -1,8 +1,17 @@
 'use strict';
 
+const path = require('path');
 const { dispOf } = require('../../lib/jid');
 const { sec, boxOpen, boxEnd, line } = require('../../lib/ui');
 const { Chess } = require('chess.js');
+
+// Font bundled con glifi scacchi U+2654-265F — funziona anche su Termux
+// dove sharp/librsvg non trova font di sistema. resvg li carica da file.
+const CHESS_FONT_FILES = [
+    path.join(__dirname, '..', '..', 'assets', 'fonts', 'NotoSansSymbols2-Regular.ttf'),
+];
+let _Resvg = null;
+try { ({ Resvg: _Resvg } = require('@resvg/resvg-js')); } catch (_) { _Resvg = null; }
 
 // ── CONFIG ─────────────────────────────────────────────────────────────────
 const QUIT_WORDS = ['stop','termina','abbandona','annulla','fine','esci','basta','chiudi','ferma','lascia','annulla partita','termina partita','resa','resign','arrendo','mi arrendo'];
@@ -11,7 +20,8 @@ const CELL = 68;
 const PAD = 22;
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
-// FEN → PNG board via sharp+SVG. Gestisce highlight ultima mossa + scacco.
+// FEN → PNG board via resvg+font bundled (Termux-safe) con fallback sharp.
+// Gestisce highlight ultima mossa + scacco.
 const renderChessBoard = async (sharp, fen, lastMove = null, kingInCheck = null) => {
     const chess = new Chess(fen);
     const board = chess.board(); // [8][8] r0=a8
@@ -92,9 +102,9 @@ const renderChessBoard = async (sharp, fen, lastMove = null, kingInCheck = null)
             const x = PAD + f * CELL + CELL / 2;
             const y = PAD + r * CELL + CELL / 2 + 17;
             const isWhite = p.color === 'w';
-            // shadow for definition — usa font universale per Termux
-            pieces += `<text x="${x+1}" y="${y+1}" font-family="DejaVu Sans, Noto Sans, Arial, sans-serif" font-size="46" fill="#000000" opacity="0.30" text-anchor="middle" font-weight="900">${uni}</text>`;
-            pieces += `<text x="${x}" y="${y}" font-family="DejaVu Sans, Noto Sans, Arial, sans-serif" font-size="46" fill="${isWhite ? '#ffffff' : '#0a0a0a'}" stroke="${isWhite ? '#1a1a1a' : '#ffffff'}" stroke-width="0.7" text-anchor="middle" font-weight="900">${uni}</text>`;
+            // shadow for definition — Noto Sans Symbols 2 bundled (Termux-safe)
+            pieces += `<text x="${x+1}" y="${y+1}" font-family="'Noto Sans Symbols 2', 'DejaVu Sans', sans-serif" font-size="46" fill="#000000" opacity="0.30" text-anchor="middle" font-weight="900">${uni}</text>`;
+            pieces += `<text x="${x}" y="${y}" font-family="'Noto Sans Symbols 2', 'DejaVu Sans', sans-serif" font-size="46" fill="${isWhite ? '#ffffff' : '#0a0a0a'}" stroke="${isWhite ? '#1a1a1a' : '#ffffff'}" stroke-width="0.7" text-anchor="middle" font-weight="900">${uni}</text>`;
         }
     }
 
@@ -116,6 +126,18 @@ const renderChessBoard = async (sharp, fen, lastMove = null, kingInCheck = null)
         ${pieces}
     </svg>`;
 
+    // 1) resvg con font bundled — funziona anche senza font di sistema (Termux)
+    if (_Resvg) {
+        try {
+            const r = new _Resvg(svg, {
+                font: { fontFiles: CHESS_FONT_FILES, loadSystemFonts: true },
+            });
+            return Buffer.from(r.render().asPng());
+        } catch (e) {
+            console.error('[scacchi] resvg fail, fallback sharp:', e.message);
+        }
+    }
+    // 2) fallback sharp (PC / se resvg non disponibile)
     return sharp(Buffer.from(svg)).png().toBuffer();
 };
 

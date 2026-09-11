@@ -10,7 +10,8 @@ pkg update -y
 pkg upgrade -y
 
 echo "[2/4] Installazione dipendenze di sistema..."
-pkg install -y nodejs ffmpeg yt-dlp git
+pkg install -y nodejs ffmpeg yt-dlp git fontconfig ttf-dejavu
+fc-cache -f >/dev/null 2>&1 || true
 
 # Build essentials solo se serve compilare moduli nativi (es. sharp)
 echo "[3/4] Installazione toolchain (per moduli nativi)..."

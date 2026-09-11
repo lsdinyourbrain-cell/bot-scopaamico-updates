@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@whiskeysockets/baileys": "^7.0.0-rc13",
     "axios": "^1.18.1",
     "chess.js": "^1.4.0",
