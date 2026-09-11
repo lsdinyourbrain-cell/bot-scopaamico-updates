@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 const SB = (s) => s.split('').map(c => {
@@ -42,22 +44,38 @@ module.exports = {
 
     async run(sock, msg, args, context) {
         const { from, pushName, isGroup, services } = context;
-        const { db, sameJid, ownerNumber, sendButtons } = services;
+        const { db, sameJid, ownerNumber, sendButtons, projectDir } = services;
 
         const mentions = [];
 
-        // Owner principale fisso (+1 (548) 314-7193)
-        const MAIN_OWNER_NUM = '15483147193';
-        const MAIN_OWNER_JID = `${MAIN_OWNER_NUM}@s.whatsapp.net`;
-        const MAIN_OWNER_FORMATTED = '+1 (548) 314-7193';
+        // Owner/main SEMPRE freschi da disco: il sito scrive database.json e il
+        // merge in memoria può arrivare in ritardo — .infobot non deve mai mostrare dati vecchi.
+        let diskOwners = null, diskMain = null;
+        try {
+            const dbPath = projectDir
+                ? path.join(projectDir, 'database.json')
+                : path.join(__dirname, '..', '..', 'database.json');
+            const fresh = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+            if (Array.isArray(fresh._owners)) diskOwners = fresh._owners;
+            if (fresh._mainOwner) diskMain = fresh._mainOwner;
+        } catch (_) {}
+
+        // Owner principale DINAMICO (dal sito via db._mainOwner, fallback storico)
+        const MAIN_OWNER_NUM_FALLBACK = '15483147193';
+        const _mainRaw = diskMain || db._mainOwner || `${MAIN_OWNER_NUM_FALLBACK}@s.whatsapp.net`;
+        const _mainStr = String((typeof _mainRaw === 'object' ? (_mainRaw.jid || _mainRaw.number || '') : _mainRaw) || '');
+        const MAIN_OWNER_NUM = (_mainStr.replace(/\D/g, '') || MAIN_OWNER_NUM_FALLBACK);
+        const MAIN_OWNER_JID = _mainStr.includes('@') ? _mainStr.split(':')[0].trim() : `${MAIN_OWNER_NUM}@s.whatsapp.net`;
+        const MAIN_OWNER_FORMATTED = formatPhoneNumber(MAIN_OWNER_NUM);
 
         // JID che rappresentano l'owner principale (da non contare tra i co-owner)
         const mainOwnerJids = [MAIN_OWNER_JID, ownerNumber, sock?.user?.id, sock?.user?.lid].filter(Boolean);
 
-        // Co-Owner reali: il comando .cowner/.addowner salva in db._owners
-        // (inizializzato all'avvio con l'owner principale in posizione 0).
+        // Co-Owner reali: priorità al file su disco (appena aggiornato dal sito),
+        // poi memoria (db._owners da .cowner/.addowner), poi legacy.
+        const _ownerSrc = diskOwners || db._owners;
         let coOwnerList = [];
-        if (Array.isArray(db._owners)) coOwnerList = db._owners;
+        if (Array.isArray(_ownerSrc)) coOwnerList = _ownerSrc;
         else if (Array.isArray(db._cowner)) coOwnerList = db._cowner;
         else if (Array.isArray(db.coowners)) coOwnerList = db.coowners;
         else if (Array.isArray(db._coowners)) coOwnerList = db._coowners;
@@ -108,14 +126,16 @@ module.exports = {
             });
         };
 
-        // Gestione Owner Principale
-        const mainOwnerInGroup = isUserInGroup(MAIN_OWNER_JID);
+        // Gestione Owner Principale (dinamico: risolve LID->PN per display pulito)
+        const mainPnJid = (await resolveToPnJid(MAIN_OWNER_JID)) || MAIN_OWNER_JID;
+        const mainShowNum = mainPnJid.split('@')[0];
+        const mainOwnerInGroup = isUserInGroup(mainPnJid);
         let mainOwnerDisplay = '';
         if (mainOwnerInGroup) {
-            mainOwnerDisplay = `@${MAIN_OWNER_NUM}`;
-            mentions.push(MAIN_OWNER_JID);
+            mainOwnerDisplay = `@${mainShowNum}`;
+            mentions.push(mainPnJid);
         } else {
-            mainOwnerDisplay = MAIN_OWNER_FORMATTED;
+            mainOwnerDisplay = formatPhoneNumber(mainShowNum);
         }
 
         // Gestione Co-Owner
