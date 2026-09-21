@@ -14,7 +14,7 @@ module.exports = {
 
 
             if (!textArgs) {
-                const t = `${sec('🤖 AI')}\n${boxOpen()}\n${line('Fammi una domanda, fra')}\n${line('📌 Esempio: *.ai Qual è la capitale d\'Italia?*')}\n${boxEnd()}`;
+                const t = `${sec('🤖 AI')}\n${boxOpen()}\n${line('Scrivimi una domanda')}\n${line('📌 Esempio: *.ai Qual è la capitale d\'Italia?*')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
 
@@ -29,13 +29,13 @@ module.exports = {
                 if (!db._ai) db._ai = {};
                 db._ai.apiKey = apiKey;
                 saveDB();
-                const t2 = `${sec('✅ AI')}\n${boxOpen()}\n${line('API Key salvata, top')}\n${line('💫 Ora usa *.ai <domanda>*')}\n${boxEnd()}`;
+                const t2 = `${sec('✅ AI')}\n${boxOpen()}\n${line('Chiave API salvata')}\n${line('💫 Ora usa *.ai <domanda>*')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t2 }, { quoted: msg });
             }
 
             const activeKey = (db?._ai?.apiKey) || AI_API_KEY;
             if (!activeKey || activeKey === 'INSERISCI_QUI_LA_TUA_API_KEY') {
-                const t = `${sec('🔑 AI CONFIG')}\n${boxOpen()}\n${line('API Key mancante bro ✨')}\n${line('📌 Usa: *.ai set "sk-or-v1-..."*')}\n${line('💫 Oppure imposta *AI_API_KEY* in .env')}\n${boxEnd()}`;
+                const t = `${sec('🔑 AI CONFIG')}\n${boxOpen()}\n${line('Chiave API mancante')}\n${line('📌 Usa: *.ai set "sk-or-v1-..."*')}\n${line('💫 Oppure imposta *AI_API_KEY* in .env')}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: t }, { quoted: msg });
             }
             try {

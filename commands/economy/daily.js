@@ -35,7 +35,7 @@ module.exports = {
             saveDB();
 
             const taxLine = taxed.tax > 0 ? ` • _tassa ${taxed.tax}€_ 🔹` : '';
-            const txt2 = `${sec('🎁 DAILY PREMIUM')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *BONUS GIORNALIERO*`)}\n${line(`🌟 _bonus carico, let's go_`)}\n${line('')}\n${line(`🎁 Lordo: _+${grossBonus}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult > 1 ? line(`💰 Evento attivo _x${evMult}_`) : line(`✨ Bonus base riscattato`)}\n${line(`💳 Saldo: _${userData.money}€_ • 💫 top`)}\n${boxEnd()}`;
+            const txt2 = `${sec('🎁 DAILY PREMIUM')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *BONUS GIORNALIERO*`)}\n${line(`🌟 _Bonus caricato._`)}\n${line('')}\n${line(`🎁 Lordo: _+${grossBonus}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult > 1 ? line(`💰 Evento attivo _x${evMult}_`) : line(`✨ Bonus base riscattato`)}\n${line(`💳 Saldo: _${userData.money}€_`)}\n${boxEnd()}`;
             await sock.sendMessage(from, { text: txt2, mentions: [sender] }, { quoted: msg });
     },
 };

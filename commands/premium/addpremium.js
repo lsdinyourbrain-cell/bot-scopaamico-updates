@@ -35,7 +35,7 @@ module.exports = {
 
         const dur = days ? `${days} giorni` : '♾️ PERMANENTE';
         const remain = days ? prem.formatRemaining(Date.now()+days*86400000) : '∞ permanente';
-        const txt = `${sec('✅ PREMIUM AGGIUNTO')}\n${boxOpen()}\n${line(`@${disp(targetJid)} ora è *PREMIUM* 👑✨`)}\n${line(`🔮 _premium attivo, let's go_`)}\n${line('')}\n${line(`⏳ Durata: _${dur}_`)}\n${line(`📅 Scadenza: _${remain}_`)}\n${line(`👑 Attivato da Owner ✨`)}\n${boxEnd()}`;
+        const txt = `${sec('✅ PREMIUM AGGIUNTO')}\n${boxOpen()}\n${line(`@${disp(targetJid)} ora è *PREMIUM* 👑✨`)}\n${line(`🔮 _Premium attivo._`)}\n${line('')}\n${line(`⏳ Durata: _${dur}_`)}\n${line(`📅 Scadenza: _${remain}_`)}\n${line(`👑 Attivato da Owner ✨`)}\n${boxEnd()}`;
         return sock.sendMessage(from, { text: txt, mentions: [targetJid] }, { quoted: msg });
     },
 };

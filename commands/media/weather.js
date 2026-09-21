@@ -13,8 +13,8 @@ module.exports = {
 
 
             if (!textArgs) return sendButtons(sock, from,
-                `${sec('🌤️ METEO')}\n${boxOpen()}\n${line('Scrivi una città bro')}\n${line('📌 Esempio: *.weather Milano*')}\n${boxEnd()}`,
-                [{ label: '🌤️ Roma ✨', id: 'weather Roma' }],
+                `${sec('🌤️ METEO')}\n${boxOpen()}\n${line('Scrivi una città')}\n${line('📌 Esempio: *.weather Milano*')}\n${boxEnd()}`,
+                [{ label: '🌤️ Roma', id: 'weather Roma' }],
                 msg);
             try {
                 const prog = await showProgress(sock, from, { label: 'METEO', duration: 3000, quoted: msg });
@@ -26,7 +26,7 @@ module.exports = {
                 const description = current.weatherDesc?.[0]?.value || 'N/D';
                 await prog.done(`${sec('🌤️ METEO')}\n${boxOpen()}\n${line(`📍 *${city}*`)}\n${line(`🌡️ _${current.temp_C}°C_ • _${description}_`)}\n${line(`💧 Umidità: _${current.humidity}%_ • 🌬️ Vento: _${current.windspeedKmph} km/h_`)}\n${boxEnd()}`);
             } catch (_) {
-                await reply(`${sec('❌ METEO ERRORE')}\n${boxOpen()}\n${line('Città non trovata bro ✨')}\n${line('🔮 _Prova nome più preciso_')}\n${boxEnd()}`);
+                await reply(`${sec('❌ METEO ERRORE')}\n${boxOpen()}\n${line('Città non trovata')}\n${line('🔮 _Prova nome più preciso_')}\n${boxEnd()}`);
             }
     },
 };

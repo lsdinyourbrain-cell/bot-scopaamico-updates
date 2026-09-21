@@ -24,7 +24,7 @@ module.exports = {
 
             if (now - last < cdMs) {
                 const remain = Math.ceil((cdMs - (now - last)) / 1000);
-                const txt = `${sec('⛏️ SCAVA COOLDOWN')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — piccone in pausa bro`)}\n${line(`_riposati un attimo e torni a scavare_`)}\n${line('')}\n${line(`Tra _${remain}s_ di nuovo in pista ⏳`)}\n${boxEnd()}`;
+                const txt = `${sec('⛏️ SCAVA COOLDOWN')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — piccone in pausa`)}\n${line(`_aspetta un attimo e riprova_`)}\n${line('')}\n${line(`Tra _${remain}s_ puoi scavare ⏳`)}\n${boxEnd()}`;
                 return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
             }
 
@@ -37,7 +37,7 @@ module.exports = {
 
             const taxLine = taxed.tax > 0 ? ` • _tassa ${taxed.tax}€_` : '';
             const gems = ['⛏️','💰','✨','🔥','⭐'][Math.floor(Math.random()*5)];
-            const txt2 = `${sec('⛏️ MINIERA')}\n${boxOpen()}\n${line(`${gems} @${dispOf(sender)} — *SCAVO TOP*`)}\n${line(`_bottino estratto, hai spaccato fra_`)}\n${line('')}\n${line(`Lordo: _+${gross}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult>1 ? line(`Evento _x${evMult}_ attivo`) : line(`Scavo riuscito bro`)}\n${line(`Saldo: _${userData.money}€_ • continua così`)}\n${boxEnd()}`;
+            const txt2 = `${sec('⛏️ MINIERA')}\n${boxOpen()}\n${line(`${gems} @${dispOf(sender)} — *SCAVO*`)}\n${line(`_bottino estratto_`)}\n${line('')}\n${line(`Lordo: _+${gross}€_ → Netto: _+${taxed.net}€_${taxLine}`)}\n${evMult>1 ? line(`Evento _x${evMult}_ attivo`) : line(`Scavo riuscito`)}\n${line(`Saldo: _${userData.money}€_ • continua così`)}\n${boxEnd()}`;
             await sock.sendMessage(from, { text: txt2, mentions: [sender] }, { quoted: msg });
     },
 };

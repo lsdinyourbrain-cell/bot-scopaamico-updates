@@ -60,7 +60,7 @@ ${boxEnd()}`);
 `🧹 *KICK ALL*
 👥 Espulsi: *${total}* membri
 👑 Restano solo admin e owner
-✅ Tutto fatto, fra!
+✅ Finito.
 `;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },

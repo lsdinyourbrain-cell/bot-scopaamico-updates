@@ -79,7 +79,7 @@ module.exports = {
                 uDB.money -= costo;
                 uDB.azioni[target.toUpperCase()] = (uDB.azioni[target.toUpperCase()] || 0) + n;
                 saveDB();
-                return sock.sendMessage(from, { text: `${sec('✅ AZIONI COMPRATE')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *ACQUISTO* 📈✨`)}\n${line(`🏢 _${azienda.name}_ (${target})`)}\n${line(`📈 Quantità: _${n}_ • 💰 Costo: _${costo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_ • 🔮 confermato fra`)}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
+                return sock.sendMessage(from, { text: `${sec('✅ AZIONI COMPRATE')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — *ACQUISTO* 📈✨`)}\n${line(`🏢 _${azienda.name}_ (${target})`)}\n${line(`📈 Quantità: _${n}_ • 💰 Costo: _${costo}€_`)}\n${line(`💳 Saldo: _${uDB.money}€_`)}\n${boxEnd()}`, mentions: [sender] }, { quoted: msg });
             }
 
             const q = Math.floor(parseInt(parts[2], 10));

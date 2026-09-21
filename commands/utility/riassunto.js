@@ -29,7 +29,7 @@ module.exports = {
             promptText = msgs.slice(-30).map(m=>`${m.jid.split('@')[0]}: ${m.text}`).join('\n');
         } else {
             // Se non ci sono log, di che non ci sono abbastanza messaggi
-            return sendButtons(sock, from, `${sec('RIASSUNTO')}\n${boxOpen()}\n${line('Nessun messaggio nelle ultime 2 ore da riassumere.')}\n${line('Parla un po\' e riprova fra poco, fra.')}\n${boxEnd()}`, [
+            return sendButtons(sock, from, `${sec('RIASSUNTO')}\n${boxOpen()}\n${line('Nessun messaggio nelle ultime 2 ore da riassumere.')}\n${line('Scrivi qualcosa e riprova tra poco.')}\n${boxEnd()}`, [
                 { label: '📜 Nastro', id: 'nastro' },
                 { label: '🏠 Menu', id: 'menu' },
                 { label: '📊 Registro', id: 'registro' },

@@ -22,7 +22,7 @@ module.exports = {
         const cdMs = 20 * 60 * 1000;
         if (now - last < cdMs) {
             const remain = Math.ceil((cdMs - (now - last)) / 60000);
-            const txt = `${sec('⏳ WORK COOLDOWN')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — turno in pausa bro`)}\n${line(`_riposati un attimo e torni più carico_`)}\n${line('')}\n${line(`Torna tra _${remain} minuti_ ⏳`)}\n${boxEnd()}`;
+            const txt = `${sec('⏳ WORK COOLDOWN')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — turno in pausa`)}\n${line(`_aspetta un attimo e riprova_`)}\n${line('')}\n${line(`Torna tra _${remain} minuti_ ⏳`)}\n${boxEnd()}`;
             return sock.sendMessage(from, { text: txt, mentions: [sender] }, { quoted: msg });
         }
         userData.cooldowns[cooldownKey] = now;
@@ -61,7 +61,7 @@ module.exports = {
         const eventLine = event ? line(`${event.emoji} _${event.label}_`) : '';
         const evLine = evMult > 1 ? line(`Evento attivo _x${evMult}_`) : '';
 
-        const resultText = `${sec('💼 WORK')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — _${lavoro.emoji} ${lavoro.nome}_`)}\n${line(`_turno chiuso, hai spaccato fra_`)}\n${line('')}\n${line(`Lordo: _+${formatMoney(gross)}€_ → Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${event ? eventLine : line(`Turno standard • ben fatto bro`)}\n${evMult > 1 ? evLine : ''}\n${line(`Saldo: _${formatMoney(userData.money)}€_ • prossimo tra _20m_`)}\n${boxEnd()}`;
+        const resultText = `${sec('💼 WORK')}\n${boxOpen()}\n${line(`@${dispOf(sender)} — _${lavoro.emoji} ${lavoro.nome}_`)}\n${line(`_turno chiuso_`)}\n${line('')}\n${line(`Lordo: _+${formatMoney(gross)}€_ → Netto: _+${formatMoney(taxed.net)}€_${taxLine}`)}\n${event ? eventLine : line(`Turno standard`)}\n${evMult > 1 ? evLine : ''}\n${line(`Saldo: _${formatMoney(userData.money)}€_ • prossimo tra _20m_`)}\n${boxEnd()}`;
 
         await sock.sendMessage(from, { text: resultText, mentions: [sender] }, { quoted: msg });
     },

@@ -55,7 +55,7 @@ ${boxEnd()}`);
 🔄 Retrocessi: *${target.length}* admin
 👑 Restano il creatore
 e l'owner
-✅ Tutto fatto, fra!
+✅ Finito.
 `;
             await sendButtons(sock, from, txt, [
                 { label: '📋 Lista membri', id: 'list' },

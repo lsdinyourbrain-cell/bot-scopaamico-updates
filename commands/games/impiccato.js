@@ -169,7 +169,7 @@ module.exports = {
                     { label: '🏠 Menu', id: 'menu' },
                 ], msg);
             }
-            return reply("Non hai partite di impiccato attive, fra.");
+            return reply("Non hai partite di impiccato attive.");
         }
 
         const diff = DIFFICULTIES[args2];

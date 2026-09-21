@@ -162,12 +162,12 @@ module.exports = {
 
         // Frasi casuali
         const phrases = [
-            "✨ VEX BOT —\nsta sempre sul pezzo, fra 🫶",
-            "🔥 Nato per gestire e\nanimare i tuoi gruppi 💪",
-            "⚡ Mod, comandi e giochi:\ndentro c'è un po' di tutto, raga",
-            "🍝 Sempre attivo e\npronto all'uso, tranquillo",
-            "🛡️ Protegge il gruppo\ne ti fa divertire, gg",
-            "🚀 Versione 11.0 —\ncorre e non si stanca mai"
+            "✨ VEX BOT —\nsempre attivo nei tuoi gruppi",
+            "🔥 Gestisce e\nanima i tuoi gruppi",
+            "⚡ Mod, comandi e giochi:\nc'è un po' di tutto",
+            "🍝 Sempre attivo e\npronto all'uso",
+            "🛡️ Protegge il gruppo\ne fa divertire",
+            "🚀 Versione 11.0 —\nveloce e stabile"
         ];
         const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
 

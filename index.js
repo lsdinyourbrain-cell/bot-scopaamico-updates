@@ -1157,7 +1157,7 @@ const ADMIN_COMMANDS = new Set(['modoadmin', 'spegni', 'accendi', 'tagall', 'tag
 
 // Comandi per cui il pulsante "Ripeti" automatico NON deve comparire:
 // sistemici o distruttivi, rischiosi da far ripartire a un tap.
-const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'diagnostica', 'clear', 'giudizio', 'obitorio', 'struttura', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara', 'evento', 'events', 'eventi',
+const NO_REPLAY_BUTTON = new Set(['spegni', 'accendi', 'riavvia', 'aggiorna', 'update', 'aggiornamento', 'diagnostica', 'clear', 'giudizio', 'struttura', 'addowner', 'setowner', 'cowner', 'unowner', 'setlink', 'godmode', 'kickall', 'espellitutti', 'promoteall', 'tuttiadmin', 'demoteall', 'tuttimembri', 'unadminall', 'antinuke', 'kick', 'caccia', 'butta', 'elimina', 'ban', 'warn', 'unwarn', 'resetwarns', 'clearwarn', 'mute', 'unmute', 'del', 'tagall', 'tagadmin', 'invito', 'richieste', 'approva', 'accetta', 'leave', 'esci', 'vattene', 'add', 'aggiungi', 'welcome', 'goodbye', 'setname', 'setdesc', 'revoke', 'flame', 'antiflame', 'antilink', 'antivoip', 'antiwzbusiness', 'antiwb', 'awb', 'antibot', 'modoadmin', 'pin', 'fissa', 'unpin', 'sfissa', 'ephemeral', 'scomparsa', 'tempomsg',     'say', 'dì', 'parla', 'pausa', 'riprendi', 'chiudi', 'apri', 'spara', 'evento', 'events', 'eventi',
     // Nuovi giochi nativi: niente pulsante Ripeti sulle risposte di gioco
     'forza4', 'connect4', 'forza-4', 'wordle', 'wordle-ita', 'wordleita',
     'labirinto', 'maze', 'labyrinth', 'trivia2', 'quiz2', 'triviasfida',
@@ -1207,7 +1207,7 @@ const COMMAND_EMOJIS = {
     pin: '📌', fissa: '📌', unpin: '🔓', sfissa: '🔓',
     // Security
     antivoip: '📞', antiwzbusiness: '💼', antiwb: '💼', awb: '💼',
-    antiflame: '🔥', flame: '🔥', antibot: '🤖', antinuke: '🛡️', giudizio: '⚖️', obitorio: '⚰️',
+    antiflame: '🔥', flame: '🔥', antibot: '🤖', antinuke: '🛡️', giudizio: '⚖️',
     antilink: '🔗', bestemmiometro: '🤬',
     // Owner
     spegni: '⏻', accendi: '⏼', riavvia: '🔄', welcome: '👋', goodbye: '👋',
@@ -3994,8 +3994,9 @@ const collectMentionsFromText = async (sock, text, from) => {
                         clean = decorated;
                     }
                 }
-                const wantButton = command && !NO_REPLAY_BUTTON.has(command)
-                    && clean.length > 0 && Buffer.byteLength(clean, 'utf8') <= 1024 && clean.length <= 1024;
+                // Niente pulsante "Ripeti" automatico: messaggi puliti, chi vuole
+                // ripete il comando riscrivendolo.
+                const wantButton = false;
                 const mentions = (isGroup && clean.includes('@')) ? await collectMentionsFromText(sock, clean, from) : null;
                 const doSend = async (attempt=1) => {
                     try {
@@ -4083,19 +4084,17 @@ const collectMentionsFromText = async (sock, text, from) => {
             }
         }
 
-        // ── DENY IRONICO PER NON-ADMIN SU COMANDI ADMIN ──────────────────────
-        // Se un non-admin prova un comando admin, invia messaggio ironico con
-        // grafica unicode, menzione e pulsante "Diventa admin".
-        // Esclusi .clear/.ds (owner only) — lì mantiene il deny owner del comando.
+        // ── NEGATO AI NON-ADMIN SU COMANDI ADMIN ─────────────────────────────
+        // Messaggio breve e normale, senza pulsanti: solo gli admin usano
+        // questi comandi. Esclusi .clear/.ds (owner only) — lì vale il deny
+        // owner del comando.
         if (isGroup && ADMIN_COMMANDS.has(command) && !isSenderAdmin && !isOwner) {
             const ownerOnlyDeny = new Set(['clear', 'pulizia', 'cache', 'svuota', 'ds']);
             if (!ownerOnlyDeny.has(command) && command !== 'godmode') {
-                const denyAdmin = `🚫 *ACCESSO NEGATO*\n━━━━━━━━━━━━━━\n▸ @${dispOf(sender)} ci hai provato, ma non sei admin 😒\n▸ Il comando *.${command}* è solo per gli admin del gruppo\n▸ Torna quando avrai i poteri 👑\n━━━━━━━━━━━━━━\n◈ _Vex Bot_`;
+                const denyAdmin = `Solo gli admin possono usare .${command}.`;
                 try {
-                    await sendButtons(sock, from, denyAdmin, [{ label: '🛡️ Diventa admin', id: 'admin' }], msg, [sender]);
-                } catch (_) {
                     await sock.sendMessage(from, { text: denyAdmin, mentions: [sender] }, { quoted: msg }).catch(() => {});
-                }
+                } catch (_) {}
                 try { await sock.sendMessage(from, { react: { key: msg.key, text: '❌' } }).catch(() => {}); } catch (_) {}
                 return;
             }

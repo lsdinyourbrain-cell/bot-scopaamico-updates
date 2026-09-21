@@ -32,7 +32,7 @@ module.exports = {
         const CD_MS = 60 * 60 * 1000;
         if (now - last < CD_MS) {
             const mins = Math.ceil((CD_MS - (now - last)) / 60000);
-            return reply(`${sec('⏳ COOLDOWN')}\n${boxOpen()}\n${line(`bro hai già spinto, riposati _${mins}m_ ☕`)}\n${boxEnd()}`);
+            return reply(`${sec('⏳ COOLDOWN')}\n${boxOpen()}\n${line(`Hai già lavorato, riprova tra _${mins}m_ ☕`)}\n${boxEnd()}`);
         }
         userData.cooldowns.lavoro2 = now;
 
