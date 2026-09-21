@@ -238,18 +238,57 @@ ${rows}
 ${SECTION_BORDER}`);
 };
 
-// ── CAROSELLO: 7 macro-sezioni grandi, ognuna con banner generato in locale
-// (forme + gradiente, niente font esterni: funziona anche su Termux),
-// descrizione breve e 2 pulsanti sotto: Apri + comando principale.
+// ── CAROSELLO: card essenziali (niente sezioni buttate lì), ognuna con
+// UN solo pulsante che apre la lista nativa WhatsApp con i comandi scelti.
+// Foto: profilo del gruppo; se manca, banner generato in locale.
 const MACROS = [
-    { key: 'sicurezza', emoji: '🛡️', title: 'SICUREZZA', desc: 'Blocca link, spam e attacchi.', subs: ['sicurezza'], top: 'antilink', c1: '#e11d48', c2: '#7f1d1d' },
-    { key: 'gruppo', emoji: '👥', title: 'GRUPPO', desc: 'Membri, regole e moderazione.', subs: ['gestione', 'admin'], top: 'tagall', c1: '#2563eb', c2: '#1e1b4b' },
-    { key: 'economia', emoji: '💰', title: 'ECONOMIA', desc: 'Soldi, lavoro e classifiche.', subs: ['economia'], top: 'daily', c1: '#ca8a04', c2: '#422006' },
-    { key: 'giochi', emoji: '🎮', title: 'GIOCHI', desc: 'Sfide e passatempi.', subs: ['giochi', 'novita'], top: 'tris', c1: '#7c3aed', c2: '#2e1065' },
-    { key: 'media', emoji: '🎨', title: 'MEDIA', desc: 'Sticker, musica e ricerche.', subs: ['media', 'musica', 'audio', 'ai'], top: 'sticker', c1: '#db2777', c2: '#500f28' },
-    { key: 'social', emoji: '💞', title: 'SOCIAL', desc: 'Ship, metri e interazioni.', subs: ['social', 'interazioni'], top: 'ship', c1: '#ec4899', c2: '#831843' },
-    { key: 'utility', emoji: '🛠️', title: 'UTILITY', desc: 'Strumenti veloci e info.', subs: ['utility', 'stato'], top: 'ping', c1: '#0891b2', c2: '#164e63' },
-    { key: 'owner', emoji: '👑', title: 'OWNER', desc: 'Solo proprietario del bot.', subs: ['owner'], top: 'riavvia', c1: '#b45309', c2: '#451a03', ownerOnly: true },
+    { key: 'sicurezza', emoji: '🛡️', title: 'SICUREZZA', desc: 'Blocca link, spam e attacchi.', c1: '#e11d48', c2: '#7f1d1d', cmds: [
+        { label: '🛡️ Antilink', id: 'antilink', desc: 'Blocca i link' },
+        { label: '🤖 Antibot', id: 'antibot', desc: 'Blocca i bot' },
+        { label: '🛡️ Antinuke', id: 'antinuke', desc: 'Anti distruzione' },
+        { label: '🔁 Antiflood', id: 'antiflood', desc: 'Anti spam' },
+        { label: '📊 Stato', id: 'status', desc: 'Stato protezioni' },
+    ] },
+    { key: 'gruppo', emoji: '👥', title: 'GRUPPO', desc: 'Membri e moderazione.', c1: '#2563eb', c2: '#1e1b4b', cmds: [
+        { label: '📢 Tagga tutti', id: 'tagall', desc: 'Menziona tutti' },
+        { label: '🚪 Kick', id: 'kick', desc: 'Rimuovi uno' },
+        { label: '🔇 Mute', id: 'mute', desc: 'Silenzia uno' },
+        { label: '⚠️ Warn', id: 'warn', desc: 'Avverti uno' },
+        { label: '👋 Welcome', id: 'welcome', desc: 'Benvenuto' },
+        { label: '🔗 Link', id: 'link', desc: 'Link invito' },
+    ] },
+    { key: 'economia', emoji: '💰', title: 'ECONOMIA', desc: 'Soldi e classifiche.', c1: '#ca8a04', c2: '#422006', cmds: [
+        { label: '📅 Daily', id: 'daily', desc: 'Bonus giorno' },
+        { label: '💼 Work', id: 'work', desc: 'Lavora' },
+        { label: '🛍️ Shop', id: 'shop', desc: 'Negozio' },
+        { label: '🏆 Top', id: 'top', desc: 'Classifica' },
+        { label: '⛏️ Mine', id: 'mine', desc: 'Miniera' },
+    ] },
+    { key: 'giochi', emoji: '🎮', title: 'GIOCHI', desc: 'Sfide e passatempi.', c1: '#7c3aed', c2: '#2e1065', cmds: [
+        { label: '⭕ Tris', id: 'tris', desc: 'Filetto' },
+        { label: '🎯 Impiccato', id: 'impiccato', desc: 'Indovina' },
+        { label: '❓ Quiz', id: 'quiz', desc: 'Domande' },
+        { label: '♟️ Scacchi', id: 'scacchi', desc: 'Sfida' },
+    ] },
+    { key: 'media', emoji: '🎨', title: 'MEDIA', desc: 'Sticker, musica, meteo.', c1: '#db2777', c2: '#500f28', cmds: [
+        { label: '🎨 Sticker', id: 'sticker', desc: 'Da foto' },
+        { label: '🔎 Cerca', id: 'cerca', desc: 'Musica e video' },
+        { label: '🌤️ Meteo', id: 'meteo7', desc: 'Previsioni' },
+        { label: '🎶 Testo', id: 'lyrics', desc: 'Testi canzoni' },
+        { label: '🔊 TTS', id: 'tts', desc: 'Voce' },
+    ] },
+    { key: 'utility', emoji: '🛠️', title: 'UTILITY', desc: 'Strumenti veloci.', c1: '#0891b2', c2: '#164e63', cmds: [
+        { label: '⚡ Ping', id: 'ping', desc: 'Velocità' },
+        { label: '💞 Ship', id: 'ship', desc: 'Coppia' },
+        { label: '📘 Aiuto', id: 'aiuto', desc: 'Guida' },
+        { label: '🧮 Calc', id: 'calc', desc: 'Calcoli' },
+        { label: 'ℹ️ Gruppo', id: 'groupinfo', desc: 'Info gruppo' },
+    ] },
+    { key: 'owner', emoji: '👑', title: 'OWNER', desc: 'Solo proprietario.', c1: '#b45309', c2: '#451a03', ownerOnly: true, cmds: [
+        { label: '🔄 Riavvia', id: 'riavvia', desc: 'Riavvia bot' },
+        { label: '📦 Aggiorna', id: 'aggiorna', desc: 'Aggiorna' },
+        { label: '📜 Log', id: 'log', desc: 'Registro' },
+    ] },
 ];
 
 const bannerSvg = (c1, c2) => `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><rect width="800" height="400" fill="url(#g)"/><circle cx="680" cy="70" r="150" fill="#ffffff" opacity="0.12"/><circle cx="110" cy="340" r="110" fill="#000000" opacity="0.18"/><circle cx="400" cy="200" r="230" fill="#ffffff" opacity="0.06"/><rect x="60" y="300" width="220" height="26" rx="13" fill="#ffffff" opacity="0.25"/></svg>`;
@@ -266,29 +305,17 @@ const bannerPng = async (macro, sharp) => {
     }
 };
 
-const macroSubs = (macro, isOwner, isGroup) =>
-    macro.subs
-        .map(k => SECTIONS.find(s => s.key === k))
-        .filter(Boolean)
-        .map(s => ({ section: s, items: listFor(s, isOwner, isGroup) }))
-        .filter(x => x.items);
-
-const macroDetail = (macro, visibleSubs) => {
-    const rows = [];
-    for (const { section, items } of visibleSubs) {
-        rows.push(`│ ◆ *${section.title}*`);
-        for (const [e, c] of items.slice(0, 12)) rows.push(CMD_LINE(e, c));
-    }
-    const total = visibleSubs.reduce((n, x) => n + x.items.length, 0);
-    const shown = rows.filter(r => r.startsWith('│ ➤')).length;
-    const more = total > shown ? `\n│ …e altri ${total - shown}: apri le sotto-sezioni` : '';
-    return (
-`ㅤㅤ⋆｡˚『 ╭ \`${macro.emoji} ${macro.title}\` ╯ 』˚｡⋆
-╭
-│ ${macro.desc}
-${rows.join('\n')}${more}
-${SECTION_BORDER}`);
-};
+const macroList = (macro) => ({
+    type: 'single_select',
+    label: '📂 Scegli',
+    title: macro.title,
+    sectionTitle: 'Scegli un comando',
+    rows: macro.cmds.map(c => ({
+        title: c.label,
+        description: c.desc,
+        id: c.id,
+    })),
+});
 
 module.exports = {
     name: 'menu',
@@ -310,19 +337,19 @@ module.exports = {
         };
 
         const q = String(textArgs || '').trim().toLowerCase().split(/\s+/)[0] || '';
+        const q2 = String(textArgs || '').trim().toLowerCase().split(/\s+/)[1] || '';
 
-        // ── MACRO-SEZIONE (carosello): dettaglio compatto + pulsanti ────
-        const macro = MACROS.find(m => m.key === q);
+        // ── LISTA NATIVA di una macro (dal pulsante della card o .menu <macro>)
+        const macroKey = q === 'apri' ? q2 : q;
+        const macro = MACROS.find(m => m.key === macroKey);
         if (macro) {
             if (macro.ownerOnly && !isOwner) return reply('🔒 Sezione riservata.');
-            const subs = macroSubs(macro, isOwner, isGroup);
-            if (!subs.length) return reply('🔒 Sezione riservata.');
-            return sendButtons(sock, from, macroDetail(macro, subs), [
+            return sendButtons(sock, from, `${macro.emoji} *${macro.title}*\n${macro.desc}`, [
+                macroList(macro),
                 { label: '🏠 Home', id: 'menu' },
-                { label: `⚡ ${macro.top}`, id: macro.top },
             ], msg, null, {
                 headerTitle: `${macro.emoji} ${macro.title}`,
-                footerText: `${subs.reduce((n, x) => n + x.items.length, 0)} comandi`,
+                footerText: `${macro.cmds.length} comandi`,
             });
         }
 
@@ -347,33 +374,40 @@ module.exports = {
             }
         }
 
-        // ── HOME: carosello macro-sezioni, fallback testo se non supportato
+        // ── HOME: solo carosello, niente altro messaggio.
+        // Foto profilo del gruppo; se manca, banner generato in locale.
         const visible = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
-        const visibleMacros = MACROS.filter(m => (!m.ownerOnly || isOwner) && macroSubs(m, isOwner, isGroup).length);
+        const visibleMacros = MACROS.filter(m => !m.ownerOnly || isOwner);
 
         if (!q || q === 'home') {
             if (typeof sendCarousel === 'function') {
                 try {
+                    let picUrl = null;
+                    try {
+                        picUrl = await sock.profilePictureUrl(from, 'image');
+                    } catch (_) {}
                     const cards = [];
                     for (const m of visibleMacros) {
-                        const subs = macroSubs(m, isOwner, isGroup);
-                        const n = subs.reduce((x, s) => x + s.items.length, 0);
-                        const img = await bannerPng(m, services?.sharp);
-                        if (!img) continue;
-                        cards.push({
+                        const card = {
                             title: `${m.emoji} ${m.title}`,
-                            body: `${m.desc}\n${n} comandi`,
-                            footer: 'VEX · scorri 👉',
-                            imageBuffer: img,
+                            body: m.desc,
+                            footer: 'VEX',
                             buttons: [
-                                { label: '🔍 Apri', id: `menu ${m.key}` },
-                                { label: `⚡ ${m.top}`, id: m.top },
+                                { label: '📂 Scegli', id: `menu apri ${m.key}` },
                             ],
-                        });
+                        };
+                        if (picUrl) {
+                            card.imageUrl = picUrl;
+                        } else {
+                            const img = await bannerPng(m, services?.sharp);
+                            if (!img) continue;
+                            card.imageBuffer = img;
+                        }
+                        cards.push(card);
                     }
                     if (cards.length) {
                         const sent = await sendCarousel(sock, from, {
-                            text: `VEX — scegli una sezione 👇\nScorri le schede, apri con 🔍.`,
+                            text: 'VEX',
                             cards,
                         }, msg);
                         if (sent) return true;
