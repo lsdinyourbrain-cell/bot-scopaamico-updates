@@ -305,6 +305,19 @@ const bannerPng = async (macro, sharp) => {
     }
 };
 
+// Banner con foto del gruppo + tinta del macro: ogni card diversa,
+// niente font esterni (solo forme), funziona su Termux.
+const photoBannerPng = async (axios, picUrl, macro, sharp) => {
+    const cacheKey = `${macro.key}::${picUrl}`;
+    if (bannerCache.has(cacheKey)) return bannerCache.get(cacheKey);
+    const r = await axios.get(picUrl, { responseType: 'arraybuffer', timeout: 15000 });
+    const b64 = Buffer.from(r.data).toString('base64');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${macro.c1}"/><stop offset="1" stop-color="${macro.c2}"/></linearGradient></defs><image href="data:image/jpeg;base64,${b64}" x="0" y="0" width="800" height="400" preserveAspectRatio="xMidYMid slice"/><rect width="800" height="400" fill="url(#g)" opacity="0.55"/><circle cx="690" cy="70" r="150" fill="#ffffff" opacity="0.14"/><circle cx="110" cy="340" r="110" fill="#000000" opacity="0.20"/><rect x="60" y="300" width="220" height="26" rx="13" fill="#ffffff" opacity="0.28"/></svg>`;
+    const buf = await svgToPng(svg, sharp || null);
+    bannerCache.set(cacheKey, buf);
+    return buf;
+};
+
 const macroList = (macro) => ({
     type: 'single_select',
     label: '📂 Scegli',
@@ -375,7 +388,9 @@ module.exports = {
         }
 
         // ── HOME: solo carosello, niente altro messaggio.
-        // Foto profilo del gruppo; se manca, banner generato in locale.
+        // Foto profilo del gruppo con tinta diversa per card; se manca,
+        // banner generato in locale. Un solo pulsante per card: apre
+        // direttamente la tendina nativa con i comandi.
         const visible = SECTIONS.filter(s => listFor(s, isOwner, isGroup));
         const visibleMacros = MACROS.filter(m => !m.ownerOnly || isOwner);
 
@@ -386,24 +401,38 @@ module.exports = {
                     try {
                         picUrl = await sock.profilePictureUrl(from, 'image');
                     } catch (_) {}
+                    const axios = services?.axios;
                     const cards = [];
                     for (const m of visibleMacros) {
-                        const card = {
+                        let img = null;
+                        if (picUrl && axios) {
+                            try {
+                                img = await photoBannerPng(axios, picUrl, m, services?.sharp);
+                            } catch (_) {}
+                        }
+                        if (!img) {
+                            img = await bannerPng(m, services?.sharp);
+                            if (!img) continue;
+                        }
+                        cards.push({
                             title: `${m.emoji} ${m.title}`,
                             body: m.desc,
-                            footer: 'VEX',
+                            footer: `${m.cmds.length} comandi`,
+                            imageBuffer: img,
                             buttons: [
-                                { label: '📂 Scegli', id: `menu apri ${m.key}` },
+                                {
+                                    type: 'single_select',
+                                    label: '📂 Scegli',
+                                    title: m.title,
+                                    sectionTitle: 'Scegli un comando',
+                                    rows: m.cmds.map(c => ({
+                                        title: c.label,
+                                        description: c.desc,
+                                        id: c.id,
+                                    })),
+                                },
                             ],
-                        };
-                        if (picUrl) {
-                            card.imageUrl = picUrl;
-                        } else {
-                            const img = await bannerPng(m, services?.sharp);
-                            if (!img) continue;
-                            card.imageBuffer = img;
-                        }
-                        cards.push(card);
+                        });
                     }
                     if (cards.length) {
                         const sent = await sendCarousel(sock, from, {
