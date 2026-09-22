@@ -79,6 +79,9 @@ const anticrash = require('./lib/anticrash');
 const Archiver = require('./lib/archiver');
 const estorsione = require('./lib/estorsione');
 const vexai = require('./lib/vexai');
+const aictx = require('./lib/ai-context');
+let MENU_SECTIONS = [];
+try { MENU_SECTIONS = require('./commands/info/menu').SECTIONS || []; } catch (_) {}
 
 // Tassa sul patrimonio: applicata al massimo 1 volta ogni 24h per utente.
 const WEALTH_TAX_INTERVAL = 24 * 60 * 60 * 1000;
@@ -2252,6 +2255,36 @@ async function startBot() {
 
         const isOwner  = isOwnerJid(sender, sock, db, senderAlt);
 
+        // ── BUILDER SERVIZI CONDIVISO (comandi normali + esecuzione via AI) ──
+        // Stesso oggetto di prima, solo spostato in funzione così anche il
+        // percorso AI può eseguire comandi con contesto onesto (stessi permessi).
+        function buildServices() {
+            return {
+                    AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE,
+                    ANTILINK_PLATFORMS, ARRAYS, COPY, axios,
+                    crypto, db, downloadContentFromMessage, downloadMediaMessage,
+                    execFileAsync, get ffmpeg(){ return getFfmpeg(); }, formatMoney, fs, getAntilinkGroup,
+                    getContextInfo, getCpuUsage, getProcessCpu, getQuotedKey, getSysInfo, getUser, os, path,
+                    projectDir: __dirname, randomChoice, randomInt,
+                    sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP,
+                    get sharp(){ return getSharp(); }, get webpmux(){ return getWebpmux(); },
+                    toggleAntilinkWhitelist, antilinkWlMatch, guardActive, fullGuardBackup,
+                    getWelcomeGroup, setWelcomeGroup, setWelcomeCustom, getWelcomeCustom, formatWelcomeText,
+                    sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
+                    sendButtons, editButtons, sendButtonsWithKey, sendCarousel, clearBotCache, ownerNumber, showProgress,
+                    commands,
+                    lastfm,
+                    getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS,
+                    applyWarn, extractPollText, WARN_LIMIT,
+                    setNukeActive, isNukeActive,
+                    checkTrisWinner,
+                    renderTrisBoard: (board) => renderTrisBoardRaw(getSharp(), board),
+                    applyTax, taxRate, applyWealthTax, wealthTaxRate,
+                    logGroupEvent, isOwnerJid, getCachedGroupMeta,
+                    dispOf,
+            };
+        }
+
         // ── GROUP GUARD: nome/foto/descrizione modificate da non autorizzato ──
         // Le notifiche di sistema arrivano qui come stub: 21 = nome, 22 = foto,
         // 24 = descrizione. Se il guard è attivo nel gruppo (antilink acceso):
@@ -3874,13 +3907,68 @@ quoted: msg });
                                 }
                             }catch(_){}
                         }
+                        let botSnapshot = '';
+                        try {
+                            botSnapshot = aictx.buildSnapshot({
+                                db, groupJid: from, isGroup, sender, isOwner,
+                                SECTIONS: MENU_SECTIONS, getAntilinkGroup,
+                                getAntinukeGroup: (gid) => {
+                                    try {
+                                        const { getAntinukeGroup: gag } = require('./lib/antinuke');
+                                        return gag(db, gid);
+                                    } catch (_) { return null; }
+                                },
+                                getWelcomeGroup, getUser: null,
+                                botVersion: require('./package.json').version,
+                                cmdsCount: commands ? commands.size : 0,
+                            });
+                        } catch (_) {}
                         try {
                             const vexReply = await vexai.vexAIReply(sender, body, {
-                                pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt, isOwner, hasVexTrigger, db,
+                                pushName, isGroup, groupJid: from, groupName: groupNameVex, senderAlt,
+                                isOwner, hasVexTrigger, db, botSnapshot,
                             });
                             if (vexReply) {
+                                const cleanVex = aictx.stripExec(vexReply);
                                 const footer = '\n\n> ᴠᴇx ᴀɪ';
-                                await sock.sendMessage(from, { text: String(vexReply).slice(0, 850) + footer }, { quoted: msg }).catch(() => {});
+                                if (cleanVex) {
+                                    await sock.sendMessage(from, { text: String(cleanVex).slice(0, 850) + footer }, { quoted: msg }).catch(() => {});
+                                }
+                                // ── ESECUZIONE COMANDO RICHIESTO DALL'AI ──
+                                // Contesto onesto (permessi veri di chi chiede) + denylist per non-owner.
+                                try {
+                                    const toks = aictx.parseExec(vexReply);
+                                    if (toks.length) {
+                                        const t = toks[0];
+                                        const mod = commands.get(t.cmd);
+                                        if (!mod) {
+                                            console.log(`[AI-EXEC] comando inesistente: ${t.cmd}`);
+                                        } else if (!isOwner && aictx.AIEXEC_DENY.has(t.cmd)) {
+                                            console.log(`[AI-EXEC] negato a non-owner: ${t.cmd}`);
+                                            await sock.sendMessage(from, { text: 'Quello può farlo solo l\u2019owner.' }, { quoted: msg }).catch(() => {});
+                                        } else {
+                                            console.log(`[AI-EXEC] ${sender} -> .${t.cmd} ${t.textArgs}`);
+                                            const eMentioned = mentionedVex || [];
+                                            const eTarget = eMentioned[0] || null;
+                                            let eBotAdmin = false, eSenderAdmin = false;
+                                            if (isGroup) {
+                                                try {
+                                                    ({ isBotAdmin: eBotAdmin, isSenderAdmin: eSenderAdmin } = await getGroupAdminState(sock, from, [sender, senderAlt].filter(Boolean)));
+                                                } catch (_) {}
+                                            }
+                                            const eReply = (txt) => sock.sendMessage(from, { text: String(txt ?? '') }, { quoted: msg }).catch(() => {});
+                                            await mod.run(sock, msg, t.args.slice(), {
+                                                command: t.cmd, textArgs: t.textArgs, from, sender, pushName,
+                                                isGroup, isOwner, mentioned: eMentioned, targetJid: eTarget,
+                                                isReply: false, contextInfo: ctxInfoVex || {}, isBotAdmin: eBotAdmin,
+                                                isSenderAdmin: eSenderAdmin, reply: eReply, senderAlt,
+                                                isButton: false,
+                                                setBotActive: (value) => { isBotActive = Boolean(value); },
+                                                services: buildServices(),
+                                            });
+                                        }
+                                    }
+                                } catch (e) { console.error('[AI-EXEC] errore:', e?.message || e); }
                             }
                         } catch (e) { console.error('[VEXAI] vexAIReply errore:', e?.message || e); }
                     }
@@ -4125,30 +4213,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                 senderAlt,
                 isButton: fromButton,
                 setBotActive: (value) => { isBotActive = Boolean(value); },
-                services: {
-                    AI_API_KEY, AI_API_URL, AI_MODEL, MAX_FILE_SIZE,
-                    ANTILINK_PLATFORMS, ARRAYS, COPY, axios,
-                    crypto, db, downloadContentFromMessage, downloadMediaMessage,
-                    execFileAsync, get ffmpeg(){ return getFfmpeg(); }, formatMoney, fs, getAntilinkGroup,
-                    getContextInfo, getCpuUsage, getProcessCpu, getQuotedKey, getSysInfo, getUser, os, path,
-                    projectDir: __dirname, randomChoice, randomInt,
-                    sameJid, saveDB, setAntilinkPlatform, loadAntilink, saveAntilink, DEFAULT_ANTILINK_GROUP,
-                    get sharp(){ return getSharp(); }, get webpmux(){ return getWebpmux(); },
-                    toggleAntilinkWhitelist, antilinkWlMatch, guardActive, fullGuardBackup,
-                    getWelcomeGroup, setWelcomeGroup, setWelcomeCustom, getWelcomeCustom, formatWelcomeText,
-                    sleep, claimBounty, getBounty, removeBounty, bestemmiometro,
-                    sendButtons, editButtons, sendButtonsWithKey, sendCarousel, clearBotCache, ownerNumber, showProgress,
-                    commands,
-                    lastfm,
-                    getAntinukeGroup, isAntinukeWhitelisted, ANTINUKE_CONTROLS,
-                    applyWarn, extractPollText, WARN_LIMIT,
-                    setNukeActive, isNukeActive,
-                    checkTrisWinner,
-                    renderTrisBoard: (board) => renderTrisBoardRaw(getSharp(), board),
-                    applyTax, taxRate, applyWealthTax, wealthTaxRate,
-                    logGroupEvent, isOwnerJid, getCachedGroupMeta,
-                    dispOf,
-                },
+                services: buildServices(),
             });
             // Async handling: heavy commands via setImmediate + worker-like decoupling
             let cmdPromise;
