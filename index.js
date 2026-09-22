@@ -2826,6 +2826,44 @@ async function startBot() {
             }
         }
 
+        // ── ANTI-PAYMENT: requestPaymentMessage = kick immediato ──────────
+        // Becca i payment-message (tecnica hehehe/denunciarsi) anche senza
+        // testo nel messaggio: il blocco antilink sopra richiede linkBody,
+        // qui basta il tipo. Scelta utente: kick subito a tutti, senza
+        // eccezioni extra — solo il bot stesso viene saltato, altrimenti
+        // uscirebbe dai gruppi da solo.
+        try {
+            const _uw = msg.message?.ephemeralMessage?.message || msg.message;
+            if (isGroup && _uw?.requestPaymentMessage) {
+                const antilinkConfigPay = getAntilinkGroup(from);
+                if (antilinkConfigPay.payment === true && !anWl && !antilinkWlHit(antilinkConfigPay)) {
+                    const _selfJids = [sock.user?.id, sock.user?.lid].filter(Boolean);
+                    const isSelfPay = _selfJids.some(j => sameJid(sender, j) || (senderAlt && sameJid(senderAlt, j)));
+                    if (!isSelfPay) {
+                        try { await sock.sendMessage(from, { delete: msg.key }); warnedForMsg = true; } catch (_) {}
+                        const _admPay = await getAdminCached();
+                        if (_admPay.isBotAdmin) {
+                            try {
+                                await sock.groupParticipantsUpdate(from, [sender], 'remove');
+                                logGroupEvent(from, 'kick', sender, senderAlt, sender, 'payment message');
+                                const _shortPay = dispOf(sender, senderAlt);
+                                await sock.sendMessage(from, {
+                                    text: `💀 *@${_shortPay}* kickato — payment message non ammessi.`,
+                                    mentions: [sender],
+                                }).catch(() => {});
+                            } catch (payErr) {
+                                console.warn(`[ANTI-PAYMENT] Errore kick: ${payErr.message}`);
+                            }
+                        } else {
+                            await applyWarn(sock, from, sender, `Payment message non consentito (bot non admin)`).catch(() => {});
+                        }
+                    }
+                }
+            }
+        } catch (payErr) {
+            console.error('[ANTI-PAYMENT] Errore middleware:', payErr.message);
+        }
+
         // ── ANTINUKE MIDDLEWARE (messaggi) ─────────────────────────────────
         //
         //  Controlli a livello di messaggio attivi quando db._antinuke[from]

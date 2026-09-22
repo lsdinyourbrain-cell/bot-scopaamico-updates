@@ -33,17 +33,20 @@ module.exports = {
                 const guardOn = Object.entries(alConfig).some(([k, v]) => k !== 'whitelist' && Boolean(v));
 
                 const strongOn = Boolean(alConfig.strong);
+                const payOn = alConfig.payment === true;
                 return reply(
 `${sec('ANTILINK — STATO')}
 ${boxOpen()}
 ${statusLines}
 ${line(`💀 Strong: ${strongOn ? 'ON — primo link WhatsApp = kick' : 'OFF'}`)}
+${line(`💸 Payment: ${payOn ? 'ON — payment message = kick subito' : 'OFF'}`)}
 ${line(`🛡️ Guard: ${guardOn ? 'ATTIVO' : 'spento'}`)}
 ${line(`📋 Whitelist: ${wlNow.length} autorizzati`)}
 ${boxEnd()}
 ▸ .antilink [piattaforma] [on/off]
 ▸ .antilink tutti on/off
 ▸ .antilink strong on/off
+▸ .antilink payment on/off
 ▸ .antilink wl/unwl @utente`
                 );
             }
@@ -116,8 +119,23 @@ ${boxEnd()}`
                 );
             }
 
-            if (sub === 'tutti') {
+            if (sub === 'payment') {
                 const data = loadAntilink();
+                if (!data[from]) data[from] = DEFAULT_ANTILINK_GROUP();
+                data[from].payment = newState;
+                saveAntilink(data);
+
+                const icon = newState ? '💸' : '🔴';
+                return reply(
+`${sec('ANTILINK PAYMENT')}
+${boxOpen()}
+${line(`${icon} Payment → ${stateArg.toUpperCase()}`)}
+${line(newState ? 'Chi manda payment message viene kickato subito.' : 'Payment message permessi.')}
+${boxEnd()}`
+                );
+            }
+
+            if (sub === 'tutti') {                const data = loadAntilink();
                 if (!data[from]) data[from] = DEFAULT_ANTILINK_GROUP();
                 platformNames.forEach(p => { data[from][p] = newState; });
                 saveAntilink(data);
