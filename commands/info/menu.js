@@ -246,7 +246,8 @@ const MACROS = [
     { key: 'economia', emoji: '💰', title: 'ECONOMIA', desc: 'Soldi, lavoro e classifiche.', subs: ['economia'], c1: '#ca8a04', c2: '#422006' },
     { key: 'giochi', emoji: '🎮', title: 'GIOCHI', desc: 'Sfide e passatempi.', subs: ['giochi', 'novita'], c1: '#7c3aed', c2: '#2e1065' },
     { key: 'media', emoji: '🎨', title: 'MEDIA', desc: 'Sticker, musica e ricerche.', subs: ['media', 'musica', 'audio', 'ai'], c1: '#db2777', c2: '#500f28' },
-    { key: 'social', emoji: '💞', title: 'SOCIAL', desc: 'Ship, metri e interazioni.', subs: ['social', 'interazioni'], c1: '#ec4899', c2: '#831843' },
+    { key: 'social', emoji: '💞', title: 'SOCIAL', desc: 'Ship e metri.', subs: ['social'], c1: '#ec4899', c2: '#831843' },
+    { key: 'piccanti', emoji: '🔞', title: 'PICCANTI', desc: 'Solo adulti.', subs: ['interazioni'], c1: '#7f1d1d', c2: '#111111' },
     { key: 'utility', emoji: '🛠️', title: 'UTILITY', desc: 'Strumenti veloci e info.', subs: ['utility', 'stato'], c1: '#0891b2', c2: '#164e63' },
     { key: 'owner', emoji: '👑', title: 'OWNER', desc: 'Solo proprietario del bot.', subs: ['owner'], c1: '#b45309', c2: '#451a03', ownerOnly: true },
 ];
@@ -272,32 +273,32 @@ const macroSubs = (macro, isOwner, isGroup) =>
         .map(s => ({ section: s, items: listFor(s, isOwner, isGroup) }))
         .filter(x => x.items);
 
-// Dettaglio macro: TUTTI i comandi delle sotto-sezioni, spezzati in
-// più messaggi se lunghi. Solo pulsante Home, niente altro.
-const sendMacroDetail = async (sock, from, msg, macro, visibleSubs, sendButtons) => {
-    const allRows = [];
-    for (const { section, items } of visibleSubs) {
-        if (visibleSubs.length > 1) allRows.push(`│ ◆ *${section.title}*`);
-        for (const [e, c] of items) allRows.push(CMD_LINE(e, c));
-    }
-    const CHUNK = 22;
-    const head =
-`ㅤㅤ⋆｡˚『 ╭ \`${macro.emoji} ${macro.title}\` ╯ 』˚｡⋆
+// Dettaglio compatto in UN solo messaggio: comandi in linea, niente elenchi
+// infiniti (WhatsApp taglia i testi interattivi oltre ~1024 caratteri).
+const compactDetail = (headTitle, desc, cmds) => {
+    const inline = cmds.map(c => `.${c}`).join(' ');
+    return (
+`ㅤㅤ⋆｡˚『 ╭ \`${headTitle}\` ╯ 』˚｡⋆
 ╭
-│ ${macro.desc}`;
-    const foot = `${SECTION_BORDER}`;
-    for (let i = 0; i < allRows.length; i += CHUNK) {
-        const page = allRows.slice(i, i + CHUNK);
-        const n = Math.ceil(allRows.length / CHUNK);
-        const tag = n > 1 ? ` (${i / CHUNK + 1}/${n})` : '';
-        await sendButtons(sock, from, `${head}${tag}\n${page.join('\n')}\n${foot}`, [
-            { label: '🏠 Home', id: 'menu' },
-        ], msg, null, {
-            headerTitle: `${macro.emoji} ${macro.title}${tag}`,
-            footerText: `${allRows.length} comandi`,
-        });
+│ ${desc}
+│ ${cmds.length} comandi
+│
+│ ${inline}
+${SECTION_BORDER}`);
+};
+
+// Macro: tutti i comandi delle sotto-sezioni in un solo messaggio.
+const sendMacroDetail = async (sock, from, msg, macro, visibleSubs, sendButtons) => {
+    const cmds = [];
+    for (const { items } of visibleSubs) {
+        for (const [, c] of items) cmds.push(c);
     }
-    return true;
+    return sendButtons(sock, from, compactDetail(`${macro.emoji} ${macro.title}`, macro.desc, cmds), [
+        { label: '🏠 Home', id: 'menu' },
+    ], msg, null, {
+        headerTitle: `${macro.emoji} ${macro.title}`,
+        footerText: `${cmds.length} comandi`,
+    });
 };
 
 module.exports = {
@@ -330,7 +331,7 @@ module.exports = {
             return sendMacroDetail(sock, from, msg, macro, subs, sendButtons);
         }
 
-        // ── SEZIONE RICHIESTA 
+        // ── SEZIONE RICHIESTA (anche in un solo messaggio) ───────────────
         if (q && q !== 'home') {
             const found = findSection(q);
             if (found) {
@@ -344,9 +345,9 @@ module.exports = {
                     { label: '🏠 Home', id: 'menu' },
                     { label: '➡️ Succ', id: `menu ${next.key}` },
                 ];
-                return sendButtons(sock, from, sectionScreen(found.section), btns, msg, null, {
+                return sendButtons(sock, from, compactDetail(`${found.section.emoji} ${found.section.title}`, `${list.length} comandi`, list.map(([, c]) => c)), btns, msg, null, {
                     headerTitle: `${found.section.emoji} ${found.section.title}`,
-                    footerText: `${found.index + 1}/${n} · ${found.section.items.length} comandi`,
+                    footerText: `${found.index + 1}/${n} · ${list.length} comandi`,
                 });
             }
         }
