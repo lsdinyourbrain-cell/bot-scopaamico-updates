@@ -4,8 +4,8 @@ const { sec, boxOpen, boxEnd, line, cmd } = require('../../lib/ui');
 
 module.exports = {
     name: 'accendi',
-    aliases: [],
-    description: "Riaccende il bot globalmente (owner) o solo nel gruppo (admin).",
+    aliases: ['avvia', 'riattiva'],
+    description: "Riaccende il bot (owner). In gruppo riattiva anche lì.",
 
     async run(sock, msg, args, context) {
         const { command, textArgs, from, sender, isGroup, isOwner, mentioned, targetJid, isReply, contextInfo, isBotAdmin, isSenderAdmin, reply, setBotActive, services } = context;
@@ -14,6 +14,7 @@ module.exports = {
         if (isGroup && db[from]?._muted && (isSenderAdmin || isOwner)) {
             db[from]._muted = false;
             saveDB();
+            if (isOwner) setBotActive(true);
             return reply(
 `${sec('BOT RIPRESO')}\n${boxOpen()}\n${line('Il bot è di nuovo attivo')}\n${line('in questo gruppo! 🚀')}\n${boxEnd()}`);
         }

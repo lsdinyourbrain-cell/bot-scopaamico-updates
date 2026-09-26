@@ -37,6 +37,7 @@ per riattivarlo.
         } else {
             db[from]._muted = false;
             saveDB();
+            setBotActive(true);
             await reply(
 `▶️ *BOT RIPRESO*
 Il bot è di nuovo

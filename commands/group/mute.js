@@ -8,14 +8,14 @@ const { dispOf, resolveJid } = require('../../lib/jid');
 module.exports = {
     name: 'mute',
     aliases: ["unmute", "muta", "smuta", "riabilita"],
-    description: "Silenzia o riattiva un utente nel gruppo: .mute @utente / .unmute @utente.",
+    description: "Silenzia o riattiva un utente (solo owner): .mute @utente / .unmute @utente.",
 
     async run(sock, msg, args, context) {
-        const { command, from, sender, isGroup, isSenderAdmin, isBotAdmin, targetJid, isReply, contextInfo, reply, services } = context;
+        const { command, from, sender, isGroup, isOwner, isBotAdmin, targetJid, isReply, contextInfo, reply, services } = context;
         const { db, getUser, saveDB, logGroupEvent, sameJid, isOwnerJid, getCachedGroupMeta, sendButtons } = services;
 
         if (!isGroup) return reply("⚠️ _[uso]:_ funziona solo nei gruppi.");
-        if (!isSenderAdmin) return reply("⚠️ _[uso]:_ solo gli admin possono mutare.");
+        if (!isOwner) return reply("⛔ Solo l'owner può mutare.");
         if (!isBotAdmin) return reply("⚠️ _[uso]:_ rendimi admin prima.");
 
         // targetJid: reply = quoted participant, mention = @tag

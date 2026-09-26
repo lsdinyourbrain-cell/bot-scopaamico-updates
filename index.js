@@ -2255,6 +2255,18 @@ async function startBot() {
 
         const isOwner  = isOwnerJid(sender, sock, db, senderAlt);
 
+        // ── BOT SPENTO/PAUSA: silenzio totale ────────────────────────────
+        // Spento globale (.spegni) o in pausa nel gruppo (.pausa): non
+        // risponde a niente e nessuno — niente comandi, niente AI, niente
+        // filtri/welcome. Passano solo owner/co-owner con .riprendi/.avvia/
+        // .accendi per riattivarlo.
+        if (!isBotActive || (isGroup && db[from]?._muted)) {
+            let _offCmd = '';
+            try { _offCmd = String(extractBody(msg) || '').trim().split(/\s+/)[0].replace(/^\./, '').toLowerCase(); } catch (_) {}
+            const _isPriv = isOwnerJid(sender, sock, db, senderAlt);
+            if (!(_isPriv && ['riprendi', 'avvia', 'accendi'].includes(_offCmd))) return;
+        }
+
         // ── BUILDER SERVIZI CONDIVISO (comandi normali + esecuzione via AI) ──
         // Stesso oggetto di prima, solo spostato in funzione così anche il
         // percorso AI può eseguire comandi con contesto onesto (stessi permessi).
@@ -4299,6 +4311,8 @@ const collectMentionsFromText = async (sock, text, from) => {
         clearTimeout(entry.timer);
         const welcomedJids = entry.jids;
         if (!welcomedJids.length) return;
+        // Bot spento o in pausa nel gruppo: niente benvenuto.
+        if (!isBotActive || db[groupJid]?._muted) return;
 
         try {
             const meta = await sock.groupMetadata(groupJid);
@@ -4365,6 +4379,10 @@ const collectMentionsFromText = async (sock, text, from) => {
                 console.log('[group-participants.update] Dati mancanti, skip');
                 return;
             }
+
+            // Bot spento o in pausa nel gruppo: niente messaggi in chat
+            // (welcome/goodbye/avvisi), ma protezioni e log restano attivi.
+            const _quietP = !isBotActive || db[groupJid]?._muted;
 
             // FIX "non è admin": a ogni cambio partecipanti (promote/demote/
             // add/remove) azzero SUBITO le cache del gruppo. Senza questo il
@@ -4463,7 +4481,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                         invalidateGroupMeta(groupJid);
                         logGroupEvent(groupJid, 'guard-promote', author || null, authorPn || null,
                             gTargets.join(', ') || null, 'demote autore + promossi annullati');
-                        await sock.sendMessage(groupJid, {
+                        if (!_quietP) await sock.sendMessage(groupJid, {
                             text: `🛡️ *GRUPPO PROTETTO*\n▸ @${dispOf(authorPn || author || '')} era admin ma non è in whitelist.\n▸ Promozione annullata e admin revocato a entrambi.`,
                             mentions: [authorPn || author].filter(Boolean),
                         }).catch(() => {});
@@ -4507,7 +4525,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                             }
                             if(actorJid) await sock.groupParticipantsUpdate(groupJid, [actorJid], 'demote').catch(()=>{});
                             if(actorAlt && actorAlt!==actorJid) await sock.groupParticipantsUpdate(groupJid, [actorAlt], 'demote').catch(()=>{});
-                            await sock.sendMessage(groupJid, {
+                            if (!_quietP) await sock.sendMessage(groupJid, {
                                 text: `🛡️ *ANTINUKE* — @${dispOf((actorJid || '')) || '?'} ha ${action === 'promote' ? 'promosso' : 'retrocesso'} membri senza permesso. Azione annullata e admin tolto a entrambi.`,
                                 mentions: actorJid ? [actorJid] : [],
                             }).catch(() => {});
@@ -4657,7 +4675,7 @@ const collectMentionsFromText = async (sock, text, from) => {
                         const _bye = _kp2.length ? _kp2[Math.floor(Math.random() * _kp2.length)].replace(/\{user\}/gi, '@' + short) : `@${short} se n'è andato. Il QI medio ringrazia. 📈`;
                         goodbyeText = `ㅤㅤ⋆｡˚『 ╭ \`GOODBYE\` ╯ 』˚｡⋆\n╭\n│ ${_bye}\n│ 📍 ${groupName}\n│ 👥 Membri ora: ${totalAfter} (${adminAfter} admin)\n╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─`;
                     }
-                    await sock.sendMessage(groupJid, { text: goodbyeText, mentions: [displayJid] });
+                    if (!_quietP) await sock.sendMessage(groupJid, { text: goodbyeText, mentions: [displayJid] });
                 }
             }
 
